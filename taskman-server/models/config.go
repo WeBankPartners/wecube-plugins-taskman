@@ -5,7 +5,6 @@ import (
 	"github.com/WeBankPartners/go-common-lib/cipher"
 	"github.com/WeBankPartners/go-common-lib/smtp"
 	"github.com/WeBankPartners/go-common-lib/token"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -72,6 +71,8 @@ type GlobalConfig struct {
 	Wecube          WecubeConfig     `json:"wecube"`
 	Mail            MailConfig       `json:"mail"`
 	AttachFile      AttachFileConfig `json:"attach_file"`
+	EncryptSeed     string           `json:"encrypt_seed"`
+	WebUrl          string           `json:"web_url"`
 }
 
 var (
@@ -94,7 +95,7 @@ func InitConfig(configFile string) (errMessage string) {
 		errMessage = "config file not found," + err.Error()
 		return
 	}
-	b, err := ioutil.ReadFile(configFile)
+	b, err := os.ReadFile(configFile)
 	if err != nil {
 		errMessage = "read config file fail," + err.Error()
 		return
@@ -105,7 +106,7 @@ func InitConfig(configFile string) (errMessage string) {
 		errMessage = "parse file to json fail," + err.Error()
 		return
 	}
-	rsaFileContent, _ := ioutil.ReadFile(c.RsaKeyPath)
+	rsaFileContent, _ := os.ReadFile(c.RsaKeyPath)
 	c.Database.Password, err = cipher.DecryptRsa(c.Database.Password, string(rsaFileContent))
 	if err != nil {
 		errMessage = "init database password fail,%s " + err.Error()

@@ -1,335 +1,272 @@
 <template>
   <div class="workbench-publish-detail">
     <Row class="back-header">
-      <Icon size="26" type="md-arrow-back" style="cursor:pointer" @click="$router.back()" />
+      <Icon size="22" type="md-arrow-back" class="icon" @click="handleToHome" />
       <span class="name">
-        {{ `${detailInfo.name || ''}` }}
+        {{ `${detail.name || ''}` }}
       </span>
     </Row>
     <Row class="w-header">
-      <Col span="19" class="steps">
+      <Col span="24">
         <!--请求进度-->
-        <span class="title">{{ $t('tw_request_progress') }}：</span>
-        <Steps :current="0" style="max-width:600px;">
-          <Step v-for="(i, index) in progressList" :key="index" :content="i.name">
-            <template #icon>
-              <Icon style="font-weight:bold" size="24" :type="i.icon" :color="i.color" />
-            </template>
-            <div class="role" slot="content">
-              <Tooltip :content="i.name">
-                <div class="word-eclipse">{{ i.name }}</div>
-              </Tooltip>
-              <span>{{ i.handler }}</span>
-            </div>
-          </Step>
-        </Steps>
-        <div v-if="errorNode" style="margin:0 0 10px 20px;max-width:500px;">
-          <Alert v-if="errorNode === 'autoExit'" show-icon type="error">
-            {{ $t('tw_auto_exit_tips') }}
-          </Alert>
-          <Alert v-else-if="errorNode === 'internallyTerminated'" show-icon type="error">
-            {{ $t('tw_terminate_tips') }}
-          </Alert>
-          <Alert v-else show-icon type="error"> {{ errorNode }}{{ $t('tw_tag_error_tips') }} </Alert>
-        </div>
-      </Col>
-      <Col span="5" class="btn-group">
-        <!--撤回-->
-        <Button v-if="jumpFrom === 'submit' && detailInfo.status === 'Pending'" type="error" @click="handleRecall">{{
-          $t('tw_recall')
-        }}</Button>
+        <BaseProgress ref="progress" :status="detail.status"></BaseProgress>
       </Col>
     </Row>
-    <div style="display:flex;" class="content">
-      <div style="width:calc(100% - 420px)" class="split-line">
-        <Form :model="form" label-position="right" :label-width="120">
-          <template>
-            <!--请求信息-->
-            <HeaderTitle :title="$t('tw_request_title')">
-              <Row :gutter="20">
-                <Col :span="3">{{ $t('request_id') }}：</Col>
-                <Col :span="9">{{ detailInfo.id || '--' }}</Col>
-                <Col :span="3">{{ $t('tw_request_type') }}：</Col>
-                <Col :span="9">{{ { 0: $t('tw_request'), 1: $t('tw_publish') }[detailInfo.requestType] || '--' }}</Col>
-              </Row>
-              <Row style="margin-top:10px;" :gutter="20">
-                <Col :span="3">{{ $t('createdTime') }}：</Col>
-                <Col :span="9">{{ detailInfo.createdTime || '--' }}</Col>
-                <Col :span="3">{{ $t('expected_completion_time') }}：</Col>
-                <Col :span="9">{{ detailInfo.expectTime || '--' }}</Col>
-              </Row>
-              <Row style="margin-top:10px;" :gutter="20">
-                <Col :span="3">{{ $t('tw_request_progress') }}：</Col>
-                <Col :span="9">
-                  <Progress :percent="detailInfo.progress" style="width:150px;" />
-                </Col>
-                <Col :span="3">{{ $t('tw_request_status') }}：</Col>
-                <Col :span="9">{{ getStatusName(detailInfo.status) || '--' }}</Col>
-              </Row>
-              <Row style="margin-top:10px;" :gutter="20">
-                <!--当前节点-->
-                <Col :span="3">{{ $t('tw_cur_tag') }}：</Col>
-                <Col :span="9">{{
-                  {
-                    waitCommit: $t('tw_wait_commit'),
-                    sendRequest: $t('tw_commit_request'),
-                    requestPending: $t('tw_request_pending'),
-                    requestComplete: $t('tw_request_complete')
-                  }[detailInfo.curNode] ||
-                    detailInfo.curNode ||
-                    '--'
-                }}</Col>
-                <Col :span="3"
-                  >{{ detailInfo.status === 'Draft' ? $t('tw_pending_handler') : $t('tw_cur_handler') }}：</Col
-                >
-                <Col :span="9">{{ detailInfo.handler || '--' }}</Col>
-              </Row>
-              <Row style="margin-top:10px;" :gutter="20">
-                <Col :span="3">{{ $t('createdBy') }}：</Col>
-                <Col :span="9">{{ detailInfo.createdBy || '--' }}</Col>
-                <Col :span="3">{{ $t('tw_creatby_role') }}：</Col>
-                <Col :span="9">{{ detailInfo.role || '--' }}</Col>
-              </Row>
-              <Row style="margin-top:10px;" :gutter="20">
-                <Col :span="3">{{ $t('tw_use_template') }}：</Col>
-                <Col :span="9"
-                  >{{ detailInfo.templateName }}<Tag>{{ detailInfo.version }}</Tag></Col
-                >
-                <Col :span="3">{{ $t('tm_template_group') }}：</Col>
-                <Col :span="9">{{ detailInfo.templateGroupName || '--' }}</Col>
-              </Row>
-              <Row style="margin-top:10px;" :gutter="20">
-                <Col :span="3">{{ $t('tw_request_des') }}：</Col>
-                <Col :span="9">{{ detailInfo.description || '--' }}</Col>
-              </Row>
-            </HeaderTitle>
-            <!--处理历史-->
-            <HeaderTitle :title="$t('tw_handle_history')">
-              <Collapse v-model="activeStep" simple style="margin-top:30px;">
-                <Panel v-for="(data, index) in historyData" :name="index + ''" :key="index">
-                  <!--提交请求-->
-                  <template v-if="index === 0">
-                    <div style="display:flex;align-items:center;width:100%;">
-                      <div style="width:70px;font-weight:bold;line-height:22px;">{{ $t('tw_submit_request') }}</div>
-                      <div style="width:calc(100% - 70px)">
-                        <HeaderTag :showHeader="true" :data="data" :operation="$t('tw_submit_approval')"></HeaderTag>
-                      </div>
-                    </div>
-                    <div slot="content" class="history">
-                      <FormItem :label="$t('tw_choose_object')" required>
-                        <Select v-model="form.rootEntityId" :disabled="true" clearable filterable style="width:300px;">
-                          <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
-                            item.key_name
-                          }}</Option>
-                        </Select>
-                      </FormItem>
-                      <EntityTable :data="data.formData" :requestId="requestId" :formDisable="true"></EntityTable>
-                    </div>
-                  </template>
-                  <!--请求定版-->
-                  <template v-else-if="index === 1">
-                    <div style="display:flex;align-items:center;width:100%;">
-                      <div style="width:70px;font-weight:bold;line-height:22px;">{{ $t('tw_request_pending') }}</div>
-                      <div style="width:calc(100% - 70px)">
-                        <HeaderTag :data="data" :operation="$t('final_version')"></HeaderTag>
-                      </div>
-                    </div>
-                    <div slot="content" class="history">
-                      <DataBind
-                        :isHandle="isHandle"
-                        :requestTemplate="requestTemplate"
-                        :requestId="requestId"
-                        :formDisable="true"
-                        :showBtn="false"
-                      ></DataBind>
-                    </div>
-                  </template>
-                  <!--任务审批-->
-                  <template v-else>
-                    <div style="display:flex;align-items:center;width:100%;">
-                      <div style="width:70px;font-weight:bold;line-height:22px;">{{ data.taskName }}</div>
-                      <div style="width:calc(100% - 70px)">
-                        <HeaderTag :data="data"></HeaderTag>
-                      </div>
-                    </div>
-                    <div slot="content" class="history">
-                      <EntityTable
-                        :data="data.formData"
-                        :requestId="requestId"
-                        :formDisable="!data.editable || enforceDisable"
-                      ></EntityTable>
-                      <div>
-                        <Form :label-width="80" style="margin: 16px 0">
-                          <FormItem v-if="data.requestId === ''" :label="$t('task') + $t('description')">
-                            <Input disabled v-model="data.description" type="textarea" />
-                          </FormItem>
-                          <FormItem
-                            :label="$t('process_result')"
-                            v-if="data.nextOption && data.nextOption.length !== 0"
-                          >
-                            <span slot="label">
-                              {{ $t('process_result') }}
-                              <span style="color: #ed4014"> * </span>
-                            </span>
-                            <Select v-model="data.choseOption" :disabled="!data.editable || enforceDisable">
-                              <Option v-for="option in data.nextOption" :value="option" :key="option">{{
-                                option
-                              }}</Option>
-                            </Select>
-                          </FormItem>
-                          <FormItem :label="$t('process_comments')">
-                            <Input
-                              :disabled="!data.editable || enforceDisable"
-                              v-model="data.comment"
-                              type="textarea"
-                            />
-                          </FormItem>
-                        </Form>
-                      </div>
-                    </div>
-                  </template>
-                </Panel>
-              </Collapse>
-            </HeaderTitle>
-            <!--当前处理-任务审批-->
-            <HeaderTitle
-              v-if="isHandle && detailInfo.status === 'InProgress'"
-              :title="$t('tw_cur_handle')"
-              :subTitle="handleData.taskName"
+    <div class="content">
+      <Form :model="form" label-position="right" :label-width="120" style="width:100%;">
+        <!--基础信息-->
+        <HeaderTitle :title="$t('tw_request_title')">
+          <div style="padding-left:16px;">
+            <Row :gutter="20">
+              <Col :span="12" class="info-item">
+                <div class="info-item-label">{{ $t('request_id') }}：</div>
+                <div class="info-item-value">{{ detail.id || '-' }}</div>
+              </Col>
+              <Col :span="12" class="info-item">
+                <div class="info-item-label">{{ $t('tw_request_type') }}：</div>
+                <div class="info-item-value">
+                  {{ typeMap[detail.requestType] || '-' }}
+                </div>
+              </Col>
+            </Row>
+            <Row style="margin-top:10px;" :gutter="20">
+              <Col :span="12" class="info-item">
+                <div class="info-item-label">{{ $t('createdTime') }}：</div>
+                <div class="info-item-value">{{ detail.createdTime || '-' }}</div>
+              </Col>
+              <Col :span="12" class="info-item">
+                <div class="info-item-label">{{ $t('expected_completion_time') }}：</div>
+                <div class="info-item-value">{{ detail.expectTime || '-' }}</div>
+              </Col>
+            </Row>
+            <Row style="margin-top:10px;" :gutter="20">
+              <Col :span="12" class="info-item">
+                <div class="info-item-label">{{ $t('tw_request_progress') }}：</div>
+                <div class="info-item-value">
+                  <Progress :percent="detail.progress" style="width:150px;" />
+                </div>
+              </Col>
+              <Col :span="12" class="info-item">
+                <div class="info-item-label">{{ $t('tw_request_status') }}：</div>
+                <div class="info-item-value">{{ getStatusName(detail.status) || '-' }}</div>
+              </Col>
+            </Row>
+            <Row style="margin-top:10px;" :gutter="20">
+              <!--当前节点-->
+              <Col :span="12" class="info-item">
+                <div class="info-item-label">{{ $t('tw_cur_tag') }}：</div>
+                <div class="info-item-value">
+                  {{
+                    {
+                      waitCommit: $t('tw_wait_commit'),
+                      sendRequest: $t('tw_commit_request'),
+                      requestPending: $t('tw_request_pending'),
+                      requestComplete: $t('tw_request_complete')
+                    }[detail.curNode] ||
+                      detail.curNode ||
+                      '-'
+                  }}
+                </div>
+              </Col>
+              <Col :span="12" class="info-item">
+                <div class="info-item-label">
+                  {{ detail.status === 'Draft' ? $t('tw_pending_handler') : $t('tw_cur_handler') }}：
+                </div>
+                <div class="info-item-value">{{ formatHandler || '-' }}</div>
+              </Col>
+            </Row>
+            <Row style="margin-top:10px;" :gutter="20">
+              <Col :span="12" class="info-item">
+                <div class="info-item-label">{{ $t('createdBy') }}：</div>
+                <div class="info-item-value">{{ detail.createdBy || '-' }}</div>
+              </Col>
+              <Col :span="12" class="info-item">
+                <div class="info-item-label">{{ $t('tw_creatby_role') }}：</div>
+                <div class="info-item-value">{{ detail.roleDisplay || '-' }}</div>
+              </Col>
+            </Row>
+            <Row style="margin-top:10px;" :gutter="20">
+              <Col :span="12" class="info-item">
+                <div class="info-item-label">{{ $t('tw_use_template') }}：</div>
+                <div class="info-item-value">
+                  {{ detail.templateName }}<span class="tag">{{ detail.version }}</span>
+                </div>
+              </Col>
+              <Col :span="12" class="info-item">
+                <div class="info-item-label">{{ $t('tm_template_group') }}：</div>
+                <div class="info-item-value">{{ detail.templateGroupName || '-' }}</div>
+              </Col>
+            </Row>
+            <Row style="margin-top:10px;" :gutter="20">
+              <Col :span="12" class="info-item">
+                <div class="info-item-label">{{ $t('tw_request_des') }}：</div>
+                <div class="info-item-value">{{ detail.description || '-' }}</div>
+              </Col>
+              <Col :span="12" class="info-item">
+                <div class="info-item-label">{{ $t('tw_attach') }}：</div>
+                <div class="info-item-value">
+                  <UploadFile :id="requestId" :files="attachFiles" type="request" formDisable onlyShowFile />
+                  <span v-if="attachFiles.length === 0">-</span>
+                </div>
+              </Col>
+            </Row>
+          </div>
+        </HeaderTitle>
+        <!--表单详情-->
+        <HeaderTitle :title="$t('tw_form_detail')">
+          <div class="request-form">
+            <template v-if="detail.customForm && detail.customForm.value">
+              <Divider style="margin: 0 0 30px 0" orientation="left">
+                <span class="sub-header">{{ $t('tw_information_form') }}</span>
+              </Divider>
+              <CustomForm
+                v-if="detail.customForm && detail.customForm.value"
+                v-model="detail.customForm.value"
+                :options="detail.customForm.title"
+                :requestId="requestId"
+                disabled
+              ></CustomForm>
+            </template>
+            <Divider style="margin: 20px 0 30px 0" orientation="left">
+              <span class="sub-header">{{ $t('tw_data_form') }}</span>
+            </Divider>
+            <FormItem
+              v-if="detail.associationWorkflow"
+              :label="$t('tw_choose_object')"
+              :label-width="lang === 'zh-CN' ? 110 : 150"
+              required
             >
-              <Steps :current="1" direction="vertical">
-                <Step>
-                  <div slot="title" class="task-step">
-                    <div>{{ $t('tw_approval_step1') }}</div>
-                    <div>{{ $t('tw_approval_step1_tips') }}</div>
-                  </div>
-                  <div slot="content" style="padding:20px 0px;">
-                    <EntityTable
-                      ref="entityTable"
-                      :data="handleData.formData"
-                      :requestId="requestId"
-                      :formDisable="!handleData.editable || enforceDisable"
-                      :isAddRow="true"
-                    ></EntityTable>
-                  </div>
-                </Step>
-                <Step>
-                  <div slot="title" class="task-step">
-                    <div>{{ $t('tw_approval_step2') }}</div>
-                    <div>{{ $t('tw_approval_step2_tips') }}</div>
-                  </div>
-                  <div slot="content" style="padding:20px 0px;">
-                    <Form :label-width="80" style="margin: 16px 0">
-                      <FormItem v-if="handleData.requestId === ''" :label="$t('task') + $t('description')">
-                        <Input disabled v-model="handleData.description" type="textarea" />
-                      </FormItem>
-                      <FormItem
-                        :label="$t('process_result')"
-                        v-if="handleData.nextOption && handleData.nextOption.length !== 0"
-                      >
-                        <span slot="label">
-                          {{ $t('process_result') }}
-                          <span style="color: #ed4014"> * </span>
-                        </span>
-                        <Select v-model="handleData.choseOption" :disabled="!handleData.editable || enforceDisable">
-                          <Option v-for="option in handleData.nextOption" :value="option" :key="option">{{
-                            option
-                          }}</Option>
-                        </Select>
-                      </FormItem>
-                      <FormItem :label="$t('process_comments')">
-                        <Input
-                          :disabled="!handleData.editable || enforceDisable"
-                          v-model="handleData.comment"
-                          type="textarea"
-                        />
-                      </FormItem>
-                      <FormItem :label="$t('tw_attach')">
-                        <UploadFile
-                          :id="handleData.taskId"
-                          :files="handleData.attachFiles"
-                          :formDisable="enforceDisable"
-                          type="task"
-                        ></UploadFile>
-                      </FormItem>
-                    </Form>
-                    <div style="text-align: center">
-                      <Button v-if="handleData.editable" :disabled="enforceDisable" @click="saveTaskData" type="info">{{
-                        $t('save')
-                      }}</Button>
-                      <Button
-                        v-if="handleData.editable"
-                        :disabled="
-                          enforceDisable ||
-                            (handleData.nextOption &&
-                              handleData.nextOption.length !== 0 &&
-                              handleData.choseOption === '')
-                        "
-                        @click="commitTaskData"
-                        type="primary"
-                        >{{ $t('tw_commit') }}</Button
-                      >
-                    </div>
-                  </div>
-                </Step>
-              </Steps>
-            </HeaderTitle>
-            <!--当前处理-请求定版-->
-            <HeaderTitle
-              v-if="isHandle && detailInfo.status === 'Pending'"
-              :title="$t('tw_cur_handle')"
-              :subTitle="$t('tw_request_pending')"
+              <Select v-model="form.rootEntityId" :disabled="true" clearable filterable style="width:300px;">
+                <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
+                  item.key_name
+                }}</Option>
+              </Select>
+            </FormItem>
+            <EntityTable v-if="form.data.length" :data="form.data" :requestId="requestId" formDisable></EntityTable>
+            <div v-else class="no-data">{{ $t('tw_no_formConfig') }}</div>
+          </div>
+        </HeaderTitle>
+        <!--处理历史-->
+        <HeaderTitle :title="$t('tw_handle_history')">
+          <Collapse v-model="activeStep" simple style="margin-top:30px;">
+            <Panel
+              v-for="(data, index) in historyData"
+              :name="index + ''"
+              :key="index"
+              :hide-arrow="['revoke', 'submit'].includes(data.type) ? true : false"
             >
-              <Steps :current="1" direction="vertical">
-                <Step>
-                  <div slot="title" class="task-step">
-                    <div>{{ $t('tw_pending_step1') }}</div>
-                    <div>{{ $t('tw_pending_step1_tips') }}</div>
+              <!--提交-->
+              <template v-if="data.type === 'submit'">
+                <div class="custom-panel">
+                  <div class="custom-panel-title" style="margin-left:24px;">{{ $t('tw_submit_request') }}</div>
+                  <HeaderTag
+                    class="custom-panel-header"
+                    :showHeader="index === 0 ? true : false"
+                    :data="data"
+                    :operation="$t('tw_submit_request')"
+                  ></HeaderTag>
+                </div>
+              </template>
+              <!--撤回-->
+              <template v-if="data.type === 'revoke'">
+                <div class="custom-panel">
+                  <div class="custom-panel-title" style="margin-left:24px;">{{ $t('tw_recall') }}</div>
+                  <HeaderTag class="custom-panel-header" :data="data" :operation="$t('tw_recall')"></HeaderTag>
+                </div>
+              </template>
+              <!--定版-->
+              <template v-else-if="data.type === 'check'">
+                <div class="custom-panel">
+                  <div class="custom-panel-title">{{ $t('tw_request_pending') }}</div>
+                  <HeaderTag class="custom-panel-header" :data="data" :operation="$t('final_version')"></HeaderTag>
+                </div>
+                <div slot="content" class="history">
+                  <DataBind
+                    :isHandle="isHandle"
+                    :requestTemplate="requestTemplate"
+                    :requestId="requestId"
+                    formDisable
+                    :showBtn="false"
+                    :formData="detail.formData"
+                  ></DataBind>
+                </div>
+              </template>
+              <!--审批和任务-->
+              <template v-else-if="['approve', 'implement_process', 'implement_custom'].includes(data.type)">
+                <div class="custom-panel">
+                  <div class="custom-panel-title">
+                    <span class="type">{{
+                      `${{
+                        approve: $t('tw_approval'),
+                        implement_custom: $t('task'),
+                        implement_process: $t('task')
+                      }[data.type] || '-'}: ${data.name}`
+                    }}</span>
+                    <span class="mode">{{ approvalTypeName[data.handleMode] || '' }}</span>
                   </div>
-                  <div slot="content" style="padding:20px 0px;">
-                    <FormItem :label="$t('tw_choose_object')" required>
-                      <Select v-model="form.rootEntityId" :disabled="true" clearable filterable style="width:300px;">
-                        <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
-                          item.key_name
-                        }}</Option>
-                      </Select>
+                  <HeaderTag class="custom-panel-header" :data="data"></HeaderTag>
+                </div>
+                <div slot="content" class="history">
+                  <EntityTable
+                    v-if="data.formData && data.formData.length"
+                    :data="data.formData"
+                    :requestId="requestId"
+                    formDisable
+                  ></EntityTable>
+                  <div v-else class="no-data">
+                    {{ $t('tw_no_formConfig') }}
+                  </div>
+                </div>
+              </template>
+              <!--确认-->
+              <template v-else-if="data.type === 'confirm'">
+                <div class="custom-panel">
+                  <div class="custom-panel-title">{{ $t('tw_request_confirm') }}</div>
+                  <HeaderTag class="custom-panel-header" :data="data" :operation="$t('tw_request_confirm')"></HeaderTag>
+                </div>
+                <div slot="content" class="history">
+                  <Form :label-width="80" label-position="left">
+                    <FormItem :label="$t('status')">
+                      <Input disabled :value="completeStatus" />
                     </FormItem>
-                    <EntityTable
-                      :data="historyData[0].formData"
-                      :requestId="requestId"
-                      :formDisable="true"
-                    ></EntityTable>
-                  </div>
-                </Step>
-                <Step>
-                  <div slot="title" class="task-step">
-                    <div>{{ $t('tw_pending_step2') }}</div>
-                    <div>{{ $t('tw_pending_step2_tips') }}</div>
-                  </div>
-                  <div slot="content" style="padding:20px 0px;">
-                    <DataBind
-                      :isHandle="isHandle"
-                      :requestTemplate="requestTemplate"
-                      :requestId="requestId"
-                      :formDisable="formDisable || detailInfo.status !== 'Pending'"
-                      :actionName="actionName"
-                    ></DataBind>
-                  </div>
-                </Step>
-              </Steps>
-            </HeaderTitle>
-          </template>
-        </Form>
-      </div>
-      <!--编排流程-->
-      <div style="width:420px;padding-left:20px;">
-        <StaticFlow
-          v-if="['Draft', 'Pending'].includes(detailInfo.status)"
-          :requestTemplate="requestTemplate"
-        ></StaticFlow>
-        <DynamicFlow v-else :flowId="detailInfo.procInstanceId"></DynamicFlow>
-      </div>
+                    <FormItem :label="$t('tw_uncompleted_tag')">
+                      <Input disabled :value="uncompletedTasks.join(', ')" />
+                    </FormItem>
+                  </Form>
+                </div>
+              </template>
+            </Panel>
+          </Collapse>
+        </HeaderTitle>
+        <!--当前处理-->
+        <CurrentHandle
+          v-if="isHandle && Object.keys(handleData).length > 0"
+          :detail="detail"
+          :handleData="handleData"
+          :actionName="actionName"
+        />
+      </Form>
     </div>
+    <div class="footer-btn">
+      <!--撤回-->
+      <Button
+        v-if="jumpFrom === 'submit' && ['Pending', 'InApproval'].includes(detail.status) && detail.revokeBtn"
+        type="error"
+        @click="handleRecall"
+        >{{ $t('tw_recall') }}</Button
+      >
+    </div>
+    <!--编排流程图-->
+    <template v-if="detail.associationWorkflow">
+      <div class="expand-btn" :style="{ right: flowVisible ? '440px' : '0px' }" @click="flowVisible = !flowVisible">
+        <Icon v-if="flowVisible" type="ios-arrow-dropright-circle" :size="28" />
+        <Icon v-else type="ios-arrow-dropleft-circle" :size="28" />
+      </div>
+      <div v-if="flowVisible" class="flow-expand">
+        <StaticFlow v-if="!detail.procInstanceId" :requestTemplate="requestTemplate"></StaticFlow>
+        <DynamicFlow v-else :flowId="detail.procInstanceId"></DynamicFlow>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -341,33 +278,10 @@ import DynamicFlow from '../../components/flow/dynamic-flow.vue'
 import EntityTable from '../../components/entity-table.vue'
 import DataBind from '../../components/data-bind.vue'
 import UploadFile from '../../components/upload.vue'
-import { deepClone } from '@/pages/util/index'
-import {
-  getProgressInfo,
-  getRootEntity,
-  getEntityData,
-  getPublishInfo,
-  getRequestInfo,
-  saveTaskData,
-  commitTaskData,
-  recallRequest
-} from '@/api/server'
-const statusIcon = {
-  1: 'md-pin', // 进行中
-  2: 'md-radio-button-on', // 未开始
-  3: 'ios-checkmark-circle-outline', // 已完成
-  4: 'md-close-circle', // 节点失败(包含超时)
-  5: 'md-exit', // 自动退出
-  6: 'md-exit' // 手动终止
-}
-const statusColor = {
-  1: '#ffa500',
-  2: '#8189a5',
-  3: '#19be6b',
-  4: '#ed4014',
-  5: '#ed4014',
-  6: '#ed4014'
-}
+import BaseProgress from './progress.vue'
+import CustomForm from '../../components/custom-form.vue'
+import CurrentHandle from './handle.vue'
+import { getPublishInfo, recallRequest, getRequestHistory } from '@/api/server'
 export default {
   components: {
     HeaderTitle,
@@ -376,7 +290,10 @@ export default {
     DynamicFlow,
     EntityTable,
     DataBind,
-    UploadFile
+    UploadFile,
+    BaseProgress,
+    CustomForm,
+    CurrentHandle
   },
   props: {
     // 1发布,2请求(3问题,4事件,5变更)
@@ -387,15 +304,15 @@ export default {
   },
   data () {
     return {
-      enforceDisable: this.$route.query.enforceDisable === 'Y',
-      isHandle: this.$route.query.isHandle === 'Y', // 处理标志(用于请求定版)
-      formDisable: this.$route.query.isCheck === 'Y', // 查看标志
-      jumpFrom: this.$route.query.jumpFrom, // 入口tab标记
+      isHandle: this.$route.query.isHandle === 'Y', // 处理标志
+      jumpFrom: this.$route.query.jumpFrom || '', // 入口tab标记
+      type: this.$route.query.type, // 首页类型type
       requestTemplate: this.$route.query.requestTemplate,
       requestId: this.$route.query.requestId,
+      taskId: this.$route.query.taskId,
       // procDefId: '',
       // procDefKey: '',
-      detailInfo: {}, // 详情信息
+      detail: {}, // 详情信息
       form: {
         name: '',
         description: '',
@@ -404,13 +321,35 @@ export default {
         data: []
       },
       rootEntityOptions: [],
-      progressList: [],
-      requestData: [], // 发布目标对象表格数据
       historyData: [], // 处理历史数据
-      handleData: {},
-      attachFiles: [], // 上传附件
-      activeStep: '', // 处理历史当前展开
-      errorNode: ''
+      handleData: {}, // 当前处理数据
+      activeStep: '', // 处理历史展开项
+      attachFiles: [], // 请求附件
+      completeStatus: '', // 请求确认-状态
+      uncompletedTasks: [], // 请求确认-未完成任务
+      flowVisible: false,
+      approvalTypeName: {
+        custom: this.$t('tw_onlyOne'), // 单人
+        any: this.$t('tw_anyWidth'), // 协同
+        all: this.$t('tw_allWidth'), // 并行
+        admin: this.$t('tw_roleAdmin'), // 提交人角色管理员
+        auto: this.$t('tw_autoWith') // 自动通过
+      },
+      typeMap: {
+        1: this.$t('tw_publish'),
+        2: this.$t('tw_request'),
+        3: this.$t('tw_question'),
+        4: this.$t('tw_event'),
+        5: this.$t('fork')
+      },
+      handleTypeColor: {
+        check: '#ffa2d3',
+        approve: '#2d8cf0',
+        implement_process: '#cba43f',
+        implement_custom: '#b886f8',
+        confirm: '#19be6b'
+      },
+      lang: window.localStorage.getItem('lang') || 'zh-CN'
     }
   },
   computed: {
@@ -418,7 +357,9 @@ export default {
       return function (val) {
         const list = [
           { label: this.$t('status_pending'), value: 'Pending', color: '#b886f8' },
+          { label: this.$t('tw_inApproval'), value: 'InApproval', color: '#1990ff' },
           { label: this.$t('status_inProgress'), value: 'InProgress', color: '#1990ff' },
+          { label: this.$t('tw_request_confirm'), value: 'Confirm', color: '#b886f8' },
           { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)', color: '#f26161' },
           { label: this.$t('status_termination'), value: 'Termination', color: '#e29836' },
           { label: this.$t('status_complete'), value: 'Completed', color: '#7ac756' },
@@ -429,273 +370,87 @@ export default {
         const item = list.find(i => i.value === val) || {}
         return item.label
       }
+    },
+    formatHandler () {
+      let list = (this.detail.handler && this.detail.handler.split(',')) || []
+      list = list.filter(i => i)
+      return Array.from(new Set(list)).join(', ')
     }
   },
   async created () {
     // 获取请求进度
-    this.getProgressInfo()
+    this.$nextTick(() => {
+      this.$refs.progress.initData(this.requestId)
+    })
     // 获取详情信息
-    this.getPublishInfo()
-    // 获取附件和操作单元
-    this.getRequestInfo()
-    this.getEntity()
+    this.getRequestInfoNew()
   },
   methods: {
-    // 获取请求进度
-    async getProgressInfo () {
-      const params = {
-        templateId: this.requestTemplate,
-        requestId: this.requestId
-      }
-      const { statusCode, data } = await getProgressInfo(params)
-      if (statusCode === 'OK') {
-        this.progressList = data
-        this.progressList.forEach(item => {
-          item.icon = statusIcon[item.status]
-          item.color = statusColor[item.status]
-          switch (item.node) {
-            case 'sendRequest':
-              item.name = this.$t('tw_commit_request') // 提交请求
-              break
-            case 'requestPending':
-              item.name = this.$t('tw_request_pending') // 请求定版
-              break
-            case 'requestComplete':
-              item.name = this.$t('tw_request_complete') // 请求完成
-              break
-            case 'autoExit':
-              item.name = this.$t('status_faulted') // 自动退出
-              this.errorNode = item.node
-              break
-            case 'internallyTerminated':
-              item.name = this.$t('status_termination') // 手动终止
-              this.errorNode = item.node
-              break
-            default:
-              item.name = item.node
-              break
-          }
-          if (item.handler === 'autoNode') {
-            item.handler = this.$t('tw_auto_tag') // 自动节点
-            this.errorNode = item.name
-          }
+    handleToHome () {
+      if (this.$route.query.type) {
+        this.$router.push({
+          path: `/taskman/workbench?tabName=${this.jumpFrom}&actionName=${this.actionName}&${
+            this.jumpFrom === 'submit' ? 'rollback' : 'type'
+          }=${this.type}`
         })
-      }
-    },
-    // 获取附件和操作单元
-    async getRequestInfo () {
-      const { statusCode, data } = await getRequestInfo(this.requestId)
-      if (statusCode === 'OK') {
-        this.attachFiles = data.attachFiles
-        this.form.rootEntityId = data.cache
+      } else {
+        this.$router.back()
       }
     },
     // 获取详情数据
-    async getPublishInfo () {
-      const { statusCode, data } = await getPublishInfo(this.requestId)
+    async getRequestInfoNew () {
+      const params = {
+        params: {
+          requestId: this.requestId,
+          taskId: this.$route.query.taskId || ''
+        }
+      }
+      const { statusCode, data } = await getPublishInfo(params)
       if (statusCode === 'OK') {
-        this.detailInfo = data.request || {}
-        const { name, description, expectTime } = this.detailInfo
+        this.detail = data.request || {}
+        const { name, rootEntityId, operatorObj, description, expectTime, formData, attachFiles } = this.detail
+        this.attachFiles = attachFiles
         this.form = Object.assign({}, this.form, {
           name,
+          rootEntityId,
           description,
-          expectTime
+          expectTime,
+          data: formData
         })
-        this.historyData = data.data || []
-        // 获取请求定版-当前处理数据
-        if (this.detailInfo.status === 'Pending') {
-          if (this.historyData && this.historyData.length > 1) {
-            this.handleData = this.historyData[1]
-            this.historyData.splice(1, 1)
-          }
-          // 任务处理-当前处理数据
-        } else if (this.detailInfo.status === 'InProgress') {
-          const index = this.historyData.findIndex(item => item.editable)
-          this.handleData = this.historyData[index]
-          this.historyData.splice(index, 1)
+        this.rootEntityOptions.push({
+          guid: rootEntityId,
+          key_name: operatorObj
+        })
+        this.getRequestHistory()
+      }
+    },
+    // 获取请求历史
+    async getRequestHistory () {
+      const { statusCode, data } = await getRequestHistory(this.requestId)
+      if (statusCode === 'OK') {
+        this.historyData = data.task || []
+        const statusMap = {
+          complete: this.$t('tw_completed'),
+          uncompleted: this.$t('tw_incomplete')
+        }
+        this.completeStatus = statusMap[data.request.completeStatus] || ''
+        this.uncompletedTasks = data.request.uncompletedTasks || []
+        // 当前处理-任务、审批、请求确认
+        if (['Pending', 'InProgress', 'InApproval', 'Confirm'].includes(this.detail.status)) {
+          // 当前处理数据
+          this.handleData = this.historyData.find(item => item.id === this.taskId && item.editable === true) || {}
+          // 处理历史列表
+          this.historyData = this.historyData.filter(item => item.editable === false)
         }
         if (this.isHandle === false) {
           this.activeStep = this.historyData.length - 1 + ''
         }
       }
     },
-    // 操作目标对象
-    async getEntity () {
-      let params = {
-        params: {
-          requestId: this.requestId
-        }
-      }
-      const { statusCode, data } = await getRootEntity(params)
-      if (statusCode === 'OK') {
-        this.rootEntityOptions = data.data || []
-        // this.form.rootEntityId = this.rootEntityOptions[0] && this.rootEntityOptions[0].guid
-      }
-    },
-    // 获取目标对象对应表单配置
-    async getEntityData () {
-      let params = {
-        params: {
-          requestId: this.requestId,
-          rootEntityId: this.form.rootEntityId
-        }
-      }
-      const { statusCode, data } = await getEntityData(params)
-      if (statusCode === 'OK') {
-        const requestData = data.data || []
-        this.requestData = requestData
-      }
-    },
-    // 校验表格数据必填项
-    requiredCheck (data) {
-      let tabIndex = ''
-      let result = true
-      data.forEach((requestData, index) => {
-        let requiredName = []
-        requestData.title.forEach(t => {
-          if (t.required === 'yes') {
-            requiredName.push(t.name)
-          }
-        })
-        requestData.value.forEach(v => {
-          requiredName.forEach(key => {
-            let val = v.entityData[key]
-            if (Array.isArray(val)) {
-              if (val.length === 0) {
-                result = false
-                if (tabIndex === '') {
-                  tabIndex = index
-                }
-              }
-            } else {
-              if (val === '' || val === undefined) {
-                result = false
-                if (tabIndex === '') {
-                  tabIndex = index
-                }
-              }
-            }
-          })
-        })
-      })
-      this.$refs.entityTable.validTable(tabIndex)
-      return result
-    },
-    noChooseCheck (data) {
-      let tabIndex = ''
-      let result = true
-      data.forEach((requestData, index) => {
-        if (requestData.value && requestData.value.length === 0) {
-          tabIndex = index
-          result = false
-        }
-      })
-      this.$refs.entityTable.validTable(tabIndex)
-      return result
-    },
-    // 任务审批保存
-    async saveTaskData () {
-      // 提取表格勾选的数据
-      const requestData = deepClone(this.$refs.entityTable && this.$refs.entityTable.requestData)
-      this.handleData.formData =
-        requestData.map(item => {
-          let refKeys = []
-          item.title.forEach(t => {
-            if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
-              refKeys.push(t.name)
-            }
-          })
-          if (Array.isArray(item.value)) {
-            item.value = item.value.filter(j => {
-              return j.entityData._checked
-            })
-            // 删除多余的属性
-            item.value.forEach(v => {
-              delete v.entityData._checked
-              refKeys.forEach(ref => {
-                delete v.entityData[ref + 'Options']
-              })
-            })
-          }
-          return item
-        }) || []
-      // 必填项校验提示
-      if (!this.requiredCheck(this.handleData.formData)) {
-        return this.$Notice.warning({
-          title: this.$t('warning'),
-          desc: this.$t('required_tip')
-        })
-      }
-      // 表格至少勾选一条数据校验
-      const tabName = this.$refs.entityTable.activeTab
-      if (!this.noChooseCheck(this.handleData.formData)) {
-        return this.$Notice.warning({
-          title: this.$t('warning'),
-          desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
-        })
-      }
-      const { statusCode } = await saveTaskData(this.handleData.taskId, this.handleData)
-      if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
-      }
-    },
-    // 任务审批提交
-    async commitTaskData () {
-      // 提取表格勾选的数据
-      const requestData = deepClone(this.$refs.entityTable && this.$refs.entityTable.requestData)
-      this.handleData.formData =
-        requestData.map(item => {
-          let refKeys = []
-          item.title.forEach(t => {
-            if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
-              refKeys.push(t.name)
-            }
-          })
-          if (Array.isArray(item.value)) {
-            item.value = item.value.filter(j => {
-              return j.entityData._checked
-            })
-            // 删除多余的属性
-            item.value.forEach(v => {
-              delete v.entityData._checked
-              refKeys.forEach(ref => {
-                delete v.entityData[ref + 'Options']
-              })
-            })
-          }
-          return item
-        }) || []
-      // 必填项校验提示
-      if (!this.requiredCheck(this.handleData.formData)) {
-        return this.$Notice.warning({
-          title: this.$t('warning'),
-          desc: this.$t('required_tip')
-        })
-      }
-      // 表格至少勾选一条数据校验
-      const tabName = this.$refs.entityTable.activeTab
-      if (!this.noChooseCheck(this.handleData.formData)) {
-        return this.$Notice.warning({
-          title: this.$t('warning'),
-          desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
-        })
-      }
-      const { statusCode } = await commitTaskData(this.handleData.taskId, this.handleData)
-      if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
-        this.$router.push({ path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=2` })
-      }
-    },
     // 撤回
     async handleRecall () {
       this.$Modal.confirm({
-        title: this.$t('tw_confirm') + this.$t('tw_recall'),
+        title: this.$t('confirm'),
         content: this.$t('tw_recall_tips'),
         'z-index': 1000000,
         loading: true,
@@ -707,7 +462,7 @@ export default {
               title: this.$t('successful'),
               desc: this.$t('successful')
             })
-            this.$router.push({ path: `/taskman/workbench?tabName=submit&actionName=${this.actionName}` })
+            this.$router.push({ path: `/taskman/workbench?tabName=submit&actionName=${this.actionName}&rollback=3` })
           }
         },
         onCancel: () => {}
@@ -723,9 +478,17 @@ export default {
     display: flex;
     align-items: center;
     margin-bottom: 8px;
+    .icon {
+      cursor: pointer;
+      width: 28px;
+      height: 24px;
+      color: #fff;
+      border-radius: 2px;
+      background: #2d8cf0;
+    }
     .name {
       font-size: 16px;
-      margin-left: 20px;
+      margin-left: 16px;
       display: flex;
       align-items: center;
     }
@@ -734,52 +497,100 @@ export default {
     padding-bottom: 15px;
     margin-bottom: 20px;
     border-bottom: 2px dashed #d7dadc;
-    .steps {
-      display: flex;
-      align-items: center;
-      .title {
-        font-size: 14px;
-        font-weight: 500;
-        margin-right: 20px;
-      }
-      .role {
-        display: flex;
-        flex-direction: column;
-      }
-      .word-eclipse {
-        max-width: 180px;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
-      }
-    }
-    .btn-group {
-      display: flex;
-      justify-content: flex-end;
-    }
   }
   .content {
     min-height: 500px;
-    .split-line {
-      border-right: 2px dashed #d7dadc;
-      padding-right: 20px;
+    display: flex;
+    .sub-header {
+      font-size: 14px;
+      color: #515a6e;
+      font-weight: bold;
+    }
+    .request-form {
+      width: calc(100% - 20px);
+      margin: 0 0 12px 16px;
+    }
+    .no-data {
+      padding-left: 20px;
+      height: 60px;
+      line-height: 60px;
+      color: #515a6e;
+    }
+    .info-item {
+      display: flex;
+      &-label {
+        color: #515a6e;
+        width: 140px;
+        word-wrap: break-word;
+      }
+      &-value {
+        color: #515a6e;
+        width: calc(100% - 100px);
+        word-wrap: break-word;
+        .tag {
+          background: #f7f7f7;
+          padding: 4px 8px;
+        }
+      }
+    }
+    .custom-panel {
+      display: flex;
+      align-items: flex-start;
+      width: 100%;
+      &-title {
+        width: 105px;
+        font-weight: bold;
+        line-height: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        // .type {
+        //   font-size: 12px;
+        //   display: inline-block;
+        //   color: #fff;
+        //   padding: 1px 5px;
+        //   border-radius: 2px;
+        // }
+        .mode {
+          font-size: 12px;
+          display: inline-block;
+          color: #19be6b;
+          margin-top: 2px;
+        }
+      }
+      &-header {
+        width: calc(100% - 70px);
+      }
     }
     .history {
       padding: 20px;
       border: 1px dashed #d7dadc;
-      margin-top: 20px;
-    }
-    .task-step {
-      display: flex;
-      div:first-child {
-        color: #515a6e;
-      }
-      div:last-child {
-        font-weight: 400;
-        font-size: 12px;
+      margin: 16px 0;
+      .no-data {
+        height: 60px;
+        line-height: 60px;
         color: #515a6e;
       }
     }
+  }
+  .footer-btn {
+    padding: 20px 0 30px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .expand-btn {
+    position: fixed;
+    top: calc(50% - 14px);
+    cursor: pointer;
+  }
+  .flow-expand {
+    height: 100%;
+    position: fixed;
+    right: 0px;
+    top: 0px;
+    background: #f8f8f9;
+    padding: 20px;
   }
 }
 </style>
@@ -796,7 +607,7 @@ export default {
     background: #8189a5;
   }
   .ivu-form-item {
-    margin-bottom: 25px !important;
+    margin-bottom: 15px !important;
   }
   .ivu-form-item-content {
     line-height: 20px;
@@ -813,11 +624,18 @@ export default {
   .ivu-collapse-header {
     height: auto !important;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     padding-left: 0px !important;
+    i {
+      margin-top: 4px;
+      margin-right: 8px !important;
+    }
+  }
+  .ivu-collapse-content-box {
+    padding-bottom: 0px;
   }
   .ivu-collapse-content {
-    padding: 0 0 0 16px;
+    padding: 0 !important;
   }
 }
 </style>

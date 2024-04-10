@@ -108,7 +108,13 @@
               <Input v-if="element.elementType === 'input'" :placeholder="$t('t_input')" />
               <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
               <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
-              <Select v-if="element.elementType === 'wecmdbEntity'" placeholder="模型数据项"></Select>
+              <Select v-if="element.elementType === 'wecmdbEntity'" :placeholder="$t('tw_entity_data_items')"></Select>
+              <DatePicker
+                v-if="element.elementType === 'datePicker'"
+                :type="element.type"
+                :placeholder="$t('tw_date_picker')"
+                style="width:100%"
+              ></DatePicker>
               <div v-if="element.elementType === 'group'" style="width: 100%; height: 80px; border: 1px solid #5ea7f4">
                 <span style="margin: 8px; color: #bbbbbb"> Item Group </span>
               </div>
@@ -188,6 +194,11 @@
                     v-model="element.defaultValue"
                     style="width: calc(100% - 30px)"
                   ></Select>
+                  <DatePicker
+                    v-if="element.elementType === 'datePicker'"
+                    style="width: calc(100% - 30px)"
+                    :type="element.type"
+                  ></DatePicker>
                   <Button
                     @click.stop="removeForm(itemIndex, eleIndex, element)"
                     type="error"
@@ -224,7 +235,7 @@
                       <Option value="input">Input</Option>
                       <Option value="select">Select</Option>
                       <Option value="textarea">Textarea</Option>
-                      <Option value="wecmdbEntity">模型数据项</Option>
+                      <Option value="wecmdbEntity">{{ $t('tw_entity_data_items') }}</Option>
                     </Select>
                   </FormItem>
                   <FormItem
@@ -331,7 +342,6 @@ import {
   getAllDataModels
 } from '@/api/server.js'
 import draggable from 'vuedraggable'
-let idGlobal = 80
 export default {
   name: '',
   data () {
@@ -903,21 +913,29 @@ export default {
       })
     },
     cloneDog (val) {
+      const itemNo = this.generateRandomString()
       if (this.isCheck === 'Y') return
       if (val.elementType === 'group') {
         this.finalElement.push({
-          itemGroup: 'itemGroup' + idGlobal++,
-          itemGroupName: 'itemGroup' + idGlobal++,
+          itemGroup: 'itemGroup' + itemNo,
+          itemGroupName: 'itemGroup' + itemNo,
           attrs: []
         })
         return
       }
       let newItem = JSON.parse(JSON.stringify(val))
-      newItem.id = 'c_' + idGlobal++
-      newItem.title = newItem.title + idGlobal
-      newItem.name = newItem.name + idGlobal
+      newItem.id = 'c_' + itemNo
+      newItem.title = newItem.title + itemNo
+      newItem.name = newItem.name + itemNo
       this.specialId = newItem.id
       return newItem
+    },
+    generateRandomString () {
+      let result = ''
+      for (let i = 0; i < 4; i++) {
+        result += Math.floor(Math.random() * 10)
+      }
+      return result
     },
     selectElement (itemIndex, eleIndex) {
       if (this.activeTag.itemGroupIndex !== -1 && this.activeTag.attrIndex !== -1) {

@@ -1,7 +1,7 @@
 package models
 
 type SysCiTypeAttrTable struct {
-	Id                      string `json:"ciTypeAttrId" xorm:"id"`
+	Id                      string `json:"ciTypeAttrId" xorm:"'id' pk" primary-key:"id"`
 	CiType                  string `json:"ciTypeId" xorm:"ci_type"`
 	Name                    string `json:"propertyName" xorm:"name"`
 	DisplayNameTmp          string `json:"displayName" xorm:"-"`
@@ -65,11 +65,13 @@ type CiDataRefFilterObj struct {
 }
 
 type RefSelectParam struct {
-	AttrId    string             `json:"attrId"`
-	RequestId string             `json:"requestId"`
-	UserToken string             `json:"-"`
-	Filter    string             `json:"filter"`
-	Param     *QueryRequestParam `json:"param"`
+	AttrId             string                 `json:"attrId"`
+	RequestId          string                 `json:"requestId"`
+	UserToken          string                 `json:"-"`
+	Filter             string                 `json:"filter"`
+	Param              *QueryRequestParam     `json:"param"`
+	FormItemTemplateId string                 `json:"formItemTemplateId"`
+	FormItemTemplate   *FormItemTemplateTable `json:"formItemTemplate"`
 }
 
 type GetExpressResultParam struct {

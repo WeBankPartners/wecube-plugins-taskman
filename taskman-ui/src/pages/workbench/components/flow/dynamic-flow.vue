@@ -6,7 +6,7 @@
       <span class="custom-display">{{ flowData.procInstName }} {{ flowData.operator }}</span>
     </div>
     <div id="graphcontain">
-      <div class="graph-container" id="flow" style="height: 90%"></div>
+      <div class="graph-container" id="flow" style="height: 96%"></div>
       <Button class="reset-button" size="small" @click="ResetFlow">ResetZoom</Button>
     </div>
 
@@ -92,17 +92,17 @@ export default {
             return (
               <div style="white-space: nowrap; overflow: auto;">
                 [
-              {jsonData.map((data, index) => (
-                <div key={index}>
-                  {'{'}
-                  {Object.entries(data).map(([key, value]) => (
-                    <div>
-                      {key}: {value}
-                    </div>
-                  ))}
-                  {'},'}
-                </div>
-              ))}
+                {jsonData.map((data, index) => (
+                  <div key={index}>
+                    {'{'}
+                    {Object.entries(data).map(([key, value]) => (
+                      <div>
+                        {key}: {value}
+                      </div>
+                    ))}
+                    {'},'}
+                  </div>
+                ))}
                 ]
               </div>
             )
@@ -177,10 +177,11 @@ export default {
         // 定时拿状态
         this.start()
         let { statusCode, data } = await getFlowByInstanceId(this.flowId)
+        const flowData = data || {}
         if (statusCode === 'OK') {
           this.flowData = {
-            ...data,
-            flowNodes: data.taskNodeInstances
+            ...flowData,
+            flowNodes: flowData.taskNodeInstances
           }
           removeEvent('.retry', 'click', this.retryHandler)
           this.initFlowGraph(true)
@@ -363,6 +364,15 @@ export default {
           this.nodeDetailResponseHeader = JSON.stringify(this.replaceParams(this.nodeDetailResponseHeader))
             .split(',')
             .join(',<br/>')
+          this.nodeDetailResponseHeader = this.nodeDetailResponseHeader.replace(
+            'errorMessage',
+            "<span style='color:red'>errorMessage</span>"
+          )
+          // const reg = new RegExp(data.errorMessage, 'g')
+          this.nodeDetailResponseHeader = this.nodeDetailResponseHeader.replace(
+            data.errorMessage,
+            "<span style='color:red'>" + data.errorMessage + '</span>'
+          )
           this.nodeDetailIO = data.requestObjects.map(ro => {
             ro['inputs'] = this.replaceParams(ro['inputs'])
             ro['outputs'] = this.replaceParams(ro['outputs'])
@@ -448,7 +458,7 @@ export default {
   border: 1px solid #d3cece;
   border-radius: 3px;
   padding: 5px;
-  height: calc(100vh - 220px);
+  height: calc(100vh - 150px);
 }
 .model_target .ivu-modal-content-drag {
   right: 40px;

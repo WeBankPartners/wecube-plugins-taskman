@@ -22,7 +22,7 @@ export default {
         name: {
           title: this.$t('request_name'),
           sortable: 'custom',
-          minWidth: 250,
+          minWidth: 200,
           key: 'name',
           render: (h, params) => {
             return (
@@ -35,9 +35,6 @@ export default {
                 >
                   {params.row.name}
                 </span>
-                {/* {this.username === params.row.handler &&
-                  ['Pending', 'InProgress'].includes(params.row.status) &&
-                  this.tabName === 'pending' && <Tag color="#ed4014">{this.$t('tw_only_me')}</Tag>} */}
               </div>
             )
           }
@@ -50,7 +47,9 @@ export default {
           render: (h, params) => {
             const list = [
               { label: this.$t('status_pending'), value: 'Pending', color: '#b886f8' },
+              { label: this.$t('tw_inApproval'), value: 'InApproval', color: '#1990ff' },
               { label: this.$t('status_inProgress'), value: 'InProgress', color: '#1990ff' },
+              { label: this.$t('tw_request_confirm'), value: 'Confirm', color: '#b886f8' },
               { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)', color: '#ed4014' },
               { label: this.$t('status_termination'), value: 'Termination', color: '#e29836' },
               { label: this.$t('status_complete'), value: 'Completed', color: '#7ac756' },
@@ -81,15 +80,20 @@ export default {
             const map = {
               waitCommit: this.$t('tw_wait_commit'),
               sendRequest: this.$t('tw_commit_request'),
+              confirm: this.$t('tw_request_confirm'),
               requestPending: this.$t('tw_request_pending'),
               requestComplete: this.$t('tw_request_complete'),
               Completed: this.$t('tw_request_complete')
             }
-            return (
-              <Tooltip content={map[params.row.curNode] || params.row.curNode} placement="top">
-                <Tag>{map[params.row.curNode] || params.row.curNode}</Tag>
-              </Tooltip>
-            )
+            if (map[params.row.curNode] || params.row.curNode) {
+              return (
+                <Tooltip content={map[params.row.curNode] || params.row.curNode} placement="top">
+                  <Tag>{map[params.row.curNode] || params.row.curNode || '-'}</Tag>
+                </Tooltip>
+              )
+            } else {
+              return <span>-</span>
+            }
           }
         },
         handler: {
@@ -103,13 +107,23 @@ export default {
               </span>
             )
           },
-          minWidth: 140,
+          minWidth: 170,
           key: 'handler',
           render: (h, params) => {
+            let handlerArr = []
+            let roleArr = []
+            if (this.tabName === 'draft' || (this.tabName === 'submit' && ['1', '3'].includes(this.rollback))) {
+              handlerArr = params.row.checkHandler.split(',') || []
+              roleArr = params.row.checkHandleRoleDisplay.split(',') || []
+            } else {
+              handlerArr = params.row.handler.split(',') || []
+              roleArr = params.row.handleRoleDisplay.split(',') || []
+            }
             return (
-              <div style="display:flex;flex-direction:column">
-                <span>{params.row.handler}</span>
-                <span>{params.row.handleRole}</span>
+              <div style="display:flex;flex-direction:column;">
+                {handlerArr.map((item, index) => {
+                  return <span>{`${roleArr[index] || '-'} / ${item || '-'}`}</span>
+                })}
               </div>
             )
           }
@@ -129,14 +143,20 @@ export default {
         // 任务停留时长
         effectiveDays: {
           renderHeader: () => {
-            return <span>{this.type === '2' ? this.$t('tw_task_stay_time') : this.$t('tw_request_stay_time')}</span>
+            return (
+              <span>
+                {['myPending', 'pending', 'hasProcessed'].includes(this.tabName)
+                  ? this.$t('tw_taskTime_progress')
+                  : this.$t('tw_requestTime_progress')}
+              </span>
+            )
           },
           minWidth: 140,
           key: 'effectiveDays',
           render: (h, params) => {
             let stayTime = '' // 停留时长
             let totalTime = '' // 预期停留时长
-            if (this.type === '2') {
+            if (['myPending', 'pending', 'hasProcessed'].includes(this.tabName)) {
               stayTime = params.row.taskStayTime
               totalTime = params.row.taskStayTimeTotal
             } else {
@@ -153,7 +173,7 @@ export default {
                 {percent > 100 && (
                   <span style="color:#ed4014;display:flex;align-items:center;">
                     <Icon type="md-warning" color="#ed4014" />
-                    {`${this.$t('tw_exceed')}${stayTime - totalTime}${this.$t('tw_days')}`}
+                    {`${this.$t('tw_exceed')}${(stayTime - totalTime).toFixed(1)}${this.$t('tw_days')}`}
                   </span>
                 )}
               </div>
@@ -166,19 +186,43 @@ export default {
           minWidth: 200,
           key: 'templateName',
           render: (h, params) => {
-            return (
-              <span>
-                {`${params.row.templateName}【${params.row.version}】`}
-                {/* <Tag>{params.row.version}</Tag> */}
-              </span>
-            )
+            if (params.row.templateName) {
+              return (
+                <span>
+                  {`${params.row.templateName}`}
+                  {params.row.version && (
+                    <span style="border:1px solid #e8eaec;border-radius:3px;background:#f7f7f7;padding:1px 4px;">
+                      {params.row.version}
+                    </span>
+                  )}
+                </span>
+              )
+            } else {
+              return <span>-</span>
+            }
           }
         },
         procDefName: {
           title: this.$t('tw_template_flow'),
           sortable: 'custom',
-          minWidth: 150,
-          key: 'procDefName'
+          minWidth: 180,
+          key: 'procDefName',
+          render: (h, params) => {
+            if (params.row.procDefName) {
+              return (
+                <span>
+                  {`${params.row.procDefName}`}
+                  {params.row.procDefVersion && (
+                    <span style="border:1px solid #e8eaec;border-radius:3px;background:#f7f7f7;padding:1px 4px;">
+                      {params.row.procDefVersion}
+                    </span>
+                  )}
+                </span>
+              )
+            } else {
+              return <span>-</span>
+            }
+          }
         },
         operatorObjType: {
           title: this.$t('tw_operator_type'),
@@ -187,13 +231,17 @@ export default {
           minWidth: 150,
           key: 'operatorObjType',
           render: (h, params) => {
-            return (
-              params.row.operatorObjType && (
-                <Tooltip content={params.row.operatorObjType} placement="top">
-                  <Tag>{params.row.operatorObjType}</Tag>
-                </Tooltip>
+            if (params.row.operatorObjType) {
+              return (
+                params.row.operatorObjType && (
+                  <Tooltip content={params.row.operatorObjType} placement="top">
+                    <Tag>{params.row.operatorObjType}</Tag>
+                  </Tooltip>
+                )
               )
-            )
+            } else {
+              return <span>-</span>
+            }
           }
         },
         operatorObj: {
@@ -201,20 +249,18 @@ export default {
           resizable: true,
           sortable: 'custom',
           minWidth: 150,
-          key: 'operatorObj'
+          key: 'operatorObj',
+          render: (h, params) => {
+            return <span>{params.row.operatorObj || '-'}</span>
+          }
         },
         createdBy: {
-          title: this.$t('createdBy'),
+          title: this.$t('tw_reporter'),
           sortable: 'custom',
-          minWidth: 140,
+          minWidth: 170,
           key: 'createdBy',
           render: (h, params) => {
-            return (
-              <div style="display:flex;flex-direction:column">
-                <span>{params.row.createdBy}</span>
-                <span>{params.row.role}</span>
-              </div>
-            )
+            return <span>{`${params.row.roleDisplay} / ${params.row.createdBy}`}</span>
           }
         },
         action: {
@@ -227,7 +273,7 @@ export default {
             return (
               <div style="display:flex;align-items:center;justify-content:center;">
                 {// 查看
-                  ['pending', 'hasProcessed', 'submit'].includes(this.tabName) && params.row.status !== 'Draft' && (
+                  ['myPending', 'pending', 'hasProcessed', 'submit'].includes(this.tabName) && (
                     <Tooltip content={this.$t('tw_action_view')} placement="top">
                       <Button
                         size="small"
@@ -243,8 +289,8 @@ export default {
                   )}
                 {// 处理
                   this.username === params.row.handler &&
-                  ['Pending', 'InProgress'].includes(params.row.status) &&
-                  this.tabName === 'pending' && (
+                  ['Pending', 'InProgress', 'InApproval', 'Confirm'].includes(params.row.status) &&
+                  ['myPending', 'pending'].includes(this.tabName) && (
                     <Tooltip content={this.$t('tw_action_handle')} placement="top">
                       <Button
                         type="warning"
@@ -259,25 +305,33 @@ export default {
                   )}
                 {// 认领
                   !params.row.handler &&
-                  ['Pending', 'InProgress'].includes(params.row.status) &&
-                  this.tabName === 'pending' && (
+                  ['Pending', 'InProgress', 'InApproval'].includes(params.row.status) &&
+                  ['myPending', 'pending'].includes(this.tabName) &&
+                  // 模板指定/提交人指定，该提交人角色的管理员可以展示认领按钮
+                  ((['template', 'custom'].includes(params.row.handlerType) &&
+                    params.row.roleAdministrator === this.username) ||
+                    !['template', 'custom'].includes(params.row.handlerType)) && (
                     <Tooltip content={this.$t('tw_action_claim')} placement="top">
                       <Button
-                        type="info"
+                        type="primary"
                         size="small"
                         onClick={() => {
-                          this.handleTransfer(params.row, 'mark')
+                          this.handleTransfer(params.row, 'claim')
                         }}
                       >
-                        <Icon type="ios-hand" size="16"></Icon>
+                        <Icon type="md-person" size="16"></Icon>
                       </Button>
                     </Tooltip>
                   )}
                 {// 转给我
                   params.row.handler &&
                   this.username !== params.row.handler &&
-                  ['Pending', 'InProgress'].includes(params.row.status) &&
-                  this.tabName === 'pending' && (
+                  ['Pending', 'InProgress', 'InApproval'].includes(params.row.status) &&
+                  ['myPending', 'pending'].includes(this.tabName) &&
+                  // 模板指定/提交人指定，该提交人角色的管理员可以展示转给我按钮
+                  ((['template', 'custom'].includes(params.row.handlerType) &&
+                    params.row.roleAdministrator === this.username) ||
+                    !['template', 'custom'].includes(params.row.handlerType)) && (
                     <Tooltip content={this.$t('tw_action_give')} placement="top">
                       <Button
                         type="success"
@@ -305,8 +359,10 @@ export default {
                     </Tooltip>
                   )}
                 {// 撤回
-                // 我提交的定版状态可退回
-                  params.row.status === 'Pending' && this.tabName === 'submit' && (
+                // 我提交的定版或审批中revokeBtn为true可退回
+                  ['Pending', 'InApproval'].includes(params.row.status) &&
+                  params.row.revokeBtn &&
+                  this.tabName === 'submit' && (
                     <Tooltip content={this.$t('tw_recall')} placement="top">
                       <Button
                         type="error"
@@ -365,25 +421,43 @@ export default {
       },
       // pending待处理,hasProcessed已处理,submit我提交的,draft我的暂存,collect收藏
       pendingTaskColumn: [],
-      pendingColumn: [],
       hasProcessedTaskColumn: [],
-      hasProcessedColumn: [],
       submitAllColumn: [],
       submitColumn: [],
       draftColumn: [],
-      username: window.localStorage.getItem('username')
+      username: window.localStorage.getItem('username'),
+      createRouteMap: {
+        '1': 'createPublish',
+        '2': 'createRequest',
+        '3': 'createProblem',
+        '4': 'createEvent',
+        '5': 'createChange'
+      },
+      detailRouteMap: {
+        '1': 'detailPublish',
+        '2': 'detailRequest',
+        '3': 'detailProblem',
+        '4': 'detailEvent',
+        '5': 'detailChange'
+      }
     }
   },
   mounted () {
-    // 待处理-任务处理
+    // 本人/本组处理
     this.pendingTaskColumn = [
       this.baseColumn.id,
+      this.baseColumn.name,
+      this.baseColumn.status,
       {
         title: this.$t('task_name'),
         sortable: 'custom',
         minWidth: 120,
         key: 'taskName',
         render: (h, params) => {
+          const taskNameMap = {
+            check: this.$t('tw_pending_tab'),
+            confirm: this.$t('tw_request_confirm')
+          }
           return (
             <span
               style="cursor:pointer;"
@@ -391,58 +465,27 @@ export default {
                 this.handleDbClick(params.row)
               }}
             >
-              {params.row.taskName}
+              {taskNameMap[params.row.taskName] || params.row.taskName || '-'}
             </span>
           )
         }
       },
-      this.baseColumn.name,
-      this.baseColumn.status,
-      this.baseColumn.curNode,
-      this.baseColumn.handler,
-      this.baseColumn.progress,
-      this.baseColumn.effectiveDays,
       {
-        title: this.$t('tw_task_commit_time'),
+        title: this.$t('tw_taskUpdated'),
         sortable: 'custom',
         minWidth: 150,
-        key: 'taskCreatedTime'
+        key: 'taskHandleUpdatedTime'
       },
       {
-        title: this.$t('tw_task_expect_time'),
+        title: this.$t('tw_taskEnd'),
         sortable: 'custom',
         minWidth: 150,
         key: 'taskExpectTime'
       },
-      this.baseColumn.createdBy,
-      this.baseColumn.templateName,
-      this.baseColumn.procDefName,
-      this.baseColumn.operatorObjType,
-      this.baseColumn.operatorObj,
-      this.baseColumn.action
-    ]
-
-    // 待处理-请求定版
-    this.pendingColumn = [
-      this.baseColumn.id,
-      this.baseColumn.name,
-      this.baseColumn.status,
+      this.baseColumn.effectiveDays,
+      this.baseColumn.progress,
       this.baseColumn.curNode,
       this.baseColumn.handler,
-      this.baseColumn.progress,
-      this.baseColumn.effectiveDays,
-      {
-        title: this.$t('tw_task_commit_time'),
-        sortable: 'custom',
-        minWidth: 150,
-        key: 'reportTime'
-      },
-      {
-        title: this.$t('tw_request_expect_time'),
-        sortable: 'custom',
-        minWidth: 150,
-        key: 'expectTime'
-      },
       this.baseColumn.createdBy,
       this.baseColumn.templateName,
       this.baseColumn.procDefName,
@@ -451,15 +494,22 @@ export default {
       this.baseColumn.action
     ]
 
-    // 已处理-任务处理
+    // 已处理
     this.hasProcessedTaskColumn = [
       this.baseColumn.id,
+      this.baseColumn.name,
+      this.baseColumn.status,
+      this.baseColumn.curNode,
       {
         title: this.$t('task_name'),
         sortable: 'custom',
         minWidth: 120,
         key: 'taskName',
         render: (h, params) => {
+          const taskNameMap = {
+            check: this.$t('tw_pending_tab'),
+            confirm: this.$t('tw_request_confirm')
+          }
           return (
             <span
               style="cursor:pointer;"
@@ -467,67 +517,36 @@ export default {
                 this.handleDbClick(params.row)
               }}
             >
-              {params.row.taskName}
+              {taskNameMap[params.row.taskName] || params.row.taskName || '-'}
             </span>
           )
         }
       },
-      this.baseColumn.name,
-      this.baseColumn.status,
-      this.baseColumn.curNode,
-      this.baseColumn.handler,
-      this.baseColumn.progress,
-      this.baseColumn.effectiveDays,
       {
-        title: this.$t('tw_task_commit_time'),
+        title: this.$t('tw_taskCreated'),
         sortable: 'custom',
         minWidth: 150,
         key: 'taskCreatedTime'
       },
       {
-        title: this.$t('tw_task_expect_time'),
+        title: this.$t('tw_taskEnd'),
         sortable: 'custom',
         minWidth: 150,
         key: 'taskExpectTime'
       },
-      this.baseColumn.createdBy,
-      this.baseColumn.templateName,
-      this.baseColumn.procDefName,
-      this.baseColumn.operatorObjType,
-      this.baseColumn.operatorObj,
       {
         title: this.$t('handle_time'),
         sortable: 'custom',
         minWidth: 150,
         key: 'taskApprovalTime'
       },
-      this.baseColumn.action
-    ]
-
-    // 已处理-请求定版
-    this.hasProcessedColumn = [
-      this.baseColumn.id,
-      this.baseColumn.name,
-      this.baseColumn.status,
-      this.baseColumn.curNode,
-      this.baseColumn.handler,
-      this.baseColumn.progress,
       this.baseColumn.effectiveDays,
-      {
-        title: this.$t('tw_task_commit_time'),
-        sortable: 'custom',
-        minWidth: 150,
-        key: 'reportTime'
-      },
-      {
-        title: this.$t('tw_request_expect_time'),
-        sortable: 'custom',
-        minWidth: 150,
-        key: 'expectTime'
-      },
+      this.baseColumn.progress,
+      this.baseColumn.handler,
       this.baseColumn.createdBy,
       {
         title: this.$t('tw_rollback_reason'),
+        isShow: this.type === 1,
         sortable: 'custom',
         minWidth: 150,
         key: 'rollbackDesc',
@@ -535,7 +554,7 @@ export default {
           return (
             <Tooltip max-width="300" content={params.row.rollbackDesc}>
               <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
-                {params.row.rollbackDesc}
+                {params.row.rollbackDesc || '-'}
               </span>
             </Tooltip>
           )
@@ -545,12 +564,6 @@ export default {
       this.baseColumn.procDefName,
       this.baseColumn.operatorObjType,
       this.baseColumn.operatorObj,
-      {
-        title: this.$t('handle_time'),
-        sortable: 'custom',
-        minWidth: 150,
-        key: 'approvalTime'
-      },
       this.baseColumn.action
     ]
 
@@ -578,7 +591,7 @@ export default {
           return (
             <Tooltip max-width="300" content={params.row.rollbackDesc}>
               <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
-                {params.row.rollbackDesc}
+                {params.row.rollbackDesc || '-'}
               </span>
             </Tooltip>
           )

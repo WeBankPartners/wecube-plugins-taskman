@@ -1,8 +1,9 @@
 package middleware
 
 import (
-	"encoding/json"
 	"fmt"
+
+	"encoding/json"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
@@ -36,6 +37,11 @@ func ReturnData(c *gin.Context, data interface{}) {
 	c.JSON(http.StatusOK, obj)
 }
 
+func Return(c *gin.Context, response interface{}) {
+	bodyBytes, _ := json.Marshal(response)
+	c.Set("responseBody", string(bodyBytes))
+	c.JSON(http.StatusOK, response)
+}
 func ReturnSuccess(c *gin.Context) {
 	c.Set("responseBody", "{\"statusCode\":\"OK\",\"data\":[]}")
 	c.JSON(http.StatusOK, models.ResponseJson{StatusCode: "OK", Data: []string{}})

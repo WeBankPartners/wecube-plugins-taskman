@@ -3,17 +3,17 @@
 
     <!-- 1.依赖分析 - 描述运行本插件包需要的其他插件包 -->
     <packageDependencies>
-        <packageDependency name="platform" version="v3.2.1"/>
+        <packageDependency name="platform" version="v4.0.0"/>
         <packageDependency name="wecmdb" version="v2.0.4"/>
     </packageDependencies>
 
     <!-- 2.菜单注入 - 描述运行本插件包需要注入的菜单 -->
+    <!-- <menu code='TASK_REQUEST_MANAGEMENT' cat='JOBS' displayName="Request Management" localDisplayName="请求管理">/taskman/request-mgmt</menu>
+        <menu code='TASK_TASK_MANAGEMENT' cat='JOBS' displayName="Task Management" localDisplayName="任务管理">/taskman/task-mgmt</menu> -->
     <menus>
-        <menu code='TASK_WORKBENCH' cat='JOBS' displayName="Dashboard" localDisplayName="工作台">/taskman/workbench</menu>
+        <menu code='TASK_WORKBENCH' cat='JOBS' displayName="Dashboard" localDisplayName="工作台">/taskman/workbench/dashboard</menu>
         <menu code='TASK_TEMPLATE_GROUP_MANAGEMENT' cat='JOBS' displayName="Template Group Management" localDisplayName="模板组管理">/taskman/template-group</menu>
         <menu code='TASK_TEMPLATE_MANAGEMENT' cat='JOBS' displayName="Template Management" localDisplayName="模板管理">/taskman/template-mgmt</menu>
-        <menu code='TASK_REQUEST_MANAGEMENT' cat='JOBS' displayName="Request Management" localDisplayName="请求管理">/taskman/request-mgmt</menu>
-        <menu code='TASK_TASK_MANAGEMENT' cat='JOBS' displayName="Task Management" localDisplayName="任务管理">/taskman/task-mgmt</menu>
         <menu code='TASK_REQUEST_AUDIT' cat='ADMIN' displayName="Request Audit" localDisplayName="请求审计">/taskman/requestAudit</menu>
     </menus>
 
@@ -27,13 +27,14 @@
 
     <!-- 4.系统参数 - 描述运行本插件包需要的系统参数 -->
     <systemParameters>
-        <systemParameter name="TASKMAN_LOG_LEVEL" scopeType="plugins" defaultValue="info"/>
+        <systemParameter name="TASKMAN_LOG_LEVEL" scopeType="plugins" defaultValue="debug"/>
         <systemParameter name="TASKMAN_PROCESS_TAGS" scopeType="plugins" defaultValue="taskman"/>
         <systemParameter name="TASKMAN_MAIL_SENDER_NAME" scopeType="plugins" defaultValue="taskman"/>
         <systemParameter name="TASKMAN_MAIL_AUTH_SENDER" scopeType="plugins" defaultValue=""/>
         <systemParameter name="TASKMAN_MAIL_AUTH_SERVER" scopeType="plugins" defaultValue=""/>
         <systemParameter name="TASKMAN_MAIL_AUTH_PWD" scopeType="plugins" defaultValue=""/>
         <systemParameter name="TASKMAN_MAIL_AUTH_SSL" scopeType="plugins" defaultValue="Y"/>
+        <systemParameter name="TASKMAN_WEB_URL" scopeType="plugins" defaultValue=""/>
     </systemParameters>
 
 
@@ -54,7 +55,7 @@
                 containerName="{{REPOSITORY}}-{{PLUGIN_VERSION}}"
                 portBindings="{{ALLOCATE_PORT}}:8099"
                 volumeBindings="{{BASE_MOUNT_PATH}}/taskman/log:/app/taskman/logs,/etc/localtime:/etc/localtime,{{BASE_MOUNT_PATH}}/certs:/data/certs"
-                envVariables="TASKMAN_MYSQL_HOST={{DB_HOST}},TASKMAN_MYSQL_PORT={{DB_PORT}},TASKMAN_MYSQL_SCHEMA={{DB_SCHEMA}},TASKMAN_MYSQL_USER={{DB_USER}},TASKMAN_MYSQL_PWD={{DB_PWD}},JWT_SIGNING_KEY={{JWT_SIGNING_KEY}},GATEWAY_URL={{GATEWAY_URL}},SUB_SYSTEM_CODE={{SUB_SYSTEM_CODE}},SUB_SYSTEM_KEY={{SUB_SYSTEM_KEY}},TASKMAN_LOG_LEVEL={{TASKMAN_LOG_LEVEL}},PLUGIN_MODE=yes,TASKMAN_PROCESS_TAGS={{TASKMAN_PROCESS_TAGS}},TASKMAN_MAIL_SENDER_NAME={{TASKMAN_MAIL_SENDER_NAME}},TASKMAN_MAIL_AUTH_SENDER={{TASKMAN_MAIL_AUTH_SENDER}},TASKMAN_MAIL_AUTH_SERVER={{TASKMAN_MAIL_AUTH_SERVER}},TASKMAN_MAIL_AUTH_PWD={{TASKMAN_MAIL_AUTH_PWD}},TASKMAN_MAIL_AUTH_SSL={{TASKMAN_MAIL_AUTH_SSL}},MINIO_ADDRESS={{S3_SERVER_URL}},MINIO_ACCESS_KEY={{S3_ACCESS_KEY}},MINIO_SECRET_KEY={{S3_SECRET_KEY}}"
+                envVariables="TASKMAN_MYSQL_HOST={{DB_HOST}},TASKMAN_MYSQL_PORT={{DB_PORT}},TASKMAN_MYSQL_SCHEMA={{DB_SCHEMA}},TASKMAN_MYSQL_USER={{DB_USER}},TASKMAN_MYSQL_PWD={{DB_PWD}},JWT_SIGNING_KEY={{JWT_SIGNING_KEY}},GATEWAY_URL={{GATEWAY_URL}},SUB_SYSTEM_CODE={{SUB_SYSTEM_CODE}},SUB_SYSTEM_KEY={{SUB_SYSTEM_KEY}},TASKMAN_LOG_LEVEL={{TASKMAN_LOG_LEVEL}},PLUGIN_MODE=yes,TASKMAN_PROCESS_TAGS={{TASKMAN_PROCESS_TAGS}},TASKMAN_MAIL_SENDER_NAME={{TASKMAN_MAIL_SENDER_NAME}},TASKMAN_MAIL_AUTH_SENDER={{TASKMAN_MAIL_AUTH_SENDER}},TASKMAN_MAIL_AUTH_SERVER={{TASKMAN_MAIL_AUTH_SERVER}},TASKMAN_MAIL_AUTH_PWD={{TASKMAN_MAIL_AUTH_PWD}},TASKMAN_MAIL_AUTH_SSL={{TASKMAN_MAIL_AUTH_SSL}},MINIO_ADDRESS={{S3_SERVER_URL}},MINIO_ACCESS_KEY={{S3_ACCESS_KEY}},MINIO_SECRET_KEY={{S3_SECRET_KEY}},ENCRYPT_SEED={{ENCRYPT_SEED}},TASKMAN_WEB_URL={{TASKMAN_WEB_URL}}"
         />
         <mysql schema="taskman" initFileName="init.sql" upgradeFileName="upgrade.sql"/>
         <s3 bucketName="taskman-file"/>
@@ -98,6 +99,23 @@
                     <parameter datatype="string" mappingType="context">errorCode</parameter>
                     <parameter datatype="string" mappingType="context">errorMessage</parameter>
                     <parameter datatype="string" mappingType="context">comment</parameter>
+                </outputParameters>
+            </interface>
+        </plugin>
+        <plugin name="request">
+            <interface action="create" path="/taskman/api/v2/plugin/request/create" httpMethod="POST" type="EXECUTION">
+                <inputParameters>
+                    <parameter datatype="string" mappingType="constant" required="Y">requestTemplate</parameter>
+                    <parameter datatype="string" mappingType="constant" required="Y">rootDataId</parameter>
+                    <parameter datatype="string" mappingType="constant" required="Y">reportRole</parameter>
+                    <parameter datatype="string" mappingType="constant" required="Y">reportUser</parameter>
+                    <parameter datatype="string" mappingType="context" required="N">procInstId</parameter>
+                </inputParameters>
+                <outputParameters>
+                    <parameter datatype="string" mappingType="context">errorCode</parameter>
+                    <parameter datatype="string" mappingType="context">errorMessage</parameter>
+                    <parameter datatype="string" mappingType="context">comment</parameter>
+                    <parameter datatype="string" mappingType="context">requestId</parameter>
                 </outputParameters>
             </interface>
         </plugin>

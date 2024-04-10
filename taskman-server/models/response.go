@@ -39,3 +39,104 @@ type SysLogTable struct {
 	DataKeyName string `json:"dataKeyName" xorm:"data_key_name"`
 	Response    string `json:"response" xorm:"response"`
 }
+
+type HttpResponseMeta struct {
+	Code    int    `json:"-"`
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
+type QueryRolesResponse struct {
+	HttpResponseMeta
+	Data []*SimpleLocalRoleDto `json:"data"`
+}
+
+type QueryUserResponse struct {
+	HttpResponseMeta
+	Data []*UserDto `json:"data"`
+}
+
+type GetUserResponse struct {
+	HttpResponseMeta
+	Data *UserDto `json:"data"`
+}
+
+type QueryProcessDefinitionResponse struct {
+	HttpResponseMeta
+	Data []*ProcDefQueryDto `json:"data"`
+}
+
+type QueryProcessAllDefinitionResponse struct {
+	HttpResponseMeta
+	Data []*ProcDef `json:"data"`
+}
+
+type QueryAllModelsResponse struct {
+	HttpResponseMeta
+	Data []*DataModel `json:"data"`
+}
+
+type QueryExpressionEntitiesResponse struct {
+	HttpResponseMeta
+	Data []*ExpressionEntities `json:"data"`
+}
+
+type ProcNodeQueryResponse struct {
+	HttpResponseMeta
+	Data []*ProcNodeObj `json:"data"`
+}
+
+type ProcDefTaskNodesResponse struct {
+	HttpResponseMeta
+	Data []*ProcNodeObj `json:"data"`
+}
+
+type CoreProcessQueryResponse struct {
+	HttpResponseMeta
+	Data []*CodeProcessQueryObj `json:"data"`
+}
+
+type ProcessDefinitionsResponse struct {
+	HttpResponseMeta
+	Data *DefinitionsData `json:"data"`
+}
+
+type ProcessInstanceResponse struct {
+	HttpResponseMeta
+	Data *ProcessInstance `json:"data"`
+}
+
+type ProcDefTaskNodeContextResponse struct {
+	HttpResponseMeta
+	Data interface{} `json:"data"`
+}
+
+type ProcQueryResponse struct {
+	HttpResponseMeta
+	Data []*ProcDefObj `json:"data"`
+}
+
+type StartInstanceResponse struct {
+	HttpResponseMeta
+	Data *StartInstanceResultData `json:"data"`
+}
+
+type ProcDefRootEntityResponse struct {
+	HttpResponseMeta
+	Data []*ProcDefEntityDataObj `json:"data"`
+}
+
+type EntityTreeResponse struct {
+	HttpResponseMeta
+	Data *EntityTreeData `json:"data"`
+}
+
+type DataModelEntityResponse struct {
+	HttpResponseMeta
+	Data *DataModelEntity `json:"data"`
+}
+
+type RemoteLoginResp struct {
+	HttpResponseMeta
+	Data interface{} `json:"data"`
+}

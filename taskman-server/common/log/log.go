@@ -43,7 +43,7 @@ func InitLogger() {
 	if models.Config.Log.DbLogEnable {
 		DatabaseLogger = logger.InitArchiveZapLogger(logger.LogConfig{
 			Name:             "database",
-			FilePath:         fmt.Sprintf("%s/taskman-db.log", baseLogDir),
+			FilePath:         fmt.Sprintf("%s/taskman-service.log", baseLogDir),
 			LogLevel:         models.Config.Log.Level,
 			ArchiveMaxSize:   models.Config.Log.ArchiveMaxSize,
 			ArchiveMaxBackup: models.Config.Log.ArchiveMaxBackup,

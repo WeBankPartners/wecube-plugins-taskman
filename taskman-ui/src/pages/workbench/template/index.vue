@@ -8,6 +8,7 @@
             v-model="form.templateName"
             @on-change="filterData"
             style="width:300px"
+            clearable
             :placeholder="$t('tw_template_placeholder')"
           >
             <template #suffix>
@@ -36,50 +37,53 @@
           <!--已发布-->
           <TabPane :label="$t('tw_template_publish_tab')" name="confirm"></TabPane>
           <!--我的草稿-->
-          <TabPane v-if="draftCardList.length" :label="$t('tw_template_draft_tab')" name="created"></TabPane>
+          <!-- <TabPane v-if="draftCardList.length" :label="$t('tw_template_draft_tab')" name="created"></TabPane> -->
         </Tabs>
-        <template v-if="cardList.length">
-          <Card v-for="(i, index) in cardList" :key="index" style="width:100%;margin-bottom:20px;">
-            <div class="w-header" slot="title">
-              <Icon size="28" type="ios-people" />
-              <div class="title">
-                {{ i.manageRole }}
-                <span class="underline"></span>
-              </div>
-              <Icon
-                v-if="i.expand"
-                size="28"
-                type="md-arrow-dropdown"
-                style="cursor:pointer;"
-                @click="handleExpand(i)"
-              />
-              <Icon v-else size="28" type="md-arrow-dropright" style="cursor:pointer;" @click="handleExpand(i)" />
-            </div>
-            <div v-show="i.expand">
-              <div v-for="j in i.groups" :key="j.groupId" class="content">
-                <div class="sub-header">
-                  <Icon size="24" type="ios-folder" />
-                  <span class="title">{{ j.groupName }}</span>
+        <Card :bordered="false" dis-hover :padding="0" style="height:400px;">
+          <template v-if="cardList.length">
+            <Card v-for="(i, index) in cardList" :key="index" style="width:100%;margin-bottom:20px;">
+              <div class="w-header" slot="title">
+                <Icon size="28" type="ios-people" />
+                <div class="title">
+                  {{ i.manageRoleDisplay }}
+                  <span class="underline"></span>
                 </div>
-                <Table
-                  @on-row-click="
-                    row => {
-                      handleChooseTemplate(row, row.manageRole)
-                    }
-                  "
-                  size="small"
-                  :columns="tableColumns"
-                  :data="j.templates"
-                  style="margin:10px 0 20px 0"
-                >
-                </Table>
+                <Icon
+                  v-if="i.expand"
+                  size="28"
+                  type="md-arrow-dropdown"
+                  style="cursor:pointer;"
+                  @click="handleExpand(i)"
+                />
+                <Icon v-else size="28" type="md-arrow-dropright" style="cursor:pointer;" @click="handleExpand(i)" />
               </div>
-            </div>
-          </Card>
-        </template>
-        <div v-else class="template-no-data">
-          {{ $t('tw_no_data') }}
-        </div>
+              <div v-show="i.expand">
+                <div v-for="j in i.groups" :key="j.groupId" class="content">
+                  <div class="sub-header">
+                    <Icon size="24" type="ios-folder" />
+                    <span class="title">{{ j.groupName }}</span>
+                  </div>
+                  <Table
+                    @on-row-click="
+                      row => {
+                        handleChooseTemplate(row, row.manageRole)
+                      }
+                    "
+                    size="small"
+                    :columns="tableColumns"
+                    :data="j.templates"
+                    style="margin:10px 0 20px 0"
+                  >
+                  </Table>
+                </div>
+              </div>
+            </Card>
+          </template>
+          <div v-if="!spinShow && !cardList.length" class="template-no-data">
+            {{ $t('tw_no_data') }}
+          </div>
+          <Spin fix v-if="spinShow"></Spin>
+        </Card>
       </div>
       <!--收藏列表-->
       <div class="list">
@@ -114,7 +118,7 @@ export default {
   data () {
     return {
       activeName: 'confirm', // confirm已发布，created我的草稿(未发布)
-      type: '', // publish发布，request请求
+      type: '', // 1发布,2请求,3问题,4事件,5变更
       form: {
         templateName: '',
         operatorObjType: '' // 操作对象类型
@@ -122,6 +126,7 @@ export default {
       operateOptions: [],
       collectList: [], // 收藏列表
       cardList: [], // 模板数据
+      spinShow: false, // 加载动画
       originCardList: [],
       draftCardList: [], // 草稿页签数据
       tableColumns: [
@@ -171,7 +176,11 @@ export default {
           title: this.$t('tw_operator_type'),
           key: 'operatorObjType',
           render: (h, params) => {
-            return params.row.operatorObjType && <Tag>{params.row.operatorObjType}</Tag>
+            if (params.row.operatorObjType) {
+              return <Tag>{params.row.operatorObjType}</Tag>
+            } else {
+              return <span>-</span>
+            }
           }
         },
         {
@@ -180,8 +189,8 @@ export default {
           render: (h, params) => {
             return (
               <div style="display:flex;flex-direction:column">
+                <span>{params.row.roleDisplay}</span>
                 <span>{params.row.handler}</span>
-                <span>{params.row.role}</span>
               </div>
             )
           }
@@ -231,16 +240,28 @@ export default {
         },
         {
           title: this.$t('useRoles'),
-          key: 'useRole'
+          key: 'useRoleDisplay'
         }
       ],
-      lang: window.localStorage.getItem('lang')
+      lang: window.localStorage.getItem('lang') || 'zh-CN',
+      createRouteMap: {
+        '1': 'createPublish',
+        '2': 'createRequest',
+        '3': 'createProblem',
+        '4': 'createEvent',
+        '5': 'createChange'
+      }
     }
   },
   watch: {
     // 解决同路由跳转不触发页面更新问题
     $route (to, from) {
+      this.collectList = []
+      this.cardList = []
       this.type = this.$route.query.type || ''
+      this.activeName = 'confirm'
+      this.form.templateName = ''
+      this.form.operatorObjType = ''
       this.getTemplateData()
       this.getCollectTemplate()
     }
@@ -254,40 +275,38 @@ export default {
     // 获取模板数据
     async getTemplateData () {
       this.operateOptions = []
+      this.spinShow = true
       const { statusCode, data } = await getTemplateTree()
-      const typeMap = {
-        0: 'request',
-        1: 'publish'
-      }
+      this.spinShow = false
       if (statusCode === 'OK') {
-        this.cardList =
-          Array.isArray(data) &&
-          data.map(i => {
-            i.expand = true
-            i.groups.forEach(j => {
-              j.templates.forEach(m => {
-                m.manageRole = i.manageRole
-                if (m.operatorObjType && typeMap[m.type] === this.type) {
-                  this.operateOptions.push(m.operatorObjType)
-                }
-              })
+        let templateList = data || []
+        templateList = templateList.map(i => {
+          i.expand = true
+          i.groups.forEach(j => {
+            j.templates.forEach(template => {
+              template.manageRole = i.manageRole
+              template.manageRoleDisplay = i.manageRoleDisplay
+              if (template.operatorObjType && template.type === Number(this.type)) {
+                this.operateOptions.push(template.operatorObjType)
+              }
             })
-            return i
           })
-        this.originCardList = this.cardList
+          return i
+        })
         // 数据去重
         this.operateOptions = Array.from(new Set(this.operateOptions))
+        this.originCardList = deepClone(templateList)
         this.filterData()
         // 获取草稿态数据，没有则隐藏草稿标签
-        const cardList = deepClone(this.cardList)
+        let cardList = deepClone(this.originCardList)
         this.draftCardList = cardList.filter(i => {
           i.groups =
             (Array.isArray(i.groups) &&
               i.groups.filter(j => {
                 j.templates =
                   (Array.isArray(j.templates) &&
-                    j.templates.filter(k => {
-                      return k.status === 'created'
+                    j.templates.filter(template => {
+                      return template.status === 'created' && template.type === Number(this.type)
                     })) ||
                   []
                 // 没有模板的组不显示
@@ -318,14 +337,13 @@ export default {
           desc: this.$t('tw_template_role_tips')
         })
       }
-      const path = this.type === 'request' ? 'createRequest' : 'createPublish'
+      const path = this.createRouteMap[this.type]
       const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,
         query: {
           requestTemplate: row.id,
-          role: role,
-          jumpFrom: ''
+          role: role // 模板创建人角色
         }
       })
     },
@@ -346,7 +364,7 @@ export default {
     // 收藏模板列表
     async getCollectTemplate () {
       const params = {
-        action: this.type === 'publish' ? 1 : 2, // 1发布2请求
+        action: Number(this.type),
         startIndex: 0,
         pageSize: 500
       }
@@ -366,14 +384,10 @@ export default {
               j.templates =
                 (Array.isArray(j.templates) &&
                   j.templates.filter(k => {
-                    const typeMap = {
-                      0: 'request',
-                      1: 'publish'
-                    }
                     // 根据模板名、标签名、模版发布状态组合搜索
                     const nameFilter = k.name.toLowerCase().indexOf(templateName.toLowerCase()) > -1
                     const operatorFilter = operatorObjType ? k.operatorObjType === operatorObjType : true
-                    const typeFilter = this.type === typeMap[k.type]
+                    const typeFilter = Number(this.type) === k.type
                     return nameFilter && operatorFilter && typeFilter && this.activeName === k.status
                   })) ||
                 []

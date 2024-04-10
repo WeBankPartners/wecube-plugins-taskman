@@ -3,11 +3,11 @@ package exterror
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
-
-	"io/ioutil"
+	"os"
 	"reflect"
 	"strings"
+
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 )
 
 type CustomError struct {
@@ -21,6 +21,11 @@ type CustomError struct {
 
 func (c CustomError) Error() string {
 	return c.Message
+}
+
+func (c CustomError) WithParam(params ...interface{}) CustomError {
+	c.MessageParams = params
+	return c
 }
 
 type ErrorTemplate struct {
@@ -70,6 +75,32 @@ type ErrorTemplate struct {
 	ReportRequestNotPermission CustomError `json:"report_request_not_permission"`
 	// 同时处理报错
 	DealWithAtTheSameTimeError CustomError `json:"deal_with_at_the_same_time_error"`
+	// 模版名称重复
+	RequestTemplateNameRepeatError CustomError `json:"request_template_name_repeat_error"`
+	// 模版已有草稿
+	RequestTemplateHasDraftError CustomError `json:"request_template_has_draft_error"`
+	// 模版已有待管理员确认
+	RequestTemplateHasPendingError CustomError `json:"request_template_has_pending_error"`
+	// 导入失败,没有编排属主角色
+	TemplateImportNotWorkflowRoleError CustomError `json:"template_import_not_workflow_role_error"`
+	// 导入失败,没有编排
+	TemplateImportNotWorkflowError CustomError `json:"template_import_not_workflow_error"`
+	// 导入失败,编排任务节点不匹配
+	TemplateImportNotMatchWorkflowTaskError CustomError `json:"template_import_not_match_workflow_task_error"`
+	// 导入失败,entity表单不匹配
+	TemplateImportNotMatchEntityError CustomError `json:"template_import_not_match_entity_error"`
+	// 导入失败,同名模版已存在
+	TemplateImportNameRepeatError CustomError `json:"template_import_name_repeat_error"`
+	// 导入失败，已有一条草稿（在草稿或待确认)
+	TemplateImportExistError CustomError `json:"template_import_exist_error"`
+	// 模版提交审核,任务角色没有选择，拒绝提交
+	TemplateSubmitTaskHandlerEmptyError CustomError `json:"template_submit_task_handler_empty_error"`
+	//  模版提交审核,审批角色没有选择，拒绝提交
+	TemplateSubmitApproveHandlerEmptyError CustomError `json:"template_submit_approve_handler_empty_error"`
+	// 审批已完成
+	TemplateApproveCompleteError CustomError `json:"template_approve_complete_error"`
+	// 请求定版，审批失败,请求已被提交人撤回
+	RequestHandleError CustomError `json:"request_handle_error"`
 }
 
 var (
@@ -82,7 +113,7 @@ func InitErrorTemplateList(dirPath string, detailReturn bool) (err error) {
 	if !strings.HasSuffix(dirPath, "/") {
 		dirPath = dirPath + "/"
 	}
-	fs, readDirErr := ioutil.ReadDir(dirPath)
+	fs, readDirErr := os.ReadDir(dirPath)
 	if readDirErr != nil {
 		return readDirErr
 	}
@@ -93,7 +124,7 @@ func InitErrorTemplateList(dirPath string, detailReturn bool) (err error) {
 		if !strings.HasSuffix(v.Name(), ".json") {
 			continue
 		}
-		tmpFileBytes, _ := ioutil.ReadFile(dirPath + v.Name())
+		tmpFileBytes, _ := os.ReadFile(dirPath + v.Name())
 		tmpErrorTemplate := ErrorTemplate{}
 		tmpErr := json.Unmarshal(tmpFileBytes, &tmpErrorTemplate)
 		if tmpErr != nil {
@@ -185,8 +216,5 @@ func buildErrMessage(templateMessage string, params []interface{}) (message stri
 }
 
 func IsBusinessErrorCode(errorCode int) bool {
-	if strings.HasPrefix(fmt.Sprintf("%d", errorCode), "2") {
-		return true
-	}
-	return false
+	return strings.HasPrefix(fmt.Sprintf("%d", errorCode), "2")
 }

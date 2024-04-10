@@ -1,48 +1,80 @@
 <template>
   <div id="taskman">
-    <div class="taskman-content-container" :style="workbenchStyle">
+    <div class="header">
+      <Header></Header>
+    </div>
+    <div class="taskman-content-container">
+      <Breadcrumb :style="setBreadcrumbStyle" v-if="isShowBreadcrum">
+        <BreadcrumbItem>
+          <a @click="homePageClickHandler">{{ $t('tw_home') }}</a>
+        </BreadcrumbItem>
+        <BreadcrumbItem v-for="(item, index) in breadcrumbList" :key="index">
+          {{ item }}
+        </BreadcrumbItem>
+      </Breadcrumb>
       <transition name="fade" mode="out-in">
         <router-view></router-view>
       </transition>
-      <WorkbenchMenu></WorkbenchMenu>
     </div>
   </div>
 </template>
 
 <script>
-import WorkbenchMenu from '@/pages/components/workbench-menu.vue'
-import Vue from 'vue'
-Vue.prototype.$bus = new Vue()
+import Header from '@/pages/components/header'
 export default {
   components: {
-    WorkbenchMenu
+    Header
   },
   data () {
     return {
       isShowBreadcrum: true,
+      expandSideMenu: false,
       allMenusAry: [],
-      parentBreadcrumb: '',
       childBreadcrumb: '',
-      isSetting: this.$route.path.startsWith('/setting'),
-      expand: true
+      breadcrumbList: [],
+      isSetting: this.$route.path.startsWith('/setting')
     }
   },
   computed: {
-    workbenchStyle () {
+    setBreadcrumbStyle () {
+      // 给侧边菜单栏适配样式
       return {
-        paddingLeft: this.expand ? '140px' : '0px'
+        margin: this.expandSideMenu ? '0 0 10px 140px' : '0 0 10px 0'
       }
     }
   },
-  mounted () {
-    if (this.$eventBusP) {
-      this.$eventBusP.$on('expand-menu', val => {
-        this.expand = val
-      })
-    } else {
+  watch: {
+    $route: {
+      handler (val) {
+        this.breadcrumbList = []
+        this.setBreadcrumb()
+      },
+      immediate: true
+    }
+  },
+  created () {
+    this.$bus &&
       this.$bus.$on('expand-menu', val => {
-        this.expand = val
+        this.expandSideMenu = val
       })
+  },
+  methods: {
+    setBreadcrumb () {
+      this.isShowBreadcrum = !(this.$route.path === '/homepage' || this.$route.path === '/404')
+      let lang = localStorage.getItem('lang') || navigator.language
+      let langKey = lang === 'zh-CN' ? 'zh' : 'en'
+      const routeList = this.$route.matched || []
+      // const curBreadcrumb = this.$route.meta && this.$route.meta[langKey] || ''
+      // this.breadcrumbList.push(curBreadcrumb)
+      routeList.forEach(item => {
+        if (item.meta && item.meta[langKey]) {
+          this.breadcrumbList.push(item.meta[langKey])
+        }
+      })
+    },
+    homePageClickHandler () {
+      window.needReLoad = false
+      this.$router.push('/taskman/workbench')
     }
   }
 }
@@ -59,6 +91,7 @@ export default {
 }
 .taskman-content-container {
   height: calc(100% - 50px);
+  padding: 10px 20px;
 }
 </style>
 <style lang="scss">

@@ -24,7 +24,7 @@ type SyncDataModelResponse struct {
 }
 
 type SyncDataModelCiType struct {
-	Name        string                 `json:"name" xorm:"id"`
+	Name        string                 `json:"name" xorm:"'id' pk"`
 	DisplayName string                 `json:"displayName" xorm:"display_name"`
 	Description string                 `json:"description" xorm:"description"`
 	Attributes  []*SyncDataModelCiAttr `json:"attributes" xorm:"-"`

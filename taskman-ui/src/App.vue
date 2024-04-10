@@ -1,10 +1,5 @@
 <template>
   <div id="app">
-    <Button @click="jump('/taskman/template-mgmt')">模板设置</Button>
-    <Button @click="jump('/taskman/template-group')">模板组设置</Button>
-    <Button @click="jump('/taskman/request-mgmt')">发起请求</Button>
-    <Button @click="jump('/taskman/task-mgmt')">任务</Button>
-    <Button @click="jump('/taskman/workbench')">个人工作台</Button>
     <div class="app-content-container">
       <BackTop :height="100" :bottom="100" />
       <router-view :key="$route.path" />
@@ -50,9 +45,9 @@ export default {
 .spin-icon-load {
   animation: ani-demo-spin 1s linear infinite;
 }
-.ivu-form-item {
-  margin-bottom: 8px;
-}
+// .ivu-form-item {
+//   margin-bottom: 8px;
+// }
 body {
   height: 100%;
   overflow: auto !important;

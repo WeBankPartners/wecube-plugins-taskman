@@ -9,6 +9,7 @@ import locale from 'view-design/dist/locale/en-US'
 import './locale/i18n'
 import { ValidationProvider } from 'vee-validate'
 import './vee-validate-local-config'
+import { getCookie } from '@/pages/util/cookie'
 Vue.component('ValidationProvider', ValidationProvider)
 
 Vue.config.productionTip = false
@@ -18,6 +19,15 @@ Vue.use(ViewUI, {
   size: 'default',
   VueI18n,
   locale
+})
+
+router.beforeEach((to, from, next) => {
+  const ls = getCookie('accessToken')
+  if (ls || to.path === '/login') {
+    next()
+  } else {
+    next('/login')
+  }
 })
 
 new Vue({

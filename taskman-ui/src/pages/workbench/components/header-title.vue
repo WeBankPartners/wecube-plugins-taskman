@@ -4,7 +4,7 @@
       <Icon v-if="expand" size="26" type="md-arrow-dropdown" @click="handleExpand" style="cursor:pointer" />
       <Icon v-else size="26" type="md-arrow-dropright" @click="handleExpand" style="cursor:pointer" />
       <div class="title">{{ title }}<span class="underline"></span></div>
-      <span v-if="subTitle" class="sub-title">{{ '(' + subTitle + ')' }}</span>
+      <slot name="sub-title"></slot>
     </div>
     <div v-show="expand" class="content">
       <slot></slot>
@@ -43,24 +43,21 @@ export default {
     display: flex;
     align-items: center;
     .title {
-      font-size: 15px;
-      font-weight: 500;
-      color: #282e38;
-      margin: 0 10px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #515a6e;
+      margin: 0 6px;
       .underline {
         display: block;
-        margin-top: -10px;
-        margin-left: -6px;
+        margin-top: -12px;
+        margin-left: -8px;
         width: 100%;
-        padding: 0 6px;
-        height: 10px;
+        padding: 0 8px;
+        height: 12px;
         border-radius: 12px;
         background-color: #c6eafe;
         box-sizing: content-box;
       }
-    }
-    .sub-title {
-      font-size: 15px;
     }
   }
   .content {

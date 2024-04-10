@@ -3,7 +3,10 @@
     <div style="margin-bottom: 8px;">
       <Alert type="warning" show-icon>{{ $t('tw_flow_tips') }}</Alert>
       <!-- <span class="custom-title">{{ $t('workflow_name') }}</span> -->
-      <span class="custom-display">{{ flowData.procDefName }}</span>
+      <span class="custom-display">
+        {{ flowData.procDefName }}
+        <span v-if="flowData.procDefVersion">{{ `【${flowData.procDefVersion}】` }}</span>
+      </span>
     </div>
     <div id="graphcontain">
       <div class="graph-container" id="flow" style="height: 96%"></div>
@@ -48,7 +51,7 @@ export default {
     async getFlowOutlineData () {
       let { statusCode, data } = await getFlowByTemplateId(this.requestTemplate)
       if (statusCode === 'OK') {
-        this.flowData = data
+        this.flowData = data || {}
         this.initFlowGraph()
       }
     },
@@ -174,7 +177,7 @@ export default {
   border: 1px solid #d3cece;
   border-radius: 3px;
   padding: 5px;
-  height: calc(100vh - 220px);
+  height: calc(100vh - 150px);
 }
 .reset-button {
   position: absolute;

@@ -1,45 +1,56 @@
 <!--工作台-->
 <template>
   <div class="workbench">
-    <!-- <div class="header">
-      <div class="left">
-        <Icon size="32" type="md-desktop" />
-        <span class="ml">个人工作台</span>
-      </div>
-      <div class="right">
-        <Icon v-if="expand" @click="expand = !expand" size="30" type="ios-arrow-down" />
-        <Icon v-else @click="expand = !expand" size="30" type="ios-arrow-up" />
-        <Icon @click="expand = !expand"  class='ml' size="32" type="ios-refresh" />
-      </div>
-    </div> -->
-    <!-- <div class="hot-link">
-      <HotLink></HotLink>
-    </div> -->
-    <div class="data-card">
-      <DataCard
-        ref="dataCard"
-        :initTab="initTab"
-        :initAction="initAction"
-        @initFetch="initData"
-        @fetchData="handleOverviewChange"
-      ></DataCard>
+    <div class="create-time" :style="{ marginTop: `${-(rectTop - 53)}px` }">
+      <span>{{ $t('tw_createdTime') }}</span>
+      <DatePicker
+        :value="queryTime"
+        @on-change="
+          val => {
+            handleQueryDateRange(val)
+          }
+        "
+        type="daterange"
+        placement="bottom-end"
+        format="yyyy-MM-dd"
+        :placeholder="$t('tw_created_time')"
+        style="width: 200px"
+        :clearable="false"
+      />
     </div>
+    <DataCard
+      ref="dataCard"
+      :initTab="initTab"
+      :initAction="initAction"
+      @initFetch="initData"
+      @fetchData="handleOverviewChange"
+    ></DataCard>
     <div class="data-tabs">
-      <Tabs v-if="['pending', 'hasProcessed'].includes(tabName)" v-model="type" @on-click="handleTypeChange">
+      <!--tab标签添加name=workbench属性，解决自定义home页面bug-->
+      <Tabs
+        name="workbench"
+        v-if="['myPending', 'pending', 'hasProcessed'].includes(tabName)"
+        v-model="type"
+        @on-click="handleTypeChange"
+      >
+        <!--审批-->
+        <TabPane :label="approveLabel" name="3" tab="workbench"></TabPane>
         <!--任务处理-->
-        <TabPane :label="$t('tw_task_tab')" name="2"></TabPane>
+        <TabPane :label="taskLabel" name="2" tab="workbench"></TabPane>
         <!--请求定版-->
-        <TabPane :label="$t('tw_pending_tab')" name="1"></TabPane>
+        <TabPane :label="pendingLabel" name="1" tab="workbench"></TabPane>
+        <!--请求确认-->
+        <TabPane :label="confirmLabel" name="4" tab="workbench"></TabPane>
       </Tabs>
-      <Tabs v-if="['submit'].includes(tabName)" v-model="rollback" @on-click="handleRollbackChange">
+      <Tabs name="workbench" v-if="['submit'].includes(tabName)" v-model="rollback" @on-click="handleRollbackChange">
         <!--所有-->
-        <TabPane :label="$t('tw_all_tab')" name="0"></TabPane>
+        <TabPane :label="$t('tw_all_tab')" name="0" tab="workbench"></TabPane>
         <!--被退回-->
-        <TabPane :label="$t('tw_return_tab')" name="1"></TabPane>
+        <TabPane :label="$t('tw_return_tab')" name="1" tab="workbench"></TabPane>
         <!--本人撤回-->
-        <TabPane :label="$t('tw_recall_tab')" name="3"></TabPane>
+        <TabPane :label="$t('tw_recall_tab')" name="3" tab="workbench"></TabPane>
         <!--其他-->
-        <TabPane :label="$t('tw_other_tab')" name="2"></TabPane>
+        <TabPane :label="$t('tw_other_tab')" name="2" tab="workbench"></TabPane>
       </Tabs>
       <CollectTable v-if="tabName === 'collect'" ref="collect" :actionName="actionName"></CollectTable>
       <template v-else>
@@ -71,13 +82,13 @@
 </template>
 
 <script>
-import WorkBench from '@/pages/components/workbench-menu.vue'
 import HotLink from './components/hot-link.vue'
 import DataCard from './components/data-card.vue'
 import BaseSearch from '../components/base-search.vue'
 import CollectTable from './collect-table.vue'
-import { getPlatformList, tansferToMe, recallRequest, changeTaskStatus, deleteRequest, reRequest } from '@/api/server'
+import { getPlatformList, recallRequest, pendingHandle, deleteRequest, reRequest } from '@/api/server'
 import { deepClone } from '@/pages/util/index'
+import dayjs from 'dayjs'
 import column from './column.js'
 import search from './search.js'
 export default {
@@ -85,17 +96,23 @@ export default {
     HotLink,
     DataCard,
     BaseSearch,
-    WorkBench,
     CollectTable
   },
   mixins: [column, search],
   data () {
     return {
-      tabName: 'pending', // pending待处理,hasProcessed已处理,submit我提交的,draft我的暂存,collect收藏
-      actionName: '1', // 1发布,2请求(3问题,4事件,5变更)
+      queryTime: [
+        dayjs()
+          .subtract(3, 'month')
+          .format('YYYY-MM-DD'),
+        dayjs().format('YYYY-MM-DD')
+      ], // 全局时间过滤器
+      rectTop: 92,
+      tabName: 'myPending', // pending(myPending本人处理/pending本组处理),hasProcessed已处理,submit我提交的,draft我的暂存,collect收藏
+      actionName: '1', // 1发布,2请求,3问题,4事件,5变更
       initTab: '',
       initAction: '',
-      type: '0', // 0所有,1请求定版,2任务处理
+      type: '0', // 0所有,1请求定版,2任务处理,3审批,4请求确认
       rollback: '0', // 0所有,1已退回,2其他,3被撤回
       form: {
         name: '', // 请求名
@@ -111,7 +128,8 @@ export default {
         expectTime: [], // 期望时间
         reportTime: [], // 请求提交时间
         approvalTime: [], // 请求处理时间
-        taskReportTime: [], // 任务提交时间
+        taskCreatedTime: [], // 任务提交时间
+        taskHandleUpdatedTime: [], // 任务更新时间
         taskApprovalTime: [], // 任务审批时间
         taskExpectTime: [] // 任务期望时间
       },
@@ -124,7 +142,54 @@ export default {
         currentPage: 1,
         pageSize: 10
       },
-      sorting: {} // 表格默认排序
+      sorting: {}, // 表格默认排序
+      taskLabel: () => {
+        return (
+          <div>
+            <span>{this.$t('tw_task_tab')}</span>
+            {['myPending', 'pending'].includes(this.tabName) && this.getPendingNumber('Task') > 0 && (
+              <span class="badge">{this.getPendingNumber('Task')}</span>
+            )}
+          </div>
+        )
+      },
+      approveLabel: () => {
+        return (
+          <div>
+            <span>{this.$t('tw_approval')}</span>
+            {['myPending', 'pending'].includes(this.tabName) && this.getPendingNumber('Approve') > 0 && (
+              <span class="badge">{this.getPendingNumber('Approve')}</span>
+            )}
+          </div>
+        )
+      },
+      pendingLabel: () => {
+        return (
+          <div>
+            <span>{this.$t('tw_pending_tab')}</span>
+            {['myPending', 'pending'].includes(this.tabName) && this.getPendingNumber('Check') > 0 && (
+              <span class="badge">{this.getPendingNumber('Check')}</span>
+            )}
+          </div>
+        )
+      },
+      confirmLabel: () => {
+        return (
+          <div>
+            <span>{this.$t('tw_confirm_tab')}</span>
+            {['myPending', 'pending'].includes(this.tabName) && this.getPendingNumber('Confirm') > 0 && (
+              <span class="badge">{this.getPendingNumber('Confirm')}</span>
+            )}
+          </div>
+        )
+      }
+    }
+  },
+  computed: {
+    getPendingNumber () {
+      return function (type) {
+        return Number(this.$refs.dataCard.pendingNumObj[this.actionName][type]) || 0
+      }
     }
   },
   watch: {
@@ -134,21 +199,27 @@ export default {
     }
   },
   mounted () {
-    this.initTab = this.$route.query.tabName || 'pending'
+    this.initTab = this.$route.query.tabName || 'myPending'
     this.initAction = this.$route.query.actionName || '1'
+    const rect = this.$refs.dataCard.$refs.dataCardWrap.getBoundingClientRect()
+    this.rectTop = rect.top
   },
   methods: {
+    handleQueryDateRange (val) {
+      this.queryTime = val
+      this.handleQuery(true)
+    },
     // 初始化加载数据(链接携带参数，跳转到指定标签)
     initData (val, action) {
       this.tabName = val
       this.actionName = action
       const type = this.$route.query.type
       const rollback = this.$route.query.rollback
-      if (['pending', 'hasProcessed'].includes(val)) {
-        if (['1', '2'].includes(type)) {
+      if (['myPending', 'pending', 'hasProcessed'].includes(val)) {
+        if (['1', '2', '3', '4'].includes(type)) {
           this.type = type
         } else {
-          this.type = '2'
+          this.type = '3'
         }
         this.rollback = ''
         this.getTypeConfig()
@@ -168,20 +239,15 @@ export default {
       }
       if (val !== 'collect') {
         this.handleReset()
-        this.handleQuery()
-      } else {
-        this.$nextTick(() => {
-          this.$refs.collect.handleQuery()
-          this.$refs.dataCard.getData()
-        })
+        this.handleQuery(true)
       }
     },
     // 点击视图卡片触发查询
     handleOverviewChange (val, action) {
       this.tabName = val
       this.actionName = action
-      if (['pending', 'hasProcessed'].includes(val)) {
-        this.type = '2'
+      if (['myPending', 'pending', 'hasProcessed'].includes(val)) {
+        this.type = '3'
         this.rollback = ''
         this.getTypeConfig()
       } else if (val === 'submit') {
@@ -195,11 +261,6 @@ export default {
       if (val !== 'collect') {
         this.handleReset()
         this.handleQuery()
-      } else {
-        this.$nextTick(() => {
-          this.$refs.collect.handleQuery()
-          this.$refs.dataCard.getData()
-        })
       }
     },
     // 切换type
@@ -208,21 +269,20 @@ export default {
       this.handleReset()
       this.handleQuery()
     },
+    // 待处理、已处理表格差异化配置
     getTypeConfig () {
-      if (this.tabName === 'pending') {
-        if (this.type === '1') {
-          this.tableColumn = this.pendingColumn
+      if (this.tabName === 'pending' || this.tabName === 'myPending') {
+        this.tableColumn = this.pendingTaskColumn
+        if (['1', '4'].includes(this.type)) {
           this.searchOptions = this.pendingSearch
-        } else if (this.type === '2') {
-          this.tableColumn = this.pendingTaskColumn
+        } else if (['2', '3'].includes(this.type)) {
           this.searchOptions = this.pendingTaskSearch
         }
       } else if (this.tabName === 'hasProcessed') {
-        if (this.type === '1') {
-          this.tableColumn = this.hasProcessedColumn
+        this.tableColumn = this.hasProcessedTaskColumn
+        if (['1', '4'].includes(this.type)) {
           this.searchOptions = this.hasProcessedSearch
-        } else if (this.type === '2') {
-          this.tableColumn = this.hasProcessedTaskColumn
+        } else if (['2', '3'].includes(this.type)) {
           this.searchOptions = this.hasProcessedTaskSearch
         }
       }
@@ -233,6 +293,7 @@ export default {
       this.handleReset()
       this.handleQuery()
     },
+    // 我提交的表格差异化配置
     getRollbackConfig () {
       if (this.tabName === 'submit') {
         if (this.rollback === '1' || this.rollback === '0') {
@@ -279,29 +340,15 @@ export default {
     },
     // 表格默认排序
     initSortTable () {
-      if (this.tabName === 'pending') {
-        if (this.type === '1') {
-          this.sorting = {
-            asc: false,
-            field: 'reportTime'
-          }
-        } else if (this.type === '2') {
-          this.sorting = {
-            asc: false,
-            field: 'taskCreatedTime'
-          }
+      if (this.tabName === 'pending' || this.tabName === 'myPending') {
+        this.sorting = {
+          asc: false,
+          field: 'taskHandleUpdatedTime'
         }
       } else if (this.tabName === 'hasProcessed') {
-        if (this.type === '1') {
-          this.sorting = {
-            asc: false,
-            field: 'approvalTime'
-          }
-        } else if (this.type === '2') {
-          this.sorting = {
-            asc: false,
-            field: 'taskApprovalTime'
-          }
+        this.sorting = {
+          asc: false,
+          field: 'taskApprovalTime'
         }
       } else if (this.tabName === 'submit') {
         this.sorting = {
@@ -320,14 +367,10 @@ export default {
       const form = deepClone(this.form)
       // 过滤掉多余时间
       var dateTransferArr = []
-      if (this.tabName === 'pending' && this.type === '2') {
-        dateTransferArr = ['taskExpectTime', 'taskReportTime']
-      } else if (this.tabName === 'pending' && this.type === '1') {
-        dateTransferArr = ['expectTime', 'reportTime']
-      } else if (this.tabName === 'hasProcessed' && this.type === '2') {
-        dateTransferArr = ['taskExpectTime', 'taskReportTime', 'taskApprovalTime']
-      } else if (this.tabName === 'hasProcessed' && this.type === '1') {
-        dateTransferArr = ['expectTime', 'reportTime', 'approvalTime']
+      if (this.tabName === 'pending' || this.tabName === 'myPending') {
+        dateTransferArr = ['taskExpectTime', 'taskHandleUpdatedTime']
+      } else if (this.tabName === 'hasProcessed') {
+        dateTransferArr = ['taskExpectTime', 'taskCreatedTime', 'taskApprovalTime']
       } else if (this.tabName === 'submit') {
         dateTransferArr = ['expectTime', 'reportTime']
       } else if (this.tabName === 'draft') {
@@ -349,6 +392,8 @@ export default {
         action: Number(this.actionName),
         type: Number(this.type),
         rollback: Number(this.rollback),
+        queryTimeStart: this.queryTime[0] && this.queryTime[0] + ' 00:00:00',
+        queryTimeEnd: this.queryTime[1] && this.queryTime[1] + ' 23:59:59',
         ...form,
         startIndex: (this.pagination.currentPage - 1) * this.pagination.pageSize,
         pageSize: this.pagination.pageSize
@@ -361,7 +406,7 @@ export default {
         params.sorting = this.sorting
       }
       // 过滤掉多余属性
-      if (!['pending', 'hasProcessed'].includes(this.tabName)) {
+      if (!['myPending', 'pending', 'hasProcessed'].includes(this.tabName)) {
         delete params.type
       }
       if (!['submit'].includes(this.tabName)) {
@@ -374,10 +419,10 @@ export default {
       }
       this.loading = false
     },
-    handleQuery () {
+    handleQuery (all = false) {
       this.pagination.currentPage = 1
       this.getList()
-      this.$refs.dataCard.getData()
+      this.$refs.dataCard.getData(all)
     },
     changPage (val) {
       this.pagination.currentPage = val
@@ -390,37 +435,33 @@ export default {
     },
     // 表格操作-查看
     hanldeView (row) {
-      const path = this.actionName === '1' ? 'detailPublish' : 'detailRequest'
+      const path = this.detailRouteMap[this.actionName]
       const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,
         query: {
           requestId: row.id,
           requestTemplate: row.templateId,
-          isCheck: 'Y',
-          isHandle: 'N',
-          enforceDisable: 'Y',
-          jumpFrom: this.tabName
+          taskId: row.taskId,
+          jumpFrom: this.tabName,
+          type: this.tabName === 'submit' ? this.rollback : this.type
         }
       })
     },
-    // 表格操作-处理(任务处理和请求定版)
+    // 表格操作-处理(任务、审批、定版、请求确认)
     async handleEdit (row) {
-      // 处理任务需要更新任务状态
-      if (row.status === 'InProgress') {
-        await changeTaskStatus('start', row.taskId, new Date(row.taskUpdatedTime).getTime())
-      }
-      const path = this.actionName === '1' ? 'detailPublish' : 'detailRequest'
+      const path = this.detailRouteMap[this.actionName]
       const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,
         query: {
           requestId: row.id,
           requestTemplate: row.templateId,
-          isCheck: 'N',
+          taskHandleId: row.taskHandleId, // 任务处理ID
+          taskId: row.taskId,
           isHandle: 'Y',
-          enforceDisable: 'N',
-          jumpFrom: 'group_handle'
+          jumpFrom: this.tabName,
+          type: this.tabName === 'submit' ? this.rollback : this.type
         }
       })
     },
@@ -432,14 +473,14 @@ export default {
         loading: true,
         onOk: async () => {
           this.$Modal.remove()
-          // 请求定版的新接口，任务处理的老接口
-          let res = null
-          if (row.status === 'Pending') {
-            res = await tansferToMe(row.id, new Date(row.updatedTime).getTime())
-          } else if (row.status === 'InProgress') {
-            res = await changeTaskStatus(type, row.taskId, new Date(row.taskUpdatedTime).getTime())
+          const params = {
+            taskId: row.taskId,
+            taskHandleId: row.taskHandleId,
+            latestUpdateTime: (row.taskUpdatedTime && String(new Date(row.taskUpdatedTime).getTime())) || '',
+            changeReason: type
           }
-          if (res.statusCode === 'OK') {
+          const { statusCode } = await pendingHandle(params)
+          if (statusCode === 'OK') {
             this.$Notice.success({
               title: this.$t('successful'),
               desc: this.$t('successful')
@@ -454,14 +495,15 @@ export default {
     async handleRepub (row) {
       const { statusCode, data } = await reRequest(row.id)
       if (statusCode === 'OK') {
-        const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
+        const path = this.createRouteMap[this.actionName]
         const url = `/taskman/workbench/${path}`
         this.$router.push({
           path: url,
           query: {
             requestId: data.id,
             requestTemplate: data.requestTemplate,
-            jumpFrom: ''
+            jumpFrom: this.tabName,
+            type: this.tabName === 'submit' ? this.rollback : this.type
           }
         })
       }
@@ -482,6 +524,8 @@ export default {
               desc: this.$t('successful')
             })
             this.getList()
+            // 刷新本人处理本组处理数量
+            this.$refs.dataCard.getData(false, true)
           }
         },
         onCancel: () => {}
@@ -489,15 +533,15 @@ export default {
     },
     // 表格操作-草稿去发起
     hanldeLaunch (row) {
-      const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
+      const path = this.createRouteMap[this.actionName]
       const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,
         query: {
           requestId: row.id,
           requestTemplate: row.templateId,
-          jumpFrom: this.tabName === 'draft' ? 'my_drafts' : 'my_submit',
-          rollback: this.rollback
+          jumpFrom: this.tabName,
+          type: this.tabName === 'submit' ? this.rollback : this.type
         }
       })
     },
@@ -525,15 +569,13 @@ export default {
     handleDbClick (row) {
       if (
         this.username === row.handler &&
-        ['Pending', 'InProgress'].includes(row.status) &&
-        this.tabName === 'pending'
+        ['Pending', 'InProgress', 'InApproval', 'Confirm'].includes(row.status) &&
+        ['myPending', 'pending'].includes(this.tabName)
       ) {
         this.handleEdit(row)
-      } else if (row.status === 'Draft' && this.tabName !== 'hasProcessed') {
+      } else if (this.tabName === 'draft') {
         this.hanldeLaunch(row)
-      } else if (['Termination', 'Completed', 'Faulted'].includes(row.status) && this.tabName === 'submit') {
-        this.handleRepub(row)
-      } else if (row.status !== 'Draft') {
+      } else {
         this.hanldeView(row)
       }
     }
@@ -543,6 +585,18 @@ export default {
 
 <style lang="scss" scoped>
 .workbench {
+  position: relative;
+  .create-time {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 420px;
+    position: absolute;
+    right: 0px;
+    span {
+      margin-right: 10px;
+    }
+  }
   .header {
     display: flex;
     justify-content: space-between;
@@ -563,9 +617,6 @@ export default {
   .hot-link {
     margin-top: 12px;
   }
-  .data-card {
-    margin-top: 24px;
-  }
   .data-tabs {
     margin-top: 10px;
   }
@@ -573,6 +624,20 @@ export default {
 </style>
 <style lang="scss">
 .workbench {
+  .badge {
+    position: absolute;
+    display: inline-block;
+    font-size: 11px;
+    background-color: #f56c6c;
+    border-radius: 10px;
+    color: #fff;
+    height: 18px;
+    line-height: 18px;
+    padding: 0 6px;
+    text-align: center;
+    white-space: nowrap;
+    margin-left: 5px;
+  }
   .ivu-progress-outer {
     display: flex;
     align-items: center;
@@ -589,13 +654,19 @@ export default {
   }
   .ivu-progress {
     display: flex;
-    // flex-direction: column;
   }
   .ivu-btn-small {
     font-size: 12px;
   }
   .ivu-tooltip-inner {
     max-width: 1000px;
+  }
+  .ivu-badge-count {
+    padding: 0 4px;
+    font-size: 10px;
+  }
+  .ivu-tabs-tab {
+    padding: 6px 20px !important;
   }
 }
 </style>

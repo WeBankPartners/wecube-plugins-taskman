@@ -25,7 +25,7 @@ const routerP = [
     path: '/taskman/workbench/createPublish',
     name: '/taskman/workbench/createPublish'
   },
-  // 新建详情
+  // 发布详情
   {
     path: '/taskman/workbench/detailPublish',
     name: '/taskman/workbench/detailPublish'
@@ -49,6 +49,51 @@ const routerP = [
   {
     path: '/taskman/workbench/requestHistory',
     name: '/taskman/workbench/requestHistory'
+  },
+  // 新建问题
+  {
+    path: '/taskman/workbench/createProblem',
+    name: '/taskman/workbench/createProblem'
+  },
+  // 问题详情
+  {
+    path: '/taskman/workbench/detailProblem',
+    name: '/taskman/workbench/detailProblem'
+  },
+  // 问题历史
+  {
+    path: '/taskman/workbench/problemHistory',
+    name: '/taskman/workbench/problemHistory'
+  },
+  // 新建事件
+  {
+    path: '/taskman/workbench/createEvent',
+    name: '/taskman/workbench/createEvent'
+  },
+  // 事件详情
+  {
+    path: '/taskman/workbench/detailEvent',
+    name: '/taskman/workbench/detailEvent'
+  },
+  // 事件历史
+  {
+    path: '/taskman/workbench/eventHistory',
+    name: '/taskman/workbench/eventHistory'
+  },
+  // 新建变更
+  {
+    path: '/taskman/workbench/createChange',
+    name: '/taskman/workbench/createChange'
+  },
+  // 变更详情
+  {
+    path: '/taskman/workbench/detailChange',
+    name: '/taskman/workbench/detailChange'
+  },
+  // 变更历史
+  {
+    path: '/taskman/workbench/changeHistory',
+    name: '/taskman/workbench/changeHistory'
   },
   // 请求审计
   {

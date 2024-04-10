@@ -21,10 +21,21 @@ import (
 	"xorm.io/xorm/schemas"
 )
 
-var (
-	// ErrUnsupportedType represents an unsupported type error
-	ErrUnsupportedType = errors.New("unsupported type")
-)
+// ErrUnsupportedType represents an unsupported type error
+var ErrUnsupportedType = errors.New("unsupported type")
+
+// TableIndices is an interface that describes structs that provide additional index information above that which is automatically parsed
+type TableIndices interface {
+	TableIndices() []*schemas.Index
+}
+
+var tpTableIndices = reflect.TypeOf((*TableIndices)(nil)).Elem()
+
+type TableCollations interface {
+	TableCollations() []*schemas.Collation
+}
+
+var tpTableCollations = reflect.TypeOf((*TableCollations)(nil)).Elem()
 
 // Parser represents a parser for xorm tag
 type Parser struct {
@@ -177,7 +188,7 @@ func (parser *Parser) parseFieldWithNoTag(fieldIndex int, field reflect.StructFi
 }
 
 func (parser *Parser) parseFieldWithTags(table *schemas.Table, fieldIndex int, field reflect.StructField, fieldValue reflect.Value, tags []tag) (*schemas.Column, error) {
-	var col = &schemas.Column{
+	col := &schemas.Column{
 		FieldName:       field.Name,
 		FieldIndex:      []int{fieldIndex},
 		Nullable:        true,
@@ -188,7 +199,7 @@ func (parser *Parser) parseFieldWithTags(table *schemas.Table, fieldIndex int, f
 		DefaultIsEmpty:  true,
 	}
 
-	var ctx = Context{
+	ctx := Context{
 		table:      table,
 		col:        col,
 		fieldValue: fieldValue,
@@ -316,6 +327,7 @@ func (parser *Parser) Parse(v reflect.Value) (*schemas.Table, error) {
 	table := schemas.NewEmptyTable()
 	table.Type = t
 	table.Name = names.GetTableName(parser.tableMapper, v)
+	table.Comment = names.GetTableComment(v)
 
 	for i := 0; i < t.NumField(); i++ {
 		col, err := parser.parseField(table, i, t.Field(i), v.Field(i))
@@ -328,5 +340,81 @@ func (parser *Parser) Parse(v reflect.Value) (*schemas.Table, error) {
 		table.AddColumn(col)
 	} // end for
 
+	indices := tableIndices(v)
+	for _, index := range indices {
+		// Override old information
+		if oldIndex, ok := table.Indexes[index.Name]; ok {
+			for _, colName := range oldIndex.Cols {
+				col := table.GetColumn(colName)
+				if col == nil {
+					return nil, ErrUnsupportedType
+				}
+				delete(col.Indexes, index.Name)
+			}
+		}
+		table.AddIndex(index)
+		for _, colName := range index.Cols {
+			col := table.GetColumn(colName)
+			if col == nil {
+				return nil, ErrUnsupportedType
+			}
+			col.Indexes[index.Name] = index.Type
+		}
+	}
+
+	collations := tableCollations(v)
+	for _, collation := range collations {
+		if collation.Name == "" {
+			continue
+		}
+		if collation.Column == "" {
+			table.Collation = collation.Name
+		} else {
+			col := table.GetColumn(collation.Column)
+			if col == nil {
+				return nil, ErrUnsupportedType
+			}
+			col.Collation = collation.Name // this may override definition in struct tag
+		}
+	}
+
 	return table, nil
+}
+
+func tableIndices(v reflect.Value) []*schemas.Index {
+	if v.Type().Implements(tpTableIndices) {
+		return v.Interface().(TableIndices).TableIndices()
+	}
+
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+		if v.Type().Implements(tpTableIndices) {
+			return v.Interface().(TableIndices).TableIndices()
+		}
+	} else if v.CanAddr() {
+		v1 := v.Addr()
+		if v1.Type().Implements(tpTableIndices) {
+			return v1.Interface().(TableIndices).TableIndices()
+		}
+	}
+	return nil
+}
+
+func tableCollations(v reflect.Value) []*schemas.Collation {
+	if v.Type().Implements(tpTableCollations) {
+		return v.Interface().(TableCollations).TableCollations()
+	}
+
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+		if v.Type().Implements(tpTableCollations) {
+			return v.Interface().(TableCollations).TableCollations()
+		}
+	} else if v.CanAddr() {
+		v1 := v.Addr()
+		if v1.Type().Implements(tpTableCollations) {
+			return v1.Interface().(TableCollations).TableCollations()
+		}
+	}
+	return nil
 }

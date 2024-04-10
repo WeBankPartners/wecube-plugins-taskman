@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"unicode"
 
 	"xorm.io/xorm/core"
 	"xorm.io/xorm/schemas"
@@ -184,14 +185,20 @@ func (db *sqlite3) Version(ctx context.Context, queryer core.Queryer) (*schemas.
 	}, nil
 }
 
+func (db *sqlite3) Features() *DialectFeatures {
+	return &DialectFeatures{
+		AutoincrMode: IncrAutoincrMode,
+	}
+}
+
 func (db *sqlite3) SetQuotePolicy(quotePolicy QuotePolicy) {
 	switch quotePolicy {
 	case QuotePolicyNone:
-		var q = sqlite3Quoter
+		q := sqlite3Quoter
 		q.IsReserved = schemas.AlwaysNoReserve
 		db.quoter = q
 	case QuotePolicyReserved:
-		var q = sqlite3Quoter
+		q := sqlite3Quoter
 		q.IsReserved = db.IsReserved
 		db.quoter = q
 	case QuotePolicyAlways:
@@ -285,10 +292,6 @@ func (db *sqlite3) DropIndexSQL(tableName string, index *schemas.Index) string {
 	return fmt.Sprintf("DROP INDEX %v", db.Quoter().Quote(idxName))
 }
 
-func (db *sqlite3) ForUpdateSQL(query string) string {
-	return query
-}
-
 func (db *sqlite3) IsColumnExist(queryer core.Queryer, ctx context.Context, tableName, colName string) (bool, error) {
 	query := "SELECT * FROM " + tableName + " LIMIT 0"
 	rows, err := queryer.QueryContext(ctx, query)
@@ -314,11 +317,11 @@ func (db *sqlite3) IsColumnExist(queryer core.Queryer, ctx context.Context, tabl
 // splitColStr splits a sqlite col strings as fields
 func splitColStr(colStr string) []string {
 	colStr = strings.TrimSpace(colStr)
-	var results = make([]string, 0, 10)
+	results := make([]string, 0, 10)
 	var lastIdx int
 	var hasC, hasQuote bool
 	for i, c := range colStr {
-		if c == ' ' && !hasQuote {
+		if unicode.IsSpace(c) && !hasQuote {
 			if hasC {
 				results = append(results, colStr[lastIdx:i])
 				hasC = false
@@ -348,7 +351,7 @@ func parseString(colStr string) (*schemas.Column, error) {
 
 	for idx, field := range fields {
 		if idx == 0 {
-			col.Name = strings.Trim(strings.Trim(field, "`[] "), `"`)
+			col.Name = strings.Trim(strings.TrimSpace(field), "`[]'\"")
 			continue
 		} else if idx == 1 {
 			col.SQLType = schemas.SQLType{Name: field, DefaultLength: 0, DefaultLength2: 0}
@@ -397,6 +400,8 @@ func (db *sqlite3) GetColumns(queryer core.Queryer, ctx context.Context, tableNa
 	if name == "" {
 		return nil, nil, errors.New("no table named " + tableName)
 	}
+
+	name = strings.ReplaceAll(name, "\n", " ")
 
 	nStart := strings.Index(name, "(")
 	nEnd := strings.LastIndex(name, ")")
@@ -481,7 +486,7 @@ func (db *sqlite3) GetIndexes(queryer core.Queryer, ctx context.Context, tableNa
 		if !tmpSQL.Valid {
 			continue
 		}
-		sql := tmpSQL.String
+		sql := strings.ReplaceAll(tmpSQL.String, "\n", " ")
 
 		index := new(schemas.Index)
 		nNStart := strings.Index(sql, "INDEX")

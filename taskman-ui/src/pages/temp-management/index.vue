@@ -4,66 +4,58 @@
       $t('back_to_template')
     }}</Button>
     <Row type="flex">
-      <Col span="20" offset="1">
+      <Col span="16" offset="4">
         <Steps :current="currentStep">
-          <Step icon="ios-add-circle">
-            <span slot="title" @click="changeStep(0)">{{ $t('basic_information_settings') }}</span>
-          </Step>
-          <Step icon="md-apps">
-            <span slot="title" @click="changeStep(1)">{{ $t('form_item_selection') }}</span>
-          </Step>
-          <Step icon="md-cog">
-            <span slot="title" @click="changeStep(2)">{{ $t('request_form_settings') }}</span>
-          </Step>
-          <Step icon="ios-settings">
-            <span slot="title" @click="changeStep(3)">{{ $t('task_form_settings') }}</span>
-          </Step>
+          <Step :title="$t('basic_information_settings')"></Step>
+          <Step :title="$t('form')"></Step>
+          <Step :title="$t('tw_approval')"></Step>
+          <Step :title="$t('task')"></Step>
         </Steps>
       </Col>
-      <Col span="3">
-        <Button
-          @click="confirmTemplate"
-          :disabled="currentStep !== 3 || $parent.isCheck === 'Y'"
-          size="small"
-          type="primary"
-          >{{ $t('publish_template') }}</Button
-        >
-      </Col>
     </Row>
+    <div></div>
     <div v-if="currentStep !== -1" style="margin-top:16px;">
       <BasicInfo
-        @basicInfoNextStep="basicInfoNextStep"
+        @gotoStep="gotoStep"
+        :isCheck="isCheck"
         :requestTemplateId="requestTemplateId"
         v-if="currentStep === 0"
       ></BasicInfo>
-      <FormSelect
-        @formSelectNextStep="formSelectNextStep"
+      <RequestForm
+        @gotoStep="gotoStep"
+        :isCheck="isCheck"
         :requestTemplateId="requestTemplateId"
         v-if="currentStep === 1"
-      ></FormSelect>
-      <RequestForm
-        :requestTemplateId="requestTemplateId"
-        @formSelectNextStep="formSelectNextStep"
-        v-if="currentStep === 2"
       ></RequestForm>
-      <TaskForm :requestTemplateId="requestTemplateId" v-if="currentStep === 3"></TaskForm>
+      <ApprovalForm
+        @gotoStep="gotoStep"
+        :isCheck="isCheck"
+        :requestTemplateId="requestTemplateId"
+        v-if="currentStep === 2"
+      ></ApprovalForm>
+      <TaskForm
+        @gotoStep="gotoStep"
+        :isCheck="isCheck"
+        :requestTemplateId="requestTemplateId"
+        v-if="currentStep === 3"
+      ></TaskForm>
     </div>
   </div>
 </template>
 
 <script>
-import FormSelect from './form-select'
+import ApprovalForm from './approval-form'
 import RequestForm from './request-form'
 import BasicInfo from './basic-info'
 import TaskForm from './task-form'
-import { confirmTemplate } from '@/api/server.js'
 export default {
   name: '',
   data () {
     return {
       currentStep: -1,
       requestTemplateId: '',
-      isCheck: 'N'
+      isCheck: 'N',
+      parentStatus: ''
     }
   },
   mounted () {
@@ -71,35 +63,51 @@ export default {
       this.requestTemplateId = this.$route.query.requestTemplateId
     }
     this.isCheck = this.$route.query.isCheck
+    this.parentStatus = this.$route.query.parentStatus
     this.currentStep = 0
   },
   methods: {
-    async confirmTemplate () {
-      const { statusCode } = await confirmTemplate(this.requestTemplateId)
-      if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
-        this.$router.push({ path: '/taskman/template-mgmt' })
-      }
-    },
     changeStep (val) {
       this.currentStep = val
     },
     backToTemplate () {
-      this.$router.push({ path: '/taskman/template-mgmt' })
+      if (this.isCheck === 'Y') {
+        this.$router.push({
+          path: '/taskman/template-mgmt',
+          query: {
+            status: this.parentStatus
+          }
+        })
+      } else {
+        this.$Modal.confirm({
+          title: `${this.$t('back_to_template')}`,
+          content: `${this.$t('back_to_template_tip')}`,
+          'z-index': 1000000,
+          okText: this.$t('confirm'),
+          cancelText: this.$t('cancel'),
+          onOk: async () => {
+            this.$router.push({
+              path: '/taskman/template-mgmt',
+              query: {
+                status: 'created'
+              }
+            })
+          },
+          onCancel: () => {}
+        })
+      }
     },
-    basicInfoNextStep (data) {
-      this.requestTemplateId = data.id
-      this.currentStep++
-    },
-    formSelectNextStep () {
-      this.currentStep++
+    gotoStep (tmpId, stepDirection) {
+      this.requestTemplateId = tmpId
+      if (stepDirection === 'forward') {
+        this.currentStep++
+      } else if (stepDirection === 'backward') {
+        this.currentStep--
+      }
     }
   },
   components: {
-    FormSelect,
+    ApprovalForm,
     RequestForm,
     BasicInfo,
     TaskForm

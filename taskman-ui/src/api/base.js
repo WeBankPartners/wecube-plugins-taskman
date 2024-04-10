@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import axios from 'axios'
 // import exportFile from '@/const/export-file'
-import { getCookie } from '../pages/util/cookie'
+import { setCookie, getCookie, clearCookie } from '../pages/util/cookie'
 
 export const baseURL = ''
 export const req = axios.create({
@@ -44,8 +44,9 @@ req.interceptors.request.use(
 req.interceptors.response.use(
   res => {
     if (res.status === 200) {
-      if (res.data.statusCode && res.data.statusCode !== 'OK') {
-        const errorMes = res.data.statusMessage
+      const finalStatus = res.data.statusCode || res.data.status
+      if (finalStatus && finalStatus !== 'OK') {
+        const errorMes = res.data.statusMessage || res.data.message
         Vue.prototype.$Notice.error({
           title: 'Error',
           desc: errorMes,
@@ -63,7 +64,80 @@ req.interceptors.response.use(
     }
   },
   err => {
-    console.log(err)
+    const { response } = err
+    if (response.status === 401 && err.config.url !== '/auth/v1/api/login') {
+      let refreshToken = getCookie('refreshToken')
+      if (refreshToken.length > 0) {
+        let refreshRequest = axios.get('/auth/v1/api/token', {
+          headers: {
+            Authorization: 'Bearer ' + refreshToken
+          }
+        })
+        return refreshRequest.then(
+          resRefresh => {
+            setCookie(resRefresh.data.data)
+            // replace token with new one and replay request
+            err.config.headers.Authorization = 'Bearer ' + getCookie('accessToken')
+            let retryRequest = axios(err.config)
+            return retryRequest.then(
+              res => {
+                if (res.status === 200) {
+                  // do request success again
+                  if (res.data.status === 'ERROR') {
+                    const errorMes = Array.isArray(res.data.data)
+                      ? res.data.data.map(_ => _.message || _.errorMessage).join('<br/>')
+                      : res.data.message
+                    Vue.prototype.$Notice.warning({
+                      title: 'Error',
+                      desc: errorMes,
+                      duration: 10
+                    })
+                  }
+                  return res.data instanceof Array ? res.data : { ...res.data }
+                } else {
+                  return {
+                    data: throwError(res)
+                  }
+                }
+              },
+              err => {
+                const { response } = err
+                return new Promise((resolve, reject) => {
+                  resolve({
+                    data: throwError(response)
+                  })
+                })
+              }
+            )
+          },
+          // eslint-disable-next-line handle-callback-err
+          errRefresh => {
+            clearCookie('refreshToken')
+            window.location.href = window.location.origin + window.location.pathname + '#/login'
+            return {
+              data: {} // throwError(errRefresh.response)
+            }
+          }
+        )
+      } else {
+        window.location.href = window.location.origin + window.location.pathname + '#/login'
+        if (response.config.url === '/auth/v1/api/login') {
+          Vue.prototype.$Notice.warning({
+            title: 'Error',
+            desc: response.data.message || '401',
+            duration: 10
+          })
+        }
+        // throwInfo(response)
+        return response
+      }
+    }
+
+    return new Promise((resolve, reject) => {
+      resolve({
+        data: throwError(response)
+      })
+    })
   }
 )
 

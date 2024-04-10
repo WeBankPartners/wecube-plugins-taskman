@@ -1,6 +1,6 @@
 <template>
   <div class="taskman-base-search">
-    <div class="form" :style="{ maxHeight: expand ? '200px' : '45px' }">
+    <div class="taskman-base-search-form" :style="{ maxHeight: expand ? '200px' : '45px' }">
       <Form :inline="true" :model="value" label-position="right">
         <template v-for="(i, index) in options">
           <FormItem v-if="!i.hidden" :prop="i.key" :key="index">
@@ -9,7 +9,7 @@
               <span v-if="i.label">{{ i.label }}：</span>
               <Input
                 v-if="i.component === 'input'"
-                v-model="value[i.key]"
+                v-model.trim="value[i.key]"
                 :placeholder="i.placeholder"
                 clearable
                 :style="{ width: i.width || 200 + 'px' }"
@@ -96,23 +96,23 @@
         </template>
       </Form>
     </div>
-    <Icon
-      v-show="!expand"
-      @click="handleExpand"
-      size="28"
-      color="#2d8cf0"
-      type="ios-arrow-down"
-      style="cursor:pointer;margin-right:10px;"
-    />
-    <Icon
-      v-show="expand"
-      @click="handleExpand"
-      size="28"
-      color="#2d8cf0"
-      type="ios-arrow-up"
-      style="cursor:pointer;margin-right:10px;"
-    />
-    <div class="button-group">
+    <div class="taskman-base-search-button">
+      <Icon
+        v-show="!expand"
+        @click="handleExpand"
+        size="28"
+        color="#2d8cf0"
+        type="ios-arrow-down"
+        style="cursor:pointer;margin-right:10px;"
+      />
+      <Icon
+        v-show="expand"
+        @click="handleExpand"
+        size="28"
+        color="#2d8cf0"
+        type="ios-arrow-up"
+        style="cursor:pointer;margin-right:10px;"
+      />
       <Button @click="handleSearch" size="small" type="primary">{{ $t('search') }}</Button>
       <Button @click="handleReset" size="small" style="margin-left:5px;">{{ $t('reset') }}</Button>
     </div>
@@ -222,6 +222,26 @@ export default {
 <style lang="scss">
 .taskman-base-search {
   display: flex;
+  &-form {
+    width: calc(100% - 146px);
+    transition: all 0.2s;
+    overflow: hidden;
+    padding-right: 10px;
+  }
+  &-button {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 146px;
+    height: 30px;
+    box-sizing: content-box;
+    button {
+      width: auto;
+      height: 28px;
+      line-height: 28px;
+      font-size: 13px;
+    }
+  }
   .ivu-form-item {
     margin-bottom: 15px !important;
     display: inline-block !important;
@@ -230,40 +250,17 @@ export default {
     display: none;
   }
   .ivu-radio-wrapper {
-    // border-radius: 5px;
     height: 30px !important;
     line-height: 30px !important;
-    // padding: 0 10px;
     font-size: 12px !important;
     color: #000;
-    // background: #f5f8fa;
-    // border: none;
   }
   .ivu-radio-wrapper-checked.ivu-radio-border {
     border-color: #2d8cf0;
-    // background: #2d8cf0;
     color: #2d8cf0;
   }
   .ivu-select-multiple .ivu-tag {
     max-width: 90px;
-  }
-  .form {
-    flex: 1;
-    transition: all 0.2s;
-    overflow: hidden;
-  }
-  .button-group {
-    height: 30px;
-    display: inline-block;
-    border-left: 1px solid #0000000f;
-    padding-left: 20px;
-    box-sizing: content-box;
-    button {
-      width: auto;
-      height: 28px;
-      line-height: 28px;
-      font-size: 13px;
-    }
   }
 }
 </style>

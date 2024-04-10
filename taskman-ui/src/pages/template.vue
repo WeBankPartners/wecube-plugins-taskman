@@ -2,11 +2,39 @@
   <div>
     <div>
       <Row>
+        <Tabs v-model="status" @on-click="getTemplateList()">
+          <!--已发布-->
+          <TabPane :label="$t('status_confirm')" name="confirm"></TabPane>
+          <!--草稿-->
+          <TabPane :label="$t('status_draft')" name="created"></TabPane>
+          <!--待管理员确认-->
+          <TabPane :label="pendingLabel" name="pending"></TabPane>
+          <!--已禁用-->
+          <TabPane :label="$t('tw_template_status_disable')" name="disable"></TabPane>
+        </Tabs>
+      </Row>
+      <Row>
         <Col span="4">
-          <Input v-model="name" style="width: 90%" type="text" :placeholder="$t('name')"> </Input>
+          <Input
+            v-model="name"
+            style="width: 90%"
+            type="text"
+            :placeholder="$t('name')"
+            clearable
+            @on-change="handleInputChange"
+          >
+          </Input>
         </Col>
         <Col span="4">
-          <Input v-model="tags" style="width: 90%" type="text" :placeholder="$t('tags')"> </Input>
+          <Input
+            v-model="tags"
+            style="width: 90%"
+            type="text"
+            :placeholder="$t('tags')"
+            clearable
+            @on-change="handleInputChange"
+          >
+          </Input>
         </Col>
         <Col span="4">
           <Select
@@ -16,42 +44,52 @@
             filterable
             multiple
             :max-tag-count="3"
-            :placeholder="$t('manageRole')"
+            :placeholder="$t('tw_template_owner_role')"
             style="width: 90%"
+            @on-change="onSearch"
           >
             <Option v-for="item in roleOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
           </Select>
         </Col>
         <Col span="4">
-          <Select multiple v-model="status" clearable :placeholder="$t('status')" style="width: 90%">
-            <Option value="confirm" key="confirm">{{ this.$t('status_confirm') }}</Option>
-            <Option value="created" key="created">{{ this.$t('status_created') }}</Option>
-            <Option value="disable" key="disable">{{ this.$t('disable') }}</Option>
+          <Select
+            v-model="type"
+            clearable
+            filterable
+            multiple
+            :placeholder="$t('tw_useScene')"
+            style="width: 90%"
+            @on-change="onSearch"
+          >
+            <Option v-for="item in typeList" :value="item.value" :key="item.value">{{ item.label }}</Option>
           </Select>
         </Col>
         <Col span="4">
           <Button @click="onSearch" type="primary">{{ $t('search') }}</Button>
-          <Button @click="addTemplate" type="success">{{ $t('add') }}</Button>
+          <Button @click="handleReset" type="default">{{ $t('reset') }}</Button>
         </Col>
-        <Upload
-          :action="uploadUrl"
-          :before-upload="handleUpload"
-          :show-upload-list="false"
-          with-credentials
-          style="display: inline-block; float: right; margin-right: 16px"
-          :headers="headers"
-          :on-success="uploadSucess"
-          :on-error="uploadFailed"
-        >
-          <Button>{{ $t('upload') }}</Button>
-        </Upload>
+        <div style="display:flex;float:right;">
+          <Button @click="addTemplate" type="success">{{ $t('add') }}</Button>
+          <Upload
+            :action="uploadUrl"
+            :before-upload="handleUpload"
+            :show-upload-list="false"
+            with-credentials
+            style="margin-left:10px;"
+            :headers="headers"
+            :on-success="uploadSucess"
+            :on-error="uploadFailed"
+          >
+            <Button>{{ $t('upload') }}</Button>
+          </Upload>
+        </div>
       </Row>
     </div>
     <Table
       style="margin: 24px 0"
-      border
       @on-sort-change="sortTable"
       size="small"
+      :loading="loading"
       :columns="tableColumns"
       :data="tableData"
       :max-height="MODALHEIGHT"
@@ -82,19 +120,29 @@ import {
   getTemplateList,
   deleteTemplate,
   forkTemplate,
+  copyTemplate,
   getManagementRoles,
   confirmUploadTemplate,
   enableTemplate,
-  disableTemplate
+  disableTemplate,
+  templateGiveMe,
+  updateTemplateStatus,
+  templateConfirmCount
 } from '@/api/server'
+import { debounce } from '@/pages/util'
+import ScrollTag from '@/pages/components/scroll-tag.vue'
 export default {
   name: '',
+  components: {
+    ScrollTag
+  },
   data () {
     return {
       MODALHEIGHT: 500,
       name: '',
-      status: ['confirm', 'created'],
+      status: 'confirm',
       mgmtRoles: [],
+      type: [],
       tags: '',
       modalShow: false,
       pagination: {
@@ -114,70 +162,119 @@ export default {
           field: 'updatedTime'
         }
       },
+      username: window.localStorage.getItem('username'),
       tableColumns: [
         {
           title: this.$t('name'),
           resizable: true,
           width: 200,
           sortable: 'custom',
-          fixed: 'left',
-          key: 'name'
+          key: 'name',
+          render: (h, params) => {
+            return (
+              <span
+                style="cursor:pointer;"
+                onClick={() => {
+                  this.handleDbClick(params.row)
+                }}
+              >
+                {params.row.name}
+              </span>
+            )
+          }
         },
         {
           title: this.$t('version'),
-          minWidth: 80,
+          minWidth: 60,
           sortable: 'custom',
-          key: 'version'
+          key: 'version',
+          render: (h, params) => {
+            if (params.row.version) {
+              return <Tag>{params.row.version}</Tag>
+            } else {
+              return <span>-</span>
+            }
+          }
+        },
+        {
+          title: this.$t('tw_useScene'),
+          minWidth: 80,
+          key: 'type',
+          render: (h, params) => {
+            const find = this.typeList.find(i => i.value === String(params.row.type)) || {}
+            return (find.label && <Tag>{find.label}</Tag>) || <span>-</span>
+          }
         },
         {
           title: this.$t('procDefId'),
-          minWidth: 80,
+          minWidth: 100,
           sortable: 'custom',
-          key: 'procDefName'
+          key: 'procDefName',
+          render: (h, params) => {
+            if (params.row.procDefName) {
+              return (
+                <span>
+                  {`${params.row.procDefName}`}
+                  {params.row.procDefVersion && (
+                    <span style="border:1px solid #e8eaec;border-radius:3px;background:#f7f7f7;padding:1px 4px;">
+                      {params.row.procDefVersion}
+                    </span>
+                  )}
+                </span>
+              )
+            } else {
+              return <span>-</span>
+            }
+          }
         },
         {
           title: this.$t('tags'),
           sortable: 'custom',
           minWidth: 130,
-          key: 'tags'
-        },
-        {
-          title: this.$t('status'),
-          minWidth: 80,
-          sortable: 'custom',
-          key: 'status',
+          key: 'tags',
           render: (h, params) => {
-            const statusArray = {
-              confirm: this.$t('status_confirm'),
-              created: this.$t('status_created'),
-              disable: this.$t('disable')
+            if (params.row.tags) {
+              return <Tag>{params.row.tags}</Tag>
+            } else {
+              return <span>-</span>
             }
-            return <span>{statusArray[params.row.status]}</span>
           }
         },
         {
           title: this.$t('description'),
           resizable: true,
-          width: 100,
+          minWidth: 120,
           sortable: 'custom',
-          key: 'description'
+          key: 'description',
+          render: (h, params) => {
+            return (
+              <Tooltip max-width="300" content={params.row.description}>
+                <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
+                  {params.row.description || '-'}
+                </span>
+              </Tooltip>
+            )
+          }
         },
         {
-          title: this.$t('mgmtRoles'),
-          minWidth: 130,
+          title: this.$t('tw_template_owner_role'),
+          minWidth: 120,
           key: 'mgmtRoles',
           render: (h, params) => {
-            const displayName = params.row.mgmtRoles.map(role => role.displayName).join(',')
-            return <span>{displayName}</span>
+            return params.row.mgmtRoles.map(item => {
+              return <Tag>{item.displayName}</Tag>
+            })
           }
         },
         {
           title: this.$t('useRoles'),
-          minWidth: 130,
+          minWidth: 120,
           key: 'mgmtRoles',
           render: (h, params) => {
-            const displayName = params.row.useRoles.map(role => role.displayName).join(',')
-            return <span>{displayName}</span>
+            const list = params.row.useRoles.map(item => {
+              return item.displayName
+            })
+            return <ScrollTag list={list} />
           }
         },
         {
@@ -196,81 +293,142 @@ export default {
           title: this.$t('t_action'),
           key: 'action',
           fixed: 'right',
-          width: 220,
+          width: 205,
           align: 'center',
           render: (h, params) => {
-            const operationOptions = params.row.operateOptions
             return (
-              <div style="text-align: left">
-                {operationOptions.includes('edit') && (
-                  <Button
-                    onClick={() => this.editTemplate(params.row)}
-                    style="margin-left: 6px"
-                    type="primary"
-                    size="small"
-                  >
-                    {this.$t('edit')}
-                  </Button>
+              <div style="display:flex;align-items:center;justify-content:center;">
+                {/* 转给我 */ this.status === 'created' && this.username !== params.row.updatedBy && (
+                  <Tooltip content={this.$t('tw_action_give')} placement="top">
+                    <Button
+                      type="success"
+                      size="small"
+                      style="margin-right:5px;"
+                      onClick={() => this.giveTemplate(params.row)}
+                    >
+                      <Icon type="ios-hand" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
                 )}
-                {operationOptions.includes('delete') && (
-                  <Button
-                    onClick={() => this.deleteTemplate(params.row)}
-                    style="margin-left: 6px"
-                    type="error"
-                    size="small"
-                  >
-                    {this.$t('delete')}
-                  </Button>
+                {/* 编辑 */ this.status === 'created' && this.username === params.row.updatedBy && (
+                  <Tooltip content={this.$t('edit')} placement="top">
+                    <Button
+                      size="small"
+                      type="primary"
+                      style="margin-right:5px;"
+                      onClick={() => this.editTemplate(params.row)}
+                    >
+                      <Icon type="md-create" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
                 )}
-                {operationOptions.includes('query') && (
-                  <Button
-                    onClick={() => this.checkTemplate(params.row)}
-                    style="margin-left: 6px"
-                    type="info"
-                    size="small"
-                  >
-                    {this.$t('detail')}
-                  </Button>
+                {/* 删除 */ this.status === 'created' && this.username === params.row.updatedBy && (
+                  <Tooltip content={this.$t('delete')} placement="top">
+                    <Button
+                      size="small"
+                      type="error"
+                      style="margin-right:5px;"
+                      onClick={() => this.deleteTemplate(params.row)}
+                    >
+                      <Icon type="md-trash" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
                 )}
-                {operationOptions.includes('fork') && (
-                  <Button
-                    onClick={() => this.forkTemplate(params.row)}
-                    style="margin-left: 6px"
-                    type="warning"
-                    size="small"
-                  >
-                    {this.$t('fork')}
-                  </Button>
+                {/* 查看 */ ['pending', 'confirm', 'disable'].includes(this.status) && (
+                  <Tooltip content={this.$t('detail')} placement="top">
+                    <Button
+                      size="small"
+                      type="info"
+                      style="margin-right:5px;"
+                      onClick={() => this.checkTemplate(params.row)}
+                    >
+                      <Icon type="md-eye" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
                 )}
-                {operationOptions.includes('export') && (
-                  <Button
-                    onClick={() => this.exportTemplate(params.row)}
-                    style="margin-left: 6px"
-                    type="success"
-                    size="small"
-                  >
-                    {this.$t('download')}
-                  </Button>
+                {/* 确认发布 */ this.status === 'pending' && this.username === params.row.administrator && (
+                  <Tooltip content={this.$t('tw_confirmPublish')} placement="top">
+                    <Button
+                      size="small"
+                      type="success"
+                      style="margin-right:5px;"
+                      onClick={() => this.confirmTemplate(params.row)}
+                    >
+                      <Icon type="ios-paper-plane" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
                 )}
-                {operationOptions.includes('disable') && (
-                  <Button
-                    onClick={() => this.disableTemplate(params.row)}
-                    style="margin-left: 6px"
-                    type="error"
-                    size="small"
-                  >
-                    {this.$t('disable')}
-                  </Button>
+                {/* 退回草稿 */ this.status === 'pending' && this.username === params.row.administrator && (
+                  <Tooltip content={this.$t('tw_redrawDraft')} placement="top">
+                    <Button
+                      size="small"
+                      type="error"
+                      style="margin-right:5px;"
+                      onClick={() => this.draftTemplate(params.row)}
+                    >
+                      <Icon type="ios-redo" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
                 )}
-                {operationOptions.includes('enable') && (
-                  <Button
-                    onClick={() => this.enableTemplate(params.row)}
-                    style="margin-left: 6px"
-                    type="success"
-                    size="small"
-                  >
-                    {this.$t('enable')}
-                  </Button>
+                {/* 复制 */ this.status === 'confirm' && (
+                  <Tooltip content={this.$t('copy')} placement="top">
+                    <Button
+                      size="small"
+                      type="primary"
+                      style="margin-right:5px;"
+                      onClick={() => this.copyTemplate(params.row)}
+                    >
+                      <Icon type="md-copy" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
+                )}
+                {/* 变更 */ this.status === 'confirm' && (
+                  <Tooltip content={this.$t('fork')} placement="top">
+                    <Button
+                      size="small"
+                      type="warning"
+                      style="margin-right:5px;"
+                      onClick={() => this.forkTemplate(params.row)}
+                    >
+                      <Icon type="md-git-branch" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
+                )}
+                {/* 导出 */ this.status === 'confirm' && (
+                  <Tooltip content={this.$t('download')} placement="top">
+                    <Button
+                      size="small"
+                      type="success"
+                      style="margin-right:5px;"
+                      onClick={() => this.exportTemplate(params.row)}
+                    >
+                      <Icon type="md-cloud-download" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
+                )}
+                {/* 禁用 */ this.status === 'confirm' && (
+                  <Tooltip content={this.$t('disable')} placement="top">
+                    <Button
+                      size="small"
+                      type="error"
+                      style="margin-right:5px;"
+                      onClick={() => this.disableTemplate(params.row)}
+                    >
+                      <Icon type="md-lock" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
+                )}
+                {/* 启用 */ this.status === 'disable' && (
+                  <Tooltip content={this.$t('enable')} placement="top">
+                    <Button
+                      size="small"
+                      type="success"
+                      style="margin-right:5px;"
+                      onClick={() => this.enableTemplate(params.row)}
+                    >
+                      <Icon type="md-unlock" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
                 )}
               </div>
             )
@@ -280,10 +438,73 @@ export default {
       tableData: [],
       roleOptions: [],
       uploadUrl: '/taskman/api/v1/request-template/import',
-      headers: {}
+      headers: {},
+      backReason: '',
+      confirmCount: 0, // 管理员待发布模板数量
+      pendingLabel: () => {
+        return (
+          <div>
+            <span>{this.$t('tw_waitAdminComfirm')}</span>
+            {(this.confirmCount && <span class="badge">{this.confirmCount}</span>) || ''}
+          </div>
+        )
+      },
+      loading: false,
+      typeList: [
+        {
+          value: '1',
+          label: this.$t('tw_publish') // 发布
+        },
+        {
+          value: '2',
+          label: this.$t('tw_request') // 请求
+        },
+        {
+          value: '3',
+          label: this.$t('tw_question') // 问题
+        },
+        {
+          value: '4',
+          label: this.$t('tw_event') // 事件
+        },
+        {
+          value: '5',
+          label: this.$t('fork') // 变更
+        }
+      ]
+    }
+  },
+  watch: {
+    // 给草稿页签动态插入退回原因
+    status: {
+      handler (val) {
+        if (val === 'created') {
+          const index = this.tableColumns.findIndex(i => i.key === 'mgmtRoles')
+          this.tableColumns.splice(index, 0, {
+            title: this.$t('tw_rollback_reason'),
+            sortable: 'updatedBy',
+            minWidth: 150,
+            key: 'rollbackDesc',
+            render: (h, params) => {
+              return (
+                <Tooltip max-width="300" content={params.row.rollbackDesc}>
+                  <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
+                    {params.row.rollbackDesc}
+                  </span>
+                </Tooltip>
+              )
+            }
+          })
+        } else {
+          const index = this.tableColumns.findIndex(i => i.key === 'rollbackDesc')
+          index > 0 && this.tableColumns.splice(index, 1)
+        }
+      },
+      immediate: true
     }
   },
   mounted () {
+    this.status = this.$route.query.status || 'confirm'
     const accessToken = getCookie('accessToken')
     this.headers = {
       Authorization: 'Bearer ' + accessToken
@@ -298,6 +519,110 @@ export default {
     this.getTemplateList()
   },
   methods: {
+    handleReset () {
+      this.name = ''
+      this.mgmtRoles = []
+      this.type = []
+      this.tags = ''
+      this.onSearch()
+    },
+    handleInputChange: debounce(function () {
+      this.onSearch()
+    }, 300),
+    // 转给我
+    async giveTemplate (row) {
+      const params = {
+        request_template_id: row.id,
+        latestUpdateTime: new Date(row.updatedTime).getTime().toString()
+      }
+      const { statusCode } = await templateGiveMe(params)
+      if (statusCode === 'OK') {
+        this.$Notice.success({
+          title: 'Successful',
+          desc: 'Successful'
+        })
+        this.getTemplateList()
+        this.editTemplate(row)
+      }
+    },
+    // 确认发布
+    async confirmTemplate (row) {
+      this.$Modal.confirm({
+        title: this.$t('tw_confirmPublish'),
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          this.$Modal.remove()
+          const params = {
+            requestTemplateId: row.id,
+            status: 'pending',
+            targetStatus: 'confirm'
+          }
+          const { statusCode } = await updateTemplateStatus(params)
+          if (statusCode === 'OK') {
+            this.$Notice.success({
+              title: 'Successful',
+              desc: 'Successful'
+            })
+            this.status = 'confirm'
+            this.getTemplateList()
+          }
+        },
+        onCancel: () => {}
+      })
+    },
+    // 复制模板
+    async copyTemplate (row) {
+      const { statusCode } = await copyTemplate(row.id)
+      if (statusCode === 'OK') {
+        this.status = 'created'
+        this.getTemplateList()
+      }
+    },
+    // 退回草稿
+    async draftTemplate (row) {
+      this.$Modal.confirm({
+        title: this.$t('tw_confirmRedraeDraft'),
+        'z-index': 1000000,
+        loading: false,
+        render: () => {
+          return (
+            <Input
+              type="textarea"
+              maxlength={255}
+              show-word-limit
+              v-model={this.backReason}
+              placeholder={this.$t('tw_back_bind_placeholder')}
+            ></Input>
+          )
+        },
+        onOk: async () => {
+          if (!this.backReason.trim()) {
+            this.$Notice.warning({
+              title: this.$t('warning'),
+              desc: this.$t('tw_back_bind_tips')
+            })
+          } else {
+            const params = {
+              requestTemplateId: row.id,
+              status: 'pending',
+              targetStatus: 'created',
+              reason: this.backReason
+            }
+            const { statusCode } = await updateTemplateStatus(params)
+            if (statusCode === 'OK') {
+              this.$Notice.success({
+                title: this.$t('successful'),
+                desc: this.$t('successful')
+              })
+              this.status = 'created'
+              this.getTemplateList()
+            }
+          }
+        },
+        onCancel: () => {}
+      })
+    },
     handleUpload (file) {
       if (!file.name.endsWith('.json')) {
         this.$Notice.warning({
@@ -318,10 +643,10 @@ export default {
     },
     async uploadSucess (val) {
       if (val.statusCode === 'CONFIRM') {
+        // 确认覆盖
         this.$Modal.confirm({
           title: this.$t('confirm_import'),
-          content:
-            this.$t('tw_template_cover_tips_l') + `"${val.data.templateName}"` + this.$t('tw_template_cover_tips_r'),
+          content: this.$t('tw_template_cover_tips'),
           'z-index': 1000000,
           loading: true,
           onOk: async () => {
@@ -332,16 +657,19 @@ export default {
                 title: 'Successful',
                 desc: 'Successful'
               })
+              this.status = 'created'
               this.getTemplateList()
             }
           },
           onCancel: () => {}
         })
       } else if (val.statusCode === 'OK') {
+        // 导入成功
         this.$Notice.success({
           title: 'Successful',
           desc: 'Successful'
         })
+        this.status = 'created'
         this.getTemplateList()
       } else {
         this.$Notice.warning({
@@ -415,6 +743,7 @@ export default {
           let res = await forkTemplate(row.id)
           if (res.statusCode === 'OK') {
             this.success()
+            this.status = 'created'
             this.getTemplateList()
           }
         },
@@ -441,13 +770,22 @@ export default {
       })
     },
     editTemplate (row) {
-      this.$router.push({ path: '/templateManagementIndex', query: { requestTemplateId: row.id, isCheck: 'N' } })
+      this.$router.push({
+        path: '/templateManagementIndex',
+        query: { requestTemplateId: row.id, isCheck: 'N', parentStatus: this.status }
+      })
     },
     checkTemplate (row) {
-      this.$router.push({ path: '/templateManagementIndex', query: { requestTemplateId: row.id, isCheck: 'Y' } })
+      this.$router.push({
+        path: '/templateManagementIndex',
+        query: { requestTemplateId: row.id, isCheck: 'Y', parentStatus: this.status }
+      })
     },
     addTemplate () {
-      this.$router.push({ path: '/templateManagementIndex', params: { requestTemplateId: '', isCheck: 'N' } })
+      this.$router.push({
+        path: '/templateManagementIndex',
+        params: { requestTemplateId: '', isCheck: 'N', parentStatus: 'created' }
+      })
     },
     onSearch () {
       this.pagination.currentPage = 1
@@ -478,11 +816,11 @@ export default {
           value: this.tags
         })
       }
-      if (this.status.length > 0) {
+      if (this.status) {
         this.payload.filters.push({
           name: 'status',
           operator: 'in',
-          value: this.status
+          value: [this.status]
         })
       }
       if (this.mgmtRoles.length > 0) {
@@ -492,31 +830,62 @@ export default {
           value: this.mgmtRoles
         })
       }
+      if (this.type.length > 0) {
+        this.payload.filters.push({
+          name: 'type',
+          operator: 'eq',
+          value: this.type
+        })
+      }
       if (sorting) {
         this.payload.sorting = sorting
       }
       this.payload.pageable.pageSize = this.pagination.pageSize
       this.payload.pageable.startIndex = (this.pagination.currentPage - 1) * this.pagination.pageSize
+      this.loading = true
       const { statusCode, data } = await getTemplateList(this.payload)
+      this.loading = false
       if (statusCode === 'OK') {
         this.tableData = data.contents
         this.pagination.total = data.pageInfo.totalRows
       }
+      this.getConfirmCount()
     },
     disableTemplate (row) {
       this.modalShow = row.id
     },
     async disableInit () {
-      await disableTemplate(this.modalShow)
+      const res = await disableTemplate(this.modalShow)
       this.modalShow = false
-      this.getTemplateList()
+      if (res.statusCode === 'OK') {
+        this.success()
+        this.status = 'disable'
+        this.getTemplateList()
+      }
     },
     async enableTemplate (row) {
-      await enableTemplate(row.id)
-      this.getTemplateList()
+      const res = await enableTemplate(row.id)
+      if (res.statusCode === 'OK') {
+        this.success()
+        this.status = 'confirm'
+        this.getTemplateList()
+      }
+    },
+    async getConfirmCount () {
+      const { statusCode, data } = await templateConfirmCount()
+      if (statusCode === 'OK') {
+        this.confirmCount = data
+      }
+    },
+    // 点击名称快捷跳转
+    handleDbClick (row) {
+      if (this.status === 'created') {
+        this.editTemplate(row)
+      } else {
+        this.checkTemplate(row)
+      }
     }
-  },
-  components: {}
+  }
 }
 </script>
 <style>
@@ -529,5 +898,19 @@ export default {
 .header-icon {
   float: right;
   margin: 3px 40px 0 0 !important;
+}
+.badge {
+  position: absolute;
+  display: inline-block;
+  font-size: 11px;
+  background-color: #f56c6c;
+  border-radius: 10px;
+  color: #fff;
+  height: 18px;
+  line-height: 18px;
+  padding: 0 6px;
+  text-align: center;
+  white-space: nowrap;
+  margin-left: 5px;
 }
 </style>

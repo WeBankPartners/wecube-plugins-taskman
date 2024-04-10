@@ -25,11 +25,13 @@
 
 <script>
 import BaseSearch from '@/pages/components/base-search.vue'
+import ScrollTag from '@/pages/components/scroll-tag.vue'
 import { collectTemplateList, uncollectTemplate, getTemplateFilter } from '@/api/server'
 import { deepClone } from '@/pages/util/index'
 export default {
   components: {
-    BaseSearch
+    BaseSearch,
+    ScrollTag
   },
   props: {
     actionName: {
@@ -188,16 +190,34 @@ export default {
           }
         },
         {
-          title: this.$t('tw_template_owner_role'),
-          sortable: 'custom',
-          key: 'manageRole',
-          minWidth: 130
+          title: '审批列表',
+          minWidth: 160,
+          key: 'approves',
+          render: (h, params) => {
+            return <ScrollTag list={params.row.approves} />
+          }
         },
         {
-          title: this.$t('tw_template_owner'),
+          title: '任务节点',
+          minWidth: 160,
+          key: 'tasks',
+          render: (h, params) => {
+            return <ScrollTag list={params.row.tasks} />
+          }
+        },
+        {
+          title: '属主角色/人',
           sortable: 'custom',
-          minWidth: 120,
-          key: 'owner'
+          key: 'manageRole',
+          minWidth: 130,
+          render: (h, params) => {
+            return (
+              <div style="display:flex;flex-direction:column">
+                <span>{params.row.manageRole}</span>
+                <span>{params.row.owner}</span>
+              </div>
+            )
+          }
         },
         {
           title: this.$t('useRoles'),
@@ -289,6 +309,13 @@ export default {
         total: 0,
         currentPage: 1,
         pageSize: 10
+      },
+      createRouteMap: {
+        '1': 'createPublish',
+        '2': 'createRequest',
+        '3': 'createProblem',
+        '4': 'createEvent',
+        '5': 'createChange'
       }
     }
   },
@@ -445,14 +472,13 @@ export default {
           desc: this.$t('tw_template_role_tips')
         })
       }
-      const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
+      const path = this.createRouteMap[this.actionName]
       const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,
         query: {
           requestTemplate: row.id,
-          role: row.manageRole,
-          jumpFrom: ''
+          role: row.manageRole
         }
       })
     },

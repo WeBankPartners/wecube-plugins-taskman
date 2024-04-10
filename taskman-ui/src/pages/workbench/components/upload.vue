@@ -1,6 +1,7 @@
 <template>
   <div class="workbench-upload">
     <Upload
+      v-if="!onlyShowFile"
       :action="uploadUrl"
       :before-upload="handleUpload"
       :show-upload-list="false"
@@ -13,7 +14,7 @@
     >
       <Button icon="md-cloud-upload" :disabled="formDisable">{{ $t('upload_attachment') }}</Button>
     </Upload>
-    <div class="file-list">
+    <div :style="{ marginTop: onlyShowFile ? '0px' : '10px', display: 'flex' }">
       <Tag
         v-for="file in attachFiles"
         :key="file.id"
@@ -23,7 +24,7 @@
         @on-close="removeFile(file)"
         @on-change="downloadFile(file)"
         color="primary"
-        style="margin-right:15px;"
+        style="margin-right:15px;cursor:pointer;"
         >{{ file.name }}</Tag
       >
     </div>
@@ -45,6 +46,10 @@ export default {
       type: String,
       default: ''
     },
+    taskHandleId: {
+      type: String,
+      default: ''
+    },
     formDisable: {
       type: Boolean,
       default: false
@@ -52,6 +57,10 @@ export default {
     files: {
       type: Array,
       default: () => []
+    },
+    onlyShowFile: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -64,19 +73,33 @@ export default {
   watch: {
     id: {
       handler (val) {
-        if (val) {
-          if (this.type === 'request') {
-            this.uploadUrl = `/taskman/api/v1/request/attach-file/upload/${val}`
-          } else if (this.type === 'task') {
-            this.uploadUrl = `/taskman/api/v1/task/attach-file/upload/${val}`
+        if (val && this.type === 'request') {
+          this.uploadUrl = `/taskman/api/v1/request/attach-file/upload/${val}`
+          const accessToken = getCookie('accessToken')
+          this.headers = {
+            Authorization: 'Bearer ' + accessToken
           }
+        }
+        if (val && this.taskHandleId && this.type === 'task') {
+          this.uploadUrl = `/taskman/api/v1/task/attach-file/${val}/upload/${this.taskHandleId}`
           const accessToken = getCookie('accessToken')
           this.headers = {
             Authorization: 'Bearer ' + accessToken
           }
         }
       },
-      deep: true,
+      immediate: true
+    },
+    taskHandleId: {
+      handler (val) {
+        if (val && this.id && this.type === 'task') {
+          this.uploadUrl = `/taskman/api/v1/task/attach-file/${this.id}/upload/${val}`
+          const accessToken = getCookie('accessToken')
+          this.headers = {
+            Authorization: 'Bearer ' + accessToken
+          }
+        }
+      },
       immediate: true
     },
     files: {
@@ -173,7 +196,6 @@ export default {
   width: 100%;
   .file-list {
     display: flex;
-    margin-top: 10px;
   }
 }
 </style>

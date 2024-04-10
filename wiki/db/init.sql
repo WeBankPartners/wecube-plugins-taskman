@@ -364,3 +364,184 @@ alter table task add index task_created_time (created_time);
 alter table task add index task_updated_time (updated_time);
 alter table task add index task_template_type (template_type);
 #@v0.1.3.45-end@;
+
+#@v1.0.5-begin@;
+alter table request_template add column approve_by varchar(64) default null COMMENT '发布确认人';
+alter table request_template add column check_switch tinyint default 0 COMMENT '是否加入定版流程';
+alter table request_template add column confirm_switch tinyint default 0 COMMENT '是否加入确认流程';
+alter table request_template add column back_desc  text default null COMMENT '退回理由';
+alter table request_template modify column proc_def_key  varchar(255) default null COMMENT '编排key';
+alter table request_template modify column proc_def_id  varchar(255) default null COMMENT '编排id';
+alter table request_template modify column proc_def_name  varchar(255) default null COMMENT '编排名称';
+alter table request_template add column proc_def_version  varchar(64) default null COMMENT '编排版本';
+
+alter table request add column custom_form_cache text default null COMMENT '自定义表单cache';
+alter table request add column notes text default null COMMENT '请求确认备注';
+alter table request add column task_approval_cache text default null COMMENT '任务审批cache';
+alter table request add column complete_status  varchar(64) default null COMMENT '任务节点完成状态:任务已完成 complete,未完成 uncompleted';
+
+alter table task_template add column sort  int default 0 COMMENT '任务模板序号';
+alter table task_template add column handle_mode  varchar(255) default null COMMENT '处理模式：custom.单人自定义 any.协同 all.并行 admin.提交人角色管理员 auto.自动通过';
+alter table task_template add column type  varchar(64) default null COMMENT '任务类型: check 定版, approve 审批, implement 执行类型, confirm 请求确认';
+
+
+alter table task add column type varchar(64) default null COMMENT '任务类型:submit 提交 check 定版, approve 审批, implement执行类型, confirm 请求确认 revoke 撤回';
+alter table task add column sort int default '0' COMMENT '任务序号';
+alter table task add column task_result  varchar(64) default null COMMENT '处理结果:approve同意,deny拒绝,redraw打回,complete完成,uncompleted未完成';
+alter table task add column confirm_result varchar(64) default null COMMENT '任务确认结果:任务已完成 complete 未完成 uncompleted';
+alter table task add column request_created_time datetime default null COMMENT '请求创建时间';
+
+alter table form_item_template add column ref_id varchar(64) default null COMMENT '引用ID';
+
+
+ALTER TABLE task_template_role DROP FOREIGN KEY fore_task_role_ref_template;
+ALTER TABLE task_template_role DROP FOREIGN KEY fore_task_template_ref_role;
+ALTER TABLE task_template_role DROP INDEX fore_task_role_ref_template;
+ALTER TABLE task_template_role DROP INDEX fore_task_template_ref_role;
+
+
+ALTER TABLE form_item DROP FOREIGN KEY fore_form_item_form;
+ALTER TABLE request DROP FOREIGN KEY fore_request_form;
+ALTER TABLE task DROP FOREIGN KEY fore_task_form;
+ALTER TABLE form_item DROP INDEX fore_form_item_form;
+ALTER TABLE request DROP INDEX fore_request_form;
+ALTER TABLE task DROP INDEX fore_task_form;
+
+ALTER TABLE form_item_template DROP FOREIGN KEY fore_form_item_template;
+ALTER TABLE form DROP FOREIGN KEY fore_form_form_template;
+ALTER TABLE request_template DROP FOREIGN KEY fore_request_template_form;
+ALTER TABLE task_template DROP FOREIGN KEY fore_task_template_form;
+ALTER TABLE form_item_template DROP INDEX fore_form_item_template;
+ALTER TABLE form DROP INDEX fore_form_form_template;
+ALTER TABLE request_template DROP INDEX fore_request_template_form;
+ALTER TABLE task_template DROP INDEX fore_task_template_form;
+
+alter table form_item_template change form_template form_template_old varchar(64) default null comment '表单模板(废弃)';
+alter table form_item change form form_old varchar(64) default null comment '表单(废弃)';
+
+
+alter table form rename to form_old;
+alter table form_template rename to form_template_old;
+
+CREATE TABLE IF NOT EXISTS  `form_template` (
+  `id` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `request_template` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '请求模板',
+  `task_template` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '任务模板',
+  `item_group` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '表单组',
+  `item_group_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '表单组名',
+  `item_group_type` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '表单组类型:workflow 编排数据,optional 自选,custom 自定义,request 请求信息',
+  `item_group_rule` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '新增一行规则',
+  `item_group_sort` tinyint(4) DEFAULT '1' COMMENT '排序',
+  `ref_id` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '引用ID',
+  `request_form_type` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '请求表单类型:message 信息表单 data 数据表单',
+  `del_flag` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+  `created_time` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fore_request_template_new` (`request_template`),
+  KEY `fore_task_template_new` (`task_template`),
+  KEY `fore_ref_id_new` (`ref_id`),
+  CONSTRAINT `fore_request_template_new` FOREIGN KEY (`request_template`) REFERENCES `request_template` (`id`),
+  CONSTRAINT `fore_task_template_new` FOREIGN KEY (`task_template`) REFERENCES `task_template` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='表单模板表';
+
+CREATE TABLE IF NOT EXISTS `form` (
+  `id` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `request` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '请求ID',
+  `task` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '任务ID',
+  `form_template` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '表单模板',
+  `data_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '数据行ID',
+  `created_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '创建人',
+  `updated_by` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '更新人',
+  `created_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `updated_time` datetime DEFAULT NULL COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `fore_form_request` (`request`),
+  KEY `fore_form_task` (`task`),
+  KEY `fore_form_template_new` (`form_template`),
+  CONSTRAINT `fore_form_request` FOREIGN KEY (`request`) REFERENCES `request` (`id`),
+  CONSTRAINT `fore_form_task` FOREIGN KEY (`task`) REFERENCES `task` (`id`),
+  CONSTRAINT `fore_form_template_new` FOREIGN KEY (`form_template`) REFERENCES `form_template` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='表单表';
+
+
+alter table form_item_template add column form_template varchar(64) default null COMMENT '表单模板';
+alter table form_item add column form varchar(64) default null COMMENT '所属表单';
+
+
+alter table form_item add constraint fore_form_item_form foreign key(form) REFERENCES form(id);
+alter table form_item_template add constraint fore_form_item_template foreign key(form_template) REFERENCES form_template(id);
+alter table form add constraint fore_form_form_template foreign key(form_template) REFERENCES form_template(id);
+
+
+CREATE TABLE IF NOT EXISTS `task_handle_template` (
+  `id` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `task_template` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '任务模板',
+  `role` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '角色',
+  `assign` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '分派方式:template.模板指定 custom.提交人指定',
+  `handler_type` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领',
+  `handler` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '处理人',
+  `handle_mode` varchar(255) default null COMMENT '处理模式：custom.单人自定义 any.协同 all.并行 admin.提交人角色管理员 auto.自动通过',
+  `sort` int  DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `force_task_template_new` (`task_template`),
+  CONSTRAINT `force_task_template_new` FOREIGN KEY (`task_template`) REFERENCES `task_template` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='任务模版处理表';
+
+
+CREATE TABLE IF NOT EXISTS `task_handle` (
+    `id` varchar(64)  NOT NULL,
+    `task_handle_template` varchar(64) DEFAULT NULL,
+    `task` varchar(64)  DEFAULT NULL,
+    `role` varchar(64)  DEFAULT NULL,
+    `handler` varchar(64)  DEFAULT NULL,
+    `handler_type` varchar(255)  DEFAULT NULL,
+    `handle_result` varchar(64)  DEFAULT NULL,
+    `handle_status` varchar(64)  DEFAULT 'uncompleted',
+    `parent_id` varchar(64)  DEFAULT NULL,
+    `created_time` datetime  NULL,
+    `updated_time` datetime  NULL,
+    `result_desc` text  DEFAULT NULL,
+    `change_reason` varchar(64)  DEFAULT NULL,
+    `sort` int  DEFAULT '0',
+    `latest_flag` tinyint  DEFAULT '1',
+    PRIMARY KEY (`id`),
+    CONSTRAINT `fore_task_handle_template` FOREIGN KEY (`task_handle_template`) REFERENCES `task_handle_template` (`id`),
+    CONSTRAINT `fore_task_handle_task` FOREIGN KEY (`task`) REFERENCES `task` (`id`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='任务处理表';
+
+
+alter table form_item add column request varchar(64) DEFAULT NULL COMMENT '请求ID';
+alter table form_item add column updated_time datetime DEFAULT NULL COMMENT '更新时间';
+alter table form_item add column original_id varchar(64) DEFAULT NULL COMMENT '原值id';
+alter table form_item add column task_handle varchar(64) DEFAULT NULL COMMENT '任务处理ID';
+alter table form_item add column del_falg tinyint(2) DEFAULT '0' COMMENT '删除标识';
+
+alter table form_item add constraint fore_form_item_request foreign key(request) REFERENCES request(id);
+alter table form_item add constraint fore_form_item_task_handle foreign key(task_handle) REFERENCES task_handle(id);
+
+alter table attach_file add column task_handle varchar(64) default null COMMENT '任务处理';
+alter table attach_file add constraint fore_attach_file_task_handle foreign key(task_handle) REFERENCES task_handle(id);
+alter table form_item_template add column routine_expression text default null COMMENT '表单项计算表达式';
+
+alter table task add index task_request_created_time(request_created_time);
+alter table task add index task_type (type);
+alter table task_handle add index task_handle_latest_flag(latest_flag);
+alter table task_handle add index task_handle_created_time(created_time);
+alter table task_handle add index task_handle_updated_time(updated_time);
+alter table task_handle add index task_handle_result(handle_result);
+alter table task_handle add index task_handle_handler(handler);
+
+CREATE TABLE IF NOT EXISTS `task_notify` (
+    `id` varchar(64)  NOT NULL,
+    `task` varchar(64)  DEFAULT NULL,
+    `doing_notify_count` TINYINT  DEFAULT 0,
+    `timeout_notify_count` TINYINT  DEFAULT 0,
+    `err_msg` text  DEFAULT NULL,
+    `updated_time` datetime  NOT NULL,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `task_notify_task_Id` FOREIGN KEY (`task`) REFERENCES `task` (`id`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='任务通知表';
+alter table task_notify add index task_notify_updated_time(updated_time);
+alter table request_template_role DROP FOREIGN KEY fore_request_template_role;
+alter table request_template_group DROP FOREIGN KEY fore_template_group_role;
+#@v1.0.5-end@;

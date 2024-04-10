@@ -8,6 +8,12 @@
       <TabPane :label="$t('tw_publish')" name="1"></TabPane>
       <!--请求-->
       <TabPane :label="$t('tw_request')" name="2"></TabPane>
+      <!--问题-->
+      <TabPane :label="$t('tw_question')" name="3"></TabPane>
+      <!--事件-->
+      <TabPane :label="$t('tw_event')" name="4"></TabPane>
+      <!--变更-->
+      <TabPane :label="$t('fork')" name="5"></TabPane>
     </Tabs>
     <BaseSearch :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
     <Button size="small" @click="handleExport" type="success" :loading="exportFlag" class="export">{{
@@ -101,6 +107,7 @@ export default {
       // 请求状态设置默认值
       if (item.key === 'status') {
         item.initValue = ['Completed', 'Termination', 'Faulted']
+        item.list = item.list.filter(i => i.value !== 'Draft')
       }
     })
     this.handleReset()
@@ -201,17 +208,14 @@ export default {
     },
     // 表格操作-查看
     hanldeView (row) {
-      const path = this.actionName === '1' ? 'detailPublish' : 'detailRequest'
+      const path = this.detailRouteMap[String(row.type)] || ''
       const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,
         query: {
           requestId: row.id,
           requestTemplate: row.templateId,
-          isCheck: 'Y',
-          isHandle: 'N',
-          enforceDisable: 'Y',
-          jumpFrom: ''
+          taskId: row.taskId
         }
       })
     },
@@ -221,7 +225,7 @@ export default {
       const params = this.getParams()
       axios({
         method: 'post',
-        url: `/taskman/api/v1//request/export`,
+        url: `/taskman/api/v1/request/export`,
         data: params,
         headers: this.headers,
         responseType: 'blob'

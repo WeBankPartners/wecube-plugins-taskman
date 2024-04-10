@@ -1,28 +1,54 @@
 <template>
   <div class="workbench-header-tag">
     <Row v-if="showHeader" class="title" :gutter="10">
-      <Col :span="4" class="line">{{ $t('handle_time') }}</Col>
-      <Col :span="3" class="line">{{ $t('tw_assume') }}</Col>
       <Col :span="3" class="line">{{ $t('handler_role') }}</Col>
       <Col :span="2" class="line">{{ $t('handler') }}</Col>
       <Col :span="2" class="line">{{ $t('t_action') }}</Col>
+      <Col :span="2" class="line">{{ $t('tw_handleStatus') }}</Col>
+      <Col :span="3" class="line">{{ $t('handle_time') }}</Col>
+      <Col :span="3" class="line">{{ $t('tw_assume') }}</Col>
       <Col :span="5" class="line">{{ $t('tw_note') }}</Col>
-      <Col :span="5" class="line">{{ $t('tw_attach') }}</Col>
+      <Col :span="4" class="line">{{ $t('tw_attach') }}</Col>
     </Row>
-    <Row class="content" :gutter="10">
-      <Col :span="4" class="line">{{ data.handleTime }}</Col>
-      <Col :span="3" class="line">{{ getDiffTime }}</Col>
-      <Col :span="3" class="line">{{ data.handleRoleName || '-' }}</Col>
+    <template v-if="data.taskHandleList && data.taskHandleList.length > 0">
+      <Row v-for="i in data.taskHandleList" :key="i.id" class="content" :gutter="10">
+        <Col :span="3" class="line">{{ i.role || '-' }}</Col>
+        <Col :span="2" class="line">{{ i.handler || '-' }}</Col>
+        <Col :span="2" class="line">{{ getOperationName(i) }}</Col>
+        <Col :span="2" class="line">{{ getHandleStatus(i) }}</Col>
+        <Col :span="3" class="line">{{ i.updatedTime || '-' }}</Col>
+        <Col :span="3" class="line">{{ getDiffTime(i) || '-' }}</Col>
+        <Col :span="5" class="line">
+          <Tooltip max-width="300" :content="i.resultDesc">
+            <span class="text-overflow">{{ i.resultDesc || '-' }}</span>
+          </Tooltip>
+        </Col>
+        <Col :span="4" class="line">
+          <div v-for="file in i.attachFiles" style="display:inline-block;" :key="file.id">
+            <Tag type="border" :closable="false" checkable @on-change="downloadFile(file)" color="primary">
+              {{ file.name }}
+            </Tag>
+          </div>
+        </Col>
+      </Row>
+    </template>
+    <Row v-else class="content" :gutter="10">
+      <Col :span="3" class="line">{{ data.role || '-' }}</Col>
       <Col :span="2" class="line">{{ data.handler || '-' }}</Col>
-      <Col :span="2" class="line">{{ data.choseOption || operation }}</Col>
-      <Col :span="5" class="line"
-        ><div class="text-overflow">{{ data.comment }}</div></Col
-      >
+      <Col :span="2" class="line">{{ data.choseOption || operation || '-' }}</Col>
+      <Col :span="2" class="line">{{ '-' }}</Col>
+      <Col :span="3" class="line">{{ data.updatedTime || '-' }}</Col>
+      <Col :span="3" class="line">{{ getDiffTime(data) || '-' }}</Col>
       <Col :span="5" class="line">
+        <Tooltip max-width="300" :content="data.comment">
+          <span style="text-overflow">{{ data.comment }}</span>
+        </Tooltip>
+      </Col>
+      <Col :span="4" class="line">
         <div v-for="file in data.attachFiles" style="display:inline-block;" :key="file.id">
-          <Tag type="border" :closable="false" checkable @on-change="downloadFile(file)" color="primary">{{
-            file.name
-          }}</Tag>
+          <Tag type="border" :closable="false" checkable @on-change="downloadFile(file)" color="primary">
+            {{ file.name }}
+          </Tag>
         </div>
       </Col>
     </Row>
@@ -54,20 +80,54 @@ export default {
     }
   },
   computed: {
+    getOperationName () {
+      return function (i) {
+        // 1.编排任务系统下发选项，2审批和定版退回，前端枚举
+        const resultMap = {
+          deny: this.$t('tw_reject'), // 拒绝
+          approve: this.$t('tw_approve'), // 同意
+          redraw: this.$t('tw_send_back') // 退回
+        }
+        let resultName = ''
+        if (['approve', 'check'].includes(this.data.type)) {
+          resultName = resultMap[i.handleResult]
+        }
+        if (this.data.type === 'implement_process') {
+          resultName = i.handleResult
+        }
+        return resultName || this.operation || '-'
+      }
+    },
+    getHandleStatus () {
+      return function (i) {
+        // 任务处理状态
+        const statusMap = {
+          complete: this.$t('tw_completed'),
+          uncompleted: this.$t('tw_incomplete')
+        }
+        let statusName = ''
+        if (['implement_custom', 'implement_process'].includes(this.data.type)) {
+          statusName = statusMap[i.handleStatus]
+        }
+        return statusName || '-'
+      }
+    },
     getDiffTime () {
-      const newDate = dayjs(this.data.handleTime)
-      const oldDate = dayjs(this.data.createTime)
-      let subtime = (newDate - oldDate) / 1000
-      let days = parseInt(subtime / 86400)
-      let hours = parseInt(subtime / 3600) - 24 * days
-      let mins = parseInt((subtime % 3600) / 60)
-      let secs = parseInt(subtime % 60)
-      return (
-        (days > 0 ? days + this.$t('tw_day') : '') +
-        (hours > 0 ? hours + this.$t('tw_hour') : '') +
-        (mins > 0 ? mins + this.$t('tw_minute') : '') +
-        (secs > 0 ? secs + this.$t('tw_second') : '')
-      )
+      return function (data) {
+        const newDate = dayjs(data.updatedTime)
+        const oldDate = dayjs(data.createdTime)
+        let subtime = (newDate - oldDate) / 1000
+        let days = parseInt(subtime / 86400)
+        let hours = parseInt(subtime / 3600) - 24 * days
+        let mins = parseInt((subtime % 3600) / 60)
+        let secs = parseInt(subtime % 60)
+        return (
+          (days > 0 ? days + this.$t('tw_day') : '') +
+          (hours > 0 ? hours + this.$t('tw_hour') : '') +
+          (mins > 0 ? mins + this.$t('tw_minute') : '') +
+          (secs > 0 ? secs + this.$t('tw_second') : '')
+        )
+      }
     }
   },
   mounted () {
@@ -140,14 +200,20 @@ export default {
     font-size: 12px;
     overflow: hidden;
     word-break: break-all;
+    min-height: 50px;
     .text-overflow {
       overflow: hidden;
-      white-space: nowrap;
       text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
     }
   }
   .line {
     line-height: 32px;
+  }
+  .ivu-tooltip {
+    display: flex;
   }
 }
 </style>

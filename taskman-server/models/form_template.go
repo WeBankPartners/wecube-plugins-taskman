@@ -1,83 +1,109 @@
 package models
 
+import (
+	"github.com/WeBankPartners/go-common-lib/guid"
+	"strings"
+)
+
 type FormTemplateTable struct {
-	Id          string `json:"id" xorm:"id"`
-	Name        string `json:"name" xorm:"name"`
-	Description string `json:"description" xorm:"description"`
-	CreatedBy   string `json:"createdBy" xorm:"created_by"`
-	CreatedTime string `json:"createdTime" xorm:"created_time"`
-	UpdatedBy   string `json:"updatedBy" xorm:"updated_by"`
-	UpdatedTime string `json:"updatedTime" xorm:"updated_time"`
-	DelFlag     int    `json:"delFlag" xorm:"del_flag"`
+	Id              string `json:"id" xorm:"'id' pk" primary-key:"id"`
+	RequestTemplate string `json:"requestTemplate" xorm:"request_template"`
+	TaskTemplate    string `json:"taskTemplate" xorm:"task_template"`
+	ItemGroup       string `json:"itemGroup" xorm:"item_group"`
+	ItemGroupType   string `json:"itemGroupType" xorm:"item_group_type"` //表单组类型:workflow 编排数据,optional 自选,custom 自定义,request_form 请求表单,db判断用
+	ItemGroupName   string `json:"itemGroupName" xorm:"item_group_name"`
+	ItemGroupSort   int    `json:"ItemGroupSort" xorm:"item_group_sort"`     // item_group 排序
+	ItemGroupRule   string `json:"itemGroupRule" xorm:"item_group_rule"`     // item_group_rule 新增一行规则,new 输入新数据,exist 选择已有数据
+	RefId           string `json:"refId" xorm:"ref_id"`                      // 引用ID
+	RequestFormType string `json:"requestFormType" xorm:"request_form_type"` // 请求表单类型: message 信息表单,data 数据表单
+	CreatedTime     string `json:"createdTime" xorm:"created_time"`
+	DelFlag         int    `json:"delFlag" xorm:"del_flag"`
 }
 
-type FormTable struct {
-	Id           string `json:"id" xorm:"id"`
-	Name         string `json:"name" xorm:"name"`
-	Description  string `json:"description" xorm:"description"`
-	FormTemplate string `json:"formTemplate" xorm:"form_template"`
-	CreatedBy    string `json:"createdBy" xorm:"created_by"`
-	CreatedTime  string `json:"createdTime" xorm:"created_time"`
-	UpdatedBy    string `json:"updatedBy" xorm:"updated_by"`
-	UpdatedTime  string `json:"updatedTime" xorm:"updated_time"`
-	DelFlag      int    `json:"delFlag" xorm:"del_flag"`
+func (FormTemplateTable) TableName() string {
+	return "form_template"
 }
 
-type FormItemTemplateTable struct {
-	Id              string           `json:"id" xorm:"id"`
-	Name            string           `json:"name" xorm:"name"`
-	Description     string           `json:"description" xorm:"description"`
-	ItemGroup       string           `json:"itemGroup" xorm:"item_group"`
-	ItemGroupName   string           `json:"itemGroupName" xorm:"item_group_name"`
-	FormTemplate    string           `json:"formTemplate" xorm:"form_template"`
-	DefaultValue    string           `json:"defaultValue" xorm:"default_value"`
-	Sort            int              `json:"sort" xorm:"sort"`
-	PackageName     string           `json:"packageName" xorm:"package_name"`
-	Entity          string           `json:"entity" xorm:"entity"`
-	AttrDefId       string           `json:"attrDefId" xorm:"attr_def_id"`
-	AttrDefName     string           `json:"attrDefName" xorm:"attr_def_name"`
-	AttrDefDataType string           `json:"attrDefDataType" xorm:"attr_def_data_type"`
-	ElementType     string           `json:"elementType" xorm:"element_type"`
-	Title           string           `json:"title" xorm:"title"`
-	Width           int              `json:"width" xorm:"width"`
-	RefPackageName  string           `json:"refPackageName" xorm:"ref_package_name"`
-	RefEntity       string           `json:"refEntity" xorm:"ref_entity"`
-	DataOptions     string           `json:"dataOptions" xorm:"data_options"`
-	Required        string           `json:"required" xorm:"required"`
-	Regular         string           `json:"regular" xorm:"regular"`
-	IsEdit          string           `json:"isEdit" xorm:"is_edit"`
-	IsView          string           `json:"isView" xorm:"is_view"`
-	IsOutput        string           `json:"isOutput" xorm:"is_output"`
-	InDisplayName   string           `json:"inDisplayName" xorm:"in_display_name"`
-	IsRefInside     string           `json:"isRefInside" xorm:"is_ref_inside"`
-	Multiple        string           `json:"multiple" xorm:"multiple"`
-	DefaultClear    string           `json:"defaultClear" xorm:"default_clear"`
-	SelectList      []*EntityDataObj `json:"selectList" xorm:"-"`
+type FormTemplateTableSort []*FormTemplateTable
+
+func (s FormTemplateTableSort) Len() int {
+	return len(s)
 }
 
-type FormItemTable struct {
-	Id               string `json:"id" xorm:"id"`
-	Form             string `json:"form" xorm:"form"`
-	FormItemTemplate string `json:"formItemTemplate" xorm:"form_item_template"`
-	Name             string `json:"name" xorm:"name"`
-	Value            string `json:"value" xorm:"value"`
-	ItemGroup        string `json:"itemGroup" xorm:"item_group"`
-	RowDataId        string `json:"rowDataId" xorm:"row_data_id"`
+func (s FormTemplateTableSort) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s FormTemplateTableSort) Less(i, j int) bool {
+	return s[i].ItemGroupSort < s[j].ItemGroupSort
 }
 
 type FormTemplateDto struct {
-	Id          string                   `json:"id"`
-	Name        string                   `json:"name"`
-	Description string                   `json:"description"`
-	ExpireDay   int                      `json:"expireDay"`
-	UpdatedBy   string                   `json:"updatedBy"`
-	UpdatedTime string                   `json:"updatedTime"`
-	NowTime     string                   `json:"-"`
-	Items       []*FormItemTemplateTable `json:"items"`
+	Id              string                 `json:"id"`
+	Name            string                 `json:"name"`
+	Description     string                 `json:"description"`
+	ExpireDay       int                    `json:"expireDay"`
+	UpdatedBy       string                 `json:"updatedBy"`
+	UpdatedTime     string                 `json:"updatedTime"`
+	NowTime         string                 `json:"-"`
+	RequestTemplate string                 `json:"-"`
+	RequestFormType string                 `json:"-"`
+	Items           []*FormItemTemplateDto `json:"items"`
+}
+
+// DataFormTemplateDto 全局表单模板 dto
+type DataFormTemplateDto struct {
+	AssociationWorkflow bool                    `json:"associationWorkflow"` // 是否关联编排
+	UpdatedBy           string                  `json:"updatedBy"`           // 更新人
+	Groups              []*FormTemplateGroupDto `json:"groups"`
+}
+
+type SimpleFormTemplateDto struct {
+	TaskTemplateId string                  `json:"taskTemplateId"` // 数据表单模板ID
+	UpdatedBy      string                  `json:"updatedBy"`      // 更新人
+	Groups         []*FormTemplateGroupDto `json:"groups"`
+}
+
+// FormTemplateGroupDto 表单模板组dto
+type FormTemplateGroupDto struct {
+	ItemGroupId   string                 `json:"itemGroupId"` //表单组ID
+	ItemGroup     string                 `json:"itemGroup"`
+	ItemGroupType string                 `json:"itemGroupType"` // 表单组类型:workflow 编排数据,optional 自选,custom 自定义
+	ItemGroupName string                 `json:"itemGroupName"`
+	ItemGroupSort int                    `json:"itemGroupSort"` // 组排序
+	Items         []*FormItemTemplateDto `json:"items"`         // 表单项
+}
+
+// FormTemplateGroupConfigureDto 表单组配置在dto
+type FormTemplateGroupConfigureDto struct {
+	RequestTemplateId string                    `json:"requestTemplateId"` // 模板Id
+	TaskTemplateId    string                    `json:"taskTemplateId"`    // 任务模板ID
+	FormTemplateId    string                    `json:"itemGroupId"`
+	ItemGroup         string                    `json:"itemGroup"`
+	ItemGroupType     string                    `json:"itemGroupType"` // 表单组类型:workflow 编排数据,optional 自选,custom 自定义
+	ItemGroupName     string                    `json:"itemGroupName"`
+	ItemGroupRule     string                    `json:"itemGroupRule"` // item_group_rule 新增一行规则,new 输入新数据,exist 选择已有数据
+	ItemGroupSort     int                       `json:"itemGroupSort"` // 表单组排序
+	SystemItems       []*ProcEntityAttributeObj `json:"systemItems"`   // 系统表单项
+	CustomItems       []*FormItemTemplateDto    `json:"customItems"`   // 自定义表单项
+}
+
+// FormTemplateGroupCustomDataDto 表单组自定义数据dto
+type FormTemplateGroupCustomDataDto struct {
+	RequestTemplateId string                 `json:"requestTemplateId"` // 模板Id
+	FormTemplateId    string                 `json:"itemGroupId"`
+	Items             []*FormItemTemplateDto `json:"items"` // 表单项
+}
+
+// FormTemplateGroupSortDto 表单组排序dto
+type FormTemplateGroupSortDto struct {
+	RequestTemplateId string   `json:"requestTemplateId"` // 模板Id
+	TaskTemplateId    string   `json:"taskTemplateId"`    // 任务模板Id
+	ItemGroupIdSort   []string `json:"itemGroupIdSort"`   // 排序
 }
 
 type TaskFormItemQueryObj struct {
-	Id               string `json:"id" xorm:"id"`
+	Id               string `json:"id" xorm:"'id' pk" primary-key:"id"`
 	Form             string `json:"form" xorm:"form"`
 	FormItemTemplate string `json:"formItemTemplate" xorm:"form_item_template"`
 	Name             string `json:"name" xorm:"name"`
@@ -86,4 +112,68 @@ type TaskFormItemQueryObj struct {
 	RowDataId        string `json:"rowDataId" xorm:"row_data_id"`
 	AttrDefDataType  string `json:"attrDefDataType" xorm:"attr_def_data_type"`
 	ElementType      string `json:"elementType" xorm:"element_type"`
+}
+
+func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfigureDto, workflowEntityAttribute *ProcEntityAttributeObj, newItemGroupId string, remoteAttributes []*EntityAttributeObj) *FormItemTemplateTable {
+	var elementType = string(FormItemElementTypeInput)
+	var refPackage, refEntity string
+	if workflowEntityAttribute.DataType == "ref" {
+		elementType = string(FormItemElementTypeSelect)
+		refPackage = workflowEntityAttribute.EntityPackage
+		refEntity = workflowEntityAttribute.Name
+	}
+	for _, remoteAttr := range remoteAttributes {
+		if remoteAttr.PropertyName == workflowEntityAttribute.Name {
+			if strings.Contains(remoteAttr.InputType, "select") {
+				elementType = string(FormItemElementTypeSelect)
+			}
+			break
+		}
+	}
+	return &FormItemTemplateTable{
+		Id:              guid.CreateGuid(),
+		Name:            workflowEntityAttribute.Name,
+		Description:     workflowEntityAttribute.Description,
+		FormTemplate:    newItemGroupId,
+		ItemGroup:       param.ItemGroup,
+		ItemGroupName:   param.ItemGroupName,
+		Sort:            0,
+		PackageName:     workflowEntityAttribute.EntityPackage,
+		Entity:          workflowEntityAttribute.EntityName,
+		AttrDefId:       workflowEntityAttribute.Id,
+		AttrDefName:     workflowEntityAttribute.Name,
+		AttrDefDataType: workflowEntityAttribute.DataType,
+		ElementType:     elementType,
+		Title:           workflowEntityAttribute.Description,
+		Width:           24,
+		RefPackageName:  refPackage,
+		RefEntity:       refEntity,
+		DataOptions:     "",
+		Required:        "no",
+		Regular:         "",
+		IsEdit:          "yes",
+		IsView:          "yes",
+		IsOutput:        "no",
+		InDisplayName:   "yes",
+		IsRefInside:     "no",
+		Multiple:        workflowEntityAttribute.Multiple,
+		DefaultClear:    "no",
+		RefId:           "",
+		SelectList:      nil,
+		Active:          false,
+	}
+}
+
+type FormTemplateGroupDtoSort []*FormTemplateGroupDto
+
+func (s FormTemplateGroupDtoSort) Len() int {
+	return len(s)
+}
+
+func (s FormTemplateGroupDtoSort) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s FormTemplateGroupDtoSort) Less(i, j int) bool {
+	return s[i].ItemGroupSort < s[j].ItemGroupSort
 }

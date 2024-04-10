@@ -22,13 +22,14 @@ const (
 	MYSQL    DBType = "mysql"
 	MSSQL    DBType = "mssql"
 	ORACLE   DBType = "oracle"
+	DAMENG   DBType = "dameng"
 )
 
 // SQLType represents SQL types
 type SQLType struct {
 	Name           string
-	DefaultLength  int
-	DefaultLength2 int
+	DefaultLength  int64
+	DefaultLength2 int64
 }
 
 // enumerates all columns types
@@ -105,12 +106,14 @@ var (
 	Integer           = "INTEGER"
 	BigInt            = "BIGINT"
 	UnsignedBigInt    = "UNSIGNED BIGINT"
+	Number            = "NUMBER"
 
 	Enum = "ENUM"
 	Set  = "SET"
 
 	Char             = "CHAR"
 	Varchar          = "VARCHAR"
+	VARCHAR2         = "VARCHAR2"
 	NChar            = "NCHAR"
 	NVarchar         = "NVARCHAR"
 	TinyText         = "TINYTEXT"
@@ -136,9 +139,10 @@ var (
 	Money      = "MONEY"
 	SmallMoney = "SMALLMONEY"
 
-	Real   = "REAL"
-	Float  = "FLOAT"
-	Double = "DOUBLE"
+	Real          = "REAL"
+	Float         = "FLOAT"
+	UnsignedFloat = "UNSIGNED FLOAT"
+	Double        = "DOUBLE"
 
 	Binary     = "BINARY"
 	VarBinary  = "VARBINARY"
@@ -174,6 +178,7 @@ var (
 		Integer:           NUMERIC_TYPE,
 		BigInt:            NUMERIC_TYPE,
 		UnsignedBigInt:    NUMERIC_TYPE,
+		Number:            NUMERIC_TYPE,
 
 		Enum:  TEXT_TYPE,
 		Set:   TEXT_TYPE,
@@ -185,6 +190,7 @@ var (
 		Char:       TEXT_TYPE,
 		NChar:      TEXT_TYPE,
 		Varchar:    TEXT_TYPE,
+		VARCHAR2:   TEXT_TYPE,
 		NVarchar:   TEXT_TYPE,
 		TinyText:   TEXT_TYPE,
 		Text:       TEXT_TYPE,
@@ -203,13 +209,14 @@ var (
 		SmallDateTime: TIME_TYPE,
 		Year:          TIME_TYPE,
 
-		Decimal:    NUMERIC_TYPE,
-		Numeric:    NUMERIC_TYPE,
-		Real:       NUMERIC_TYPE,
-		Float:      NUMERIC_TYPE,
-		Double:     NUMERIC_TYPE,
-		Money:      NUMERIC_TYPE,
-		SmallMoney: NUMERIC_TYPE,
+		Decimal:       NUMERIC_TYPE,
+		Numeric:       NUMERIC_TYPE,
+		Real:          NUMERIC_TYPE,
+		Float:         NUMERIC_TYPE,
+		UnsignedFloat: NUMERIC_TYPE,
+		Double:        NUMERIC_TYPE,
+		Money:         NUMERIC_TYPE,
+		SmallMoney:    NUMERIC_TYPE,
 
 		Binary:    BLOB_TYPE,
 		VarBinary: BLOB_TYPE,
@@ -327,6 +334,10 @@ func SQLType2Type(st SQLType) reflect.Type {
 		return IntType
 	case BigInt, BigSerial:
 		return Int64Type
+	case UnsignedBit, UnsignedTinyInt, UnsignedSmallInt, UnsignedMediumInt, UnsignedInt:
+		return UintType
+	case UnsignedBigInt:
+		return Uint64Type
 	case Float, Real:
 		return Float32Type
 	case Double:

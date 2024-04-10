@@ -21,6 +21,8 @@ export default {
           list: [
             { label: this.$t('status_pending'), value: 'Pending' },
             { label: this.$t('status_inProgress'), value: 'InProgress' },
+            { label: this.$t('tw_inApproval'), value: 'InApproval' },
+            { label: this.$t('tw_request_confirm'), value: 'Confirm' },
             { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)' },
             { label: this.$t('status_termination'), value: 'Termination' },
             { label: this.$t('status_complete'), value: 'Completed' },
@@ -31,7 +33,7 @@ export default {
         },
         createdBy: {
           key: 'createdBy',
-          placeholder: this.$t('createdBy'),
+          placeholder: this.$t('tw_reporter'),
           component: 'select',
           multiple: true,
           list: []
@@ -75,72 +77,72 @@ export default {
       .format('YYYY-MM-DD')
     this.initDate = [pre, cur]
     this.getFilterOptions()
-    // 待处理-任务处理
+    // 待处理-任务和审批
     this.pendingTaskSearch = [
       this.baseSearch.id,
+      this.baseSearch.name,
       {
         key: 'taskName',
         placeholder: this.$t('task_name'),
         component: 'input'
       },
-      this.baseSearch.name,
       {
-        key: 'taskReportTime',
-        label: this.$t('tw_task_commit_time'),
+        key: 'taskHandleUpdatedTime',
+        label: this.$t('tw_taskUpdated'),
         dateType: 1,
         initValue: this.initDate,
         labelWidth: 110,
         component: 'custom-time'
       },
       this.baseSearch.status,
-      this.baseSearch.createdBy,
-      this.baseSearch.templateId,
-      this.baseSearch.procDefName,
-      this.baseSearch.operatorObjType,
       {
         key: 'taskExpectTime',
-        label: this.$t('tw_task_expect_time'),
+        label: this.$t('tw_taskEnd'),
         dateType: 4,
         labelWidth: 140,
         component: 'custom-time'
-      }
+      },
+      this.baseSearch.createdBy,
+      this.baseSearch.templateId,
+      this.baseSearch.procDefName,
+      this.baseSearch.operatorObjType
     ]
 
-    // 待处理-请求定版
+    // 待处理-定版和请求确认
     this.pendingSearch = [
       this.baseSearch.id,
       this.baseSearch.name,
       this.baseSearch.status,
       {
-        key: 'reportTime',
-        label: this.$t('tw_task_commit_time'),
+        key: 'taskHandleUpdatedTime',
+        label: this.$t('tw_taskUpdated'), // 任务更新
         dateType: 1,
         initValue: this.initDate,
         labelWidth: 110,
         component: 'custom-time'
       },
-      this.baseSearch.createdBy,
-      this.baseSearch.templateId,
-      this.baseSearch.procDefName,
-      this.baseSearch.operatorObjType,
       {
-        key: 'expectTime',
-        label: this.$t('tw_request_expect_time'),
+        key: 'taskExpectTime',
+        label: this.$t('tw_taskEnd'), // 任务截止
         dateType: 4,
         labelWidth: 140,
         component: 'custom-time'
-      }
+      },
+      this.baseSearch.createdBy,
+      this.baseSearch.templateId,
+      this.baseSearch.procDefName,
+      this.baseSearch.operatorObjType
     ]
 
-    // 已处理-任务处理
+    // 已处理-任务和审批
     this.hasProcessedTaskSearch = [
       this.baseSearch.id,
+      this.baseSearch.name,
       {
         key: 'taskName',
         placeholder: this.$t('task_name'),
         component: 'input'
       },
-      this.baseSearch.name,
       {
         key: 'taskApprovalTime',
         label: this.$t('handle_time'),
@@ -155,28 +157,28 @@ export default {
       this.baseSearch.procDefName,
       this.baseSearch.operatorObjType,
       {
-        key: 'taskExpectTime',
-        label: this.$t('tw_task_expect_time'),
+        key: 'taskCreatedTime',
+        label: this.$t('tw_taskCreated'), // 任务创建
         dateType: 4,
-        labelWidth: 140,
+        labelWidth: 110,
         component: 'custom-time'
       },
       {
-        key: 'taskReportTime',
-        label: this.$t('tw_task_commit_time'),
+        key: 'taskExpectTime',
+        label: this.$t('tw_taskEnd'), // 任务截止
         dateType: 4,
-        labelWidth: 110,
+        labelWidth: 140,
         component: 'custom-time'
       }
     ]
 
-    // 已处理-请求定版
+    // 已处理-定版和请求确认
     this.hasProcessedSearch = [
       this.baseSearch.id,
       this.baseSearch.name,
       this.baseSearch.status,
       {
-        key: 'approvalTime',
+        key: 'taskApprovalTime',
         label: this.$t('handle_time'),
         dateType: 1,
         initValue: this.initDate,
@@ -188,17 +190,17 @@ export default {
       this.baseSearch.procDefName,
       this.baseSearch.operatorObjType,
       {
-        key: 'expectTime',
-        label: this.$t('tw_request_expect_time'),
+        key: 'taskCreatedTime',
+        label: this.$t('tw_taskCreated'), // 任务创建
         dateType: 4,
-        labelWidth: 140,
+        labelWidth: 110,
         component: 'custom-time'
       },
       {
-        key: 'reportTime',
-        label: this.$t('tw_task_commit_time'),
+        key: 'taskExpectTime',
+        label: this.$t('tw_taskEnd'), // 任务截止
         dateType: 4,
-        labelWidth: 110,
+        labelWidth: 140,
         component: 'custom-time'
       }
     ]
@@ -233,7 +235,7 @@ export default {
     this.draftSearch = [
       this.baseSearch.id,
       this.baseSearch.name,
-      this.baseSearch.status,
+      // this.baseSearch.status,
       {
         key: 'updatedTime',
         label: this.$t('tw_update_time'),

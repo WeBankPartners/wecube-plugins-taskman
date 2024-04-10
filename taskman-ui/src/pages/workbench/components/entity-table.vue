@@ -1,36 +1,140 @@
 <template>
   <div class="workbench-entity-table">
-    <RadioGroup v-model="activeTab" @on-change="handleTabChange" style="margin-bottom:20px;">
-      <Radio v-for="(item, index) in requestData" :label="item.entity || item.itemGroup" :key="index" border>
-        <span
-          >{{ `${item.itemGroup}` }}<span class="count">{{ item.value.length }}</span></span
-        >
-      </Radio>
-    </RadioGroup>
-    <Table size="small" :columns="tableColumns" :data="tableData" @on-selection-change="handleChooseData"></Table>
-    <Button v-if="isAdd && type === '2'" size="small" style="margin-top: 10px;" @click="addRow">{{
-      $t('tw_add_row')
-    }}</Button>
-    <EditDrawer
-      v-if="editVisible"
-      v-model="editData"
-      :options="editOptions"
-      :visible.sync="editVisible"
-      :disabled="viewDisabled"
-      @submit="submitEditRow"
-    ></EditDrawer>
+    <div class="workbench-entity-table-radio-group">
+      <div
+        v-for="(item, index) in requestData"
+        :key="index"
+        @click="handleTabChange(item)"
+        :class="{
+          radio: true,
+          custom: item.itemGroupType === 'custom',
+          workflow: item.itemGroupType === 'workflow',
+          optional: item.itemGroupType === 'optional',
+          'fix-old-data': !item.itemGroupType
+        }"
+        :style="activeStyle(item)"
+      >
+        {{ `${item.itemGroupName}` }}<span class="count">{{ item.value.length }}</span>
+      </div>
+    </div>
+    <div class="form-table">
+      <div v-for="(value, index) in tableData" :key="index" class="table-item">
+        <div class="number">{{ index + 1 }}</div>
+        <div class="form">
+          <Form :model="value" ref="form" label-position="left" :label-width="100">
+            <Row type="flex" justify="start" :key="index">
+              <Col v-for="i in formOptions" :key="i.id" :span="i.width || 24">
+                <FormItem
+                  :label="i.title"
+                  :prop="i.name"
+                  :required="i.required === 'yes'"
+                  :rules="
+                    i.required === 'yes'
+                      ? [
+                          {
+                            required: true,
+                            message: `${i.title}${$t('can_not_be_empty')}`,
+                            trigger: ['change', 'blur']
+                          }
+                        ]
+                      : []
+                  "
+                >
+                  <!--输入框-->
+                  <Input
+                    v-if="i.elementType === 'input'"
+                    v-model="value[i.name]"
+                    :disabled="i.isEdit === 'no' || formDisable"
+                    style="width: calc(100% - 20px)"
+                  ></Input>
+                  <Input
+                    v-else-if="i.elementType === 'textarea'"
+                    v-model="value[i.name]"
+                    type="textarea"
+                    :disabled="i.isEdit === 'no' || formDisable"
+                    style="width: calc(100% - 20px)"
+                  ></Input>
+                  <LimitSelect
+                    v-if="i.elementType === 'select' || i.elementType === 'wecmdbEntity'"
+                    v-model="value[i.name]"
+                    :displayName="i.elementType === 'wecmdbEntity' ? 'displayName' : 'key_name'"
+                    :displayValue="i.elementType === 'wecmdbEntity' ? 'id' : 'guid'"
+                    :objectOption="!!i.entity || i.elementType === 'wecmdbEntity'"
+                    :options="value[i.name + 'Options']"
+                    :disabled="i.isEdit === 'no' || formDisable"
+                    :multiple="i.multiple === 'Y' || i.multiple === 'yes'"
+                    style="width: calc(100% - 20px)"
+                    @open-change="handleRefOpenChange(i, value, index)"
+                  >
+                  </LimitSelect>
+                  <!--自定义分析类型-->
+                  <Input
+                    v-else-if="i.elementType === 'calculate'"
+                    :value="value[i.name]"
+                    type="textarea"
+                    :disabled="true"
+                    style="width: calc(100% - 20px)"
+                  ></Input>
+                  <!--日期时间类型-->
+                  <DatePicker
+                    v-else-if="i.elementType === 'datePicker'"
+                    :value="value[i.name]"
+                    @on-change="$event => handleTimeChange($event, value, i.name)"
+                    format="yyyy-MM-dd HH:mm:ss"
+                    :disabled="i.isEdit === 'no' || formDisable"
+                    type="datetime"
+                    style="width: calc(100% - 20px)"
+                  >
+                  </DatePicker>
+                </FormItem>
+              </Col>
+            </Row>
+          </Form>
+        </div>
+        <div v-if="!formDisable && tableData.length > 1" class="button">
+          <Icon type="md-trash" color="#ed4014" size="24" @click="handleDeleteRow(index)" />
+        </div>
+      </div>
+    </div>
+    <div v-if="isAdd" class="add-row">
+      <!--添加一行-->
+      <Button v-if="activeItem.itemGroupRule === 'new'" type="primary" @click="addRow">{{ $t('tw_add_row') }}</Button>
+      <!--选择已有数据添加一行-->
+      <Select
+        ref="addRowSelect"
+        v-else-if="activeItem.itemGroupRule === 'exist'"
+        v-model="addRowSource"
+        filterable
+        clearable
+        :placeholder="$t('tw_addRow_exist')"
+        style="width:450px;"
+        prefix="md-add-circle"
+        @on-open-change="
+          flag => {
+            if (flag) getCmdbEntityList()
+          }
+        "
+        @on-change="addRow"
+      >
+        <template #prefix>
+          <Icon type="md-add-circle" color="#2d8cf0" :size="24"></Icon>
+        </template>
+        <template v-for="i in addRowSourceOptions">
+          <Option :key="i.id" :value="i.id">{{ i.displayName }}</Option>
+        </template>
+      </Select>
+    </div>
   </div>
 </template>
 
 <script>
-import { getRefOptions, getWeCmdbOptions } from '@/api/server'
+import { getRefOptions, getWeCmdbOptions, saveFormData, getExpressionData } from '@/api/server'
 import { debounce, deepClone } from '@/pages/util'
-import EditDrawer from './edit-entity-item.vue'
-import limitSelect from '@/pages/components/limit-select.vue'
+import LimitSelect from '@/pages/components/limit-select.vue'
+import dayjs from 'dayjs'
 export default {
   components: {
-    EditDrawer,
-    limitSelect
+    LimitSelect
   },
   props: {
     data: {
@@ -47,74 +151,46 @@ export default {
       default: false
     },
     // 无数据时，是否默认添加一行
-    isAddRow: {
+    autoAddRow: {
       type: Boolean,
       default: false
     },
     formDisable: {
       type: Boolean,
       default: false
-    },
-    // 类型(1发布2请求)
-    type: {
-      type: String,
-      default: ''
     }
   },
   data () {
     return {
       requestData: [],
       activeTab: '',
+      activeItem: {},
       refKeys: [], // 引用类型字段集合select类型
-      tableColumns: [],
+      calculateKeys: [], // 自定义计算分析类型集合
+      formOptions: [],
       tableData: [],
-      editVisible: false,
-      editOptions: [],
-      editData: {},
-      viewDisabled: false,
-      initTableColumns: [
-        {
-          type: 'selection',
-          width: 55,
-          align: 'center',
-          fixed: 'left'
-        },
-        {
-          title: this.$t('t_action'),
-          key: 'action',
-          width: 100,
-          fixed: 'right',
-          align: 'center',
-          render: (h, params) => {
-            return (
-              <div style="display:flex;justify-content:space-around;">
-                {!this.formDisable && (
-                  <Tooltip content={this.$t('edit')} placement="top-start">
-                    <Icon
-                      size="20"
-                      type="md-create"
-                      style="cursor:pointer;"
-                      onClick={() => {
-                        this.handleEditRow(params.row)
-                      }}
-                    />
-                  </Tooltip>
-                )}
-                <Tooltip content={this.$t('detail')} placement="top-start">
-                  <Icon
-                    size="20"
-                    type="md-eye"
-                    style="cursor:pointer;"
-                    onClick={() => {
-                      this.handleViewRow(params.row)
-                    }}
-                  />
-                </Tooltip>
-              </div>
-            )
+      addRowSource: '',
+      addRowSourceOptions: [],
+      worklfowDataIdsObj: {} // 编排类表单默认下发数据dataId集合
+    }
+  },
+  computed: {
+    activeStyle () {
+      return function (item) {
+        let color = '#fff'
+        if (this.activeTab === item.entity || this.activeTab === item.itemGroup) {
+          if (item.itemGroupType === 'workflow') {
+            color = '#ebdcb4'
+          } else if (item.itemGroupType === 'custom') {
+            color = 'rgba(184, 134, 248, 0.6)'
+          } else if (item.itemGroupType === 'optional') {
+            color = 'rgba(129, 179, 55, 0.6)'
+          } else if (!item.itemGroupType) {
+            color = 'rgb(45, 140, 240)'
           }
         }
-      ]
+        return { background: color }
+      }
     }
   },
   watch: {
@@ -123,18 +199,21 @@ export default {
         if (val && val.length) {
           this.requestData = deepClone(val)
           this.requestData.forEach(item => {
-            // 新增时，没有配置数据，默认添加一行
-            if (item.value.length === 0 && this.isAddRow) {
+            // 无表单数据，不是选择已有数据添加一行，默认添加一行
+            if (item.value.length === 0 && this.autoAddRow && item.itemGroupRule !== 'exist') {
               this.handleAddRow(item)
             }
-            item.value.forEach(j => {
-              if (this.formDisable) {
-                j.entityData._disabled = true
-              }
-              j.entityData._checked = true
-            })
+            // 备份编排类表单初始value
+            if (item.itemGroupRule === 'exist' && item.itemGroupType === 'workflow') {
+              const list = item.value || []
+              const ids = list.map(item => {
+                return item.dataId
+              })
+              this.$set(this.worklfowDataIdsObj, item.formTemplateId, ids)
+            }
           })
-          this.activeTab = this.activeTab || this.requestData[0].entity || this.requestData[0].itemGroup
+          this.activeTab = this.requestData[0].entity || this.requestData[0].itemGroup
+          this.activeItem = this.requestData[0]
           this.initTableData()
         }
       },
@@ -142,184 +221,108 @@ export default {
       immediate: true
     }
   },
-  mounted () {},
   methods: {
-    validTable (index) {
-      if (index !== '') {
-        if (this.activeTab === (this.requestData[index].entity || this.requestData[index].itemGroup)) {
-          return
-        }
-        this.activeTab = this.requestData[index].entity || this.requestData[index].itemGroup
-        this.initTableData()
-      }
+    // ref类型下拉框每次展开调用接口
+    handleRefOpenChange (titleObj, row, index) {
+      this.getRefOptions(titleObj, row, index, false)
+    },
+    // 保存当前表单组的数据
+    async saveCurrentTabData (item) {
+      await saveFormData(this.requestId, item)
     },
     // 切换tab刷新表格数据，加上防抖避免切换过快显示异常问题
-    handleTabChange: debounce(function () {
+    handleTabChange: debounce(function (item) {
+      // 切换表单组，保存当前表单组数据
+      if (this.isAdd) {
+        const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
+        if (!this.requiredCheck(data)) {
+          return this.$Message.warning(`【${data.itemGroup}】${this.$t('required_tip')}`)
+        } else {
+          this.saveCurrentTabData(data)
+        }
+      }
+
+      this.activeTab = item.entity || item.itemGroup
+      this.activeItem = item
+      this.addRowSource = ''
+      this.addRowSourceOptions = []
       this.initTableData()
     }, 100),
-    // 编辑操作，刷新requestData
-    refreshRequestData () {
-      this.requestData.forEach(item => {
-        if (item.entity === this.activeTab || item.itemGroup === this.activeTab) {
-          for (let m of item.value) {
-            for (let n of this.tableData) {
-              if (m.id === n._id) {
-                m.entityData = n
-              }
-            }
-          }
-        }
-      })
-    },
     async initTableData () {
       // 当前选择tab数据
       const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
-      this.oriData = data
-      // select类型集合
       this.refKeys = []
+      this.calculateKeys = []
       data.title.forEach(t => {
         if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
           this.refKeys.push(t.name)
         }
+        if (t.elementType === 'calculate') {
+          this.calculateKeys.push(t.name)
+        }
       })
-      // tableColumns数据初始化
-      this.tableColumns = deepClone(this.initTableColumns)
-      data.title.forEach(t => {
-        let column = {
-          title: t.title,
-          key: t.name,
-          align: 'left',
-          minWidth: 240
-        }
-        if (t.required === 'yes') {
-          column.renderHeader = (h, { column }) => {
-            return (
-              <span>
-                {`${column.title}`}
-                <span class="required">{`（${this.$t('required')}）`}</span>
-              </span>
-            )
-          }
-        }
-        if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
-          column.render = (h, params) => {
-            return (
-              <div style="display:flex;align-items:center">
-                {t.name === 'deploy_package' && t.required === 'yes' && !params.row[t.name] && (
-                  <Icon size="24" color="#ed4014" type="md-apps" />
-                )}
-                {t.name === 'deploy_package' && t.required === 'yes' && params.row[t.name] && (
-                  <Icon size="24" color="#19be6b" type="md-apps" />
-                )}
-                {
-                  <limitSelect
-                    value={params.row[t.name]}
-                    on-on-change={v => {
-                      this.tableData[params.row._index][t.name] = v
-                      this.refreshRequestData()
-                    }}
-                    displayName={t.elementType === 'wecmdbEntity' ? 'displayName' : 'key_name'}
-                    displayValue={t.elementType === 'wecmdbEntity' ? 'id' : 'guid'}
-                    objectOption={!!t.entity || t.elementType === 'wecmdbEntity'}
-                    options={params.row[t.name + 'Options']}
-                    disabled={t.isEdit === 'no' || this.formDisable}
-                    multiple={t.multiple === 'Y'}
-                  />
-                }
-                {
-                  // <Select
-                  //   value={params.row[t.name]}
-                  //   on-on-change={v => {
-                  //     this.tableData[params.row._index][t.name] = v
-                  //     this.refreshRequestData()
-                  //   }}
-                  //   filterable
-                  //   clearable
-                  //   multiple={t.multiple === 'Y'}
-                  //   disabled={t.isEdit === 'no' || this.formDisable}
-                  // >
-                  //   {Array.isArray(params.row[t.name + 'Options']) &&
-                  //     params.row[t.name + 'Options'].map(i => (
-                  //       <Option value={t.entity ? i.guid : i} key={t.entity ? i.guid : i}>
-                  //         {t.entity ? i.key_name : i}
-                  //       </Option>
-                  //     ))}
-                  // </Select>
-                }
-              </div>
-            )
-          }
-        } else if (t.elementType === 'input') {
-          column.render = (h, params) => {
-            return (
-              <Input
-                value={params.row[t.name]}
-                onInput={v => {
-                  params.row[t.name] = v
-                  // 暂时这么写,为啥给params赋值不会更新tableData？
-                  this.tableData[params.row._index][t.name] = v
-                }}
-                onBlur={() => {
-                  this.refreshRequestData()
-                }}
-                disabled={t.isEdit === 'no' || this.formDisable}
-              />
-            )
-          }
-        } else if (t.elementType === 'textarea') {
-          column.render = (h, params) => {
-            return (
-              <Input
-                value={params.row[t.name]}
-                onInput={v => {
-                  params.row[t.name] = v
-                  this.tableData[params.row._index][t.name] = v
-                }}
-                onBlur={() => {
-                  this.refreshRequestData()
-                }}
-                type="textarea"
-                disabled={t.isEdit === 'no' || this.formDisable}
-              />
-            )
-          }
-        }
-        this.tableColumns.push(column)
-      })
+      this.formOptions = data.title
 
       // table数据初始化
       this.tableData = data.value.map(v => {
+        // 缓存RefOptions数据，不需要每次调用
         this.refKeys.forEach(rfk => {
-          // 缓存RefOptions数据，不需要每次调用
           if (!(v.entityData[rfk + 'Options'] && v.entityData[rfk + 'Options'].length > 0)) {
             v.entityData[rfk + 'Options'] = []
           }
         })
+
+        // 自定义计算分析类型取值
+        this.calculateKeys.forEach(key => {
+          // 后台有返回值
+          if (v.entityData[key] && v.entityData[key].indexOf('[') > -1) {
+            let jsonData = JSON.parse(v.entityData[key]) || []
+            if (jsonData.length > 0) {
+              const displayNameArr = jsonData.map(item => {
+                return item.displayName || ''
+              })
+              v.entityData[key] = displayNameArr.join('；')
+            } else {
+              v.entityData[key] = '' // 后端可能返回'[]'这种数据
+            }
+          }
+          // 添加一行的数据，并且有cmdb数据id，调用接口获取
+          if (!v.entityData[key] && v.addFlag && v.dataId) {
+            const titleObj = data.title.find(t => t.name === key)
+            this.getExpressionData(titleObj, v)
+          }
+        })
+
         if (!v.entityData._id) {
           v.entityData._id = v.id
         }
+
         return v.entityData
       })
+
       // 下拉类型数据初始化(待优化，调用接口太多)
       this.tableData.forEach((row, index) => {
         this.refKeys.forEach(rfk => {
           if (!(row[rfk + 'Options'] && row[rfk + 'Options'].length > 0)) {
             const titleObj = data.title.find(f => f.name === rfk)
-            this.getRefOptions(titleObj, row, index)
+            this.getRefOptions(titleObj, row, index, true)
           }
         })
       })
     },
-    async getRefOptions (titleObj, row, index) {
+    async getRefOptions (titleObj, row, index, first) {
       // taskman模板管理配置的普通下拉类型(值用逗号拼接)
       if (titleObj.elementType === 'select' && titleObj.entity === '') {
+        if (!first) return
         row[titleObj.name + 'Options'] = (titleObj.dataOptions && titleObj.dataOptions.split(',')) || []
         this.$set(this.tableData, index, row)
         return
       }
       // taskman模板管理配置的引用下拉类型
       if (titleObj.elementType === 'wecmdbEntity') {
+        if (!first) return
         const [packageName, ciType] = (titleObj.dataOptions && titleObj.dataOptions.split(':')) || []
+        if (!packageName || !ciType) return
         const { status, data } = await getWeCmdbOptions(packageName, ciType, {})
         if (status === 'OK') {
           row[titleObj.name + 'Options'] = data
@@ -354,15 +357,16 @@ export default {
       })
       delete cache._checked
       delete cache._disabled
-      const filterValue = row[titleObj.name]
-      const attr = titleObj.entity + '__' + titleObj.name
+      // const filterValue = row[titleObj.name]
+      const attrName = titleObj.entity + '__' + titleObj.name
+      const attr = titleObj.id
       const params = {
         filters: [
-          {
-            name: 'guid',
-            operator: 'in',
-            value: Array.isArray(filterValue) ? filterValue : [filterValue]
-          }
+          // {
+          //   name: 'guid',
+          //   operator: 'in',
+          //   value: Array.isArray(filterValue) ? filterValue : [filterValue]
+          // }
         ],
         paging: false,
         dialect: {
@@ -371,24 +375,34 @@ export default {
           }
         }
       }
-      const { statusCode, data } = await getRefOptions(this.requestId, attr, params)
+      const { statusCode, data } = await getRefOptions(this.requestId, attr, params, attrName)
       if (statusCode === 'OK') {
         row[titleObj.name + 'Options'] = data
         this.$set(this.tableData, index, row)
       }
     },
+    // 获取自定义计算分析类型的值
+    async getExpressionData (titleObj, value) {
+      const { statusCode, data } = await getExpressionData(titleObj.id, value.dataId)
+      if (statusCode === 'OK') {
+        const displayNameArr = data.map(item => {
+          return item.displayName || ''
+        })
+        value.entityData[titleObj.name] = displayNameArr.join('；')
+      }
+    },
     // 删除行数据
-    handleDeleteRow (row) {
+    handleDeleteRow (index) {
       this.$Modal.confirm({
         title: this.$t('confirm') + this.$t('delete'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {
           this.$Modal.remove()
-          this.tableData.splice(row._index, 1)
+          this.tableData.splice(index, 1)
           this.requestData.forEach(item => {
             if (item.entity === this.activeTab || item.itemGroup === this.activeTab) {
-              item.value.splice(row._index, 1)
+              item.value.splice(index, 1)
             }
           })
         },
@@ -397,28 +411,48 @@ export default {
     },
     // 手动添加一行数据
     addRow () {
-      const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
-      this.handleAddRow(data)
-      this.initTableData()
-      // const addRow = data.value[data.value.length - 1].entityData
-      // this.tableData.push(addRow)
-      // this.refKeys.forEach(rfk => {
-      //   const titleObj = data.title.find(f => f.name === rfk)
-      //   this.getRefOptions(titleObj, addRow, data.value.length - 1)
-      // })
+      if (this.activeItem.itemGroupRule === 'new') {
+        const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
+        this.handleAddRow(data)
+        this.initTableData()
+      } else if (this.activeItem.itemGroupRule === 'exist') {
+        if (this.addRowSource) {
+          const source = this.addRowSourceOptions.find(i => i.id === this.addRowSource)
+          const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
+          this.handleAddRow(data, source)
+          this.initTableData()
+          this.$refs.addRowSelect.clearSingleSelect()
+        }
+      }
     },
     // 添加一条行数据
-    handleAddRow (data) {
+    handleAddRow (data, source = null) {
       let entityData = {}
       data.title.forEach(item => {
-        entityData[item.name] = ''
+        // 选择已有数据添加一行，填充默认值
+        if (source) {
+          if (source.hasOwnProperty(item.name)) {
+            entityData[item.name] = source[item.name]
+          } else if (!source.hasOwnProperty(item.name) && item.defaultClear === 'no') {
+            entityData[item.name] = item.defaultValue
+          } else {
+            entityData[item.name] = ''
+          }
+        } else {
+          // 模板自带默认值
+          if (item.defaultClear === 'no') {
+            entityData[item.name] = item.defaultValue
+          } else {
+            entityData[item.name] = ''
+          }
+        }
         if (item.elementType === 'select' || item.elementType === 'wecmdbEntity') {
           entityData[item.name + 'Options'] = []
         }
       })
       const idStr = new Date().getTime().toString()
       let obj = {
-        dataId: '',
+        dataId: source ? source.id || '' : '',
         displayName: '',
         entityData: { ...entityData, _id: '' },
         entityName: data.entity,
@@ -432,45 +466,73 @@ export default {
       }
       data.value.push(obj)
     },
-    handleEditRow (row) {
-      this.viewDisabled = false
-      this.editVisible = true
-      // 当前选择tab数据
-      const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
-      // 编辑表单的options配置
-      this.editOptions = data.title
-      this.editData = deepClone(row)
+    // 获取【选择已有数据添加一行】下拉列表
+    async getCmdbEntityList () {
+      const { packageName, entity } = this.activeItem
+      const { status, data } = await getWeCmdbOptions(packageName, entity, {})
+      if (status === 'OK') {
+        this.addRowSourceOptions = data || []
+        // 过滤下拉框数据(1.编排类表单，下拉框只能选择系统下发的数据2.自选类表单，下拉框可以选全量数据
+        // 3.下拉框数据和表单已存在的数据做ID去重)
+        let ids = []
+        if (this.activeItem.value && this.activeItem.value.length > 0) {
+          ids = this.activeItem.value.map(item => {
+            return item.dataId
+          })
+        }
+        if (this.activeItem.itemGroupType === 'workflow') {
+          this.addRowSourceOptions = this.addRowSourceOptions.filter(item =>
+            this.worklfowDataIdsObj[this.activeItem.formTemplateId].includes(item.id)
+          )
+        }
+        this.addRowSourceOptions = this.addRowSourceOptions.filter(item => !ids.includes(item.id))
+      }
     },
-    submitEditRow () {
-      this.tableData = this.tableData.map(item => {
-        if (item._id === this.editData._id) {
-          for (let key in item) {
-            item[key] = this.editData[key]
+    // 请求表单数据必填项校验
+    requiredCheck (data) {
+      let result = true
+      let requiredName = []
+      data.title.forEach(t => {
+        if (t.required === 'yes') {
+          requiredName.push(t.name)
+        }
+      })
+      data.value.forEach(v => {
+        requiredName.forEach(key => {
+          let val = v.entityData[key]
+          if (Array.isArray(val)) {
+            if (val.length === 0) {
+              result = false
+            }
+          } else {
+            if (val === '' || val === undefined) {
+              result = false
+            }
           }
-        }
-        return item
+        })
       })
-      this.refreshRequestData()
+      return result
     },
-    handleViewRow (row) {
-      this.viewDisabled = true
-      this.editVisible = true
-      // 当前选择tab数据
-      const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
-      // 编辑表单的options配置
-      this.editOptions = data.title
-      this.editData = deepClone(row)
-    },
-    // 给勾选的表格数据设置_checked属性
-    handleChooseData (selection) {
-      const selectIds = selection.map(i => i._id)
-      this.tableData.forEach(row => {
-        if (selectIds.includes(row._id)) {
-          row._checked = true
-        } else {
-          row._checked = false
+    // 表单组必填校验
+    validTable (index) {
+      if (index !== '') {
+        if (this.activeTab === (this.requestData[index].entity || this.requestData[index].itemGroup)) {
+          return
         }
-      })
+        this.activeTab = this.requestData[index].entity || this.requestData[index].itemGroup
+        this.activeItem = this.requestData[index]
+        this.initTableData()
+        this.addRowSource = ''
+        this.addRowSourceOptions = []
+      }
+    },
+    // 时间选择器默认填充当前时分秒
+    handleTimeChange (e, value, name) {
+      if (e && e.split(' ') && e.split(' ')[1] === '00:00:00') {
+        value[name] = `${e.split(' ')[0]} ${dayjs().format('HH:mm:ss')}`
+      } else {
+        value[name] = e
+      }
     }
   }
 }
@@ -479,24 +541,88 @@ export default {
 <style lang="scss">
 .workbench-entity-table {
   width: 100%;
-  .ivu-radio {
-    display: none;
-  }
-  .ivu-radio-wrapper {
-    border-radius: 20px;
-    font-size: 12px;
-    color: #000;
-    background: #fff;
-  }
-  .ivu-radio-wrapper-checked.ivu-radio-border {
-    border-color: #2d8cf0;
-    background: #2d8cf0;
-    color: #fff;
+  &-radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    .radio {
+      padding: 5px 15px;
+      border-radius: 32px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-bottom: 15px;
+    }
+    .custom {
+      border: 1px solid #b886f8;
+      color: #b886f8;
+    }
+    .workflow {
+      border: 1px solid #cba43f;
+      color: #cba43f;
+    }
+    .optional {
+      border: 1px solid #81b337;
+      color: #81b337;
+    }
+    .fix-old-data {
+      border: 1px solid #dcdee2;
+      color: #000;
+    }
   }
   .count {
     font-weight: bold;
     font-size: 14px;
     margin-left: 10px;
+  }
+  .add-row {
+    margin-top: 10px;
+  }
+  .form-table {
+    position: relative;
+    .table-item {
+      display: flex;
+      border-left: 1px dashed #dcdee2;
+      border-right: 1px dashed #dcdee2;
+      border-bottom: 1px dashed #dcdee2;
+      border-radius: 4px;
+      &:first-child {
+        border-top: 1px dashed #dcdee2;
+      }
+      .number {
+        width: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-right: 1px dashed #dcdee2;
+      }
+      .form {
+        padding: 20px 0 10px 20px;
+        flex: 1;
+      }
+      .button {
+        cursor: pointer;
+        width: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-left: 1px solid #dcdee2;
+      }
+    }
+  }
+  .ivu-form-item {
+    margin-bottom: 15px !important;
+  }
+  .ivu-form-item-label {
+    word-wrap: break-word;
+    padding: 10px 10px 10px 0;
+  }
+  .ivu-form-item-required .ivu-form-item-label:before {
+    display: inline;
+    margin-right: 2px;
+  }
+  .ivu-form-item-error-tip {
+    padding-top: 2px;
+    font-size: 12px;
   }
 }
 </style>

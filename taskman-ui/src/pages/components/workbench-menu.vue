@@ -21,24 +21,17 @@
         <Submenu v-for="(i, index) in menuList" :key="index" :name="i.name">
           <template #title>
             <div class="menu-item">
-              <img :src="i.icon" />
+              <img v-if="i.img" :src="i.img" />
+              <Icon v-if="i.icon" :type="i.icon" :size="22" style="margin-right:10px;" color="#fff" />
               {{ i.title }}
             </div>
           </template>
-          <MenuItem v-for="(j, idx) in i.children" :key="idx" :name="j.name" :to="j.path">{{ j.title }}</MenuItem>
+          <MenuItem v-for="(j, idx) in i.children" :key="idx" :name="j.name" :to="j.path" :replace="false">{{
+            j.title
+          }}</MenuItem>
         </Submenu>
       </Menu>
     </div>
-    <!-- <div v-else class="small-menu">
-      <div class="small-menu-item">
-        <img style="width:23px;height:23px;" src="@/images/menu_desk.png" />
-        <span>工作台</span>
-      </div>
-      <div v-for="(i, index) in menuList" :key="index" class="small-menu-item">
-        <img :src="i.icon" />
-        <span>{{ i.title }}</span>
-      </div>
-    </div> -->
     <div class="expand" :style="{ left: expand ? '140px' : '0px' }">
       <Icon v-if="expand" @click="handleExpand" type="ios-arrow-dropleft" size="28" />
       <Icon v-else @click="handleExpand" type="ios-arrow-dropright" size="28" />
@@ -54,23 +47,51 @@ export default {
       expand: true,
       activeName: '',
       openNames: [],
+      lang: window.localStorage.getItem('lang') || 'zh-CN',
       menuList: [
         {
           title: this.$t('tw_publish'),
-          icon: require('@/images/menu_publish.png'),
+          icon: 'md-person-add',
           name: '1',
           children: [
-            { title: this.$t('tw_new_publish'), path: '/taskman/workbench/template?type=publish', name: '1-1' },
-            { title: this.$t('tw_publish_history'), path: '/taskman/workbench/publishHistory', name: '1-2' }
+            { title: this.$t('tw_new'), path: '/taskman/workbench/template?type=1', name: '1-1' },
+            { title: this.$t('tw_history'), path: '/taskman/workbench/publishHistory', name: '1-2' }
           ]
         },
         {
           title: this.$t('tw_request'),
-          icon: require('@/images/menu_request.png'),
+          icon: 'ios-send',
           name: '2',
           children: [
-            { title: this.$t('tw_new_request'), path: '/taskman/workbench/template?type=request', name: '2-1' },
-            { title: this.$t('tw_request_history'), path: '/taskman/workbench/requestHistory', name: '2-2' }
+            { title: this.$t('tw_new'), path: '/taskman/workbench/template?type=2', name: '2-1' },
+            { title: this.$t('tw_history'), path: '/taskman/workbench/requestHistory', name: '2-2' }
+          ]
+        },
+        {
+          title: this.$t('tw_question'),
+          icon: 'md-help-circle',
+          name: '3',
+          children: [
+            { title: this.$t('tw_new'), path: '/taskman/workbench/template?type=3', name: '3-1' },
+            { title: this.$t('tw_history'), path: '/taskman/workbench/problemHistory', name: '3-2' }
+          ]
+        },
+        {
+          title: this.$t('tw_event'),
+          icon: 'md-pulse',
+          name: '4',
+          children: [
+            { title: this.$t('tw_new'), path: '/taskman/workbench/template?type=4', name: '4-1' },
+            { title: this.$t('tw_history'), path: '/taskman/workbench/eventHistory', name: '4-2' }
+          ]
+        },
+        {
+          title: this.$t('fork'),
+          icon: 'md-git-merge',
+          name: '5',
+          children: [
+            { title: this.$t('tw_new'), path: '/taskman/workbench/template?type=5', name: '5-1' },
+            { title: this.$t('tw_history'), path: '/taskman/workbench/changeHistory', name: '5-2' }
           ]
         }
       ]
@@ -87,9 +108,19 @@ export default {
     })
   },
   mounted () {
+    if (this.$eventBusP) {
+      this.$eventBusP.$emit('expand-menu', this.expand)
+    } else {
+      this.$bus.$emit('expand-menu', this.expand)
+    }
     window.addEventListener('scroll', this.getScrollTop)
   },
   beforeDestroy () {
+    if (this.$eventBusP) {
+      this.$eventBusP.$emit('expand-menu', false)
+    } else {
+      this.$bus.$emit('expand-menu', false)
+    }
     window.removeEventListener('scroll', this.getScrollTop)
   },
   methods: {
@@ -128,6 +159,9 @@ export default {
   .ivu-menu-dark.ivu-menu-vertical .ivu-menu-submenu-title {
     background: #10192b;
     padding: 10px;
+    i {
+      margin-right: 0px;
+    }
   }
   .ivu-menu-item {
     padding-left: 32px !important;

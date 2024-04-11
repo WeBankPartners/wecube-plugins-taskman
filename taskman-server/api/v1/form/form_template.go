@@ -51,6 +51,11 @@ func UpdateRequestFormTemplate(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
+	// 校验是否有修改权限
+	if err = service.GetRequestTemplateService().CheckPermission(requestTemplateId, middleware.GetRequestUser(c)); err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
 	param.UpdatedBy = user
 	param.RequestTemplate = requestTemplateId
 	if param.Id != "" {

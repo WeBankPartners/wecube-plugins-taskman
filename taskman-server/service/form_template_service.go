@@ -205,10 +205,6 @@ func (s *FormTemplateService) CreateRequestFormTemplate(formTemplateDto models.F
 	if requestTemplate == nil {
 		return exterror.Catch(exterror.New().RequestParamValidateError, fmt.Errorf("param id is invalid"))
 	}
-	/*	// 请求模板的处理不是当前用户,不允许操作
-		if requestTemplate.Handler != formTemplateDto.UpdatedBy {
-			return exterror.New().DataPermissionDeny
-		}*/
 	err = transactionWithoutForeignCheck(func(session *xorm.Session) error {
 		// 设置请求表单类型
 		formTemplateDto.RequestFormType = string(models.RequestFormTypeMessage)

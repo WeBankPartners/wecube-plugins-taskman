@@ -29,8 +29,9 @@ type FormItemTemplateTable struct {
 	IsRefInside       string           `json:"isRefInside" xorm:"is_ref_inside"`
 	Multiple          string           `json:"multiple" xorm:"multiple"`
 	DefaultClear      string           `json:"defaultClear" xorm:"default_clear"`
-	RefId             string           `json:"refId" xorm:"ref_id"`                         //复制数据表单ID,数据表单删除该表单项时,需要删除审批表单,任务表单对应数据项
-	RoutineExpression string           `json:"routineExpression" xorm:"routine_expression"` //计算表达式
+	RefId             string           `json:"refId" xorm:"ref_id"`                         // 复制数据表单ID,数据表单删除该表单项时,需要删除审批表单,任务表单对应数据项
+	RoutineExpression string           `json:"routineExpression" xorm:"routine_expression"` // 计算表达式
+	FilterRule        string           `json:"FilterRule" xorm:"filter_rule"`               // 下拉框过滤规则
 	SelectList        []*EntityDataObj `json:"selectList" xorm:"-"`
 	Active            bool             `json:"active" xorm:"-"` // 是否选中状态
 }
@@ -67,8 +68,9 @@ type FormItemTemplateDto struct {
 	IsRefInside       string           `json:"isRefInside"`
 	Multiple          string           `json:"multiple"`
 	DefaultClear      string           `json:"defaultClear"`
-	RefId             string           `json:"copyId"`            //复制数据表单ID,数据表单删除该表单项时,需要删除审批表单,任务表单对应数据项
-	RoutineExpression string           `json:"routineExpression"` //计算表达式
+	RefId             string           `json:"copyId"`            // 复制数据表单ID,数据表单删除该表单项时,需要删除审批表单,任务表单对应数据项
+	RoutineExpression string           `json:"routineExpression"` // 计算表达式
+	FilterRule        string           `json:"FilterRule"`        // 下拉框过滤规则
 	SelectList        []*EntityDataObj `json:"selectList"`
 	Active            bool             `json:"active"` // 是否选中状态
 }
@@ -105,9 +107,9 @@ func ConvertFormItemTemplateDto2Model(dto *FormItemTemplateDto) *FormItemTemplat
 		Id:                dto.Id,
 		Name:              dto.Name,
 		Description:       dto.Description,
-		FormTemplate:      dto.FormTemplate,
 		ItemGroup:         dto.ItemGroup,
 		ItemGroupName:     dto.ItemGroupName,
+		FormTemplate:      dto.FormTemplate,
 		DefaultValue:      dto.DefaultValue,
 		Sort:              dto.Sort,
 		PackageName:       dto.PackageName,
@@ -131,9 +133,10 @@ func ConvertFormItemTemplateDto2Model(dto *FormItemTemplateDto) *FormItemTemplat
 		Multiple:          dto.Multiple,
 		DefaultClear:      dto.DefaultClear,
 		RefId:             dto.RefId,
+		RoutineExpression: dto.RoutineExpression,
+		FilterRule:        dto.FilterRule,
 		SelectList:        dto.SelectList,
 		Active:            dto.Active,
-		RoutineExpression: dto.RoutineExpression,
 	}
 }
 
@@ -171,6 +174,7 @@ func ConvertFormItemTemplateModel2Dto(model *FormItemTemplateTable, itemGroup Fo
 		SelectList:        model.SelectList,
 		Active:            model.Active,
 		RoutineExpression: model.RoutineExpression,
+		FilterRule:        model.FilterRule,
 	}
 	dto.ItemGroupType = itemGroup.ItemGroupType
 	dto.ItemGroupRule = itemGroup.ItemGroupRule

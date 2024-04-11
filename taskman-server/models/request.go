@@ -139,7 +139,8 @@ type PlatformDataObj struct {
 	HandlerType            string `json:"handlerType" xorm:"-"`                                  // 人员设置方式,template.模板指定，custom 提交人指定等
 	RoleAdministrator      string `json:"roleAdministrator" xorm:"-"`                            // 角色管理员
 	ExpireDay              int    `json:"expireDay" xorm:"expire_day"`                           // 过期时间
-	RequestRefId           int    `json:"requestRefId" xorm:"request_ref_id"`                    // 请求关联ID
+	RequestRefId           string `json:"requestRefId" xorm:"request_ref_id"`                    // 请求关联ID
+	RequestRefName         string `json:"requestRefName" xorm:"-"`                               // 请求关联名称
 }
 
 // RequestProgress 请求进度

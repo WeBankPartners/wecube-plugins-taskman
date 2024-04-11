@@ -386,6 +386,7 @@ func getRequestExportData(language string, rowsData []*models.PlatformDataObj) (
 			"创建人",
 			"创建人角色",
 			"请求提交时间",
+			"关联单ID",
 		}
 		days = "日"
 	} else {
@@ -406,6 +407,7 @@ func getRequestExportData(language string, rowsData []*models.PlatformDataObj) (
 			"Creator",
 			"Creator Role",
 			"Request Submission",
+			"Association ID",
 		}
 		days = "days"
 	}
@@ -431,6 +433,7 @@ func getRequestExportData(language string, rowsData []*models.PlatformDataObj) (
 			row.CreatedBy,
 			row.RoleDisplay,
 			row.ReportTime,
+			row.RequestRefId,
 		}
 	}
 	return
@@ -705,6 +708,10 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 				platformDataObj.TaskHandleRoleDisplay = strings.Join(newRoleDisplayArr, ",")
 			} else {
 				platformDataObj.TaskHandleRoleDisplay = roleDisplayMap[platformDataObj.TaskHandleRole]
+			}
+			if platformDataObj.RequestRefId != "" {
+				requestTemp, _ := GetSimpleRequest(platformDataObj.RequestRefId)
+				platformDataObj.RequestRefName = requestTemp.Name
 			}
 		}
 		if len(actions) > 0 {

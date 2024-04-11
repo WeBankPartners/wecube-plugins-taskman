@@ -100,8 +100,18 @@ export default {
     } else {
       this.headers['Accept-Language'] = 'en-US,en;q=0.9,zh;q=0.8'
     }
+    // 表格列
     this.tableColumns = deepClone(this.submitAllColumn)
     this.tableColumns = this.tableColumns.filter(item => item.key !== 'rollbackDesc' && item.key !== 'action')
+    this.tableColumns.splice(1, 0, {
+      title: this.$t('tw_ref_id'),
+      width: 140,
+      key: 'requestRefId',
+      render: (h, params) => {
+        return <span>{params.row.requestRefId || '-'}</span>
+      }
+    })
+    // 搜索条件
     this.searchOptions = this.submitSearch
     this.searchOptions.push({
       key: 'requestRefId',

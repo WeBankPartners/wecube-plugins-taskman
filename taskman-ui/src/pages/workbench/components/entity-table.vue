@@ -317,7 +317,7 @@ export default {
       })
     },
     async getRefOptions (titleObj, row, index, first) {
-      // taskman模板管理配置的普通下拉类型(值用逗号拼接)
+      // taskman模板管理配置的下拉类型(值用逗号拼接)
       if (titleObj.elementType === 'select' && titleObj.entity === '') {
         if (!first) return
         row[titleObj.name + 'Options'] = (titleObj.dataOptions && titleObj.dataOptions.split(',')) || []

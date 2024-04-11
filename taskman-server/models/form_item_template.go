@@ -31,7 +31,7 @@ type FormItemTemplateTable struct {
 	DefaultClear      string           `json:"defaultClear" xorm:"default_clear"`
 	RefId             string           `json:"refId" xorm:"ref_id"`                         // 复制数据表单ID,数据表单删除该表单项时,需要删除审批表单,任务表单对应数据项
 	RoutineExpression string           `json:"routineExpression" xorm:"routine_expression"` // 计算表达式
-	FilterRule        string           `json:"FilterRule" xorm:"filter_rule"`               // 下拉框过滤规则
+	FilterRule        string           `json:"filterRule" xorm:"filter_rule"`               // 下拉框过滤规则
 	SelectList        []*EntityDataObj `json:"selectList" xorm:"-"`
 	Active            bool             `json:"active" xorm:"-"` // 是否选中状态
 }
@@ -70,7 +70,7 @@ type FormItemTemplateDto struct {
 	DefaultClear      string           `json:"defaultClear"`
 	RefId             string           `json:"copyId"`            // 复制数据表单ID,数据表单删除该表单项时,需要删除审批表单,任务表单对应数据项
 	RoutineExpression string           `json:"routineExpression"` // 计算表达式
-	FilterRule        string           `json:"FilterRule"`        // 下拉框过滤规则
+	FilterRule        string           `json:"filterRule"`        // 下拉框过滤规则
 	SelectList        []*EntityDataObj `json:"selectList"`
 	Active            bool             `json:"active"` // 是否选中状态
 }

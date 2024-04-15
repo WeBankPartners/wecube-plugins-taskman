@@ -439,7 +439,7 @@ func UpdateRequestFormItem(requestId, operator, now string, param *models.Reques
 				"updated_time) values (?,?,?,?,?,?,?,?)", Param: []interface{}{newFormId, requestId, v.FormTemplateId, valueObj.Id, operator, now, operator, now}})
 			tmpGuidList := guid.CreateGuidList(len(v.Title))
 			for i, title := range v.Title {
-				if title.Multiple == "Y" {
+				if strings.EqualFold(title.Multiple, models.Yes) || strings.EqualFold(title.Multiple, models.Y) {
 					if tmpV, b := valueObj.EntityData[title.Name]; b {
 						var tmpStringV []string
 						for _, interfaceV := range tmpV.([]interface{}) {
@@ -481,7 +481,7 @@ func UpdateRequestFormItemNew(requestId, operator, now string, param *models.Req
 		isColumnMultiMap := make(map[string]int)
 		for _, title := range tableForm.Title {
 			columnNameIdMap[title.Name] = title.Id
-			if title.Multiple == "Y" {
+			if strings.EqualFold(title.Multiple, models.Yes) || strings.EqualFold(title.Multiple, models.Y) {
 				isColumnMultiMap[title.Name] = 1
 			}
 		}
@@ -576,7 +576,7 @@ func UpdateSingleRequestForm(requestId, operator, now string, param *models.Requ
 			"updated_time) values (?,?,?,?,?,?,?,?)", Param: []interface{}{newFormId, requestId, param.FormTemplateId, valueObj.Id, operator, now, operator, now}})
 		tmpGuidList := guid.CreateGuidList(len(param.Title))
 		for i, title := range param.Title {
-			if title.Multiple == "Y" {
+			if strings.EqualFold(title.Multiple, models.Yes) || strings.EqualFold(title.Multiple, models.Y) {
 				if tmpV, b := valueObj.EntityData[title.Name]; b {
 					var tmpStringV []string
 					for _, interfaceV := range tmpV.([]interface{}) {
@@ -1538,7 +1538,7 @@ func buildEntityValueAttrData(titles []*models.FormItemTemplateDto, entityData m
 	}
 	for k, v := range entityData {
 		if vv, b := titleMap[k]; b {
-			if vv.Multiple == "Y" {
+			if strings.EqualFold(vv.Multiple, models.Yes) || strings.EqualFold(vv.Multiple, models.Y) {
 				var tmpV []string
 				for _, interfaceV := range v.([]interface{}) {
 					tmpV = append(tmpV, fmt.Sprintf("%s", interfaceV))
@@ -2287,7 +2287,7 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 					isMulti := false
 					for _, tmpTitle := range formTable.Title {
 						if tmpTitle.Name == rowItem.Name {
-							if tmpTitle.Multiple == "Y" {
+							if strings.EqualFold(tmpTitle.Multiple, models.Yes) || strings.EqualFold(tmpTitle.Multiple, models.Y) {
 								isMulti = true
 								break
 							}

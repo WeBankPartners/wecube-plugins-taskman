@@ -10,6 +10,8 @@ const (
 	UploadFileMaxSize    = 10485760
 	DefaultHttpErrorCode = "ERROR"
 	WeCubeEmptySearch    = "WeCube-empty-search" //查询空数据
+	Yes                  = "yes"
+	Y                    = "y"
 )
 
 // RequestStatus 定义请求状态

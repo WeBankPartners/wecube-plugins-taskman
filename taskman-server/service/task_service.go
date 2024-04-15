@@ -470,7 +470,7 @@ func SaveTaskFormNew(task *models.TaskTable, operator string, param *models.Task
 		isColumnMultiMap := make(map[string]int)
 		for _, title := range tableForm.Title {
 			columnNameIdMap[title.Name] = title.Id
-			if title.Multiple == "Y" {
+			if strings.EqualFold(title.Multiple, models.Yes) || strings.EqualFold(title.Multiple, models.Y) {
 				isColumnMultiMap[title.Name] = 1
 			}
 		}

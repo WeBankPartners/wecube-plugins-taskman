@@ -480,7 +480,7 @@ export default {
       }
     }, 500),
     handleToHome () {
-      if (this.$route.query.requestId) {
+      if (this.$route.query.jumpFrom) {
         this.$router.push({
           path: `/taskman/workbench?tabName=${this.jumpFrom}&actionName=${this.actionName}&${
             this.jumpFrom === 'submit' ? 'rollback' : 'type'
@@ -499,6 +499,15 @@ export default {
       if (statusCode === 'OK') {
         this.detail = data || {}
         this.requestId = data.id
+        // 解决刷新页面，会一直创建请求的问题
+        this.$router.replace({
+          path: this.$router.path,
+          query: {
+            requestTemplate: this.$route.query.requestTemplate,
+            requestId: this.requestId,
+            role: this.$route.query.role
+          }
+        })
         this.form.name = (data.name && data.name.substr(0, 70)) || ''
         this.form.expectTime = data.expectTime || ''
         this.form.customForm = {

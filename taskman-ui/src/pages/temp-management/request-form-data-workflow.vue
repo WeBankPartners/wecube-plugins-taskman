@@ -115,8 +115,9 @@ export default {
       formTemplateId: '', // 数据表单id
       groupRules: [
         // 新增一行选项
-        { label: this.$t('tw_enter_new_data'), value: 'new' },
-        { label: this.$t('tw_select_data'), value: 'exist' }
+        { label: this.$t('tw_enter_new_data'), value: 'new' }, // 输入新数据
+        { label: this.$t('tw_select_data_all'), value: 'exist' }, // 选择已有数据-默认全选
+        { label: this.$t('tw_select_data_empty'), value: 'exist_empty' } // 选择已有数据-默认不选
       ],
       groupStyle: {
         custom: {
@@ -142,7 +143,7 @@ export default {
         itemGroupType: '',
         itemGroupName: '',
         itemGroupSort: 1,
-        itemGroupRule: 'exist',
+        itemGroupRule: 'new',
         formTemplate: '',
         defaultValue: '',
         routineExpression: '',
@@ -176,7 +177,7 @@ export default {
         itemGroupType: '', // 组类型
         itemGroupName: '', // 组名称
         itemGroupSort: -1, // 组顺序
-        itemGroupRule: 'exist', // 新增一行
+        itemGroupRule: 'new', // 新增一行
         systemItems: [], // 预制表单字段
         customItems: [] // 自定义分析字段
       }
@@ -201,7 +202,7 @@ export default {
       this.getAllDataModels()
       if (params.isAdd) {
         this.group.itemGroupSort = params.itemGroupSort
-        this.group.itemGroupRule = 'exist'
+        this.group.itemGroupRule = 'new'
       }
       this.openFormConfig = true
     },

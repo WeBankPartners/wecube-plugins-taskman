@@ -446,5 +446,6 @@
   "tw_allocation": "分配",
   "tw_validity_period": "时效",
   "tw_home": "首页",
-  "tw_ref_id": "关联单ID"
+  "tw_ref_id": "关联单ID",
+  "role_invalidDate": "角色过期时间"
 }

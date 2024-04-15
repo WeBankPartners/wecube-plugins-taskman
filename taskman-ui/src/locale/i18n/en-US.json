@@ -448,5 +448,6 @@
   "tw_allocation": "Allocation",
   "tw_validity_period": "Validity Period",
   "tw_home": "Home",
-  "tw_ref_id": "Association ID"
+  "tw_ref_id": "Association ID",
+  "role_invalidDate": "Role Expiration Time"
 }

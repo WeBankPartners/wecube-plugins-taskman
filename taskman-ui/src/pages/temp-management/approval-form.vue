@@ -54,45 +54,14 @@
           </div>
           <div>
             <Row>
+              <!--自定义表单项-->
               <Col span="5" style="border: 1px solid #dcdee2; padding: 0 16px">
                 <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
                   <Divider plain>{{ $t('custom_form') }}</Divider>
-                  <draggable
-                    class="dragArea"
-                    :list="customElement"
-                    :group="{ name: 'people', pull: 'clone', put: false }"
-                    :sort="$parent.isCheck !== 'Y'"
-                    :clone="cloneDog"
-                  >
-                    <div
-                      class="list-group-item-"
-                      style="width: 100%"
-                      v-for="element in customElement"
-                      :key="element.id"
-                    >
-                      <Input v-if="element.elementType === 'input'" :placeholder="$t('t_input')" />
-                      <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
-                      <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
-                      <Select
-                        v-if="element.elementType === 'wecmdbEntity'"
-                        :placeholder="$t('tw_entity_data_items')"
-                      ></Select>
-                      <DatePicker
-                        v-if="element.elementType === 'datePicker'"
-                        :type="element.type"
-                        :placeholder="$t('tw_date_picker')"
-                        style="width:100%"
-                      ></DatePicker>
-                      <div
-                        v-if="element.elementType === 'group'"
-                        style="width: 100%; height: 80px; border: 1px solid #5ea7f4"
-                      >
-                        <span style="margin: 8px; color: #bbbbbb"> Item Group </span>
-                      </div>
-                    </div>
-                  </draggable>
+                  <CustomDraggable :sortable="$parent.isCheck !== 'Y'" :clone="cloneDog"></CustomDraggable>
                 </div>
               </Col>
+              <!--表单预览-->
               <Col span="14" style="border: 1px solid #dcdee2; padding: 0 16px; width: 57%; margin: 0 4px">
                 <div :style="{ height: MODALHEIGHT + 'px', overflow: 'auto' }">
                   <Divider>{{ $t('tw_preview') }}</Divider>
@@ -273,6 +242,7 @@
                   </template>
                 </Modal>
               </Col>
+              <!--属性设置-->
               <Col span="5" style="border: 1px solid #dcdee2">
                 <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
                   <Collapse v-model="openPanel">
@@ -484,6 +454,7 @@ import draggable from 'vuedraggable'
 import ApprovalFormNode from './approval-form-node.vue'
 import RequestFormDataCustom from './request-form-data-custom.vue'
 import RequestFormDataWorkflow from './request-form-data-workflow.vue'
+import CustomDraggable from './components/custom-draggable.vue'
 import {
   getApprovalNode,
   addApprovalNode,
@@ -497,7 +468,13 @@ import {
   saveRequestGroupCustomForm
 } from '@/api/server.js'
 export default {
-  name: 'BasicInfo',
+  components: {
+    ApprovalFormNode,
+    RequestFormDataCustom,
+    RequestFormDataWorkflow,
+    draggable,
+    CustomDraggable
+  },
   data () {
     return {
       isParmasChanged: false, // 参数变化标志位，控制右侧panel显示逻辑
@@ -517,160 +494,6 @@ export default {
       ],
       activeEditingNode: {}, // 标记整在编辑的节点
       isShowFormConfig: false,
-      customElement: [
-        // 预制自定义表单项目
-        {
-          id: 1,
-          name: 'input',
-          title: 'Input',
-          elementType: 'input',
-          defaultValue: '',
-          defaultClear: 'no',
-          // tag: '',
-          itemGroup: '',
-          itemGroupName: '',
-          packageName: '',
-          entity: '',
-          width: 24,
-          dataOptions: '',
-          regular: '',
-          inDisplayName: 'yes',
-          isEdit: 'yes',
-          multiple: 'no',
-          selectList: [],
-          isRefInside: 'no',
-          required: 'no',
-          isView: 'yes',
-          isOutput: 'no',
-          sort: 0,
-          attrDefId: '',
-          attrDefName: '',
-          attrDefDataType: '',
-          refEntity: '',
-          refPackageName: ''
-        },
-        {
-          id: 3,
-          name: 'textarea',
-          title: 'Textarea',
-          elementType: 'textarea',
-          defaultClear: 'no',
-          defaultValue: '',
-          // tag: '',
-          itemGroup: '',
-          itemGroupName: '',
-          packageName: '',
-          entity: '',
-          width: 24,
-          dataOptions: '',
-          regular: '',
-          inDisplayName: 'yes',
-          isEdit: 'yes',
-          multiple: 'no',
-          selectList: [],
-          isRefInside: 'no',
-          required: 'no',
-          isView: 'yes',
-          isOutput: 'no',
-          sort: 0,
-          attrDefId: '',
-          attrDefName: '',
-          attrDefDataType: '',
-          refEntity: '',
-          refPackageName: ''
-        },
-        {
-          id: 2,
-          name: 'select',
-          title: 'Select',
-          elementType: 'select',
-          defaultValue: '',
-          defaultClear: 'no',
-          // tag: '',
-          itemGroup: '',
-          itemGroupName: '',
-          packageName: '',
-          entity: '',
-          width: 24,
-          dataOptions: '',
-          regular: '',
-          inDisplayName: 'yes',
-          isEdit: 'yes',
-          multiple: 'no',
-          selectList: [],
-          isRefInside: 'no',
-          required: 'no',
-          isView: 'yes',
-          isOutput: 'no',
-          sort: 0,
-          attrDefId: '',
-          attrDefName: '',
-          attrDefDataType: '',
-          refEntity: '',
-          refPackageName: ''
-        },
-        {
-          id: 5,
-          name: 'wecmdbEntity',
-          title: 'WecmdbEntity',
-          elementType: 'wecmdbEntity',
-          defaultValue: '',
-          defaultClear: 'no',
-          // tag: '',
-          itemGroup: '',
-          itemGroupName: '',
-          packageName: '',
-          entity: '',
-          width: 24,
-          dataOptions: '',
-          regular: '',
-          inDisplayName: 'yes',
-          isEdit: 'yes',
-          multiple: 'no',
-          selectList: [],
-          isRefInside: 'no',
-          required: 'no',
-          isView: 'yes',
-          isOutput: 'no',
-          sort: 0,
-          attrDefId: '',
-          attrDefName: '',
-          attrDefDataType: '',
-          refEntity: '',
-          refPackageName: ''
-        },
-        {
-          id: 6,
-          name: 'datePicker',
-          title: 'datePicker',
-          elementType: 'datePicker',
-          type: 'datetime',
-          defaultValue: '',
-          defaultClear: 'no',
-          // tag: '',
-          itemGroup: '',
-          itemGroupName: '',
-          packageName: '',
-          entity: '',
-          width: 24,
-          dataOptions: '',
-          regular: '',
-          inDisplayName: 'yes',
-          isEdit: 'yes',
-          multiple: 'no',
-          selectList: [],
-          isRefInside: 'no',
-          required: 'no',
-          isView: 'yes',
-          isOutput: 'no',
-          sort: 0,
-          attrDefId: '',
-          attrDefName: '',
-          attrDefDataType: '',
-          refEntity: '',
-          refPackageName: ''
-        }
-      ],
       dataFormInfo: {
         associationWorkflow: false,
         formTemplateId: '',
@@ -1252,12 +1075,6 @@ export default {
     changeFormConfigStatus (status) {
       this.isShowFormConfig = status
     }
-  },
-  components: {
-    ApprovalFormNode,
-    RequestFormDataCustom,
-    RequestFormDataWorkflow,
-    draggable
   }
 }
 </script>

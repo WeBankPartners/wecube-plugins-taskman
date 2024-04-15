@@ -23,8 +23,8 @@
           </div>
         </div>
         <div>
-          <Form :label-width="80">
-            <FormItem :label="$t('manageRole')">
+          <Form :label-width="100">
+            <FormItem :label="$t('manageRole')" required>
               <Select
                 v-model="selectedRole"
                 @on-open-change="getApplyRoles"
@@ -36,6 +36,24 @@
               >
                 <Option v-for="role in roleList" :value="role.id" :key="role.id">{{ role.displayName }}</Option>
               </Select>
+            </FormItem>
+            <FormItem :label="$t('role_invalidDate')">
+              <DatePicker
+                type="datetime"
+                :value="expireTime"
+                @on-change="
+                  val => {
+                    expireTime = val
+                  }
+                "
+                :placeholder="$t('tw_please_select')"
+                :options="{
+                  disabledDate(date) {
+                    return date && date.valueOf() < Date.now() - 86400000
+                  }
+                }"
+                style="width:60%;margin-right: 24px;"
+              ></DatePicker>
               <Button type="primary" :disabled="selectedRole.length === 0" @click="apply">{{ $t('tw_apply') }}</Button>
             </FormItem>
           </Form>
@@ -74,6 +92,7 @@ export default {
       showModal: false,
       isfullscreen: false,
       selectedRole: [],
+      expireTime: '', // 角色过期时间
       roleList: [],
       activeTab: 'pending',
       tableData: [],
@@ -169,7 +188,8 @@ export default {
     async apply () {
       let data = {
         userName: localStorage.getItem('username'),
-        roleIds: this.selectedRole
+        roleIds: this.selectedRole,
+        expireTime: this.expireTime
       }
       const { status } = await startApply(data)
       if (status === 'OK') {

@@ -37,6 +37,23 @@
               <Option v-for="role in roleList" :value="role.id" :key="role.id">{{ role.displayName }}</Option>
             </Select>
           </FormItem>
+          <FormItem :label="$t('role_invalidDate')">
+            <DatePicker
+              type="datetime"
+              :value="formValidate.expireTime"
+              @on-change="
+                val => {
+                  formValidate.expireTime = val
+                }
+              "
+              :placeholder="$t('tw_please_select')"
+              :options="{
+                disabledDate(date) {
+                  return date && date.valueOf() < Date.now() - 86400000
+                }
+              }"
+            ></DatePicker>
+          </FormItem>
         </Form>
         <div slot="footer">
           <Button @click="handleReset('formValidate')">{{ $t('cancel') }}</Button>
@@ -61,7 +78,8 @@ export default {
       formValidate: {
         userName: '',
         emailAddr: '',
-        roleIds: []
+        roleIds: [],
+        expireTime: ''
       },
       ruleValidate: {
         emailAddr: [

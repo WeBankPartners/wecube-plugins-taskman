@@ -102,7 +102,7 @@
       <!--选择已有数据添加一行-->
       <Select
         ref="addRowSelect"
-        v-else-if="activeItem.itemGroupRule === 'exist'"
+        v-else-if="['exist', 'exist_empty'].includes(activeItem.itemGroupRule)"
         v-model="addRowSource"
         filterable
         clearable
@@ -200,16 +200,23 @@ export default {
           this.requestData = deepClone(val)
           this.requestData.forEach(item => {
             // 无表单数据，不是选择已有数据添加一行，默认添加一行
-            if (item.value.length === 0 && this.autoAddRow && item.itemGroupRule !== 'exist') {
+            if (item.value.length === 0 && this.autoAddRow && !['exist', 'exist_empty'].includes(item.itemGroupRule)) {
               this.handleAddRow(item)
             }
-            // 备份编排类表单初始value
-            if (item.itemGroupRule === 'exist' && item.itemGroupType === 'workflow') {
+            // 备份编排类表单系统下发数据id集合
+            if (['exist', 'exist_empty'].includes(item.itemGroupRule) && item.itemGroupType === 'workflow') {
               const list = item.value || []
               const ids = list.map(item => {
                 return item.dataId
               })
               this.$set(this.worklfowDataIdsObj, item.formTemplateId, ids)
+            }
+            // 选择已有数据添加一行为默认不选时，清空value
+            if (item.itemGroupRule === 'exist_empty' && item.value && item.value.length) {
+              const firstFlag = item.value.some(i => i.entityData && !i.entityData.hasOwnProperty('_id'))
+              if (firstFlag) {
+                item.value = []
+              }
             }
           })
           this.activeTab = this.requestData[0].entity || this.requestData[0].itemGroup
@@ -421,7 +428,7 @@ export default {
         const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
         this.handleAddRow(data)
         this.initTableData()
-      } else if (this.activeItem.itemGroupRule === 'exist') {
+      } else if (['exist', 'exist_empty'].includes(this.activeItem.itemGroupRule)) {
         if (this.addRowSource) {
           const source = this.addRowSourceOptions.find(i => i.id === this.addRowSource)
           const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)

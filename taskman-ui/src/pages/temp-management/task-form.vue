@@ -571,7 +571,7 @@ export default {
           packageName: '',
           entity: '',
           width: 24,
-          dataOptions: '',
+          dataOptions: '[]',
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
@@ -601,7 +601,7 @@ export default {
           packageName: '',
           entity: '',
           width: 24,
-          dataOptions: '',
+          dataOptions: '[]',
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
@@ -631,7 +631,7 @@ export default {
           packageName: '',
           entity: '',
           width: 24,
-          dataOptions: '',
+          dataOptions: '[]',
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
@@ -661,7 +661,7 @@ export default {
           packageName: '',
           entity: '',
           width: 24,
-          dataOptions: '',
+          dataOptions: '[]',
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
@@ -692,7 +692,7 @@ export default {
           packageName: '',
           entity: '',
           width: 24,
-          dataOptions: '',
+          dataOptions: '[]',
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
@@ -755,7 +755,7 @@ export default {
         sort: 0,
         title: '',
         width: 24,
-        dataOptions: '',
+        dataOptions: '[]',
         refEntity: '',
         refPackageName: ''
       },
@@ -1384,24 +1384,8 @@ export default {
       if (element.elementType === 'select') {
         res = JSON.parse(element.dataOptions || '[]')
       } else if (element.elementType === 'wecmdbEntity') {
-        this.getData(element).then(result => {
-          if (result.status === 'OK') {
-            res = result.data.map(d => {
-              return {
-                label: d.displayName,
-                value: d.id
-              }
-            })
-          }
-        })
       }
       return res
-    },
-    async getData (element) {
-      if (element.dataOptions !== '' && element.dataOptions.split(':').length === 2) {
-        const data = await getTargetOptions(element.dataOptions.split(':')[0], element.dataOptions.split(':')[1])
-        return data
-      }
     },
     async getFilterRuleOption (element) {
       if (element.elementType === 'select') {

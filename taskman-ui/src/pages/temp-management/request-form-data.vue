@@ -138,7 +138,9 @@
                     class="custom-item"
                     :multiple="element.multiple === 'yes'"
                   >
-                    <Option v-for="item in element.dataOptions.split(',')" :value="item" :key="item">{{ item }}</Option>
+                    <Option v-for="item in computedOption(element)" :value="item.value" :key="item.label">{{
+                      item.label
+                    }}</Option>
                   </Select>
                   <Select
                     v-if="element.elementType === 'wecmdbEntity'"
@@ -212,12 +214,16 @@
                     v-if="editElement.elementType === 'select'"
                     :label="editElement.entity === '' ? $t('data_set') : $t('data_source')"
                   >
-                    <Input
-                      v-model="editElement.dataOptions"
+                    <Input v-model="editElement.dataOptions" disabled style="width:70%"></Input>
+                    <Button
+                      class="custom-add-btn"
                       :disabled="$parent.isCheck === 'Y'"
-                      placeholder="eg:a,b"
-                      @on-change="paramsChanged"
-                    ></Input>
+                      @click.stop="dataOptionsMgmt"
+                      type="primary"
+                      ghost
+                      size="small"
+                      icon="ios-create-outline"
+                    ></Button>
                   </FormItem>
                   <!--添加wecmdbEntity类型，根据选择配置生成url(用于获取下拉配置)-->
                   <FormItem v-if="editElement.elementType === 'wecmdbEntity'" :label="$t('data_source')">
@@ -364,6 +370,7 @@
       module="data-form"
       v-show="['workflow', 'optional'].includes(itemGroupType)"
     ></RequestFormDataWorkflow>
+    <DataSourceConfig ref="dataSourceConfigRef" @setDataOptions="setDataOptions"></DataSourceConfig>
     <div class="footer">
       <div class="content">
         <Button @click="gotoForward" ghost type="primary" class="btn-footer-margin">{{ $t('forward') }}</Button>
@@ -384,6 +391,7 @@ import {
 import draggable from 'vuedraggable'
 import RequestFormDataCustom from './request-form-data-custom.vue'
 import RequestFormDataWorkflow from './request-form-data-workflow.vue'
+import DataSourceConfig from './data-source-config.vue'
 export default {
   name: 'form-select',
   data () {
@@ -405,7 +413,7 @@ export default {
           packageName: '',
           entity: '',
           width: 24,
-          dataOptions: '',
+          dataOptions: '[]',
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
@@ -435,7 +443,7 @@ export default {
           packageName: '',
           entity: '',
           width: 24,
-          dataOptions: '',
+          dataOptions: '[]',
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
@@ -465,7 +473,7 @@ export default {
           packageName: '',
           entity: '',
           width: 24,
-          dataOptions: '',
+          dataOptions: '[]',
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
@@ -495,7 +503,7 @@ export default {
           packageName: '',
           entity: '',
           width: 24,
-          dataOptions: '',
+          dataOptions: '[]',
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
@@ -526,7 +534,7 @@ export default {
           packageName: '',
           entity: '',
           width: 24,
-          dataOptions: '',
+          dataOptions: '[]',
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
@@ -593,7 +601,7 @@ export default {
         sort: 0,
         title: '',
         width: 24,
-        dataOptions: '',
+        dataOptions: '[]',
         refEntity: '',
         refPackageName: ''
       },
@@ -1063,12 +1071,32 @@ export default {
     // 此处的select在选中再点时，会将选中值当做条件过滤，这里清空query
     clearQuery () {
       this.$refs.selectRef.query = ''
+    },
+    // #region 普通select数据集配置逻辑
+    dataOptionsMgmt () {
+      let newDataOptions = JSON.parse(this.editElement.dataOptions || '[]')
+      this.$refs.dataSourceConfigRef.loadPage(newDataOptions)
+    },
+    setDataOptions (options) {
+      this.editElement.dataOptions = JSON.stringify(options)
+      const valueArray = options.map(d => d.value)
+      this.editElement.filterRule = this.editElement.filterRule.filter(fr => valueArray.includes(fr))
+    },
+    computedOption (element) {
+      let res = []
+      if (element.elementType === 'select') {
+        res = JSON.parse(element.dataOptions || '[]')
+      } else if (element.elementType === 'wecmdbEntity') {
+      }
+      return res
     }
+    // #endregion
   },
   components: {
     draggable,
     RequestFormDataCustom,
-    RequestFormDataWorkflow
+    RequestFormDataWorkflow,
+    DataSourceConfig
   }
 }
 </script>

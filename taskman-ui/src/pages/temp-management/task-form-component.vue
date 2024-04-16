@@ -565,8 +565,8 @@ export default {
   methods: {
     // 获取wecmdb下拉类型entity值
     async getAllDataModels () {
-      const { data, status } = await getAllDataModels()
-      if (status === 'OK') {
+      const { data, statusCode } = await getAllDataModels()
+      if (statusCode === 'OK') {
         this.allEntityList = []
         const sortData = data.map(_ => {
           return {

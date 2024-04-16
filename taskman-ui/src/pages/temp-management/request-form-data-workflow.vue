@@ -187,8 +187,8 @@ export default {
   methods: {
     // 自定义字段获取所有类型
     async getAllDataModels () {
-      let { data, status } = await getAllDataModels()
-      if (status === 'OK') {
+      let { data, statusCode } = await getAllDataModels()
+      if (statusCode === 'OK') {
         this.allEntityType = data.filter(d => d.packageName === this.group.itemGroup.split(':')[0])
       }
     },

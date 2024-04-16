@@ -10,6 +10,9 @@ import './locale/i18n'
 import { ValidationProvider } from 'vee-validate'
 import './vee-validate-local-config'
 import { getCookie } from '@/pages/util/cookie'
+import { Select } from 'ant-design-vue'
+import 'ant-design-vue/dist/antd.css'
+Vue.use(Select)
 Vue.component('ValidationProvider', ValidationProvider)
 
 Vue.config.productionTip = false

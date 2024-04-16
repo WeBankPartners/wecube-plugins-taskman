@@ -202,8 +202,8 @@
                               class="custom-item"
                               :multiple="element.multiple === 'yes'"
                             >
-                              <Option v-for="item in element.dataOptions.split(',')" :value="item" :key="item">{{
-                                item
+                              <Option v-for="item in computedOption(element)" :value="item.value" :key="item.label">{{
+                                item.label
                               }}</Option>
                             </Select>
                             <Select
@@ -325,12 +325,16 @@
                             v-if="editElement.elementType === 'select'"
                             :label="editElement.entity === '' ? $t('data_set') : $t('data_source')"
                           >
-                            <Input
-                              v-model="editElement.dataOptions"
+                            <Input v-model="editElement.dataOptions" disabled style="width:70%"></Input>
+                            <Button
+                              class="custom-add-btn"
                               :disabled="$parent.isCheck === 'Y'"
-                              placeholder="eg:a,b"
-                              @on-change="paramsChanged"
-                            ></Input>
+                              @click.stop="dataOptionsMgmt"
+                              type="primary"
+                              ghost
+                              size="small"
+                              icon="ios-create-outline"
+                            ></Button>
                           </FormItem>
                           <!--添加wecmdbEntity类型，根据选择配置生成url(用于获取下拉配置)-->
                           <FormItem v-if="editElement.elementType === 'wecmdbEntity'" :label="$t('data_source')">
@@ -414,6 +418,23 @@
                               @on-change="paramsChanged"
                             ></Input>
                           </FormItem>
+                          <FormItem :label="$t('tw_data_filtering')">
+                            <a-select
+                              mode="multiple"
+                              v-model="editElement.filterRule"
+                              @dropdownVisibleChange="getFilterRuleOption(editElement)"
+                              :dropdownMatchSelectWidth="false"
+                            >
+                              <a-select-option v-for="item in filterRuleOption" :value="item.value" :key="item.value">
+                                <Tooltip placement="left">
+                                  <p slot="content" style="white-space: normal;">
+                                    {{ item.label }}
+                                  </p>
+                                  {{ item.label }}
+                                </Tooltip>
+                              </a-select-option>
+                            </a-select>
+                          </FormItem>
                         </Form>
                       </div>
                     </Panel>
@@ -459,6 +480,7 @@
         module="other"
         v-show="['workflow', 'optional'].includes(itemGroupType)"
       ></RequestFormDataWorkflow>
+      <DataSourceConfig ref="dataSourceConfigRef" @setDataOptions="setDataOptions"></DataSourceConfig>
     </Row>
     <div class="footer">
       <div class="content" :style="isShowFormConfig ? '' : 'margin-top:48px'">
@@ -494,6 +516,7 @@
 <script>
 import draggable from 'vuedraggable'
 import TaskFormNode from './task-form-node.vue'
+import DataSourceConfig from './data-source-config.vue'
 import RequestFormDataCustom from './request-form-data-custom.vue'
 import RequestFormDataWorkflow from './request-form-data-workflow.vue'
 import {
@@ -508,7 +531,8 @@ import {
   getAllDataModels,
   saveRequestGroupCustomForm,
   submitTemplate,
-  getWorkflowForkNode
+  getWorkflowForkNode,
+  getTargetOptions
 } from '@/api/server.js'
 export default {
   name: 'BasicInfo',
@@ -762,7 +786,8 @@ export default {
       nextNodeInfo: {}, // 缓存待切换节点信息
       displayLastGroup: false, // 控制group显示，在新增时显示最后一个，其余显示当前值
       nextGroupInfo: {},
-      forkOptions: [] // 判断分支列表
+      forkOptions: [], // 判断分支列表
+      filterRuleOption: [] // 缓存数据过滤选项
     }
   },
   computed: {
@@ -1144,8 +1169,8 @@ export default {
     // },
     // 获取wecmdb下拉类型entity值
     async getAllDataModels () {
-      const { data, status } = await getAllDataModels()
-      if (status === 'OK') {
+      const { data, statusCode } = await getAllDataModels()
+      if (statusCode === 'OK') {
         this.allEntityList = []
         const sortData = data.map(_ => {
           return {
@@ -1166,12 +1191,16 @@ export default {
       }
     },
     // 选中自定义表单项
-    selectElement (itemIndex, eleIndex) {
+    async selectElement (itemIndex, eleIndex) {
       this.finalElement[itemIndex].attrs.forEach(item => {
         item.isActive = false
       })
       this.finalElement[itemIndex].attrs[eleIndex].isActive = true
       this.editElement = this.finalElement[itemIndex].attrs[eleIndex]
+      if (!Array.isArray(this.editElement.filterRule)) {
+        this.$set(this.editElement, 'filterRule', JSON.parse(this.editElement.filterRule || '[]'))
+      }
+      await this.getFilterRuleOption(this.editElement)
       this.openPanel = '1'
     },
     // 删除自定义表单项
@@ -1196,6 +1225,9 @@ export default {
       })
       delete finalData.attrs
       finalData.items.forEach((item, itemIndex) => {
+        if (Array.isArray(item.filterRule)) {
+          item.filterRule = JSON.stringify(item.filterRule)
+        }
         item.sort = itemIndex + 1
       })
       const { statusCode } = await saveRequestGroupCustomForm(finalData)
@@ -1336,12 +1368,68 @@ export default {
       if (statusCode === 'OK') {
         this.forkOptions = data || []
       }
+    },
+    // #region 普通select数据集配置逻辑
+    dataOptionsMgmt () {
+      let newDataOptions = JSON.parse(this.editElement.dataOptions || '[]')
+      this.$refs.dataSourceConfigRef.loadPage(newDataOptions)
+    },
+    setDataOptions (options) {
+      this.editElement.dataOptions = JSON.stringify(options)
+      const valueArray = options.map(d => d.value)
+      this.editElement.filterRule = this.editElement.filterRule.filter(fr => valueArray.includes(fr))
+    },
+    computedOption (element) {
+      let res = []
+      if (element.elementType === 'select') {
+        res = JSON.parse(element.dataOptions || '[]')
+      } else if (element.elementType === 'wecmdbEntity') {
+        this.getData(element).then(result => {
+          if (result.status === 'OK') {
+            res = result.data.map(d => {
+              return {
+                label: d.displayName,
+                value: d.id
+              }
+            })
+          }
+        })
+      }
+      return res
+    },
+    async getData (element) {
+      if (element.dataOptions !== '' && element.dataOptions.split(':').length === 2) {
+        const data = await getTargetOptions(element.dataOptions.split(':')[0], element.dataOptions.split(':')[1])
+        return data
+      }
+    },
+    async getFilterRuleOption (element) {
+      if (element.elementType === 'select') {
+        this.filterRuleOption = JSON.parse(element.dataOptions || '[]')
+      } else if (element.elementType === 'wecmdbEntity') {
+        if (element.dataOptions !== '' && element.dataOptions.split(':').length === 2) {
+          const { status, data } = await getTargetOptions(
+            element.dataOptions.split(':')[0],
+            element.dataOptions.split(':')[1]
+          )
+          if (status === 'OK') {
+            this.filterRuleOption = data.map(d => {
+              return {
+                label: d.displayName,
+                value: d.id
+              }
+            })
+          }
+        }
+      }
     }
+    // #endregion
   },
   components: {
     TaskFormNode,
     RequestFormDataCustom,
     RequestFormDataWorkflow,
+    DataSourceConfig,
     draggable
   }
 }

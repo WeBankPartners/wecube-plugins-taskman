@@ -58,6 +58,7 @@
   "general_attributes": "General Attributes",
   "field_name": "Field Name",
   "display_name": "Display Name",
+  "value": "Value",
   "data_type": "Data Type",
   "defaults": "Default",
   "width": "Width",
@@ -448,5 +449,7 @@
   "tw_allocation": "Allocation",
   "tw_validity_period": "Validity Period",
   "tw_home": "Home",
-  "tw_ref_id": "Association ID"
+  "tw_ref_id": "Association ID",
+  "tw_data_filtering": "Data Filtering",
+  "tw_duplicate_data": "The dataset has duplicate display names."
 }

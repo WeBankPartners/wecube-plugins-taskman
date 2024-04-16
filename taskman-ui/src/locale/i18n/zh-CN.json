@@ -57,6 +57,7 @@
   "general_attributes": "通用属性",
   "field_name": "字段名",
   "display_name": "显示名",
+  "value": "值",
   "data_type": "数据类型",
   "defaults": "默认值",
   "width": "宽度",
@@ -446,5 +447,7 @@
   "tw_allocation": "分配",
   "tw_validity_period": "时效",
   "tw_home": "首页",
-  "tw_ref_id": "关联单ID"
+  "tw_ref_id": "关联单ID",
+  "tw_data_filtering": "数据过滤",
+  "tw_duplicate_data": "数据集存在重复显示名"
 }

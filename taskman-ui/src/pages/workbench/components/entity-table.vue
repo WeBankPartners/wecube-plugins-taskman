@@ -324,14 +324,14 @@ export default {
       })
     },
     async getRefOptions (titleObj, row, index, first) {
-      // taskman模板管理配置的下拉类型(值用逗号拼接)
+      // 模板自定义下拉类型
       if (titleObj.elementType === 'select' && titleObj.entity === '') {
         if (!first) return
         row[titleObj.name + 'Options'] = (titleObj.dataOptions && titleObj.dataOptions.split(',')) || []
         this.$set(this.tableData, index, row)
         return
       }
-      // taskman模板管理配置的引用下拉类型
+      // cmdb引用下拉类型
       if (titleObj.elementType === 'wecmdbEntity') {
         if (!first) return
         const [packageName, ciType] = (titleObj.dataOptions && titleObj.dataOptions.split(':')) || []

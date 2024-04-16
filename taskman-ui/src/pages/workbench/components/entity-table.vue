@@ -57,9 +57,8 @@
                   <LimitSelect
                     v-if="i.elementType === 'select' || i.elementType === 'wecmdbEntity'"
                     v-model="value[i.name]"
-                    :displayName="i.elementType === 'wecmdbEntity' ? 'displayName' : 'key_name'"
-                    :displayValue="i.elementType === 'wecmdbEntity' ? 'id' : 'guid'"
-                    :objectOption="!!i.entity || i.elementType === 'wecmdbEntity'"
+                    :displayName="i.elementType === 'wecmdbEntity' ? 'displayName' : i.entity ? 'key_name' : 'label'"
+                    :displayValue="i.elementType === 'wecmdbEntity' ? 'id' : i.entity ? 'guid' : 'value'"
                     :options="value[i.name + 'Options']"
                     :disabled="i.isEdit === 'no' || formDisable"
                     :multiple="i.multiple === 'Y' || i.multiple === 'yes'"
@@ -320,7 +319,7 @@ export default {
       // taskman模板管理配置的普通下拉类型(值用逗号拼接)
       if (titleObj.elementType === 'select' && titleObj.entity === '') {
         if (!first) return
-        row[titleObj.name + 'Options'] = (titleObj.dataOptions && titleObj.dataOptions.split(',')) || []
+        row[titleObj.name + 'Options'] = JSON.parse(titleObj.dataOptions || '[]')
         this.$set(this.tableData, index, row)
         return
       }

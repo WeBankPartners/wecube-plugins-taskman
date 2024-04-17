@@ -147,5 +147,9 @@
   "request_handle_error": {
     "code": 20100028,
     "message": "Failed to process the request: The request was withdrawn by the submitter, please refresh and try again"
+  },
+  "template_group_has_use_delete_error": {
+    "code": 20100029,
+    "message": "Delete failed: The current template group already has a template. Please migrate the template to another template group before deleting it"
   }
 }

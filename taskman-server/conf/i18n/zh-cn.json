@@ -147,5 +147,9 @@
   "request_handle_error": {
     "code": 20100028,
     "message": "处理请求失败：请求已被提交人撤回，请刷新重试"
+  },
+  "template_group_has_use_delete_error": {
+    "code": 20100029,
+    "message": "删除失败:当前模版组已有模版,请先把模版迁移到其他模版组再删除"
   }
 }

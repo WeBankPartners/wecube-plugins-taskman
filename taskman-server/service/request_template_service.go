@@ -832,6 +832,8 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 				err = exterror.New().RequestTemplateHasPendingError
 			} else if templateTemp.Status == string(models.RequestTemplateStatusConfirm) {
 				latestReleaseTemplate = templateTemp
+			} else if templateTemp.Status == string(models.RequestTemplateStatusDisabled) {
+				err = fmt.Errorf("request template has disabled")
 			}
 			if err != nil {
 				return
@@ -1936,5 +1938,10 @@ func (s *RequestTemplateService) CreateWorkflowFormTemplateSql(requestTemplateId
 				models.FormItemGroupTypeWorkflow, "exist", index + 1, time.Now().Format(models.DateTimeFormat), models.RequestFormTypeData}})
 		}
 	}
+	return
+}
+
+func (s *RequestTemplateService) QueryRequestTemplateListByRequestTemplateGroup(templateGroup string) (list []*models.RequestTemplateTable, err error) {
+	err = dao.X.SQL("select id  from request_template where `group` =?", templateGroup).Find(&list)
 	return
 }

@@ -101,6 +101,8 @@ type ErrorTemplate struct {
 	TemplateApproveCompleteError CustomError `json:"template_approve_complete_error"`
 	// 请求定版，审批失败,请求已被提交人撤回
 	RequestHandleError CustomError `json:"request_handle_error"`
+	// 模版组已经被使用,不允许删除
+	TemplateGroupHasUseDeleteError CustomError `json:"template_group_has_use_delete_error"`
 }
 
 var (

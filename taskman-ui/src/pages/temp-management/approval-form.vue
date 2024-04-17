@@ -409,21 +409,18 @@
                             ></Input>
                           </FormItem>
                           <FormItem :label="$t('tw_data_filtering')">
-                            <a-select
-                              mode="multiple"
+                            <Select
+                              multiple
+                              :key="editElement.id"
+                              clearable
                               v-model="editElement.filterRule"
-                              @dropdownVisibleChange="getFilterRuleOption(editElement)"
-                              :dropdownMatchSelectWidth="false"
+                              @on-open-change="getFilterRuleOption(editElement)"
+                              :disabled="$parent.isCheck === 'Y'"
                             >
-                              <a-select-option v-for="item in filterRuleOption" :value="item.value" :key="item.value">
-                                <Tooltip placement="left">
-                                  <p slot="content" style="white-space: normal;">
-                                    {{ item.label }}
-                                  </p>
-                                  {{ item.label }}
-                                </Tooltip>
-                              </a-select-option>
-                            </a-select>
+                              <Option v-for="item in filterRuleOption" :value="item.value" :key="item.value">
+                                {{ item.label }}
+                              </Option>
+                            </Select>
                           </FormItem>
                         </Form>
                       </div>
@@ -1155,6 +1152,7 @@ export default {
     },
     // 选中自定义表单项
     async selectElement (itemIndex, eleIndex) {
+      this.filterRuleOption = []
       this.finalElement[itemIndex].attrs.forEach(item => {
         item.isActive = false
       })

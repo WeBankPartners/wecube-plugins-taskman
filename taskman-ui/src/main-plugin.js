@@ -10,10 +10,6 @@ import './vee-validate-local-config'
 
 import Dashboard from '@/pages/workbench/index.vue'
 
-import { Select } from 'ant-design-vue'
-import 'ant-design-vue/dist/antd.css'
-window.use(Select)
-
 window.component('ValidationProvider', ValidationProvider)
 window.addHomepageComponent &&
   window.addHomepageComponent({

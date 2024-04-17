@@ -5,7 +5,7 @@
       :mask-closable="false"
       :fullscreen="isfullscreen"
       :footer-hide="true"
-      :width="800"
+      :width="1000"
       :title="$t('tw_apply_roles')"
     >
       <div slot="header" class="custom-modal-header">
@@ -23,7 +23,7 @@
           </div>
         </div>
         <div>
-          <Form :label-width="100">
+          <Form :label-width="100" inline>
             <FormItem :label="$t('manageRole')" required>
               <Select
                 v-model="selectedRole"
@@ -31,7 +31,7 @@
                 multiple
                 filterable
                 :max-tag-count="3"
-                style="width: 60%;margin-right: 24px;"
+                style="width:300px;margin-right:24px;"
                 :placeholder="$t('tw_apply_roles')"
               >
                 <Option v-for="role in roleList" :value="role.id" :key="role.id">{{ role.displayName }}</Option>
@@ -46,13 +46,13 @@
                     expireTime = val
                   }
                 "
-                :placeholder="$t('tw_please_select')"
+                :placeholder="$t('role_invalidDatePlaceholder')"
                 :options="{
                   disabledDate(date) {
                     return date && date.valueOf() < Date.now() - 86400000
                   }
                 }"
-                style="width:60%;margin-right: 24px;"
+                style="width:300px;margin-right:24px;"
               ></DatePicker>
               <Button type="primary" :disabled="selectedRole.length === 0" @click="apply">{{ $t('tw_apply') }}</Button>
             </FormItem>
@@ -85,7 +85,7 @@
 </template>
 <script>
 import { getApplyRoles, startApply, getApplyList } from '@/api/server.js'
-
+import dayjs from 'dayjs'
 export default {
   data () {
     return {
@@ -111,6 +111,10 @@ export default {
         {
           title: this.$t('tw_application_time'),
           key: 'createdTime'
+        },
+        {
+          title: this.$t('role_invalidDate'),
+          key: 'expireTime'
         }
       ],
       processedColumns: [
@@ -124,6 +128,10 @@ export default {
         {
           title: this.$t('tw_application_time'),
           key: 'createdTime'
+        },
+        {
+          title: this.$t('role_invalidDate'),
+          key: 'expireTime'
         },
         {
           title: `${this.$t('tw_approver')}(${this.$t('tw_role_administrator')})`,
@@ -186,6 +194,9 @@ export default {
       }
     },
     async apply () {
+      if (this.expireTime && !dayjs(this.expireTime).isAfter(dayjs())) {
+        return this.$Message.warning(this.$t('role_invalidDateValidate'))
+      }
       let data = {
         userName: localStorage.getItem('username'),
         roleIds: this.selectedRole,

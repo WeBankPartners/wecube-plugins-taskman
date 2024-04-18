@@ -454,5 +454,6 @@
   "role_invalidDatePlaceholder": "Not set to permanent",
   "role_invalidDateValidate": "The permission expiration time cannot be earlier than the current time",
   "tw_data_filtering": "Data Filtering",
-  "tw_duplicate_data": "The dataset has duplicate display names."
+  "tw_duplicate_data": "The dataset has duplicate display names.",
+  "tw_expireReset_tips": "Set Expiration Date"
 }

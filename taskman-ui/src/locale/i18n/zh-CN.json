@@ -452,5 +452,6 @@
   "role_invalidDatePlaceholder": "不选为永久有效",
   "role_invalidDateValidate": "权限到期时间不能早于当前时间",
   "tw_data_filtering": "数据过滤",
-  "tw_duplicate_data": "数据集存在重复显示名"
+  "tw_duplicate_data": "数据集存在重复显示名",
+  "tw_expireReset_tips": "设置有效期"
 }

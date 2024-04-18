@@ -73,9 +73,10 @@ const (
 type FormItemElementType string
 
 const (
-	FormItemElementTypeInput     FormItemElementType = "input"
-	FormItemElementTypeSelect    FormItemElementType = "select"
-	FormItemElementTypeCalculate FormItemElementType = "calculate" //计算类型
+	FormItemElementTypeInput        FormItemElementType = "input"
+	FormItemElementTypeSelect       FormItemElementType = "select"
+	FormItemElementTypeCalculate    FormItemElementType = "calculate" //计算类型
+	FormItemElementTypeWeCMDBEntity FormItemElementType = "wecmdbEntity"
 )
 
 // TaskType 任务模板、任务 类型

@@ -58,6 +58,7 @@
   "general_attributes": "General Attributes",
   "field_name": "Field Name",
   "display_name": "Display Name",
+  "value": "Value",
   "data_type": "Data Type",
   "defaults": "Default",
   "width": "Width",
@@ -451,5 +452,7 @@
   "tw_ref_id": "Association ID",
   "role_invalidDate": "Role Expiration Time",
   "role_invalidDatePlaceholder": "Not set to permanent",
-  "role_invalidDateValidate": "The permission expiration time cannot be earlier than the current time"
+  "role_invalidDateValidate": "The permission expiration time cannot be earlier than the current time",
+  "tw_data_filtering": "Data Filtering",
+  "tw_duplicate_data": "The dataset has duplicate display names."
 }

@@ -33,9 +33,8 @@
               <LimitSelect
                 v-else-if="i.elementType === 'select' || i.elementType === 'wecmdbEntity'"
                 v-model="value[i.name]"
-                :displayName="i.elementType === 'wecmdbEntity' ? 'displayName' : 'key_name'"
-                :displayValue="i.elementType === 'wecmdbEntity' ? 'id' : 'guid'"
-                :objectOption="!!i.entity || i.elementType === 'wecmdbEntity'"
+                :displayName="i.elementType === 'wecmdbEntity' ? 'displayName' : i.entity ? 'key_name' : 'label'"
+                :displayValue="i.elementType === 'wecmdbEntity' ? 'id' : i.entity ? 'guid' : 'value'"
                 :options="entityData[i.name + 'Options']"
                 :disabled="i.isEdit === 'no' || disabled"
                 :multiple="i.multiple === 'Y' || i.multiple === 'yes'"
@@ -162,12 +161,7 @@ export default {
     async getRefOptions (titleObj) {
       // taskman模板管理配置的普通下拉类型(值用逗号拼接)
       if (titleObj.elementType === 'select' && titleObj.entity === '') {
-        // this.entityData[titleObj.name + 'Options'] = (titleObj.dataOptions && titleObj.dataOptions.split(',')) || []
-        this.$set(
-          this.entityData,
-          titleObj.name + 'Options',
-          (titleObj.dataOptions && titleObj.dataOptions.split(',')) || []
-        )
+        this.$set(this.entityData, titleObj.name + 'Options', JSON.parse(titleObj.dataOptions || '[]'))
         return
       }
       // taskman模板管理配置的引用下拉类型

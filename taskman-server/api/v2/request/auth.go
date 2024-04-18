@@ -12,6 +12,11 @@ import (
 	"time"
 )
 
+type transResponseJson struct {
+	Status string      `json:"status"`
+	Data   interface{} `json:"data"`
+}
+
 func TransAuthGetApplyRoles(c *gin.Context) {
 	var allRoleResponse models.QueryRolesResponse
 	var result, hasRoleList []*models.SimpleLocalRoleDto
@@ -120,7 +125,10 @@ func TransAuthGetApplyRoles(c *gin.Context) {
 			result = append(result, roleDto)
 		}
 	}
-	middleware.ReturnData(c, result)
+	response := transResponseJson{Status: "ok", Data: result}
+	bodyBytes, _ := json.Marshal(response)
+	c.Set("responseBody", string(bodyBytes))
+	c.JSON(http.StatusOK, response)
 }
 
 func TransAuthStartApply(c *gin.Context) {

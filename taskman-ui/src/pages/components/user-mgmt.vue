@@ -5,7 +5,7 @@
       :mask-closable="false"
       :fullscreen="isfullscreen"
       :footer-hide="true"
-      :width="800"
+      :width="900"
       :title="$t('tw_user_mgmt')"
     >
       <div slot="header" class="custom-modal-header">
@@ -76,7 +76,9 @@
               <div class="role-item" v-for="item in userList" :key="item.id">
                 <div class="item-style" style="width:80%;display:inline-block;">
                   <span style="display:inline-block;width:100px;">{{ item.username }}</span>
-                  <span style="display:inline-block;margin-left:20px;">{{ item.expireTime || '永久有效' }}</span>
+                  <span style="display:inline-block;margin-left:20px;" :style="getExpireStyle(item)">{{
+                    getExpireTips(item)
+                  }}</span>
                 </div>
                 <Button @click="removeUser(item)" size="small" icon="md-trash" ghost type="error"></Button>
               </div>
@@ -131,7 +133,23 @@ export default {
         },
         {
           title: this.$t('role_invalidDate'),
-          key: 'expireTime'
+          key: 'expireTime',
+          render: (h, params) => {
+            let text = ''
+            if (params.row.expireTime) {
+              if (params.row.status === 'expire') {
+                text = (
+                  <span>
+                    {`${params.row.expireTime}到期`}
+                    <span style="color:#ed4014">(已超时)</span>
+                  </span>
+                )
+              } else {
+                text = <span>{`${params.row.expireTime}到期`}</span>
+              }
+            }
+            return text
+          }
         },
         {
           title: this.$t('t_action'),
@@ -178,7 +196,23 @@ export default {
         },
         {
           title: this.$t('role_invalidDate'),
-          key: 'expireTime'
+          key: 'expireTime',
+          render: (h, params) => {
+            let text = ''
+            if (params.row.expireTime) {
+              if (params.row.status === 'expire') {
+                text = (
+                  <span>
+                    {`${params.row.expireTime}到期`}
+                    <span style="color:#ed4014">(已超时)</span>
+                  </span>
+                )
+              } else {
+                text = <span>{`${params.row.expireTime}到期`}</span>
+              }
+            }
+            return text
+          }
         },
         {
           title: this.$t('tw_processing_status'),
@@ -203,6 +237,34 @@ export default {
     tableHeight () {
       const innerHeight = window.innerHeight
       return this.isfullscreen ? innerHeight - 540 : innerHeight - 700
+    },
+    getExpireStyle () {
+      return function ({ status }) {
+        let color = ''
+        if (status === 'preExpried') {
+          color = '#ff9900'
+        } else if (status === 'expire') {
+          color = '#ed4014'
+        } else {
+          color = '#19be6b'
+        }
+        return { color: color }
+      }
+    },
+    getExpireTips () {
+      return function ({ status, expireTime }) {
+        let text = ''
+        if (status === 'preExpried') {
+          text = `${expireTime}将到期`
+        } else if (status === 'expire') {
+          text = `${expireTime}已到期`
+        } else if (expireTime) {
+          text = `${expireTime}到期`
+        } else if (!expireTime) {
+          text = `永久有效`
+        }
+        return text
+      }
     }
   },
   methods: {

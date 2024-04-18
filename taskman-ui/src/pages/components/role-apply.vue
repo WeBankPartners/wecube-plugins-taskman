@@ -66,7 +66,9 @@
         </div>
         <Tabs type="card" :value="activeTab" @on-click="tabChange">
           <TabPane :label="$t('tw_pending')" name="pending"></TabPane>
-          <TabPane :label="$t('tw_hasProcessed')" name="processed"></TabPane>
+          <TabPane label="生效中" name="inEffect"></TabPane>
+          <TabPane label="已过期" name="expire"></TabPane>
+          <TabPane label="已拒绝" name="deny"></TabPane>
         </Tabs>
         <div>
           <Table
@@ -80,6 +82,19 @@
       <div slot="footer">
         <Button @click="showModal = false">{{ $t('cancel') }}</Button>
       </div>
+    </Modal>
+    <Modal v-model="timeVisible" :title="$t('tw_add_user')" :mask-closable="false">
+      <Form :label-width="120">
+        <FormItem :label="$t('tw_user')">
+          <Select style="width: 80%" v-model="pendingUser" multiple filterable @on-open-change="getPendingUserOptions">
+            <Option v-for="item in pendingUserOptions" :value="item.id" :key="item.id">{{ item.username }}</Option>
+          </Select>
+        </FormItem>
+      </Form>
+      <template #footer>
+        <Button @click="showSelectModel = false">{{ $t('cancel') }}</Button>
+        <Button @click="okSelect" :disabled="pendingUser.length === 0" type="primary">{{ $t('confirm') }}</Button>
+      </template>
     </Modal>
   </div>
 </template>
@@ -96,6 +111,7 @@ export default {
       roleList: [],
       activeTab: 'pending',
       tableData: [],
+      timeVisible: false,
       pendingColumns: [
         {
           title: this.$t('tw_account'),
@@ -114,7 +130,23 @@ export default {
         },
         {
           title: this.$t('role_invalidDate'),
-          key: 'expireTime'
+          key: 'expireTime',
+          render: (h, params) => {
+            return (
+              <div style={this.getExpireStyle(params.row)}>
+                <span>{this.getExpireTips(params.row)}</span>
+                <Icon
+                  type="md-time"
+                  size="24"
+                  color="#808695"
+                  style="cursor:pointer;margin-left:5px"
+                  onClick={() => {
+                    this.handleExtendTime(params.row)
+                  }}
+                />
+              </div>
+            )
+          }
         }
       ],
       processedColumns: [
@@ -130,21 +162,19 @@ export default {
           key: 'createdTime'
         },
         {
-          title: this.$t('role_invalidDate'),
-          key: 'expireTime'
-        },
-        {
           title: `${this.$t('tw_approver')}(${this.$t('tw_role_administrator')})`,
           key: 'updatedBy',
           width: 210
         },
         {
-          title: this.$t('tw_processing_status'),
-          key: 'status',
+          title: this.$t('role_invalidDate'),
+          key: 'expireTime',
           render: (h, params) => {
-            const status = params.row.status
-            const statusTitle = status === 'approve' ? this.$t('tw_approve') : this.$t('tw_reject')
-            return <div style={status === 'approve' ? 'color:#b8f27c' : 'color:red'}>{statusTitle}</div>
+            return (
+              <div style={this.getExpireStyle(params.row)}>
+                <span>{this.getExpireTips(params.row)}</span>
+              </div>
+            )
           }
         }
       ]
@@ -154,6 +184,34 @@ export default {
     tableHeight () {
       const innerHeight = window.innerHeight
       return this.isfullscreen ? innerHeight - 300 : 400
+    },
+    getExpireStyle () {
+      return function ({ status }) {
+        let color = ''
+        if (status === 'preExpried') {
+          color = '#ff9900'
+        } else if (status === 'expire') {
+          color = '#ed4014'
+        } else {
+          color = '#19be6b'
+        }
+        return { color: color, display: 'flex', alignItems: 'center' }
+      }
+    },
+    getExpireTips () {
+      return function ({ status, expireTime }) {
+        let text = ''
+        if (status === 'preExpried') {
+          text = `${expireTime}将到期`
+        } else if (status === 'expire') {
+          text = `${expireTime}已到期`
+        } else if (expireTime) {
+          text = `${expireTime}到期`
+        } else if (!expireTime) {
+          text = `永久有效`
+        }
+        return text
+      }
     }
   },
   methods: {
@@ -167,7 +225,16 @@ export default {
       this.getTableData()
     },
     async getTableData () {
-      let statusArr = this.activeTab === 'pending' ? ['init'] : ['approve', 'deny']
+      let statusArr = []
+      if (this.activeTab === 'pending') {
+        statusArr = ['init']
+      } else if (this.activeTab === 'inEffect') {
+        statusArr = ['inEffect']
+      } else if (this.activeTab === 'expire') {
+        statusArr = ['expire']
+      } else if (this.activeTab === 'deny') {
+        statusArr = ['deny']
+      }
       const params = {
         filters: [
           {
@@ -220,6 +287,26 @@ export default {
       const { status, data } = await getApplyRoles(params)
       if (status === 'OK') {
         this.roleList = data || []
+      }
+    },
+    async handleExtendTime (row) {
+      this.timeVisible = true
+      if (this.expireTime && !dayjs(this.expireTime).isAfter(dayjs())) {
+        return this.$Message.warning(this.$t('role_invalidDateValidate'))
+      }
+      let data = {
+        userName: localStorage.getItem('username'),
+        roleIds: [row.role.id],
+        expireTime: this.expireTime
+      }
+      const { status } = await startApply(data)
+      if (status === 'OK') {
+        this.timeVisible = false
+        this.$Notice.success({
+          title: this.$t('successful'),
+          desc: this.$t('tw_apply_success')
+        })
+        this.getTableData()
       }
     }
   }

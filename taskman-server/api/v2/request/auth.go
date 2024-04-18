@@ -8,6 +8,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -18,7 +19,7 @@ func TransAuthGetApplyRoles(c *gin.Context) {
 	var err error
 	var allRoleBytes, roleApplyBytes []byte
 	var requestParam models.QueryRequestParam
-	var exist bool
+	var exist, roleAdmin bool
 	paramAll := c.Query("all")
 	paramRoleAdmin := c.Query("roleAdmin")
 	allRoleBytes, err = rpc.HttpGet(models.Config.Wecube.BaseUrl+fmt.Sprintf("/auth/v1/roles?all=%s&roleAdmin=%s", paramAll, paramRoleAdmin),
@@ -27,6 +28,17 @@ func TransAuthGetApplyRoles(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
+	}
+	if paramRoleAdmin != "" {
+		roleAdmin, err = strconv.ParseBool(paramRoleAdmin)
+		if err != nil {
+			middleware.ReturnServerHandleError(c, err)
+			return
+		}
+		if roleAdmin {
+			c.Data(http.StatusOK, "application/json; charset=utf-8", allRoleBytes)
+			return
+		}
 	}
 	// 已经拥有角色&已经申请并且没有过期角色都需要过滤掉
 	if err = json.Unmarshal(allRoleBytes, &allRoleResponse); err != nil {

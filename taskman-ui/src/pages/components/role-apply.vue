@@ -83,17 +83,31 @@
         <Button @click="showModal = false">{{ $t('cancel') }}</Button>
       </div>
     </Modal>
-    <Modal v-model="timeVisible" :title="$t('tw_add_user')" :mask-closable="false">
+    <!--有效期续期弹框-->
+    <Modal v-model="timeModalVisible" :title="$t('tw_expireReset_tips')" :mask-closable="false">
       <Form :label-width="120">
-        <FormItem :label="$t('tw_user')">
-          <Select style="width: 80%" v-model="pendingUser" multiple filterable @on-open-change="getPendingUserOptions">
-            <Option v-for="item in pendingUserOptions" :value="item.id" :key="item.id">{{ item.username }}</Option>
-          </Select>
+        <FormItem :label="$t('role_invalidDate')">
+          <DatePicker
+            type="datetime"
+            :value="modalExpireTime"
+            @on-change="
+              val => {
+                modalExpireTime = val
+              }
+            "
+            :placeholder="$t('role_invalidDatePlaceholder')"
+            :options="{
+              disabledDate(date) {
+                return date && date.valueOf() < Date.now() - 86400000
+              }
+            }"
+            style="width:300px"
+          ></DatePicker>
         </FormItem>
       </Form>
       <template #footer>
-        <Button @click="showSelectModel = false">{{ $t('cancel') }}</Button>
-        <Button @click="okSelect" :disabled="pendingUser.length === 0" type="primary">{{ $t('confirm') }}</Button>
+        <Button @click="timeModalVisible = false">{{ $t('cancel') }}</Button>
+        <Button @click="handleExtendTime" type="primary">{{ $t('confirm') }}</Button>
       </template>
     </Modal>
   </div>
@@ -111,7 +125,8 @@ export default {
       roleList: [],
       activeTab: 'pending',
       tableData: [],
-      timeVisible: false,
+      timeModalVisible: false,
+      modalExpireTime: '',
       pendingColumns: [
         {
           title: this.$t('tw_account'),
@@ -135,15 +150,17 @@ export default {
             return (
               <div style={this.getExpireStyle(params.row)}>
                 <span>{this.getExpireTips(params.row)}</span>
-                <Icon
-                  type="md-time"
-                  size="24"
-                  color="#808695"
-                  style="cursor:pointer;margin-left:5px"
-                  onClick={() => {
-                    this.handleExtendTime(params.row)
-                  }}
-                />
+                {['preExpried', 'expire'].includes(params.row.status) && (
+                  <Icon
+                    type="md-time"
+                    size="24"
+                    color="#808695"
+                    style="cursor:pointer;margin-left:5px"
+                    onClick={() => {
+                      this.openTimeModal(params.row)
+                    }}
+                  />
+                )}
               </div>
             )
           }
@@ -173,6 +190,17 @@ export default {
             return (
               <div style={this.getExpireStyle(params.row)}>
                 <span>{this.getExpireTips(params.row)}</span>
+                {['preExpried', 'expire'].includes(params.row.status) && (
+                  <Icon
+                    type="md-time"
+                    size="24"
+                    color="#808695"
+                    style="cursor:pointer;margin-left:5px"
+                    onClick={() => {
+                      this.openTimeModal(params.row)
+                    }}
+                  />
+                )}
               </div>
             )
           }
@@ -289,19 +317,22 @@ export default {
         this.roleList = data || []
       }
     },
-    async handleExtendTime (row) {
-      this.timeVisible = true
-      if (this.expireTime && !dayjs(this.expireTime).isAfter(dayjs())) {
+    openTimeModal (row) {
+      this.timeModalVisible = true
+      this.editRow = row
+    },
+    async handleExtendTime () {
+      if (this.modalExpireTime && !dayjs(this.modalExpireTime).isAfter(dayjs())) {
         return this.$Message.warning(this.$t('role_invalidDateValidate'))
       }
       let data = {
         userName: localStorage.getItem('username'),
-        roleIds: [row.role.id],
-        expireTime: this.expireTime
+        roleIds: [this.editRow.role.id],
+        expireTime: this.modalExpireTime
       }
       const { status } = await startApply(data)
       if (status === 'OK') {
-        this.timeVisible = false
+        this.timeModalVisible = false
         this.$Notice.success({
           title: this.$t('successful'),
           desc: this.$t('tw_apply_success')

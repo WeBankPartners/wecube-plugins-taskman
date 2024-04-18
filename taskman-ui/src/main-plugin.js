@@ -9,6 +9,7 @@ import { ValidationProvider } from 'vee-validate'
 import './vee-validate-local-config'
 
 import Dashboard from '@/pages/workbench/index.vue'
+
 window.component('ValidationProvider', ValidationProvider)
 window.addHomepageComponent &&
   window.addHomepageComponent({

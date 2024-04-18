@@ -67,7 +67,9 @@
                     :multiple="element.multiple === 'yes'"
                     class="custom-item"
                   >
-                    <Option v-for="item in element.dataOptions.split(',')" :value="item" :key="item">{{ item }}</Option>
+                    <Option v-for="item in computedOption(element)" :value="item.value" :key="item.label">{{
+                      item.label
+                    }}</Option>
                   </Select>
                   <Select
                     v-if="element.elementType === 'wecmdbEntity'"
@@ -135,12 +137,16 @@
                     v-if="editElement.elementType === 'select'"
                     :label="editElement.entity === '' ? $t('data_set') : $t('data_source')"
                   >
-                    <Input
-                      v-model="editElement.dataOptions"
+                    <Input v-model="editElement.dataOptions" disabled style="width:70%"></Input>
+                    <Button
+                      class="custom-add-btn"
                       :disabled="$parent.isCheck === 'Y'"
-                      placeholder="eg:a,b"
-                      @on-change="paramsChanged"
-                    ></Input>
+                      @click.stop="dataOptionsMgmt"
+                      type="primary"
+                      ghost
+                      size="small"
+                      icon="ios-create-outline"
+                    ></Button>
                   </FormItem>
                   <!--添加wecmdbEntity类型，根据选择配置生成url(用于获取下拉配置)-->
                   <FormItem v-if="editElement.elementType === 'wecmdbEntity'" :label="$t('data_source')">
@@ -244,6 +250,7 @@
         </div>
       </Col>
     </Row>
+    <DataSourceConfig ref="dataSourceConfigRef" @setDataOptions="setDataOptions"></DataSourceConfig>
     <div class="footer">
       <div class="content">
         <Button @click="gotoForward" ghost type="primary" class="btn-footer-margin">{{ $t('forward') }}</Button>
@@ -265,11 +272,13 @@
 import { saveRequsetForm, getRequestFormTemplateData, getAllDataModels } from '@/api/server.js'
 import draggable from 'vuedraggable'
 import CustomDraggable from './components/custom-draggable.vue'
+import DataSourceConfig from './data-source-config.vue'
 export default {
   name: 'form-select',
   components: {
     draggable,
-    CustomDraggable
+    CustomDraggable,
+    DataSourceConfig
   },
   data () {
     return {
@@ -311,7 +320,7 @@ export default {
         sort: 0,
         title: '',
         width: 24,
-        dataOptions: '',
+        dataOptions: '[]',
         refEntity: '',
         refPackageName: ''
       },
@@ -474,8 +483,8 @@ export default {
     },
     // 获取wecmdb下拉类型entity值
     async getAllDataModels () {
-      const { data, status } = await getAllDataModels()
-      if (status === 'OK') {
+      const { data, statusCode } = await getAllDataModels()
+      if (statusCode === 'OK') {
         this.allEntityList = []
         const sortData = data.map(_ => {
           return {
@@ -494,6 +503,24 @@ export default {
           })
         })
       }
+    },
+    // #region 普通select数据集配置逻辑
+    dataOptionsMgmt () {
+      let newDataOptions = JSON.parse(this.editElement.dataOptions || '[]')
+      this.$refs.dataSourceConfigRef.loadPage(newDataOptions)
+    },
+    setDataOptions (options) {
+      this.editElement.dataOptions = JSON.stringify(options)
+      const valueArray = options.map(d => d.value)
+      this.editElement.filterRule = this.editElement.filterRule.filter(fr => valueArray.includes(fr))
+    },
+    computedOption (element) {
+      let res = []
+      if (element.elementType === 'select') {
+        res = JSON.parse(element.dataOptions || '[]')
+      } else if (element.elementType === 'wecmdbEntity') {
+      }
+      return res
     }
   }
 }

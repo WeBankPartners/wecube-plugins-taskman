@@ -125,7 +125,7 @@ func TransAuthGetApplyRoles(c *gin.Context) {
 			result = append(result, roleDto)
 		}
 	}
-	response := transResponseJson{Status: "ok", Data: result}
+	response := transResponseJson{Status: "OK", Data: result}
 	bodyBytes, _ := json.Marshal(response)
 	c.Set("responseBody", string(bodyBytes))
 	c.JSON(http.StatusOK, response)

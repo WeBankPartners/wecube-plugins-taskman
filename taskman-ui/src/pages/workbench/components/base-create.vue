@@ -75,6 +75,7 @@
               :loading="refLoading"
               clearable
               style="width:60%;"
+              @on-open-change="handleRefOpenChange"
             >
               <Option v-for="item in refOptions" :value="item.id" :key="item.id">{{
                 `【${item.id}】${item.name}【${typeMap[item.type]}】`
@@ -452,6 +453,11 @@ export default {
     })
   },
   methods: {
+    handleRefOpenChange (flag) {
+      if (flag && this.refOptions.length === 0) {
+        this.remoteRefData(this.form.refId)
+      }
+    },
     // 获取关联单下拉列表
     remoteRefData: debounce(async function (query) {
       const cur = dayjs().format('YYYY-MM-DD')

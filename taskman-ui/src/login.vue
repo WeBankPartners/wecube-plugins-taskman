@@ -37,6 +37,23 @@
               <Option v-for="role in roleList" :value="role.id" :key="role.id">{{ role.displayName }}</Option>
             </Select>
           </FormItem>
+          <FormItem :label="$t('role_invalidDate')">
+            <DatePicker
+              type="datetime"
+              :value="formValidate.expireTime"
+              @on-change="
+                val => {
+                  formValidate.expireTime = val
+                }
+              "
+              :placeholder="$t('role_invalidDatePlaceholder')"
+              :options="{
+                disabledDate(date) {
+                  return date && date.valueOf() < Date.now() - 86400000
+                }
+              }"
+            ></DatePicker>
+          </FormItem>
         </Form>
         <div slot="footer">
           <Button @click="handleReset('formValidate')">{{ $t('cancel') }}</Button>
@@ -50,6 +67,7 @@
 import CryptoJS from 'crypto-js'
 import { login, getApplyRoles, registerUser, getEncryptKey } from '@/api/server'
 import { setCookie } from '@/pages/util/cookie'
+import dayjs from 'dayjs'
 export default {
   data () {
     return {
@@ -61,7 +79,8 @@ export default {
       formValidate: {
         userName: '',
         emailAddr: '',
-        roleIds: []
+        roleIds: [],
+        expireTime: ''
       },
       ruleValidate: {
         emailAddr: [
@@ -129,6 +148,9 @@ export default {
       }
     },
     handleSubmit (name) {
+      if (this.formValidate.expireTime && !dayjs(this.formValidate.expireTime).isAfter(dayjs())) {
+        return this.$Message.warning(this.$t('role_invalidDateValidate'))
+      }
       this.$refs[name].validate(async valid => {
         if (valid) {
           const { status } = await registerUser(this.formValidate)

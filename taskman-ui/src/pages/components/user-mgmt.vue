@@ -74,8 +74,9 @@
             </p>
             <div class="tagContainers" :style="{ height: tableHeight + 'px' }">
               <div class="role-item" v-for="item in userList" :key="item.id">
-                <div class="item-style" style="width:80%;display: inline-block;">
-                  {{ item.username }}
+                <div class="item-style" style="width:80%;display:inline-block;">
+                  <span style="display:inline-block;width:100px;">{{ item.username }}</span>
+                  <span style="display:inline-block;margin-left:20px;">{{ item.expireTime || '永久有效' }}</span>
                 </div>
                 <Button @click="removeUser(item)" size="small" icon="md-trash" ghost type="error"></Button>
               </div>
@@ -129,6 +130,10 @@ export default {
           }
         },
         {
+          title: this.$t('role_invalidDate'),
+          key: 'expireTime'
+        },
+        {
           title: this.$t('t_action'),
           key: 'address',
           render: (h, params) => {
@@ -172,6 +177,10 @@ export default {
           key: 'updatedTime'
         },
         {
+          title: this.$t('role_invalidDate'),
+          key: 'expireTime'
+        },
+        {
           title: this.$t('tw_processing_status'),
           key: 'status',
           render: (h, params) => {
@@ -203,6 +212,7 @@ export default {
       this.getRoles()
     },
     async getTableData () {
+      this.tableData = []
       let statusArr = this.activeTab === 'pending' ? ['init'] : ['approve', 'deny']
 
       const params = {
@@ -316,7 +326,8 @@ export default {
       let data = [
         {
           id: item.id,
-          status: statusCode
+          status: statusCode,
+          expireTime: item.expireTime
         }
       ]
       const { status } = await handleApplication(data)

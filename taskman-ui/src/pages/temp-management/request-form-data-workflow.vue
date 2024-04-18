@@ -102,7 +102,7 @@
 </template>
 
 <script>
-import ItemFilterRulesGroup from './item-filter-rules-group.vue'
+import ItemFilterRulesGroup from './components/item-filter-rules-group.vue'
 import { saveRequestGroupForm, getRequestGroupForm, getAllDataModels } from '@/api/server.js'
 export default {
   name: 'workflow',

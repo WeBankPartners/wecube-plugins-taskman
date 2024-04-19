@@ -460,5 +460,8 @@
   "tw_inEffect": "In Effect",
   "tw_hasExpired": "Expired",
   "tw_hasDenyed": "Declined",
-  "tw_hasDeleted": "Deleted"
+  "tw_hasDeleted": "Deleted",
+  "tw_willExpire": "Will Expire",
+  "tw_expire": "Expire",
+  "tw_forever": "Perpetuity"
 }

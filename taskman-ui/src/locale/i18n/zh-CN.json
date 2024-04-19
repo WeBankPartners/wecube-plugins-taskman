@@ -458,5 +458,8 @@
   "tw_inEffect": "生效中",
   "tw_hasExpired": "已过期",
   "tw_hasDenyed": "已拒绝",
-  "tw_hasDeleted": "已删除"
+  "tw_hasDeleted": "已删除",
+  "tw_willExpire": "将到期",
+  "tw_expire": "到期",
+  "tw_forever": "永久有效"
 }

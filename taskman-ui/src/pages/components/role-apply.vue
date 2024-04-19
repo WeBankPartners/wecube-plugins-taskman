@@ -198,13 +198,17 @@ export default {
       return function ({ status, expireTime }) {
         let text = ''
         if (status === 'preExpried') {
-          text = `${expireTime}将到期`
+          // 即将到期
+          text = `${expireTime}${this.$t('tw_willExpire')}`
         } else if (status === 'expire') {
-          text = `${expireTime}已到期`
+          // 已过期
+          text = `${expireTime}${this.$t('tw_hasExpired')}`
         } else if (expireTime) {
-          text = `${expireTime}到期`
+          // 到期时间
+          text = `${expireTime}${this.$t('tw_expire')}`
         } else if (!expireTime) {
-          text = `永久有效`
+          // 永久有效
+          text = `${this.$t('tw_forever')}`
         }
         return text
       }

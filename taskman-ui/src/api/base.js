@@ -55,6 +55,8 @@ req.interceptors.response.use(
       }
       return {
         ...res.data,
+        status: res.data.status || res.data.status,
+        statusCode: res.data.statusCode || res.data.status,
         user: res.headers['username'] || ' - '
       }
     } else {

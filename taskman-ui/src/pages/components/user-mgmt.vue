@@ -45,7 +45,7 @@
         <Col span="12">
           <Card>
             <p slot="title" style="height:24px">{{ $t('manageRole') }}</p>
-            <div class="tagContainers" :style="{ height: tableHeight + 'px' }">
+            <div class="tagContainers" :style="{ minHeight: 200 + 'px', maxHeight: tableHeight + 'px' }">
               <div class="role-item" v-for="item in roleList" :key="item.id">
                 <div
                   class="item-style"
@@ -72,7 +72,7 @@
                 >{{ $t('tw_add_user') }}</Button
               >
             </p>
-            <div class="tagContainers" :style="{ height: tableHeight + 'px' }">
+            <div class="tagContainers" :style="{ minHeight: 200 + 'px', maxHeight: tableHeight + 'px' }">
               <div class="role-item" v-for="item in userList" :key="item.id">
                 <div class="item-style" style="width:80%;display:inline-block;">
                   <span style="display:inline-block;width:100px;">{{ item.username }}</span>
@@ -132,23 +132,24 @@ export default {
           }
         },
         {
+          title: this.$t('tw_processing_time'),
+          key: 'updatedTime'
+        },
+        {
           title: this.$t('role_invalidDate'),
           key: 'expireTime',
+          minWidth: 80,
           render: (h, params) => {
-            let text = ''
+            const expireFlag = params.row.expireTime && params.row.status === 'expire'
             if (params.row.expireTime) {
-              if (params.row.status === 'expire') {
-                text = (
-                  <span>
-                    {`${params.row.expireTime}到期`}
-                    <span style="color:#ed4014">(已超时)</span>
-                  </span>
-                )
-              } else {
-                text = <span>{`${params.row.expireTime}到期`}</span>
-              }
+              return (
+                <span style={{ color: expireFlag ? '#ed4014' : '' }}>
+                  {`${params.row.expireTime}${expireFlag ? this.$t('tw_hasExpired') : ''}`}
+                </span>
+              )
+            } else {
+              return <span>{this.$t('tw_forever')}</span>
             }
-            return text
           }
         },
         {
@@ -197,28 +198,25 @@ export default {
         {
           title: this.$t('role_invalidDate'),
           key: 'expireTime',
+          minWidth: 80,
           render: (h, params) => {
-            let text = ''
+            const expireFlag = params.row.expireTime && params.row.status === 'expire'
             if (params.row.expireTime) {
-              if (params.row.status === 'expire') {
-                text = (
-                  <span>
-                    {`${params.row.expireTime}到期`}
-                    <span style="color:#ed4014">(已超时)</span>
-                  </span>
-                )
-              } else {
-                text = <span>{`${params.row.expireTime}到期`}</span>
-              }
+              return (
+                <span style={{ color: expireFlag ? '#ed4014' : '' }}>
+                  {`${params.row.expireTime}${expireFlag ? this.$t('tw_hasExpired') : ''}`}
+                </span>
+              )
+            } else {
+              return <span>{this.$t('tw_forever')}</span>
             }
-            return text
           }
         },
         {
           title: this.$t('tw_processing_status'),
           key: 'status',
           render: (h, params) => {
-            const status = params.row.status
+            const status = params.row.handleStatus
             const statusTitle = status === 'approve' ? this.$t('tw_approve') : this.$t('tw_reject')
             return <div style={status === 'approve' ? 'color:#b8f27c' : 'color:red'}>{statusTitle}</div>
           }
@@ -255,13 +253,17 @@ export default {
       return function ({ status, expireTime }) {
         let text = ''
         if (status === 'preExpried') {
-          text = `${expireTime}将到期`
+          // 即将到期
+          text = `${expireTime}${this.$t('tw_willExpire')}`
         } else if (status === 'expire') {
-          text = `${expireTime}已到期`
+          // 已过期
+          text = `${expireTime}${this.$t('tw_hasExpired')}`
         } else if (expireTime) {
-          text = `${expireTime}到期`
+          // 到期时间
+          text = `${expireTime}${this.$t('tw_expire')}`
         } else if (!expireTime) {
-          text = `永久有效`
+          // 永久有效
+          text = `${this.$t('tw_forever')}`
         }
         return text
       }
@@ -399,6 +401,7 @@ export default {
           desc: this.$t('successful')
         })
         this.getTableData()
+        this.$bus.$emit('fetchApplyCount')
       }
     },
     tabChange (val) {

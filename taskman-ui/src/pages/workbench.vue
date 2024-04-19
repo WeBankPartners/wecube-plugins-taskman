@@ -11,8 +11,6 @@
 
 <script>
 import WorkbenchMenu from '@/pages/components/workbench-menu.vue'
-import Vue from 'vue'
-Vue.prototype.$bus = new Vue()
 export default {
   components: {
     WorkbenchMenu

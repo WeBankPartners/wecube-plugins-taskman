@@ -455,5 +455,13 @@
   "role_invalidDateValidate": "The permission expiration time cannot be earlier than the current time",
   "tw_data_filtering": "Data Filtering",
   "tw_duplicate_data": "The dataset has duplicate display names.",
-  "tw_expireReset_tips": "Set Expiration Date"
+  "tw_expireReset_tips": "Set Expiration Date",
+  "tw_roleDelete": "The role has been deleted",
+  "tw_inEffect": "In Effect",
+  "tw_hasExpired": "Expired",
+  "tw_hasDenyed": "Declined",
+  "tw_hasDeleted": "Deleted",
+  "tw_willExpire": "Will Expire",
+  "tw_expire": "Expire",
+  "tw_forever": "Perpetuity"
 }

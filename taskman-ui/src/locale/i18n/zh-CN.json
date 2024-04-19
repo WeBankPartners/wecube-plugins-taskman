@@ -453,5 +453,13 @@
   "role_invalidDateValidate": "权限到期时间不能早于当前时间",
   "tw_data_filtering": "数据过滤",
   "tw_duplicate_data": "数据集存在重复显示名",
-  "tw_expireReset_tips": "设置有效期"
+  "tw_expireReset_tips": "设置有效期",
+  "tw_roleDelete": "角色已删除",
+  "tw_inEffect": "生效中",
+  "tw_hasExpired": "已过期",
+  "tw_hasDenyed": "已拒绝",
+  "tw_hasDeleted": "已删除",
+  "tw_willExpire": "将到期",
+  "tw_expire": "到期",
+  "tw_forever": "永久有效"
 }

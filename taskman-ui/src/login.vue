@@ -66,7 +66,7 @@
 <script>
 import CryptoJS from 'crypto-js'
 import { login, getApplyRoles, registerUser, getEncryptKey } from '@/api/server'
-import { setCookie } from '@/pages/util/cookie'
+import { setCookie, clearAllCookie } from '@/pages/util/cookie'
 import dayjs from 'dayjs'
 export default {
   data () {
@@ -171,6 +171,7 @@ export default {
     clearSession () {
       let localStorage = window.localStorage
       localStorage.removeItem('username')
+      clearAllCookie()
       window.needReLoad = true
     }
   },

@@ -65,10 +65,16 @@
           </div>
         </div>
         <Tabs type="card" :value="activeTab" @on-click="tabChange">
+          <!--待处理-->
           <TabPane :label="$t('tw_pending')" name="pending"></TabPane>
-          <TabPane label="生效中" name="inEffect"></TabPane>
-          <TabPane label="已过期" name="expire"></TabPane>
-          <TabPane label="已拒绝" name="deny"></TabPane>
+          <!--生效中-->
+          <TabPane :label="$t('tw_inEffect')" name="inEffect"></TabPane>
+          <!--已过期-->
+          <TabPane :label="$t('tw_hasExpired')" name="expire"></TabPane>
+          <!--已拒绝-->
+          <TabPane :label="$t('tw_hasDenyed')" name="deny"></TabPane>
+          <!--已删除-->
+          <TabPane :label="$t('tw_hasDeleted')" name="deleted"></TabPane>
         </Tabs>
         <div>
           <Table
@@ -113,7 +119,7 @@
   </div>
 </template>
 <script>
-import { getApplyRoles, startApply, getApplyList } from '@/api/server.js'
+import { getApplyRoles, startApply, getApplyList, deleteApplyData } from '@/api/server.js'
 import dayjs from 'dayjs'
 export default {
   data () {
@@ -127,30 +133,30 @@ export default {
       tableData: [],
       timeModalVisible: false,
       modalExpireTime: '',
-      pendingColumns: [
-        {
-          title: this.$t('tw_account'),
-          key: 'createdBy'
-        },
-        {
+      baseColumn: {
+        roleId: {
           title: this.$t('tw_apply_roles'),
           key: 'roleId',
           render: (h, params) => {
-            return <div>{params.row.role.displayName}</div>
+            if (params.row.role.displayName) {
+              return <div>{params.row.role.displayName}</div>
+            } else {
+              return <div style="color:#ed4014">{this.$t('tw_roleDelete')}</div>
+            }
           }
         },
-        {
+        createdTime: {
           title: this.$t('tw_application_time'),
           key: 'createdTime'
         },
-        {
+        expireTime: {
           title: this.$t('role_invalidDate'),
           key: 'expireTime',
           render: (h, params) => {
             return (
               <div style={this.getExpireStyle(params.row)}>
                 <span>{this.getExpireTips(params.row)}</span>
-                {['preExpried', 'expire'].includes(params.row.status) && (
+                {['preExpried', 'expire'].includes(params.row.status) && this.activeTab !== 'deleted' && (
                   <Icon
                     type="md-time"
                     size="24"
@@ -165,47 +171,9 @@ export default {
             )
           }
         }
-      ],
-      processedColumns: [
-        {
-          title: this.$t('tw_apply_roles'),
-          key: 'roleId',
-          render: (h, params) => {
-            return <div>{params.row.role.displayName}</div>
-          }
-        },
-        {
-          title: this.$t('tw_application_time'),
-          key: 'createdTime'
-        },
-        {
-          title: `${this.$t('tw_approver')}(${this.$t('tw_role_administrator')})`,
-          key: 'updatedBy',
-          width: 210
-        },
-        {
-          title: this.$t('role_invalidDate'),
-          key: 'expireTime',
-          render: (h, params) => {
-            return (
-              <div style={this.getExpireStyle(params.row)}>
-                <span>{this.getExpireTips(params.row)}</span>
-                {['preExpried', 'expire'].includes(params.row.status) && (
-                  <Icon
-                    type="md-time"
-                    size="24"
-                    color="#808695"
-                    style="cursor:pointer;margin-left:5px"
-                    onClick={() => {
-                      this.openTimeModal(params.row)
-                    }}
-                  />
-                )}
-              </div>
-            )
-          }
-        }
-      ]
+      },
+      pendingColumns: [],
+      processedColumns: []
     }
   },
   computed: {
@@ -230,17 +198,42 @@ export default {
       return function ({ status, expireTime }) {
         let text = ''
         if (status === 'preExpried') {
-          text = `${expireTime}将到期`
+          // 即将到期
+          text = `${expireTime}${this.$t('tw_willExpire')}`
         } else if (status === 'expire') {
-          text = `${expireTime}已到期`
+          // 已过期
+          text = `${expireTime}${this.$t('tw_hasExpired')}`
         } else if (expireTime) {
-          text = `${expireTime}到期`
+          // 到期时间
+          text = `${expireTime}${this.$t('tw_expire')}`
         } else if (!expireTime) {
-          text = `永久有效`
+          // 永久有效
+          text = `${this.$t('tw_forever')}`
         }
         return text
       }
     }
+  },
+  mounted () {
+    this.pendingColumns = [
+      {
+        title: this.$t('tw_account'),
+        key: 'createdBy'
+      },
+      this.baseColumn.roleId,
+      this.baseColumn.createdTime,
+      this.baseColumn.expireTime
+    ]
+    this.processedColumns = [
+      this.baseColumn.roleId,
+      {
+        title: `${this.$t('tw_approver')}(${this.$t('tw_role_administrator')})`,
+        key: 'updatedBy',
+        width: 210
+      },
+      this.baseColumn.createdTime,
+      this.baseColumn.expireTime
+    ]
   },
   methods: {
     openModal () {
@@ -253,6 +246,7 @@ export default {
       this.getTableData()
     },
     async getTableData () {
+      this.tableData = []
       let statusArr = []
       if (this.activeTab === 'pending') {
         statusArr = ['init']
@@ -262,6 +256,8 @@ export default {
         statusArr = ['expire']
       } else if (this.activeTab === 'deny') {
         statusArr = ['deny']
+      } else if (this.activeTab === 'deleted') {
+        statusArr = ['deleted']
       }
       const params = {
         filters: [
@@ -282,6 +278,9 @@ export default {
             field: 'createdTime'
           }
         ]
+      }
+      if (this.activeTab === 'deleted') {
+        params.ext = 'deleted'
       }
       const { status, data } = await getApplyList(params)
       if (status === 'OK') {
@@ -321,6 +320,7 @@ export default {
       this.timeModalVisible = true
       this.editRow = row
     },
+    // 有效期续期操作
     async handleExtendTime () {
       if (this.modalExpireTime && !dayjs(this.modalExpireTime).isAfter(dayjs())) {
         return this.$Message.warning(this.$t('role_invalidDateValidate'))
@@ -337,6 +337,11 @@ export default {
           title: this.$t('successful'),
           desc: this.$t('tw_apply_success')
         })
+        // 删除当前数据
+        const params = {
+          params: { applyId: this.editRow.id }
+        }
+        deleteApplyData(params)
         this.getTableData()
       }
     }

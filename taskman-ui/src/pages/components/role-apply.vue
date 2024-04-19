@@ -119,7 +119,7 @@
   </div>
 </template>
 <script>
-import { getApplyRoles, startApply, getApplyList } from '@/api/server.js'
+import { getApplyRoles, startApply, getApplyList, deleteApplyData } from '@/api/server.js'
 import dayjs from 'dayjs'
 export default {
   data () {
@@ -156,7 +156,7 @@ export default {
             return (
               <div style={this.getExpireStyle(params.row)}>
                 <span>{this.getExpireTips(params.row)}</span>
-                {['preExpried', 'expire'].includes(params.row.status) && (
+                {['preExpried', 'expire'].includes(params.row.status) && this.activeTab !== 'deleted' && (
                   <Icon
                     type="md-time"
                     size="24"
@@ -333,6 +333,11 @@ export default {
           title: this.$t('successful'),
           desc: this.$t('tw_apply_success')
         })
+        // 删除当前数据
+        const params = {
+          params: { applyId: this.editRow.id }
+        }
+        deleteApplyData(params)
         this.getTableData()
       }
     }

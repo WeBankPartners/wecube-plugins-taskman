@@ -243,6 +243,8 @@ export const addUserForRole = (roleId, data) => req.post(`/taskman/api/v2/auth/r
 export const handleApplication = data => req.put(`/taskman/api/v2/auth/roles/apply`, data)
 // 申请列表-用户视角
 export const getApplyList = data => req.post(`/taskman/api/v2/auth/roles/apply/byapplier`, data)
+// 删除角色申请记录
+export const deleteApplyData = params => req.delete(`/taskman/api/v2/auth/roles/apply`, params)
 // 获取编排下的判断分支
 export const getWorkflowForkNode = taskTemplateId =>
   req.get(`/taskman/api/v1/task-template/workflow/options?taskTemplateId=${taskTemplateId}`)

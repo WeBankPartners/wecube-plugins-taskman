@@ -213,6 +213,17 @@ func TransAuthHandleApplication(c *gin.Context) {
 	}
 }
 
+func TransApplyDelete(c *gin.Context) {
+	responseBytes, err := rpc.HttpDelete(models.Config.Wecube.BaseUrl+"/auth/v1/roles/apply",
+		c.GetHeader("Authorization"),
+		c.GetHeader(middleware.AcceptLanguageHeader))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		c.Data(http.StatusOK, "application/json; charset=utf-8", responseBytes)
+	}
+}
+
 func TransAuthGetApplyList(c *gin.Context) {
 	bodyString := c.GetString("requestBody")
 	responseBytes, err := rpc.HttpPost(models.Config.Wecube.BaseUrl+"/auth/v1/roles/apply/byapplier",

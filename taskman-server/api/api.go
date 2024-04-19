@@ -169,6 +169,7 @@ func init() {
 		&handlerFuncObj{Url: "/auth/roles/:roleId/users/revoke", Method: "POST", HandlerFunc: requestNew.TransAuthRemoveUserFromRole},
 		&handlerFuncObj{Url: "/auth/roles/:roleId/users", Method: "POST", HandlerFunc: requestNew.TransAuthAddUserForRole},
 		&handlerFuncObj{Url: "/auth/roles/apply", Method: "PUT", HandlerFunc: requestNew.TransAuthHandleApplication},
+		&handlerFuncObj{Url: "/auth/roles/apply", Method: "DELETE", HandlerFunc: requestNew.TransApplyDelete},
 		&handlerFuncObj{Url: "/auth/roles/apply/byapplier", Method: "POST", HandlerFunc: requestNew.TransAuthGetApplyList},
 		&handlerFuncObj{Url: "/auth/users/register", Method: "POST", HandlerFunc: requestNew.TransAuthUserRegister},
 	)

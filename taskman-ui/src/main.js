@@ -13,6 +13,7 @@ import { getCookie } from '@/pages/util/cookie'
 Vue.component('ValidationProvider', ValidationProvider)
 
 Vue.config.productionTip = false
+Vue.prototype.$bus = new Vue()
 
 Vue.use(ViewUI, {
   transfer: true,

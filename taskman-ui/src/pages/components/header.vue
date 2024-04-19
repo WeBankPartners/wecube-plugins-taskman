@@ -117,10 +117,6 @@ export default {
       timer: null
     }
   },
-  async created () {
-    this.getLocalLang()
-    this.username = window.localStorage.getItem('username')
-  },
   watch: {
     $lang: async function (lang) {
       window.location.reload()
@@ -135,11 +131,23 @@ export default {
       immediate: true
     }
   },
+  async created () {
+    this.getLocalLang()
+    this.username = window.localStorage.getItem('username')
+    this.$bus.$on('fetchApplyCount', () => {
+      this.getPendingCount()
+    })
+  },
   mounted () {
     this.getPendingCount()
     this.timer = setInterval(() => {
       this.getPendingCount()
     }, 5 * 60 * 1000)
+  },
+  destroyed () {
+    if (this.timer) {
+      clearInterval(this.timer)
+    }
   },
   methods: {
     changeMenu (path) {

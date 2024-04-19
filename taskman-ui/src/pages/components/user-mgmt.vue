@@ -198,27 +198,19 @@ export default {
           title: this.$t('role_invalidDate'),
           key: 'expireTime',
           render: (h, params) => {
-            let text = ''
-            if (params.row.expireTime) {
-              if (params.row.status === 'expire') {
-                text = (
-                  <span>
-                    {`${params.row.expireTime}到期`}
-                    <span style="color:#ed4014">(已超时)</span>
-                  </span>
-                )
-              } else {
-                text = <span>{`${params.row.expireTime}到期`}</span>
-              }
-            }
-            return text
+            const expireFlag = params.row.expireTime && params.row.status === 'expire'
+            return (
+              <span style={{ color: expireFlag ? '#ed4014' : '' }}>
+                {`${params.row.expireTime}${expireFlag ? '已超时' : ''}`}
+              </span>
+            )
           }
         },
         {
           title: this.$t('tw_processing_status'),
           key: 'status',
           render: (h, params) => {
-            const status = params.row.status
+            const status = params.row.handleStatus
             const statusTitle = status === 'approve' ? this.$t('tw_approve') : this.$t('tw_reject')
             return <div style={status === 'approve' ? 'color:#b8f27c' : 'color:red'}>{statusTitle}</div>
           }
@@ -399,6 +391,7 @@ export default {
           desc: this.$t('successful')
         })
         this.getTableData()
+        this.$bus.$emit('fetchApplyCount')
       }
     },
     tabChange (val) {

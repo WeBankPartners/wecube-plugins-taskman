@@ -523,8 +523,8 @@ func UpdateRequestFormItemNew(requestId, operator, now string, param *models.Req
 						}
 						valueString = strings.Join(tmpV, ",")
 					} else {
-						err = fmt.Errorf("row:%s key:%s value:%v is not array,format to []interface{} fail", valueObj.Id, k, v)
-						return
+						// 多选非必填情况下,valueString 为空
+						valueString = ""
 					}
 				}
 				// 从数据池里尝试查找有没有已存在的数据(同一个itemGroup，同一个数据行下的同一属性)

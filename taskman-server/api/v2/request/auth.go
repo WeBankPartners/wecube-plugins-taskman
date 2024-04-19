@@ -214,7 +214,8 @@ func TransAuthHandleApplication(c *gin.Context) {
 }
 
 func TransApplyDelete(c *gin.Context) {
-	responseBytes, err := rpc.HttpDelete(models.Config.Wecube.BaseUrl+"/auth/v1/roles/apply",
+	applyId := c.Query("applyId")
+	responseBytes, err := rpc.HttpDelete(models.Config.Wecube.BaseUrl+"/auth/v1/roles/apply?applyId="+applyId,
 		c.GetHeader("Authorization"),
 		c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {

@@ -10,6 +10,8 @@ type TaskHandleTemplateTable struct {
 	HandlerType  string `json:"handlerType" xorm:"handler_type"` //template.模板指定 custom.提交人指定
 	Handler      string `json:"handler" xorm:"handler"`
 	HandleMode   string `json:"handleMode" xorm:"handle_mode"` // 处理模式：custom.单人自定义 any.协同 all.并行 admin.提交人角色管理员 auto.自动通过
+	AssignRule   string `json:"assignRule" xorm:"assign_rule"` // 分配规则
+	FilterRule   string `json:"filterRule" xorm:"filter_rule"` // 下拉框过滤规则
 }
 
 func (TaskHandleTemplateTable) TableName() string {
@@ -22,4 +24,6 @@ type TaskHandleTemplateDto struct {
 	Assign      string `json:"assign"`
 	HandlerType string `json:"handlerType"`
 	Handler     string `json:"handler"`
+	AssignRule  string `json:"assignRule"` // 分配规则
+	FilterRule  string `json:"filterRule"` // 下拉框过滤规则
 }

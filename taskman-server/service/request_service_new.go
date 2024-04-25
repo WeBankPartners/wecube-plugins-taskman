@@ -1782,8 +1782,10 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 	if len(approvalActions) > 0 {
 		actions = append(actions, approvalActions...)
 	}
-	err = dao.Transaction(actions)
-	return
+	if err = dao.Transaction(actions); err != nil {
+		return
+	}
+	return s.AutoExecTaskHandle(request)
 }
 
 // CreateRequestApproval 创建请求审批, submitFlag 当前是否正在提交请求,如果是 taskList直接为空
@@ -1856,6 +1858,30 @@ func (s *RequestService) CreateRequestApproval(request models.RequestTable, curT
 	}
 	if len(requestTaskActions) > 0 {
 		actions = append(actions, requestTaskActions...)
+	}
+	return
+}
+
+// AutoExecTaskHandle 当请求模版信息表单配置了控制审批、任务操作就需要根据模版配置自动执行操作
+func (s *RequestService) AutoExecTaskHandle(request models.RequestTable) (err error) {
+	var taskList []*models.TaskTable
+	if taskList, err = GetTaskService().GetRequestAllDoingTask(request.Id); err != nil {
+		return
+	}
+	if len(taskList) > 0 {
+		for _, task := range taskList {
+			taskHandleTemplateList, err2 := s.taskHandleTemplateDao.QueryByTaskTemplate(task.TaskTemplate)
+			if err2 != nil {
+				return err2
+			}
+			if len(taskHandleTemplateList) > 0 {
+				for _, taskHandleTemplate := range taskHandleTemplateList {
+					if strings.TrimSpace(taskHandleTemplate.AssignRule) != "" {
+
+					}
+				}
+			}
+		}
 	}
 	return
 }

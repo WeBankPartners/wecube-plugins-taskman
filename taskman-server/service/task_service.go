@@ -308,8 +308,10 @@ func handleApprove(task models.TaskTable, operator, userToken, language string, 
 		if len(newApproveActions) > 0 {
 			actions = append(actions, newApproveActions...)
 		}
-		err = dao.Transaction(actions)
-		return
+		if err = dao.Transaction(actions); err != nil {
+			return
+		}
+		return GetRequestService().AutoExecTaskHandle(request)
 	case string(models.TaskHandleResultTypeDeny):
 		// 拒绝, 任务处理结果设置为拒绝,请求状态设置自动退回
 		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result=?,handle_status=?,result_desc=?,updated_time=? where id = ?", Param: []interface{}{models.TaskHandleResultTypeDeny, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId}})
@@ -1155,6 +1157,14 @@ func (s *TaskService) GetDoingTask(requestId, templateId, taskId string) (task *
 				}
 			}
 		}
+	}
+	return
+}
+
+// GetRequestAllDoingTask 获取请求的所有任务存在并行情况
+func (s *TaskService) GetRequestAllDoingTask(requestId string) (taskList []*models.TaskTable, err error) {
+	if err = dao.X.SQL("select * from task where request = ? and status <> 'done' and del_flag = 0 order by sort asc", requestId).Find(&taskList); err != nil {
+		return
 	}
 	return
 }

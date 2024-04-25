@@ -70,7 +70,7 @@ func New() (err error) {
 	operationLogService = &OperationLogService{operationLogDao: operationLogDao}
 	procDefService = &ProcDefService{}
 	refSelectService = &RefSelectService{}
-	requestService = &RequestService{requestDao: requestDao}
+	requestService = &RequestService{requestDao: requestDao, taskHandleTemplateDao: taskHandleTemplateDao}
 	taskService = &TaskService{taskDao: taskDao, taskHandleDao: taskHandleDao}
 	taskTemplateService = &TaskTemplateService{taskTemplateDao: taskTemplateDao, taskHandleTemplateDao: taskHandleTemplateDao}
 	formService = &FormService{formDao: formDao, formItemDao: formItemDao}

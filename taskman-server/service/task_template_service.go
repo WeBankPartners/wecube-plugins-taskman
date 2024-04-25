@@ -329,6 +329,8 @@ func (s *TaskTemplateService) UpdateTaskTemplate(param *models.TaskTemplateDto, 
 				taskHandleTemplate.Role = newHandleTemplate.Role
 				taskHandleTemplate.Handler = newHandleTemplate.Handler
 				taskHandleTemplate.HandleMode = param.HandleMode
+				taskHandleTemplate.FilterRule = param.HandleTemplates[i].FilterRule
+				taskHandleTemplate.AssignRule = param.HandleTemplates[i].AssignRule
 				updateTaskTemplate := taskHandleTemplate
 				updateTaskHandleTemplates = append(updateTaskHandleTemplates, updateTaskTemplate)
 			} else {
@@ -346,6 +348,8 @@ func (s *TaskTemplateService) UpdateTaskTemplate(param *models.TaskTemplateDto, 
 				Role:         newHandleTemplate.Role,
 				Handler:      newHandleTemplate.Handler,
 				HandleMode:   param.HandleMode,
+				FilterRule:   newHandleTemplate.FilterRule,
+				AssignRule:   newHandleTemplate.AssignRule,
 			}
 			newTaskHandleTemplates = append(newTaskHandleTemplates, newTaskHandleTemplate)
 		}

@@ -23,7 +23,8 @@ import (
 )
 
 type RequestService struct {
-	requestDao *dao.RequestDao
+	requestDao            *dao.RequestDao
+	taskHandleTemplateDao *dao.TaskHandleTemplateDao
 }
 
 var (
@@ -385,6 +386,17 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 		}
 	}
 	if len(param.ApprovalList) > 0 {
+		for _, approval := range param.ApprovalList {
+			if approval != nil && len(approval.HandleTemplates) > 0 {
+				for _, handleTemplate := range approval.HandleTemplates {
+					taskHandle, _ := GetRequestService().taskHandleTemplateDao.Get(handleTemplate.Id)
+					if taskHandle != nil {
+						handleTemplate.AssignRule = taskHandle.AssignRule
+						handleTemplate.FilterRule = taskHandle.FilterRule
+					}
+				}
+			}
+		}
 		approvalBytes, _ := json.Marshal(param.ApprovalList)
 		if approvalBytes != nil {
 			taskApprovalCache = string(approvalBytes)
@@ -1004,8 +1016,10 @@ func CheckRequest(request models.RequestTable, task *models.TaskTable, operator,
 	if len(approvalActions) > 0 {
 		actions = append(actions, approvalActions...)
 	}
-	err = dao.Transaction(actions)
-	return
+	if err = dao.Transaction(actions); err != nil {
+		return
+	}
+	return GetRequestService().AutoExecTaskHandle(request)
 }
 
 func StartRequest(requestId, operator, userToken, language string, cacheData models.RequestCacheData) (result *models.StartInstanceResultData, err error) {
@@ -2306,9 +2320,9 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 					}
 				}
 				// 根据模版的filter_rule规则进行过滤
-				if checkNeedFilterRow(formTable.Title, tmpRowObj.EntityData) {
+				/*	if checkNeedFilterRow(formTable.Title, tmpRowObj.EntityData) {
 					continue
-				}
+				}*/
 				formTable.Value = append(formTable.Value, &tmpRowObj)
 			}
 		}
@@ -2318,7 +2332,7 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 
 // checkNeedFilterRow  根据模版的filter_rule规则进行过滤,目前只对select框,和 wecmdbEntity数据过滤
 func checkNeedFilterRow(title []*models.FormItemTemplateDto, data map[string]interface{}) bool {
-	var err error
+	/*var err error
 	var exist bool
 	for _, formItem := range title {
 		var strArr []string
@@ -2352,7 +2366,7 @@ func checkNeedFilterRow(title []*models.FormItemTemplateDto, data map[string]int
 				}
 			}
 		}
-	}
+	}*/
 	return false
 }
 

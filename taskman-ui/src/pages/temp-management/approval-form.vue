@@ -818,6 +818,11 @@ export default {
           attr.itemGroupName = l.itemGroupName
           if (attr.id === this.specialId) {
             this.editElement = attr
+            if (this.editElement.multiple === 'Y') {
+              this.editElement.multiple = 'yes'
+            } else if (this.editElement.multiple === 'N') {
+              this.editElement.multiple = 'no'
+            }
             this.openPanel = '1'
           }
         })
@@ -986,6 +991,11 @@ export default {
         this.$set(this.editElement, 'filterRule', JSON.parse(this.editElement.filterRule || '[]'))
       }
       await this.getFilterRuleOption(this.editElement)
+      if (this.editElement.multiple === 'Y') {
+        this.editElement.multiple = 'yes'
+      } else if (this.editElement.multiple === 'N') {
+        this.editElement.multiple = 'no'
+      }
       this.openPanel = '1'
     },
     // 删除自定义表单项

@@ -160,7 +160,7 @@ export default {
                   <Icon
                     type="md-time"
                     size="24"
-                    color="#808695"
+                    color="#ed4014"
                     style="cursor:pointer;margin-left:5px"
                     onClick={() => {
                       this.openTimeModal(params.row)

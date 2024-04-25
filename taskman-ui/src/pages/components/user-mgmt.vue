@@ -132,8 +132,8 @@ export default {
           }
         },
         {
-          title: this.$t('tw_processing_time'),
-          key: 'updatedTime'
+          title: this.$t('tw_application_time'),
+          key: 'createdTime'
         },
         {
           title: this.$t('role_invalidDate'),
@@ -192,8 +192,8 @@ export default {
           }
         },
         {
-          title: this.$t('tw_processing_time'),
-          key: 'updatedTime'
+          title: this.$t('tw_application_time'),
+          key: 'createdTime'
         },
         {
           title: this.$t('role_invalidDate'),
@@ -218,7 +218,7 @@ export default {
           render: (h, params) => {
             const status = params.row.handleStatus
             const statusTitle = status === 'approve' ? this.$t('tw_approve') : this.$t('tw_reject')
-            return <div style={status === 'approve' ? 'color:#b8f27c' : 'color:red'}>{statusTitle}</div>
+            return <div style={status === 'approve' ? 'color: #19be6b' : 'color:red'}>{statusTitle}</div>
           }
         }
       ],

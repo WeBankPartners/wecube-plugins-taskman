@@ -1669,7 +1669,7 @@ func convertMap2Array(hashMap map[string]bool) (arr []string) {
 }
 
 func convertArray2Map(arr []string) map[string]bool {
-	hashMap := make(map[string]bool, 0)
+	hashMap := make(map[string]bool)
 	if len(arr) > 0 {
 		for _, str := range arr {
 			hashMap[str] = true
@@ -1785,7 +1785,7 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 	if err = dao.Transaction(actions); err != nil {
 		return
 	}
-	return s.AutoExecTaskHandle(request)
+	return s.AutoExecTaskHandle(request, userToken, language)
 }
 
 // CreateRequestApproval 创建请求审批, submitFlag 当前是否正在提交请求,如果是 taskList直接为空
@@ -1863,21 +1863,96 @@ func (s *RequestService) CreateRequestApproval(request models.RequestTable, curT
 }
 
 // AutoExecTaskHandle 当请求模版信息表单配置了控制审批、任务操作就需要根据模版配置自动执行操作
-func (s *RequestService) AutoExecTaskHandle(request models.RequestTable) (err error) {
+func (s *RequestService) AutoExecTaskHandle(request models.RequestTable, userToken, language string) (err error) {
 	var taskList []*models.TaskTable
+	var customForm models.CustomForm
+	var formItemDtoMap = make(map[string]*models.FormItemDto)
+	var formItemDtoTemp *models.FormItemDto
+	var ok, match bool
 	if taskList, err = GetTaskService().GetRequestAllDoingTask(request.Id); err != nil {
 		return
 	}
-	if len(taskList) > 0 {
-		for _, task := range taskList {
-			taskHandleTemplateList, err2 := s.taskHandleTemplateDao.QueryByTaskTemplate(task.TaskTemplate)
-			if err2 != nil {
-				return err2
+	if len(taskList) == 0 {
+		return
+	}
+	// 自定义表单内容
+	if request.CustomFormCache == "" {
+		return
+	}
+	if err = json.Unmarshal([]byte(request.CustomFormCache), &customForm); err != nil {
+		log.Logger.Error("json Unmarshal", log.Error(err), log.String("CustomFormCache", request.CustomFormCache))
+		return
+	}
+	if len(customForm.Title) == 0 || len(customForm.Value) == 0 {
+		return
+	}
+	for _, formItemTemplate := range customForm.Title {
+		if strings.EqualFold(formItemTemplate.Multiple, models.Yes) || strings.EqualFold(formItemTemplate.Multiple, models.Y) {
+			if v, ok := customForm.Value[formItemTemplate.Name]; ok {
+				formItemDtoMap[formItemTemplate.Name] = models.ConvertFormItemTemplateAndFormItem2Dto(formItemTemplate, v)
 			}
-			if len(taskHandleTemplateList) > 0 {
-				for _, taskHandleTemplate := range taskHandleTemplateList {
-					if strings.TrimSpace(taskHandleTemplate.AssignRule) != "" {
-
+		}
+	}
+	for _, task := range taskList {
+		taskHandleTemplateList, err2 := s.taskHandleTemplateDao.QueryByTaskTemplate(task.TaskTemplate)
+		if err2 != nil {
+			return err2
+		}
+		if len(taskHandleTemplateList) > 0 {
+			for _, taskHandleTemplate := range taskHandleTemplateList {
+				if strings.TrimSpace(taskHandleTemplate.AssignRule) != "" {
+					assignRuleMap := map[string]interface{}{}
+					if err = json.Unmarshal([]byte(taskHandleTemplate.AssignRule), &assignRuleMap); err != nil {
+						log.Logger.Error("AutoExecTaskHandle AssignRule Unmarshal err", log.Error(err))
+						continue
+					}
+					if len(assignRuleMap) == 0 {
+						continue
+					}
+					for assignKey, assignValue := range assignRuleMap {
+						if formItemDtoTemp, ok = formItemDtoMap[assignKey]; !ok {
+							log.Logger.Error("formItemDtoMap is not match", log.String("assignKey", assignKey))
+							continue
+						}
+						// 多选,有一个匹配上即可
+						if (strings.EqualFold(formItemDtoTemp.Multiple, models.Yes) || strings.EqualFold(formItemDtoTemp.Multiple, models.Y)) && assignValue.([]string) != nil {
+							match = false
+							assignArr, ok1 := assignValue.([]string)
+							valArr, ok2 := formItemDtoTemp.Value.([]string)
+							if !ok1 || !ok2 {
+								log.Logger.Error(" assignValue or form_item value  is not array", log.JsonObj("assignValue", assignValue), log.JsonObj("value", formItemDtoTemp.Value))
+								continue
+							}
+							assignMap := convertArray2Map(assignArr)
+							for _, val := range valArr {
+								if assignMap[val] {
+									match = true
+									break
+								}
+							}
+							if !match {
+								// 设置当前处理处理自动通过
+								if err = s.TaskHandleAutoPass(request, task, taskHandleTemplate, userToken, language); err != nil {
+									return
+								}
+								break
+							}
+						} else {
+							// 单选,需要相等
+							assignVal, ok1 := assignValue.(string)
+							val, ok2 := formItemDtoTemp.Value.(string)
+							if !ok1 || !ok2 {
+								log.Logger.Error(" assignValue or form_item value  is not string", log.JsonObj("assignValue", assignValue), log.JsonObj("value", formItemDtoTemp.Value))
+								continue
+							}
+							if assignVal != val {
+								// 设置当前处理处理自动通过
+								if err = s.TaskHandleAutoPass(request, task, taskHandleTemplate, userToken, language); err != nil {
+									return
+								}
+								break
+							}
+						}
 					}
 				}
 			}
@@ -2025,6 +2100,57 @@ func (s *RequestService) CreateProcessTask(request models.RequestTable, task *mo
 			actions = append(actions, workflowActions...)
 		}
 		return
+	}
+	return
+}
+
+// TaskHandleAutoPass 审批任务处理人自动通过
+func (s *RequestService) TaskHandleAutoPass(request models.RequestTable, task *models.TaskTable, taskHandleTemplate *models.TaskHandleTemplateTable, userToken, language string) (err error) {
+	var actions []*dao.ExecAction
+	var taskHandleList []*models.TaskHandleTable
+	var curTaskHandle *models.TaskHandleTable
+	// 是否需要直接通过当前任务
+	var needPassCurTask = true
+	var taskResult = models.TaskHandleResultTypeApprove
+	if task.Type == string(models.TaskTypeImplement) {
+		taskResult = models.TaskHandleResultTypeComplete
+	}
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	if taskHandleList, err = s.taskHandleDao.QueryByTask(task.Id); err != nil {
+		return
+	}
+	for _, taskHandle := range taskHandleList {
+		if taskHandle.TaskHandleTemplate == taskHandleTemplate.Id {
+			curTaskHandle = taskHandle
+		} else if taskHandle.HandleStatus == string(models.TaskHandleResultTypeUncompleted) {
+			needPassCurTask = false
+		}
+	}
+	if curTaskHandle != nil {
+		// 更新处理人
+		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status = ?,updated_time =? where id= ?", Param: []interface{}{models.TaskHandleResultTypeUnrelated, models.TaskHandleResultTypeComplete, nowTime, curTaskHandle.Id}})
+	}
+	if needPassCurTask {
+		// 更新任务到完成
+		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, taskResult, "system", nowTime, curTaskHandle.Id}})
+	}
+	if len(actions) > 0 {
+		err = dao.Transaction(actions)
+		if err != nil {
+			return
+		}
+		// 通过当前任务节点,需要继续创建下一个任务
+		if needPassCurTask {
+			actions = []*dao.ExecAction{}
+			taskSort := GetTaskService().GenerateTaskOrderByRequestId(request.Id)
+			if actions, err = s.CreateRequestApproval(request, "", userToken, language, taskSort, false); err != nil {
+				return
+			}
+			if err = dao.Transaction(actions); err != nil {
+				return
+			}
+			return GetRequestService().AutoExecTaskHandle(request, userToken, language)
+		}
 	}
 	return
 }

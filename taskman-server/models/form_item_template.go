@@ -79,6 +79,13 @@ func (FormItemTemplateTable) TableName() string {
 	return "form_item_template"
 }
 
+type FormItemDto struct {
+	Name          string      `json:"name"`
+	ControlSwitch string      `json:"controlSwitch"` // 控制审批/任务开关
+	Multiple      string      `json:"multiple"`
+	Value         interface{} `json:"value"`
+}
+
 type FormItemTemplateDtoSort []*FormItemTemplateDto
 
 func (s FormItemTemplateDtoSort) Len() int {
@@ -188,4 +195,13 @@ func ConvertFormItemTemplateModelList2Dto(tableList []*FormItemTemplateTable, it
 		dtoList = append(dtoList, ConvertFormItemTemplateModel2Dto(model, *itemGroup))
 	}
 	return dtoList
+}
+
+func ConvertFormItemTemplateAndFormItem2Dto(formItemTemplate *FormItemTemplateTable, value interface{}) *FormItemDto {
+	return &FormItemDto{
+		Name:          formItemTemplate.Name,
+		ControlSwitch: formItemTemplate.ControlSwitch,
+		Multiple:      formItemTemplate.Multiple,
+		Value:         value,
+	}
 }

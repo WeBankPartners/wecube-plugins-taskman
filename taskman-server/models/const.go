@@ -130,6 +130,7 @@ const (
 	TaskHandleResultTypeApprove     TaskHandleResultType = "approve"     // 同意
 	TaskHandleResultTypeDeny        TaskHandleResultType = "deny"        // 拒绝
 	TaskHandleResultTypeRedraw      TaskHandleResultType = "redraw"      // 打回
+	TaskHandleResultTypeUnrelated   TaskHandleResultType = "unrelated"   // 不相关
 	TaskHandleResultTypeComplete    TaskHandleResultType = "complete"    // 完成
 	TaskHandleResultTypeUncompleted TaskHandleResultType = "uncompleted" // 未完成
 )

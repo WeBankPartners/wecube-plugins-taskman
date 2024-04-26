@@ -311,7 +311,7 @@ func handleApprove(task models.TaskTable, operator, userToken, language string, 
 		if err = dao.Transaction(actions); err != nil {
 			return
 		}
-		return GetRequestService().AutoExecTaskHandle(request)
+		return GetRequestService().AutoExecTaskHandle(request, userToken, language)
 	case string(models.TaskHandleResultTypeDeny):
 		// 拒绝, 任务处理结果设置为拒绝,请求状态设置自动退回
 		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result=?,handle_status=?,result_desc=?,updated_time=? where id = ?", Param: []interface{}{models.TaskHandleResultTypeDeny, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId}})
@@ -353,8 +353,10 @@ func handleCustomTask(task models.TaskTable, operator, userToken, language strin
 	if len(newApproveActions) > 0 {
 		actions = append(actions, newApproveActions...)
 	}
-	err = dao.Transaction(actions)
-	return
+	if err = dao.Transaction(actions); err != nil {
+		return
+	}
+	return GetRequestService().AutoExecTaskHandle(request, userToken, language)
 }
 
 // handleWorkflowTask 处理编排任务
@@ -403,7 +405,10 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 	if len(newApproveActions) > 0 {
 		actions = append(actions, newApproveActions...)
 	}
-	return dao.Transaction(actions)
+	if err = dao.Transaction(actions); err != nil {
+		return err
+	}
+	return GetRequestService().AutoExecTaskHandle(request, userToken, language)
 }
 
 func getApproveCallbackParamNew(taskId string) (result models.PluginTaskCreateResp, callbackUrl string, err error) {

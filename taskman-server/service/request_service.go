@@ -25,6 +25,7 @@ import (
 type RequestService struct {
 	requestDao            *dao.RequestDao
 	taskHandleTemplateDao *dao.TaskHandleTemplateDao
+	taskHandleDao         *dao.TaskHandleDao
 }
 
 var (
@@ -1019,7 +1020,7 @@ func CheckRequest(request models.RequestTable, task *models.TaskTable, operator,
 	if err = dao.Transaction(actions); err != nil {
 		return
 	}
-	return GetRequestService().AutoExecTaskHandle(request)
+	return GetRequestService().AutoExecTaskHandle(request, userToken, language)
 }
 
 func StartRequest(requestId, operator, userToken, language string, cacheData models.RequestCacheData) (result *models.StartInstanceResultData, err error) {
@@ -2319,55 +2320,11 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 						tmpRowObj.EntityData[formItemTemp.Name] = formItemTemp.DefaultValue
 					}
 				}
-				// 根据模版的filter_rule规则进行过滤
-				/*	if checkNeedFilterRow(formTable.Title, tmpRowObj.EntityData) {
-					continue
-				}*/
 				formTable.Value = append(formTable.Value, &tmpRowObj)
 			}
 		}
 	}
 	return
-}
-
-// checkNeedFilterRow  根据模版的filter_rule规则进行过滤,目前只对select框,和 wecmdbEntity数据过滤
-func checkNeedFilterRow(title []*models.FormItemTemplateDto, data map[string]interface{}) bool {
-	/*var err error
-	var exist bool
-	for _, formItem := range title {
-		var strArr []string
-		var value interface{}
-		exist = false
-		if (formItem.ElementType == string(models.FormItemElementTypeSelect) || formItem.ElementType == string(models.FormItemElementTypeWeCMDBEntity)) && formItem.FilterRule != "" {
-			if err = json.Unmarshal([]byte(formItem.FilterRule), &strArr); err != nil {
-				log.Logger.Error("checkNeedFilterRow Unmarshal err", log.Error(err))
-				continue
-			}
-			value = data[formItem.Name]
-			// 多选,则需要每个数据都要匹配上
-			if formItem.Multiple == models.Y || formItem.Multiple == models.Yes {
-				tempArr := value.([]string)
-				strMap := convertArray2Map(strArr)
-				for _, str := range tempArr {
-					if !strMap[str] {
-						return true
-					}
-				}
-
-			} else {
-				//单选要匹配上其中一个
-				for _, str := range strArr {
-					if str == value.(string) {
-						exist = true
-					}
-				}
-				if !exist {
-					return true
-				}
-			}
-		}
-	}*/
-	return false
 }
 
 func sortHistoryResult(historyResult []*models.RequestPreDataTableObj, formTemplateIdMap map[string]*models.FormTemplateTable) (result []*models.RequestPreDataTableObj) {

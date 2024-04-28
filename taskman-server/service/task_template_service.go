@@ -1,10 +1,12 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/WeBankPartners/go-common-lib/guid"
@@ -283,6 +285,7 @@ func (s *TaskTemplateService) updateProcTaskTemplatesSql(taskTemplateId, nodeId,
 }
 
 func (s *TaskTemplateService) UpdateTaskTemplate(param *models.TaskTemplateDto, operator string) (*models.TaskTemplateDto, error) {
+	var assignRule, filterRule string
 	// 查询任务模板
 	taskTemplate, err := s.taskTemplateDao.Get(param.Id)
 	if err != nil {
@@ -329,8 +332,20 @@ func (s *TaskTemplateService) UpdateTaskTemplate(param *models.TaskTemplateDto, 
 				taskHandleTemplate.Role = newHandleTemplate.Role
 				taskHandleTemplate.Handler = newHandleTemplate.Handler
 				taskHandleTemplate.HandleMode = param.HandleMode
-				taskHandleTemplate.FilterRule = param.HandleTemplates[i].FilterRule
-				taskHandleTemplate.AssignRule = param.HandleTemplates[i].AssignRule
+				if len(param.HandleTemplates[i].AssignRule) > 0 {
+					byteArr, err2 := json.Marshal(param.HandleTemplates[i].AssignRule)
+					if err2 != nil {
+						return nil, err2
+					}
+					taskHandleTemplate.AssignRule = string(byteArr)
+				}
+				if len(param.HandleTemplates[i].FilterRule) > 0 {
+					byteArr, err2 := json.Marshal(param.HandleTemplates[i].FilterRule)
+					if err2 != nil {
+						return nil, err2
+					}
+					taskHandleTemplate.FilterRule = string(byteArr)
+				}
 				updateTaskTemplate := taskHandleTemplate
 				updateTaskHandleTemplates = append(updateTaskHandleTemplates, updateTaskTemplate)
 			} else {
@@ -338,7 +353,23 @@ func (s *TaskTemplateService) UpdateTaskTemplate(param *models.TaskTemplateDto, 
 			}
 		}
 		for sort := len(taskHandleTemplates) + 1; sort <= len(param.HandleTemplates); sort++ {
+			assignRule = ""
+			filterRule = ""
 			newHandleTemplate := param.HandleTemplates[sort-1]
+			if len(newHandleTemplate.AssignRule) > 0 {
+				byteArr, err2 := json.Marshal(newHandleTemplate.AssignRule)
+				if err2 != nil {
+					return nil, err2
+				}
+				assignRule = string(byteArr)
+			}
+			if len(newHandleTemplate.FilterRule) > 0 {
+				byteArr, err2 := json.Marshal(newHandleTemplate.FilterRule)
+				if err2 != nil {
+					return nil, err2
+				}
+				filterRule = string(byteArr)
+			}
 			newTaskHandleTemplate := &models.TaskHandleTemplateTable{
 				Id:           guid.CreateGuid(),
 				Sort:         sort,
@@ -348,8 +379,8 @@ func (s *TaskTemplateService) UpdateTaskTemplate(param *models.TaskTemplateDto, 
 				Role:         newHandleTemplate.Role,
 				Handler:      newHandleTemplate.Handler,
 				HandleMode:   param.HandleMode,
-				FilterRule:   newHandleTemplate.FilterRule,
-				AssignRule:   newHandleTemplate.AssignRule,
+				FilterRule:   filterRule,
+				AssignRule:   assignRule,
 			}
 			newTaskHandleTemplates = append(newTaskHandleTemplates, newTaskHandleTemplate)
 		}
@@ -621,6 +652,16 @@ func (s *TaskTemplateService) genTaskTemplateDto(taskTemplateId string) (*models
 			Assign:      taskTemplateHandle.Assign,
 			HandlerType: taskTemplateHandle.HandlerType,
 			Handler:     taskTemplateHandle.Handler,
+		}
+		if strings.TrimSpace(taskTemplateHandle.AssignRule) != "" {
+			if err = json.Unmarshal([]byte(taskTemplateHandle.AssignRule), &result.HandleTemplates[i].AssignRule); err != nil {
+				return nil, err
+			}
+		}
+		if strings.TrimSpace(taskTemplateHandle.FilterRule) != "" {
+			if err = json.Unmarshal([]byte(taskTemplateHandle.FilterRule), &result.HandleTemplates[i].FilterRule); err != nil {
+				return nil, err
+			}
 		}
 	}
 	return result, nil

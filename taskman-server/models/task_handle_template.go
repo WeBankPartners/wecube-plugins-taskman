@@ -19,11 +19,11 @@ func (TaskHandleTemplateTable) TableName() string {
 }
 
 type TaskHandleTemplateDto struct {
-	Id          string `json:"id"`
-	Role        string `json:"role"`
-	Assign      string `json:"assign"`
-	HandlerType string `json:"handlerType"`
-	Handler     string `json:"handler"`
-	AssignRule  string `json:"assignRule"` // 分配规则
-	FilterRule  string `json:"filterRule"` // 下拉框过滤规则
+	Id          string                 `json:"id"`
+	Role        string                 `json:"role"`
+	Assign      string                 `json:"assign"`
+	HandlerType string                 `json:"handlerType"`
+	Handler     string                 `json:"handler"`
+	AssignRule  map[string]interface{} `json:"assignRule"` // 分配规则
+	FilterRule  map[string]interface{} `json:"filterRule"` // 下拉框过滤规则
 }

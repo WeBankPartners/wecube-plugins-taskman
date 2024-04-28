@@ -392,8 +392,16 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 				for _, handleTemplate := range approval.HandleTemplates {
 					taskHandle, _ := GetRequestService().taskHandleTemplateDao.Get(handleTemplate.Id)
 					if taskHandle != nil {
-						handleTemplate.AssignRule = taskHandle.AssignRule
-						handleTemplate.FilterRule = taskHandle.FilterRule
+						if strings.TrimSpace(taskHandle.AssignRule) != "" {
+							if err = json.Unmarshal([]byte(taskHandle.AssignRule), &handleTemplate.AssignRule); err != nil {
+								return err
+							}
+						}
+						if strings.TrimSpace(taskHandle.FilterRule) != "" {
+							if err = json.Unmarshal([]byte(taskHandle.FilterRule), &handleTemplate.FilterRule); err != nil {
+								return err
+							}
+						}
 					}
 				}
 			}

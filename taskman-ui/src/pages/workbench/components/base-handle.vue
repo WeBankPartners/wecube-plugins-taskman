@@ -286,15 +286,15 @@ export default {
   },
   computed: {
     commitTaskDisabled () {
-      const approveFlag = this.handleData.type === 'approve' && !this.taskForm.choseOption
-      const processFlag =
+      const approveDisabled = this.handleData.type === 'approve' && !this.taskForm.choseOption
+      const processDisabled =
         this.handleData.type === 'implement_process' &&
         this.handleData.nextOptions &&
         this.handleData.nextOptions.length > 0 &&
         !this.taskForm.choseOption
-      const commentFlag =
+      const commentDisabled =
         this.handleData.type === 'approve' && this.taskForm.choseOption === 'redraw' && !this.taskForm.comment
-      if (approveFlag || processFlag || commentFlag) {
+      if (approveDisabled || processDisabled || commentDisabled) {
         return true
       } else {
         return false

@@ -52,7 +52,7 @@
               <span class="underline"></span>
             </div>
           </div>
-          <div>
+          <div style="min-height:600px;">
             <Row>
               <!--自定义表单项-->
               <Col span="5" style="border: 1px solid #dcdee2; padding: 0 16px">
@@ -62,7 +62,7 @@
                 </div>
               </Col>
               <!--表单预览-->
-              <Col span="14" style="border: 1px solid #dcdee2; padding: 0 16px; width: 57%; margin: 0 4px">
+              <Col span="14" style="border: 1px solid #dcdee2; padding: 0 16px; width: 57%; margin: 0 4px;">
                 <div :style="{ height: MODALHEIGHT + 'px', overflow: 'auto' }">
                   <Divider>{{ $t('tw_preview') }}</Divider>
                   <div class="title">
@@ -108,7 +108,7 @@
                       </span>
                     </div>
                   </div>
-                  <div style="min-height: 200px;">
+                  <div style="min-height:300px;">
                     <template v-if="finalElement.length === 1 && finalElement[0].itemGroup !== ''">
                       <div
                         v-for="(item, itemIndex) in finalElement"
@@ -486,7 +486,7 @@ export default {
   data () {
     return {
       isParmasChanged: false, // 参数变化标志位，控制右侧panel显示逻辑
-      MODALHEIGHT: 200,
+      MODALHEIGHT: 400,
       isTopButtonDisable: true, // 下一步，上一步等的控制
       approvalNodes: [
         {
@@ -602,7 +602,7 @@ export default {
   },
   props: ['isCheck', 'requestTemplateId'],
   mounted () {
-    this.MODALHEIGHT = document.body.scrollHeight - 500
+    this.MODALHEIGHT = document.body.scrollHeight - 300
     this.removeEmptyDataForm()
     this.loadPage()
   },

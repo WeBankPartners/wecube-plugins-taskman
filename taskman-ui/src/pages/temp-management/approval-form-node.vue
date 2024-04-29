@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="approval-form-node">
     <div class="title">
       <div class="title-text">
         {{ $t('tw_node_configuration') }}
@@ -56,7 +56,7 @@
             style="width:100%;"
             :border="false"
             size="small"
-            :columns="tableColumns"
+            :columns="activeApprovalNode.handleMode === 'any' ? initColumns : tableColumns"
             :data="activeApprovalNode.handleTemplates"
           />
           <Button
@@ -86,6 +86,7 @@
 
 <script>
 import LimitSelect from '@/pages/components/limit-select.vue'
+import { deepClone } from '@/pages/util'
 import {
   getUserRoles,
   getHandlerRoles,
@@ -164,9 +165,9 @@ export default {
         {
           title: this.$t('index'),
           key: 'index',
-          align: 'left',
+          align: 'center',
           fixed: 'left',
-          width: 60,
+          width: 70,
           render: (h, params) => {
             return <span>{params.index + 1}</span>
           }
@@ -287,9 +288,9 @@ export default {
         {
           title: this.$t('t_action'),
           key: 'index',
-          align: 'left',
+          align: 'center',
           fixed: 'right',
-          width: 60,
+          width: 70,
           render: (h, params) => {
             return (
               <Button
@@ -366,7 +367,7 @@ export default {
     },
     getFilterFormData () {
       this.filterFormList = []
-      this.tableColumns = this.initColumns
+      this.tableColumns = deepClone(this.initColumns)
       Promise.all([this.getRequestFormData(), this.getInfoFormData()]).then(([formData, infoData]) => {
         // 将信息表单和数据表单合并到过滤列表
         this.filterFormList.push({
@@ -698,7 +699,7 @@ export default {
   }
 }
 </script>
-<style>
+<style lang="scss">
 .ivu-input[disabled],
 fieldset[disabled] .ivu-input {
   color: #757575 !important;
@@ -706,6 +707,14 @@ fieldset[disabled] .ivu-input {
 .ivu-select-input[disabled] {
   color: #757575;
   -webkit-text-fill-color: #757575;
+}
+.approval-form-node {
+  .ivu-table-small {
+    font-size: 14px;
+  }
+  .ivu-form-item-content {
+    line-height: 26px;
+  }
 }
 </style>
 <style lang="scss" scoped>

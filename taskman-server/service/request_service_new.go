@@ -1913,7 +1913,7 @@ func (s *RequestService) AutoExecTaskHandle(request models.RequestTable, userTok
 							continue
 						}
 						// 多选,有一个匹配上即可
-						if (strings.EqualFold(formItemDtoTemp.Multiple, models.Yes) || strings.EqualFold(formItemDtoTemp.Multiple, models.Y)) && assignValue.([]string) != nil {
+						if strings.EqualFold(formItemDtoTemp.Multiple, models.Yes) || strings.EqualFold(formItemDtoTemp.Multiple, models.Y) {
 							match = false
 							assignArr, ok1 := assignValue.([]string)
 							valArr, ok2 := formItemDtoTemp.Value.([]string)

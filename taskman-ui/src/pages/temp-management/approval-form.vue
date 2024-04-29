@@ -378,20 +378,6 @@
                               @on-change="paramsChanged"
                             ></Input>
                           </FormItem>
-                          <FormItem :label="$t('tw_data_filtering')">
-                            <Select
-                              multiple
-                              :key="editElement.id"
-                              clearable
-                              v-model="editElement.filterRule"
-                              @on-open-change="getFilterRuleOption(editElement)"
-                              :disabled="$parent.isCheck === 'Y'"
-                            >
-                              <Option v-for="item in filterRuleOption" :value="item.value" :key="item.value">
-                                {{ item.label }}
-                              </Option>
-                            </Select>
-                          </FormItem>
                         </Form>
                       </div>
                     </Panel>
@@ -486,8 +472,7 @@ import {
   getApprovalNodeGroups,
   deleteRequestGroupForm,
   getAllDataModels,
-  saveRequestGroupCustomForm,
-  getTargetOptions
+  saveRequestGroupCustomForm
 } from '@/api/server.js'
 export default {
   components: {
@@ -592,8 +577,7 @@ export default {
       itemGroup: '', // 选中的组信息
       nextNodeInfo: {}, // 缓存待切换节点信息
       displayLastGroup: false, // 控制group显示，在新增时显示最后一个，其余显示当前值
-      nextGroupInfo: {},
-      filterRuleOption: [] // 缓存数据过滤选项
+      nextGroupInfo: {}
     }
   },
   computed: {
@@ -981,16 +965,11 @@ export default {
     },
     // 选中自定义表单项
     async selectElement (itemIndex, eleIndex) {
-      this.filterRuleOption = []
       this.finalElement[itemIndex].attrs.forEach(item => {
         item.isActive = false
       })
       this.finalElement[itemIndex].attrs[eleIndex].isActive = true
       this.editElement = this.finalElement[itemIndex].attrs[eleIndex]
-      if (!Array.isArray(this.editElement.filterRule)) {
-        this.$set(this.editElement, 'filterRule', JSON.parse(this.editElement.filterRule || '[]'))
-      }
-      await this.getFilterRuleOption(this.editElement)
       if (this.editElement.multiple === 'Y') {
         this.editElement.multiple = 'yes'
       } else if (this.editElement.multiple === 'N') {
@@ -1020,9 +999,6 @@ export default {
       })
       delete finalData.attrs
       finalData.items.forEach((item, itemIndex) => {
-        if (Array.isArray(item.filterRule)) {
-          item.filterRule = JSON.stringify(item.filterRule)
-        }
         item.sort = itemIndex + 1
       })
       const { statusCode } = await saveRequestGroupCustomForm(finalData)
@@ -1123,8 +1099,6 @@ export default {
     },
     setDataOptions (options) {
       this.editElement.dataOptions = JSON.stringify(options)
-      const valueArray = options.map(d => d.value)
-      this.editElement.filterRule = this.editElement.filterRule.filter(fr => valueArray.includes(fr))
     },
     computedOption (element) {
       let res = []
@@ -1133,26 +1107,6 @@ export default {
       } else if (element.elementType === 'wecmdbEntity') {
       }
       return res
-    },
-    async getFilterRuleOption (element) {
-      if (element.elementType === 'select') {
-        this.filterRuleOption = JSON.parse(element.dataOptions || '[]')
-      } else if (element.elementType === 'wecmdbEntity') {
-        if (element.dataOptions !== '' && element.dataOptions.split(':').length === 2) {
-          const { status, data } = await getTargetOptions(
-            element.dataOptions.split(':')[0],
-            element.dataOptions.split(':')[1]
-          )
-          if (status === 'OK') {
-            this.filterRuleOption = data.map(d => {
-              return {
-                label: d.displayName,
-                value: d.id
-              }
-            })
-          }
-        }
-      }
     }
     // #endregion
   }

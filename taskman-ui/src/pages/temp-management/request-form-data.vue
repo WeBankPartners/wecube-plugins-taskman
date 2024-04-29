@@ -932,8 +932,8 @@ export default {
     },
     setDataOptions (options) {
       this.editElement.dataOptions = JSON.stringify(options)
-      const valueArray = options.map(d => d.value)
-      this.editElement.filterRule = this.editElement.filterRule.filter(fr => valueArray.includes(fr))
+      // const valueArray = options.map(d => d.value)
+      // this.editElement.filterRule = this.editElement.filterRule.filter(fr => valueArray.includes(fr))
     },
     computedOption (element) {
       let res = []

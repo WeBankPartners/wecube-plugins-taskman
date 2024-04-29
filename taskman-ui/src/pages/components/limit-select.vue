@@ -147,6 +147,7 @@ export default {
     handleSelect (val) {
       // this.limitQueryFlag = true
       this.$emit('input', val)
+      this.$emit('on-change', val)
     },
     getList () {
       // if (this.query) {

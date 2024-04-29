@@ -392,7 +392,6 @@ export default {
                         onClick={() => {
                           this.hanldeLaunch(params.row)
                         }}
-                        style="margin-right:5px;"
                       >
                         <Icon type="ios-send" size="16"></Icon>
                       </Button>
@@ -409,6 +408,7 @@ export default {
                         onClick={() => {
                           this.handleDeleteDraft(params.row)
                         }}
+                        style="margin-left:5px;"
                       >
                         <Icon type="md-trash" size="16"></Icon>
                       </Button>

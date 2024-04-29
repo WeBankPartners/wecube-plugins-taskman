@@ -134,7 +134,8 @@ export default {
           attrDefName: '',
           attrDefDataType: '',
           refEntity: '',
-          refPackageName: ''
+          refPackageName: '',
+          controlSwitch: 'no'
         },
         {
           id: 5,
@@ -164,7 +165,8 @@ export default {
           attrDefName: '',
           attrDefDataType: '',
           refEntity: '',
-          refPackageName: ''
+          refPackageName: '',
+          controlSwitch: 'no'
         },
         {
           id: 6,

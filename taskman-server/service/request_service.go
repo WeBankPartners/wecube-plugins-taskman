@@ -2116,7 +2116,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		taskForHistoryList = append(taskForHistoryList, curTaskForHistory)
 	}
 	//result.Task = filterFormRowByHandleTemplate(taskForHistoryList)
-	result.Task = filterFormRowByHandleTemplate(taskForHistoryList)
+	result.Task = taskForHistoryList
 	result.Request.UncompletedTasks = uncompletedTasks
 	return
 }

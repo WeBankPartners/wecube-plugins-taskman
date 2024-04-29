@@ -1887,10 +1887,8 @@ func (s *RequestService) AutoExecTaskHandle(request models.RequestTable, userTok
 		return
 	}
 	for _, formItemTemplate := range customForm.Title {
-		if strings.EqualFold(formItemTemplate.Multiple, models.Yes) || strings.EqualFold(formItemTemplate.Multiple, models.Y) {
-			if v, ok := customForm.Value[formItemTemplate.Name]; ok {
-				formItemDtoMap[formItemTemplate.Name] = models.ConvertFormItemTemplateAndFormItem2Dto(formItemTemplate, v)
-			}
+		if v, ok := customForm.Value[formItemTemplate.Name]; ok {
+			formItemDtoMap[formItemTemplate.Name] = models.ConvertFormItemTemplateAndFormItem2Dto(formItemTemplate, v)
 		}
 	}
 	for _, task := range taskList {
@@ -2132,7 +2130,7 @@ func (s *RequestService) TaskHandleAutoPass(request models.RequestTable, task *m
 	}
 	if needPassCurTask {
 		// 更新任务到完成
-		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, taskResult, "system", nowTime, curTaskHandle.Id}})
+		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, taskResult, "system", nowTime, task.Id}})
 	}
 	if len(actions) > 0 {
 		err = dao.Transaction(actions)

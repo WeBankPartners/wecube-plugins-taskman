@@ -387,7 +387,8 @@ type RequestForHistory struct {
 
 type TaskHandleForHistory struct {
 	*TaskHandleTable
-	AttachFiles []*AttachFileTable `json:"attachFiles"`
+	AttachFiles []*AttachFileTable        `json:"attachFiles"`
+	FormData    []*RequestPreDataTableObj `json:"formData"`
 }
 
 type TaskForHistory struct {

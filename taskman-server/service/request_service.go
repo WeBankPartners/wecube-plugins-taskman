@@ -2115,7 +2115,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 
 		taskForHistoryList = append(taskForHistoryList, curTaskForHistory)
 	}
-	result.Task = taskForHistoryList
+	result.Task = filterFormRowByHandleTemplate(taskForHistoryList)
 	result.Request.UncompletedTasks = uncompletedTasks
 	return
 }
@@ -2463,6 +2463,86 @@ func SaveRequestForm(requestId, operator string, param *models.RequestPreDataTab
 	}
 	if len(actions) > 0 {
 		err = dao.Transaction(actions)
+	}
+	return
+}
+
+// 根据模版审批任务配置审批节点,filter_rule规则进行过滤
+func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*models.TaskForHistory {
+	var newTaskHistoryList []*models.TaskForHistory
+	/*var taskHandleList []*models.TaskHandleForHistory
+	var taskHandleTemplateList []*models.TaskHandleTemplateTable
+	var data = make(map[string]interface{})
+	var multipleItemMap = make(map[string]bool)
+	var formItemValueMap = make(map[string]interface{})
+	var err error
+	// 根据任务处理模版过滤表单内容
+	if len(taskHistoryList) > 0 {
+		for _, taskHistory := range taskHistoryList {
+			multipleItemMap = make(map[string]bool)
+			formItemValueMap = make(map[string]interface{})
+			data = make(map[string]interface{})
+			taskHandleList = []*models.TaskHandleForHistory{}
+			taskHandleTemplateList = []*models.TaskHandleTemplateTable{}
+			if len(taskHistory.TaskHandleList) > 0 {
+				multipleItemMap, formItemValueMap = getFormItemMap(taskHistory)
+				for _, taskHandle := range taskHistory.TaskHandleList {
+					err = dao.X.SQL("select * from task_handle_template where task_template = ? ", taskHandle.TaskHandleTemplate).Find(&taskHandleTemplateList)
+					if err != nil {
+						log.Logger.Error("query task_handle_template err", log.Error(err))
+						continue
+					}
+					if len(taskHandleTemplateList) > 0 && taskHandleTemplateList[0].FilterRule != "" {
+						if err = json.Unmarshal([]byte(taskHandleTemplateList[0].FilterRule), &data); err != nil {
+							log.Logger.Error("json Unmarshal filterRule err", log.Error(err))
+							break
+						}
+						if len(data) > 0 {
+							for key, value := range data {
+								if multipleItemMap[key] {
+									match = false
+									valueArr, ok := value.([]string)
+									if !ok {
+										log.Logger.Error("data value  is not array", log.JsonObj("data", data))
+										continue
+									}
+								}
+							}
+						}
+					}
+					taskHandle.FormData
+				}
+			}
+			newTaskHistoryList = append(newTaskHistoryList, &models.TaskForHistory{
+				TaskTable:      taskHistory.TaskTable,
+				Editable:       taskHistory.Editable,
+				TaskHandleList: taskHandleList,
+				NextOptions:    taskHistory.NextOptions,
+				AttachFiles:    taskHistory.AttachFiles,
+				HandleMode:     taskHistory.HandleMode,
+				FormData:       taskHistory.FormData,
+			})
+		}
+	}*/
+	return newTaskHistoryList
+}
+
+func getFormItemMap(task *models.TaskForHistory) (multipleItemMap map[string]bool, formItemValueMap map[string]interface{}) {
+	multipleItemMap = make(map[string]bool)
+	formItemValueMap = make(map[string]interface{})
+	if task == nil {
+		return
+	}
+	if len(task.FormData) > 0 {
+		for _, formData := range task.FormData {
+			if len(formData.Title) > 0 {
+				for _, formItem := range formData.Title {
+					if formItem.Multiple == models.Y || formItem.Multiple == models.Yes {
+						multipleItemMap[formItem.ItemGroup+"-"+formItem.Name] = true
+					}
+				}
+			}
+		}
 	}
 	return
 }

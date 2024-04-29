@@ -255,6 +255,7 @@ func ApproveCustomTask(task models.TaskTable, operator, userToken, language stri
 func handleApprove(task models.TaskTable, operator, userToken, language string, param models.TaskApproveParam, taskSort int) (err error) {
 	var actions, newApproveActions []*dao.ExecAction
 	var request models.RequestTable
+	var doApprove bool
 	now := time.Now().Format(models.DateTimeFormat)
 	request, err = GetSimpleRequest(task.Request)
 	if err != nil {
@@ -269,7 +270,24 @@ func handleApprove(task models.TaskTable, operator, userToken, language string, 
 		}
 	}
 	switch param.ChoseOption {
+	case string(models.TaskHandleResultTypeUnrelated):
+		doApprove = true
 	case string(models.TaskHandleResultTypeApprove):
+		doApprove = true
+	case string(models.TaskHandleResultTypeDeny):
+		// 拒绝, 任务处理结果设置为拒绝,请求状态设置自动退回
+		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result=?,handle_status=?,result_desc=?,updated_time=? where id = ?", Param: []interface{}{models.TaskHandleResultTypeDeny, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId}})
+		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result=?,updated_by=?,updated_time=? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeDeny, operator, now, task.Id}})
+		actions = append(actions, &dao.ExecAction{Sql: "update request set status = ?,updated_by=?,updated_time=? where id = ?", Param: []interface{}{models.RequestStatusFaulted, operator, now, task.Request}})
+		go NotifyTaskDenyMail(request.Name, task.Name, request.CreatedBy, operator, userToken, language)
+	case string(models.TaskHandleResultTypeRedraw):
+		// 退回,请求变草稿,任务设置为处理完成
+		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result=?,handle_status=?,result_desc=?,updated_time=? where id = ?", Param: []interface{}{models.TaskHandleResultTypeRedraw, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId}})
+		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result=?,description=?,updated_by=?,updated_time=? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeRedraw, param.Comment, operator, now, task.Id}})
+		actions = append(actions, &dao.ExecAction{Sql: "update request set status = ?,rollback_desc=?,updated_by=?,updated_time=? where id = ?", Param: []interface{}{models.RequestStatusDraft, param.Comment, operator, now, task.Request}})
+		go NotifyTaskBackMail(request.Name, task.Name, request.CreatedBy, operator, userToken, language)
+	}
+	if doApprove {
 		// 当前审批通过,需要通过查看 task_template里面handle_mode 判断协同,并行
 		var taskHandleList []*models.TaskHandleTable
 		var taskTemplateList []*models.TaskTemplateTable
@@ -293,8 +311,8 @@ func handleApprove(task models.TaskTable, operator, userToken, language string, 
 			}
 			for _, taskHandle := range taskHandleList {
 				// 存在任务节点 没有审批通过,并且不是当前节点,更新当前处理节点为完成后,return 等待其他审批人处理
-				if taskHandle.HandleResult != string(models.TaskHandleResultTypeApprove) && taskHandle.Id != param.TaskHandleId {
-					_, err = dao.X.Exec("update task_handle set handle_result = ?,handle_status = ?,result_desc = ?,updated_time =? where id = ?", models.TaskHandleResultTypeApprove, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId)
+				if (taskHandle.HandleResult != string(models.TaskHandleResultTypeApprove) && taskHandle.HandleResult != string(models.TaskHandleResultTypeUnrelated)) && taskHandle.Id != param.TaskHandleId {
+					_, err = dao.X.Exec("update task_handle set handle_result = ?,handle_status = ?,result_desc = ?,updated_time =? where id = ?", param.ChoseOption, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId)
 					if err != nil {
 						return
 					}
@@ -302,7 +320,7 @@ func handleApprove(task models.TaskTable, operator, userToken, language string, 
 				}
 			}
 		}
-		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status = ?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{models.TaskHandleResultTypeApprove, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId}})
+		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status = ?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{param.ChoseOption, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId}})
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, GetTaskHandleService().CalcTaskResult(task.Id, param.TaskHandleId), operator, now, task.Id}})
 		newApproveActions, _ = GetRequestService().CreateRequestApproval(request, task.Id, userToken, language, taskSort, false)
 		if len(newApproveActions) > 0 {
@@ -312,18 +330,6 @@ func handleApprove(task models.TaskTable, operator, userToken, language string, 
 			return
 		}
 		return GetRequestService().AutoExecTaskHandle(request, userToken, language)
-	case string(models.TaskHandleResultTypeDeny):
-		// 拒绝, 任务处理结果设置为拒绝,请求状态设置自动退回
-		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result=?,handle_status=?,result_desc=?,updated_time=? where id = ?", Param: []interface{}{models.TaskHandleResultTypeDeny, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId}})
-		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result=?,updated_by=?,updated_time=? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeDeny, operator, now, task.Id}})
-		actions = append(actions, &dao.ExecAction{Sql: "update request set status = ?,updated_by=?,updated_time=? where id = ?", Param: []interface{}{models.RequestStatusFaulted, operator, now, task.Request}})
-		go NotifyTaskDenyMail(request.Name, task.Name, request.CreatedBy, operator, userToken, language)
-	case string(models.TaskHandleResultTypeRedraw):
-		// 退回,请求变草稿,任务设置为处理完成
-		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result=?,handle_status=?,result_desc=?,updated_time=? where id = ?", Param: []interface{}{models.TaskHandleResultTypeRedraw, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId}})
-		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result=?,description=?,updated_by=?,updated_time=? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeRedraw, param.Comment, operator, now, task.Id}})
-		actions = append(actions, &dao.ExecAction{Sql: "update request set status = ?,rollback_desc=?,updated_by=?,updated_time=? where id = ?", Param: []interface{}{models.RequestStatusDraft, param.Comment, operator, now, task.Request}})
-		go NotifyTaskBackMail(request.Name, task.Name, request.CreatedBy, operator, userToken, language)
 	}
 	if len(actions) > 0 {
 		err = dao.Transaction(actions)

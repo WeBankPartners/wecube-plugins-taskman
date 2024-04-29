@@ -206,7 +206,7 @@
                       icon="ios-create-outline"
                     ></Button>
                   </FormItem>
-                  <!--添加wecmdbEntity类型，根据选择配置生成url(用于获取下拉配置)-->
+                  <!--模型数据项-->
                   <FormItem v-if="editElement.elementType === 'wecmdbEntity'" :label="$t('data_source')">
                     <Select
                       v-model="editElement.dataOptions"
@@ -216,6 +216,13 @@
                     >
                       <Option v-for="i in allEntityList" :value="i" :key="i">{{ i }}</Option>
                     </Select>
+                  </FormItem>
+                  <!--控制审批/任务-->
+                  <FormItem v-if="['select', 'wecmdbEntity'].includes(editElement.elementType)" label="控制审批/任务">
+                    <RadioGroup v-model="editElement.controlSwitch" @on-change="paramsChanged">
+                      <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
+                      <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
+                    </RadioGroup>
                   </FormItem>
                   <!-- <FormItem :label="$t('tags')">
                     <Input v-model="editElement.tag" placeholder=""></Input>
@@ -438,7 +445,8 @@ export default {
         width: 24,
         dataOptions: '[]',
         refEntity: '',
-        refPackageName: ''
+        refPackageName: '',
+        controlSwitch: 'no' // 控制审批/任务(下拉类型才有)
       },
       allEntityList: [],
       groupStyle: {

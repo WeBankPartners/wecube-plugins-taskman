@@ -6,15 +6,15 @@
         <span class="underline"></span>
       </div>
     </div>
-    <div>
-      <Form ref="formInline" inline :label-width="100">
+    <div class="form-area">
+      <Form ref="formInline" :inline="false" :label-width="80" class="border-form">
         <FormItem :label="$t('name')">
           <Input
             type="text"
             :disabled="procDefId !== ''"
             v-model="activeApprovalNode.name"
             @on-change="paramsChanged"
-            style="width: 160px;"
+            style="width: 200px;"
             maxlength="30"
             show-word-limit
           >
@@ -25,7 +25,7 @@
           </div>
         </FormItem>
         <FormItem :label="$t('tw_validity_period')">
-          <Select v-model="activeApprovalNode.expireDay" @on-change="paramsChanged" style="width: 160px;">
+          <Select v-model="activeApprovalNode.expireDay" @on-change="paramsChanged" style="width: 200px;">
             <Option v-for="item in expireDayOptions" :value="item" :key="item">{{ item }}{{ $t('day') }}</Option>
           </Select>
           <span style="color: red">*</span>
@@ -36,7 +36,7 @@
         <FormItem :label="$t('description')">
           <Input
             v-model="activeApprovalNode.description"
-            style="width: 200%"
+            style="width: 200px"
             type="textarea"
             :rows="2"
             @on-change="paramsChanged"
@@ -44,9 +44,9 @@
           </Input>
         </FormItem>
       </Form>
-      <Form ref="formInline" inline :label-width="100">
+      <Form ref="formInline" inline :label-width="100" class="table-form">
         <FormItem :label="$t('tw_allocation')">
-          <Select v-model="activeApprovalNode.handleMode" @on-change="changeRoleType" style="width: 160px;">
+          <Select v-model="activeApprovalNode.handleMode" @on-change="changeRoleType" style="width: 200px;">
             <Option v-for="item in roleTypeOptions" :value="item.value" :key="item.value">{{ item.label }}</Option>
           </Select>
           <span style="color: red">*</span>
@@ -54,77 +54,23 @@
         <FormItem
           v-if="['custom', 'any', 'all'].includes(activeApprovalNode.handleMode)"
           :label="$t('handler')"
-          style="width:70%"
+          style="width:100%"
         >
-          <Row>
-            <Col class="cutom-table-border" span="2">{{ $t('index') }}</Col>
-            <Col class="cutom-table-border margin-left--1" span="5">{{ $t('tw_role_based_config') }}</Col>
-            <Col class="cutom-table-border margin-left--1" span="5">{{ $t('tw_user_based_config') }}</Col>
-            <Col class="cutom-table-border margin-left--1" span="5">{{ $t('manageRole') }}</Col>
-            <Col class="cutom-table-border margin-left--1" span="4">{{ $t('tw_users') }}</Col>
-            <!-- <Col class="cutom-table-border margin-left--1" span="2">{{ $t('t_action') }}</Col> -->
-          </Row>
-          <Row v-for="(roleObj, roleObjIndex) in activeApprovalNode.handleTemplates" :key="roleObjIndex" style="">
-            <Col class="cutom-table-border margin-top--1" span="2">{{ roleObjIndex + 1 }}</Col>
-            <Col class="cutom-table-border margin-top--1 margin-left--1" span="5">
-              <Select v-model="roleObj.assign" @on-change="paramsChanged">
-                <Option v-for="item in approvalRoleTypeOptions" :value="item.value" :key="item.value">{{
-                  item.label
-                }}</Option>
-              </Select>
-            </Col>
-            <Col class="cutom-table-border margin-top--1 margin-left--1" span="5">
-              <Select v-model="roleObj.handlerType" @on-change="paramsChanged">
-                <Option
-                  v-for="item in handlerTypeOptions.filter(h => h.used.includes(roleObj.assign))"
-                  :value="item.value"
-                  :key="item.value"
-                  >{{ item.label }}</Option
-                >
-              </Select>
-            </Col>
-            <Col class="cutom-table-border margin-top--1 margin-left--1" span="5">
-              <Select
-                v-model="roleObj.role"
-                filterable
-                @on-change="changeUser(roleObj.role, roleObjIndex, true)"
-                @on-open-change="getUserRoles"
-                :disabled="isRoleDisable(roleObj, roleObjIndex)"
-              >
-                <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
-              </Select>
-            </Col>
-            <Col class="cutom-table-border margin-top--1 margin-left--1" span="4">
-              <Select
-                v-model="roleObj.handler"
-                filterable
-                :disabled="isHandlerDisable(roleObj, roleObjIndex)"
-                @on-open-change="changeUser(roleObj.role, roleObjIndex, false)"
-              >
-                <Option v-for="item in roleObj.handlerOptions" :value="item.id" :key="item.id">{{
-                  item.displayName
-                }}</Option>
-              </Select>
-            </Col>
-            <!-- <Col class="cutom-table-border margin-top--1 margin-left--1" span="2">
-              <Button
-                :disabled="activeApprovalNode.handleTemplates.length < 2"
-                @click.stop="removeRoleObjItem(roleObjIndex)"
-                type="error"
-                size="small"
-                ghost
-                icon="md-trash"
-              ></Button>
-            </Col> -->
-          </Row>
-          <!-- <Button
+          <Table
+            style="width:100%;"
+            :border="false"
+            size="small"
+            :columns="tableColumns"
+            :data="activeApprovalNode.handleTemplates"
+          />
+          <Button
             v-if="['any', 'all'].includes(activeApprovalNode.handleMode)"
             @click.stop="addRoleObjItem"
             type="primary"
             size="small"
             ghost
             icon="md-add"
-          ></Button> -->
+          ></Button>
         </FormItem>
       </Form>
       <!-- <div style="text-align: center;">
@@ -137,10 +83,21 @@
 </template>
 
 <script>
-// import Vue from 'vue'
-import { getUserRoles, getHandlerRoles, updateApprovalNode, getApprovalNodeById } from '@/api/server'
+import LimitSelect from '@/pages/components/limit-select.vue'
+import {
+  getUserRoles,
+  getHandlerRoles,
+  updateApprovalNode,
+  getApprovalNodeById,
+  getRequestDataForm,
+  getRequestFormTemplateData,
+  getWeCmdbOptions
+} from '@/api/server'
 export default {
   name: '',
+  components: {
+    LimitSelect
+  },
   data () {
     return {
       isParmasChanged: false, // 参数变化标志位，控制右侧panel显示逻辑
@@ -160,7 +117,9 @@ export default {
             handlerType: 'template_suggest', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
             role: '',
             handler: '',
-            handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除
+            handlerOptions: [], // 缓存角色下的用户，添加数据时添加，保存时清除
+            assignRule: {}, // 信息表单过滤项数据
+            filterRule: {} // 数据表单过滤项数据
           }
         ]
       },
@@ -168,14 +127,19 @@ export default {
       roleTypeOptions: [
         // custom.单人自定义 any.协同 all.并行 admin.提交人角色管理员 auto.自动通过
         { label: this.$t('tw_single'), value: 'custom' },
-        { label: this.$t('tw_roleAdmin'), value: 'admin' }
+        { label: this.$t('tw_collaborative'), value: 'any' },
+        { label: this.$t('tw_parallel'), value: 'all' },
+        { label: this.$t('tw_roleAdmin'), value: 'admin' },
+        { label: this.$t('tw_autoWith'), value: 'auto' }
       ],
       approvalSingle: {
         assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
         handlerType: 'template_suggest', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
         role: '',
         handler: '',
-        handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除
+        handlerOptions: [], // 缓存角色下的用户，添加数据时添加，保存时清除
+        assignRule: {},
+        filterRule: {}
       },
       approvalRoleTypeOptions: [
         { label: this.$t('tw_template_assign'), value: 'template' },
@@ -190,7 +154,156 @@ export default {
         { label: this.$t('tw_group_claim'), value: 'claim', used: ['template', 'custom'] }
       ],
       useRolesOptions: [], // 使用角色
-      isSaveNodeDisable: true
+      isSaveNodeDisable: true,
+      filterFormList: [], // 信息表单和数据表单过滤项配置
+      tableColumns: [],
+      initColumns: [
+        {
+          title: this.$t('index'),
+          key: 'index',
+          align: 'left',
+          fixed: 'left',
+          width: 60,
+          render: (h, params) => {
+            return <span>{params.index + 1}</span>
+          }
+        },
+        // 角色设置方式
+        {
+          title: this.$t('tw_role_based_config'),
+          key: 'assign',
+          align: 'left',
+          minWidth: 250,
+          render: (h, params) => {
+            return (
+              <Select
+                value={params.row.assign}
+                on-on-change={v => {
+                  this.activeApprovalNode.handleTemplates[params.index].assign = v
+                  this.paramsChanged()
+                }}
+                filterable
+                clearable
+              >
+                {this.approvalRoleTypeOptions &&
+                  this.approvalRoleTypeOptions.map(i => (
+                    <Option value={i.value} key={i.value}>
+                      {i.label}
+                    </Option>
+                  ))}
+              </Select>
+            )
+          }
+        },
+        // 人员设置方式
+        {
+          title: this.$t('tw_user_based_config'),
+          key: 'handlerType',
+          align: 'left',
+          minWidth: 250,
+          render: (h, params) => {
+            const options = this.handlerTypeOptions.filter(i => i.used.includes(params.row.assign)) || []
+            return (
+              <Select
+                value={params.row.handlerType}
+                on-on-change={v => {
+                  this.activeApprovalNode.handleTemplates[params.index].handlerType = v
+                  this.paramsChanged()
+                }}
+                filterable
+                clearable
+              >
+                {options.map(i => (
+                  <Option value={i.value} key={i.value}>
+                    {i.label}
+                  </Option>
+                ))}
+              </Select>
+            )
+          }
+        },
+        // 角色
+        {
+          title: this.$t('manageRole'),
+          key: 'role',
+          align: 'left',
+          minWidth: 250,
+          render: (h, params) => {
+            return (
+              <Select
+                value={params.row.role}
+                on-on-change={v => {
+                  this.activeApprovalNode.handleTemplates[params.index].role = v
+                  this.changeUser(v, params.index, true)
+                }}
+                on-on-open-change={() => {
+                  this.getUserRoles()
+                }}
+                disabled={this.isRoleDisable(params.row, params.index)}
+                filterable
+              >
+                {this.useRolesOptions.map(i => (
+                  <Option value={i.id} key={i.id}>
+                    {i.displayName}
+                  </Option>
+                ))}
+              </Select>
+            )
+          }
+        },
+        // 人员
+        {
+          title: this.$t('tw_users'),
+          key: 'handler',
+          align: 'left',
+          minWidth: 250,
+          render: (h, params) => {
+            return (
+              <Select
+                value={params.row.handler}
+                on-on-change={v => {
+                  this.activeApprovalNode.handleTemplates[params.index].handler = v
+                  this.paramsChanged()
+                }}
+                on-on-open-change={() => {
+                  this.changeUser(params.row.role, params.index, false)
+                }}
+                disabled={this.isHandlerDisable(params.row, params.index)}
+                filterable
+              >
+                {params.row.handlerOptions &&
+                  params.row.handlerOptions.map(i => (
+                    <Option value={i.id} key={i.id}>
+                      {i.displayName}
+                    </Option>
+                  ))}
+              </Select>
+            )
+          }
+        },
+        {
+          title: this.$t('t_action'),
+          key: 'index',
+          align: 'left',
+          fixed: 'right',
+          width: 80,
+          render: (h, params) => {
+            return (
+              <Button
+                disabled={this.activeApprovalNode.handleTemplates.length < 2}
+                on-click={() => {
+                  this.removeRoleObjItem(params.index)
+                }}
+                type="error"
+                size="small"
+                ghost
+                icon="md-trash"
+              ></Button>
+            )
+          }
+        }
+      ],
+      filterOptions: {}
     }
   },
   watch: {
@@ -198,9 +311,23 @@ export default {
       handler (val) {
         this.isSaveNodeDisable = this.isSaveBtnActive()
         this.$emit('nodeStatus', this.isSaveNodeDisable)
+        // 将后台下发的null转换成{},避免报错
+        val.handleTemplates.forEach(item => {
+          if (!item.assignRule) {
+            item.assignRule = {}
+          }
+          if (!item.filterRule) {
+            item.filterRule = {}
+          }
+        })
       },
       immediate: true,
       deep: true
+    },
+    requestTemplateId (val) {
+      if (val) {
+        this.getFilterFormData()
+      }
     }
   },
   props: ['isCheck', 'nodeType'],
@@ -211,6 +338,124 @@ export default {
       this.requestTemplateId = params.requestTemplateId
       this.getNodeById(params)
       this.getUserRoles()
+    },
+    // 获取数据表单
+    getRequestFormData () {
+      return new Promise(async resolve => {
+        const { statusCode, data } = await getRequestDataForm(this.requestTemplateId)
+        if (statusCode === 'OK') {
+          resolve(data.groups || [])
+        } else {
+          resolve([])
+        }
+      })
+    },
+    // 获取信息表单
+    getInfoFormData () {
+      return new Promise(async resolve => {
+        const { statusCode, data } = await getRequestFormTemplateData(this.requestTemplateId)
+        if (statusCode === 'OK') {
+          resolve(data.items || [])
+        } else {
+          resolve([])
+        }
+      })
+    },
+    getFilterFormData () {
+      this.filterFormList = []
+      this.tableColumns = this.initColumns
+      Promise.all([this.getRequestFormData(), this.getInfoFormData()]).then(([formData, infoData]) => {
+        // 将信息表单和数据表单合并到过滤列表
+        this.filterFormList.push({
+          type: 1,
+          items: infoData
+        })
+        formData &&
+          formData.forEach(item => {
+            const obj = Object.assign({}, item, { type: 2 })
+            this.filterFormList.push(obj)
+          })
+        this.filterFormList.forEach(i => {
+          i.items.forEach(j => {
+            if (['wecmdbEntity', 'select'].includes(j.elementType) && j.controlSwitch === 'yes') {
+              // 初始化下拉选项
+              this.getRefOptions(j)
+              // 初始化表格列
+              const index = this.tableColumns.findIndex(column => column.key === 'action')
+              let column
+              if (i.type === 1) {
+                column = {
+                  title: '信息表单:' + j.title,
+                  align: 'left',
+                  minWidth: 250,
+                  render: (h, params) => {
+                    return (
+                      <LimitSelect
+                        value={params.row.assignRule[j.name]}
+                        on-on-change={v => {
+                          this.activeApprovalNode.handleTemplates[params.index].assignRule[j.name] = v
+                        }}
+                        displayName={j.elementType === 'wecmdbEntity' ? 'displayName' : j.entity ? 'key_name' : 'label'}
+                        displayValue={j.elementType === 'wecmdbEntity' ? 'id' : j.entity ? 'guid' : 'value'}
+                        options={this.filterOptions[j.name]}
+                        multiple={j.multiple === 'Y' || j.multiple === 'yes'}
+                        style="width:100%"
+                      ></LimitSelect>
+                    )
+                  }
+                }
+              } else if (i.type === 2) {
+                column = {
+                  title: '数据表单:' + j.title,
+                  align: 'left',
+                  minWidth: 250,
+                  render: (h, params) => {
+                    const key = `${i.itemGroup}-${j.name}`
+                    return (
+                      <LimitSelect
+                        value={params.row.filterRule[key]}
+                        on-on-change={v => {
+                          this.activeApprovalNode.handleTemplates[params.index].filterRule[key] = v
+                        }}
+                        displayName={j.elementType === 'wecmdbEntity' ? 'displayName' : j.entity ? 'key_name' : 'label'}
+                        displayValue={j.elementType === 'wecmdbEntity' ? 'id' : j.entity ? 'guid' : 'value'}
+                        options={this.filterOptions[j.name]}
+                        multiple={j.multiple === 'Y' || j.multiple === 'yes'}
+                        style="width:100%"
+                      ></LimitSelect>
+                    )
+                  }
+                }
+              }
+              this.tableColumns.splice(index, 0, column)
+            }
+          })
+        })
+      })
+    },
+    async getRefOptions (item) {
+      // 模板自定义下拉类型
+      if (item.elementType === 'select' && item.entity === '') {
+        this.$set(this.filterOptions, item.name, JSON.parse(item.dataOptions || '[]'))
+        return
+      }
+      // cmdb下发
+      if (item.elementType === 'select' && item.entity) {
+        const { status, data } = await getWeCmdbOptions(item.packageName, item.entity, {})
+        if (status === 'OK') {
+          this.$set(this.filterOptions, item.name, data || [])
+        }
+        return
+      }
+      // 模型数据项
+      if (item.elementType === 'wecmdbEntity') {
+        const [packageName, ciType] = (item.dataOptions && item.dataOptions.split(':')) || []
+        if (!packageName || !ciType) return
+        const { status, data } = await getWeCmdbOptions(packageName, ciType, {})
+        if (status === 'OK') {
+          this.$set(this.filterOptions, item.name, data || [])
+        }
+      }
     },
     async getNodeById (params) {
       const { statusCode, data } = await getApprovalNodeById(this.requestTemplateId, params.id, 'implement')
@@ -332,7 +577,9 @@ export default {
           handlerType: 'template_suggest', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
           role: '',
           handler: '',
-          handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除
+          handlerOptions: [], // 缓存角色下的用户，添加数据时添加，保存时清除
+          assignRule: {},
+          filterRule: {}
         }
       ]
       this.$emit('setFormConfigStatus', true)
@@ -420,6 +667,19 @@ fieldset[disabled] .ivu-input {
     border-radius: 12px;
     background-color: #c6eafe;
     box-sizing: content-box;
+  }
+}
+
+.form-area {
+  display: flex;
+  width: 100%;
+  .border-form {
+    border-right: 1px solid #e8eaec;
+    padding-right: 30px;
+    width: 330px;
+  }
+  .table-form {
+    width: calc(100% - 330px);
   }
 }
 

@@ -2047,6 +2047,34 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		curTaskHandleForHistory := &models.TaskHandleForHistory{
 			TaskHandleTable: taskHandle,
 			AttachFiles:     attachFiles,
+			FilterRule:      make(map[string]interface{}),
+			ItemLatestValue: make(map[string][]*models.FormValue),
+		}
+		taskHandleTemplate := models.TaskHandleTemplateTable{}
+		if _, err = dao.X.SQL("select * from task_handle_template where id = ? ", taskHandle.TaskHandleTemplate).Get(&taskHandleTemplate); err != nil {
+			return
+		}
+		if strings.TrimSpace(taskHandleTemplate.FilterRule) != "" {
+			if err = json.Unmarshal([]byte(taskHandleTemplate.FilterRule), &curTaskHandleForHistory.FilterRule); err != nil {
+				log.Logger.Error("GetRequestHistory json Unmarshal err", log.Error(err))
+				return
+			}
+			if len(curTaskHandleForHistory.FilterRule) > 0 {
+				for key, _ := range curTaskHandleForHistory.FilterRule {
+					strArr := strings.Split(key, "-")
+					if len(strArr) == 2 {
+						var formValueList []*models.FormValue
+						itemGroup := strArr[0]
+						name := strArr[1]
+						err = dao.X.SQL("select f.data_id,fi.value from  form_item fi join form f on fi.form =f.id where fi.request=? and fi.name=? and fi.updated_time <= ? "+
+							"and fi.del_flag=0 and exists ( SELECT id FROM form_item_template WHERE id = fi.form_item_template AND item_group = ?)", requestId, name, taskHandle.UpdatedTime, itemGroup).Find(&formValueList)
+						if err != nil {
+							return
+						}
+						curTaskHandleForHistory.ItemLatestValue[key] = formValueList
+					}
+				}
+			}
 		}
 		taskIdMapHandle[taskHandle.Task] = append(taskIdMapHandle[taskHandle.Task], curTaskHandleForHistory)
 	}
@@ -2115,8 +2143,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 
 		taskForHistoryList = append(taskForHistoryList, curTaskForHistory)
 	}
-	//result.Task = filterFormRowByHandleTemplate(taskForHistoryList)
-	result.Task = taskForHistoryList
+	result.Task = filterFormRowByHandleTemplate(taskForHistoryList)
 	result.Request.UncompletedTasks = uncompletedTasks
 	return
 }
@@ -2471,47 +2498,123 @@ func SaveRequestForm(requestId, operator string, param *models.RequestPreDataTab
 // 根据模版审批任务配置审批节点,filter_rule规则进行过滤
 func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*models.TaskForHistory {
 	var newTaskHistoryList []*models.TaskForHistory
-	/*var taskHandleList []*models.TaskHandleForHistory
-	var taskHandleTemplateList []*models.TaskHandleTemplateTable
+	var taskHandleList []*models.TaskHandleForHistory
 	var data = make(map[string]interface{})
-	var multipleItemMap = make(map[string]bool)
-	var formItemValueMap = make(map[string]interface{})
-	var err error
+	var formDataList []*models.RequestPreDataTableObj
+	var itemGroup string
+	var deleteRowIdMap = make(map[string]bool)
 	// 根据任务处理模版过滤表单内容
 	if len(taskHistoryList) > 0 {
 		for _, taskHistory := range taskHistoryList {
-			multipleItemMap = make(map[string]bool)
-			formItemValueMap = make(map[string]interface{})
 			data = make(map[string]interface{})
 			taskHandleList = []*models.TaskHandleForHistory{}
-			taskHandleTemplateList = []*models.TaskHandleTemplateTable{}
+			formDataList = []*models.RequestPreDataTableObj{}
 			if len(taskHistory.TaskHandleList) > 0 {
-				multipleItemMap, formItemValueMap = getFormItemMap(taskHistory)
 				for _, taskHandle := range taskHistory.TaskHandleList {
-					err = dao.X.SQL("select * from task_handle_template where task_template = ? ", taskHandle.TaskHandleTemplate).Find(&taskHandleTemplateList)
-					if err != nil {
-						log.Logger.Error("query task_handle_template err", log.Error(err))
-						continue
-					}
-					if len(taskHandleTemplateList) > 0 && taskHandleTemplateList[0].FilterRule != "" {
-						if err = json.Unmarshal([]byte(taskHandleTemplateList[0].FilterRule), &data); err != nil {
-							log.Logger.Error("json Unmarshal filterRule err", log.Error(err))
-							break
-						}
-						if len(data) > 0 {
-							for key, value := range data {
-								if multipleItemMap[key] {
-									match = false
-									valueArr, ok := value.([]string)
-									if !ok {
-										log.Logger.Error("data value  is not array", log.JsonObj("data", data))
-										continue
+					itemGroup = ""
+					deleteRowIdMap = make(map[string]bool)
+					if len(taskHandle.FilterRule) > 0 && len(taskHistory.FormData) > 0 {
+						for _, formData := range taskHistory.FormData {
+							if len(formData.Title) > 0 && len(formData.Value) > 0 {
+								itemGroup = formData.Title[0].ItemGroup
+								for _, entity := range formData.Value {
+									if len(entity.EntityData) > 0 {
+										for key, value := range taskHandle.FilterRule {
+											if !strings.HasPrefix(key, itemGroup+"-") {
+												continue
+											}
+											name := strings.Replace(key, itemGroup+"-", "", 1)
+											// 当前行数据没有过滤规则key直接过滤掉
+											if _, ok := entity.EntityData[name]; !ok && len(taskHandle.ItemLatestValue) > 0 {
+												// 当前行没有过滤规则,去表单池里面找这项最新值,根据规则判断
+												if len(taskHandle.ItemLatestValue[key]) > 0 {
+													for _, formValue := range taskHandle.ItemLatestValue[key] {
+														if formValue.DataId == entity.DataId {
+															valueStr, ok := value.(string)
+															if ok {
+																// 单选判断,不相等直接过滤
+																if valueStr != formValue.Value {
+																	deleteRowIdMap[entity.Id] = true
+																	break
+																}
+															} else {
+																// 多选判断,都不满足才过滤
+																filterArr, ok1 := value.([]string)
+																entityArr, ok2 := formValue.Value.([]string)
+																if !ok1 || !ok2 {
+																	log.Logger.Error("data value  is not array", log.JsonObj("data", data))
+																	continue
+																}
+																filterMap := convertArray2Map(filterArr)
+																for _, val := range entityArr {
+																	if !filterMap[val] {
+																		deleteRowIdMap[entity.Id] = true
+																		break
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+											valueStr, ok := value.(string)
+											if ok {
+												// 单选判断,不相等直接过滤
+												if valueStr != entity.EntityData[name] {
+													deleteRowIdMap[entity.Id] = true
+													break
+												}
+											} else {
+												// 多选判断,都不满足才过滤
+												filterArr, ok1 := value.([]string)
+												entityArr, ok2 := entity.EntityData[name].([]string)
+												if !ok1 || !ok2 {
+													log.Logger.Error("data value  is not array", log.JsonObj("data", data))
+													continue
+												}
+												filterMap := convertArray2Map(filterArr)
+												for _, val := range entityArr {
+													if !filterMap[val] {
+														deleteRowIdMap[entity.Id] = true
+														break
+													}
+												}
+											}
+										}
 									}
 								}
 							}
 						}
+						for _, formData := range taskHistory.FormData {
+							var valueList []*models.EntityTreeObj
+							if len(formData.Value) > 0 {
+								for _, entity := range formData.Value {
+									if !deleteRowIdMap[entity.Id] {
+										valueList = append(valueList, entity)
+									}
+								}
+							}
+							newFormData := &models.RequestPreDataTableObj{
+								PackageName:    formData.PackageName,
+								Entity:         formData.Entity,
+								FormTemplateId: formData.FormTemplateId,
+								ItemGroup:      formData.ItemGroup,
+								ItemGroupName:  formData.ItemGroupName,
+								ItemGroupType:  formData.ItemGroupType,
+								ItemGroupRule:  formData.ItemGroupRule,
+								RefEntity:      formData.RefEntity,
+								SortLevel:      formData.SortLevel,
+								Title:          formData.Title,
+								Value:          valueList,
+							}
+							formDataList = append(formDataList, newFormData)
+						}
+						taskHandle.FormData = formDataList
+					} else {
+						// 没有配置过滤规则,表单内容和外层表单内容一致
+						taskHandle.FormData = taskHistory.FormData
 					}
-					taskHandle.FormData
+					taskHandleList = append(taskHandleList, taskHandle)
 				}
 			}
 			newTaskHistoryList = append(newTaskHistoryList, &models.TaskForHistory{
@@ -2524,26 +2627,6 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 				FormData:       taskHistory.FormData,
 			})
 		}
-	}*/
+	}
 	return newTaskHistoryList
-}
-
-func getFormItemMap(task *models.TaskForHistory) (multipleItemMap map[string]bool, formItemValueMap map[string]interface{}) {
-	multipleItemMap = make(map[string]bool)
-	formItemValueMap = make(map[string]interface{})
-	if task == nil {
-		return
-	}
-	if len(task.FormData) > 0 {
-		for _, formData := range task.FormData {
-			if len(formData.Title) > 0 {
-				for _, formItem := range formData.Title {
-					if formItem.Multiple == models.Y || formItem.Multiple == models.Yes {
-						multipleItemMap[formItem.ItemGroup+"-"+formItem.Name] = true
-					}
-				}
-			}
-		}
-	}
-	return
 }

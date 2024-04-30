@@ -918,8 +918,8 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 		}
 		if len(taskHandleTemplateList) > 0 {
 			for _, taskHandleTemplate := range taskHandleTemplateList {
-				actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle_template(id,task_template,role,assign,handler_type,handler,handle_mode,sort)values(?,?,?,?,?,?,?,?)", Param: []interface{}{
-					guid.CreateGuid(), newTaskTemplateIdMap[taskHandleTemplate.TaskTemplate], taskHandleTemplate.Role, taskHandleTemplate.Assign, taskHandleTemplate.HandlerType, taskHandleTemplate.Handler, taskHandleTemplate.HandleMode, taskHandleTemplate.Sort,
+				actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle_template(id,task_template,role,assign,handler_type,handler,handle_mode,sort,assign_rule,filter_rule)values(?,?,?,?,?,?,?,?,?,?)", Param: []interface{}{
+					guid.CreateGuid(), newTaskTemplateIdMap[taskHandleTemplate.TaskTemplate], taskHandleTemplate.Role, taskHandleTemplate.Assign, taskHandleTemplate.HandlerType, taskHandleTemplate.Handler, taskHandleTemplate.HandleMode, taskHandleTemplate.Sort, taskHandleTemplate.AssignRule, taskHandleTemplate.FilterRule,
 				}})
 			}
 		}
@@ -1034,8 +1034,8 @@ func (s *RequestTemplateService) CopyConfirmRequestTemplate(requestTemplateId, o
 		}
 		if len(taskHandleTemplateList) > 0 {
 			for _, taskHandleTemplate := range taskHandleTemplateList {
-				actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle_template(id,task_template,role,assign,handler_type,handler,handle_mode,sort)values(?,?,?,?,?,?,?,?)", Param: []interface{}{
-					guid.CreateGuid(), newTaskTemplateIdMap[taskHandleTemplate.TaskTemplate], taskHandleTemplate.Role, taskHandleTemplate.Assign, taskHandleTemplate.HandlerType, taskHandleTemplate.Handler, taskHandleTemplate.HandleMode, taskHandleTemplate.Sort,
+				actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle_template(id,task_template,role,assign,handler_type,handler,handle_mode,sort,assign_rule,filter_rule)values(?,?,?,?,?,?,?,?,?,?)", Param: []interface{}{
+					guid.CreateGuid(), newTaskTemplateIdMap[taskHandleTemplate.TaskTemplate], taskHandleTemplate.Role, taskHandleTemplate.Assign, taskHandleTemplate.HandlerType, taskHandleTemplate.Handler, taskHandleTemplate.HandleMode, taskHandleTemplate.Sort, taskHandleTemplate.AssignRule, taskHandleTemplate.FilterRule,
 				}})
 			}
 		}

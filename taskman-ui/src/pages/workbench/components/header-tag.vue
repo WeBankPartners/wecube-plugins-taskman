@@ -82,11 +82,12 @@ export default {
   computed: {
     getOperationName () {
       return function (i) {
-        // 1.编排任务系统下发选项，2审批和定版退回，前端枚举
+        // 1.编排任务接口下发，2审批和定版退回，前端枚举
         const resultMap = {
           deny: this.$t('tw_reject'), // 拒绝
           approve: this.$t('tw_approve'), // 同意
-          redraw: this.$t('tw_send_back') // 退回
+          redraw: this.$t('tw_send_back'), // 退回
+          unrelated: this.$t('tw_unrelated')
         }
         let resultName = ''
         if (['approve', 'check'].includes(this.data.type)) {

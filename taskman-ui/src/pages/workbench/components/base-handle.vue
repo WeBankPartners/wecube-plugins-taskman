@@ -256,6 +256,10 @@ export default {
         {
           label: this.$t('tw_send_back'), // 退回
           value: 'redraw'
+        },
+        {
+          label: this.$t('tw_unrelated'), // 不涉及
+          value: 'unrelated'
         }
       ],
       taskStatusList: [

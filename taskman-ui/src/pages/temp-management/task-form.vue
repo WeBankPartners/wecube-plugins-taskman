@@ -225,13 +225,13 @@
                           }}</Option>
                         </Select>
                       </FormItem>
-                      <FormItem :label="$t('t_action')">
+                      <FormItem :label="$t('tw_handleStatus')">
                         <Select style="width:94%">
                           <Option value="1">{{ $t('tw_completed') }}</Option>
                           <Option value="2">{{ $t('tw_incomplete') }}</Option>
                         </Select>
                       </FormItem>
-                      <FormItem :label="$t('tw_comments')">
+                      <FormItem :label="$t('process_comments')">
                         <Input type="textarea" :rows="2" style="width:94%"></Input>
                       </FormItem>
                     </Form>

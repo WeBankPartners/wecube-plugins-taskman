@@ -219,9 +219,10 @@
                           <Option value="1">{{ $t('tw_approve') }}</Option>
                           <Option value="2">{{ $t('tw_reject') }}</Option>
                           <Option value="3">{{ $t('tw_send_back') }}</Option>
+                          <Option value="4">{{ $t('tw_unrelated') }}</Option>
                         </Select>
                       </FormItem>
-                      <FormItem :label="$t('tw_comments')">
+                      <FormItem :label="$t('process_comments')">
                         <Input type="textarea" :rows="2" style="width:94%"></Input>
                       </FormItem>
                     </Form>

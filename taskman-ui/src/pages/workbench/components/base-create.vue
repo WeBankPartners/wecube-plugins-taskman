@@ -393,7 +393,7 @@ export default {
           value: {}
         }, // 自定义表单
         data: [], // 数据表单
-        approvalList: [], // 审批列表
+        approvalList: [], // 审批和任务列表
         refId: '' // 关联单Id
       },
       refLoading: false,

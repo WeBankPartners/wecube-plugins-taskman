@@ -338,6 +338,8 @@ func (s *TaskTemplateService) UpdateTaskTemplate(param *models.TaskTemplateDto, 
 						return nil, err2
 					}
 					taskHandleTemplate.AssignRule = string(byteArr)
+				} else {
+					taskHandleTemplate.AssignRule = ""
 				}
 				if len(param.HandleTemplates[i].FilterRule) > 0 {
 					byteArr, err2 := json.Marshal(param.HandleTemplates[i].FilterRule)
@@ -345,6 +347,8 @@ func (s *TaskTemplateService) UpdateTaskTemplate(param *models.TaskTemplateDto, 
 						return nil, err2
 					}
 					taskHandleTemplate.FilterRule = string(byteArr)
+				} else {
+					taskHandleTemplate.FilterRule = ""
 				}
 				updateTaskTemplate := taskHandleTemplate
 				updateTaskHandleTemplates = append(updateTaskHandleTemplates, updateTaskTemplate)

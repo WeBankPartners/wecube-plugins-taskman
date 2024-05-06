@@ -46,7 +46,7 @@
         </div>
         <div>
           <TaskFormNode
-            ref="approvalFormNodeRef"
+            ref="taskFormNodeRef"
             @jumpToNode="jumpToNode"
             @reloadParentPage="loadPage"
             @nodeStatus="nodeStatus"
@@ -472,7 +472,7 @@
         >
         <Button
           :disabled="isCheck !== 'Y' && isTopButtonDisable"
-          v-if="isCheck !== 'Y'"
+          v-if="isCheck !== 'Y' && !(procDefId !== '' && approvalNodes.length === 0)"
           @click="saveApprovalFromNode"
           type="info"
           class="btn-footer-margin"
@@ -516,7 +516,7 @@ export default {
     return {
       isParmasChanged: false, // 参数变化标志位，控制右侧panel显示逻辑
       MODALHEIGHT: 200,
-      isTopButtonDisable: true, // 下一步，上一步等的控制
+      isTopButtonDisable: false, // 下一步，上一步等的控制
       isShowFormConfig: false,
       procDefId: '',
       approvalNodes: [
@@ -827,9 +827,9 @@ export default {
           this.getApprovalNode(data.taskTemplate.id)
         }
       } else {
-        const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
+        const nodeStatus = this.$refs.taskFormNodeRef.panalStatus()
         if (nodeStatus === 'canSave') {
-          this.$refs.approvalFormNodeRef.saveNode(3)
+          this.$refs.taskFormNodeRef.saveNode(3)
           this.saveGroup(3, this.activeEditingNode)
           const { statusCode, data } = await addApprovalNode(params)
           if (statusCode === 'OK') {
@@ -843,9 +843,9 @@ export default {
       // this.loadPage()
     },
     async removeNode (node) {
-      // const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
+      // const nodeStatus = this.$refs.taskFormNodeRef.panalStatus()
       // if (nodeStatus === 'canSave') {
-      //   this.$refs.approvalFormNodeRef.saveNode(3)
+      //   this.$refs.taskFormNodeRef.saveNode(3)
       //   this.saveGroup(3, node)
       //   this.$Modal.confirm({
       //     title: this.$t('confirm_delete'),
@@ -889,9 +889,9 @@ export default {
     },
     editNode (node, isNeedSaveFirst = true) {
       if (isNeedSaveFirst && this.isCheck !== 'Y') {
-        const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
+        const nodeStatus = this.$refs.taskFormNodeRef.panalStatus()
         if (nodeStatus === 'canSave') {
-          this.$refs.approvalFormNodeRef.saveNode(3)
+          this.$refs.taskFormNodeRef.saveNode(3)
           this.beforeEditNode(node)
         }
       } else {
@@ -901,7 +901,7 @@ export default {
           id: node.id,
           procDefId: this.procDefId
         }
-        this.$refs.approvalFormNodeRef.loadPage(params)
+        this.$refs.taskFormNodeRef.loadPage(params)
         this.getApprovalNodeGroups(node)
       }
     },
@@ -941,7 +941,7 @@ export default {
         procDefId: this.procDefId
       }
       this.activeEditingNode = this.nextNodeInfo
-      this.$refs.approvalFormNodeRef.loadPage(params)
+      this.$refs.taskFormNodeRef.loadPage(params)
     },
     beforeSelectItemGroup () {
       if (this.finalElement[0].itemGroupId === '') {
@@ -1258,9 +1258,9 @@ export default {
       if (this.procDefId !== '' && this.approvalNodes.length === 0) {
         this.$emit('gotoStep', this.requestTemplateId, 'backward')
       } else {
-        const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
+        const nodeStatus = this.$refs.taskFormNodeRef.panalStatus()
         if (nodeStatus === 'canSave') {
-          this.$refs.approvalFormNodeRef.saveNode(3)
+          this.$refs.taskFormNodeRef.saveNode(3)
           let finalData = JSON.parse(JSON.stringify(this.finalElement[0]))
           if (finalData.itemGroupId === '') {
             this.$emit('gotoStep', this.requestTemplateId, 'backward')
@@ -1282,9 +1282,9 @@ export default {
       if (this.procDefId !== '' && this.approvalNodes.length === 0) {
         this.submitTemplate()
       } else {
-        const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
+        const nodeStatus = this.$refs.taskFormNodeRef.panalStatus()
         if (nodeStatus === 'canSave') {
-          this.$refs.approvalFormNodeRef.saveNode(4)
+          this.$refs.taskFormNodeRef.saveNode(4)
           await this.saveGroup(10, {})
           this.submitTemplate()
         }
@@ -1322,7 +1322,7 @@ export default {
       })
     },
     saveApprovalFromNode () {
-      this.$refs.approvalFormNodeRef.saveNode(1)
+      this.$refs.taskFormNodeRef.saveNode(1)
     },
     nodeStatus (status) {
       this.isTopButtonDisable = status

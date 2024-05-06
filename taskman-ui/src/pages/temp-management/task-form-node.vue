@@ -190,22 +190,26 @@ export default {
         { label: this.$t('tw_group_claim'), value: 'claim', used: ['template', 'custom'] }
       ],
       useRolesOptions: [], // 使用角色
-      isSaveNodeDisable: true
+      isSaveNodeDisable: true,
+      needChangeStatus: false
     }
   },
   watch: {
     activeApprovalNode: {
       handler (val) {
-        this.isSaveNodeDisable = this.isSaveBtnActive()
-        this.$emit('nodeStatus', this.isSaveNodeDisable)
+        if (this.needChangeStatus) {
+          this.isSaveNodeDisable = this.isSaveBtnActive()
+          this.$emit('nodeStatus', this.isSaveNodeDisable)
+        }
       },
       immediate: true,
       deep: true
     }
   },
-  props: ['isCheck', 'nodeType'],
+  props: ['isCheck', 'nodeType', 'test'],
   methods: {
     loadPage (params) {
+      this.needChangeStatus = true
       this.procDefId = params.procDefId
       this.isParmasChanged = false
       this.requestTemplateId = params.requestTemplateId

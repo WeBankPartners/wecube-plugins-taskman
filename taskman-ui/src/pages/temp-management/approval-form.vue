@@ -43,7 +43,7 @@
             @reloadParentPage="loadPage"
             @nodeStatus="nodeStatus"
             @setFormConfigStatus="changeFormConfigStatus"
-            @dataFormFilterChange="dataFormFilterChange"
+            @dataFormFilterChange="setIsEditDisabled"
           ></ApprovalFormNode>
         </div>
         <template v-if="isShowFormConfig">
@@ -638,17 +638,18 @@ export default {
     this.loadPage()
   },
   methods: {
-    // 数据表单过滤项有选数据，需要禁用审批表单对应表单项可编辑属性
-    dataFormFilterChange (val) {
-      this.dataFormFilter = val
-      this.getisEditDisabled()
-    },
-    getisEditDisabled () {
+    // 数据表单过滤项有值，需要禁用审批表单"可编辑"属性
+    setIsEditDisabled () {
       this.isEditDisabled = false
-      this.dataFormFilter.forEach(i => {
+      const dataFormFilter = this.$refs.approvalFormNodeRef.filterFormList
+      const handleTemplates = this.$refs.approvalFormNodeRef.activeApprovalNode.handleTemplates
+      dataFormFilter.forEach(i => {
         if (i.type === 2) {
           i.items.forEach(j => {
-            const hasValue = Array.isArray(j.value) ? j.value.length > 0 : j.value
+            const key = `${i.itemGroup}-${j.name}`
+            const hasValue = handleTemplates.some(val => {
+              return Array.isArray(val.filterRule[key]) ? val.filterRule[key].length > 0 : val.filterRule[key]
+            })
             if (j.name === this.editElement.name && hasValue) {
               this.editElement.isEdit = 'no'
               this.isEditDisabled = true
@@ -1020,7 +1021,7 @@ export default {
       })
       this.finalElement[itemIndex].attrs[eleIndex].isActive = true
       this.editElement = this.finalElement[itemIndex].attrs[eleIndex]
-      this.getisEditDisabled()
+      this.setIsEditDisabled()
       if (this.editElement.multiple === 'Y') {
         this.editElement.multiple = 'yes'
       } else if (this.editElement.multiple === 'N') {

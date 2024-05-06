@@ -320,8 +320,7 @@ export default {
       requestTemplate: this.$route.query.requestTemplate,
       requestId: this.$route.query.requestId,
       taskId: this.$route.query.taskId,
-      // procDefId: '',
-      // procDefKey: '',
+      taskHandleId: this.$route.query.taskHandleId, // 当前处理人任务ID(协同并行可能有多人)
       detail: {}, // 详情信息
       form: {
         name: '',
@@ -439,6 +438,17 @@ export default {
       const { statusCode, data } = await getRequestHistory(this.requestId)
       if (statusCode === 'OK') {
         this.historyData = data.task || []
+        // 审批和任务表单需要替换成taskHandleList里面的
+        this.historyData.forEach(val => {
+          const list = val.taskHandleList || []
+          list.forEach(item => {
+            if (item.id === this.taskHandleId) {
+              if (['approve', 'implement_process', 'implement_custom'].includes(val.type)) {
+                val.formData = item.formData
+              }
+            }
+          })
+        })
         const statusMap = {
           complete: this.$t('tw_completed'),
           uncompleted: this.$t('tw_incomplete')

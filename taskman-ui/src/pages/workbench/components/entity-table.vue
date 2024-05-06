@@ -198,6 +198,9 @@ export default {
         if (val && val.length) {
           this.requestData = deepClone(val)
           this.requestData.forEach(item => {
+            if (!item.value) {
+              item.value = []
+            }
             // 无表单数据，不是选择已有数据添加一行，默认添加一行
             if (item.value.length === 0 && this.autoAddRow && !['exist', 'exist_empty'].includes(item.itemGroupRule)) {
               this.handleAddRow(item)

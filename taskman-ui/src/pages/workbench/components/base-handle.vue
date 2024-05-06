@@ -190,7 +190,7 @@ import DataBind from './data-bind.vue'
 import UploadFile from './upload.vue'
 import { deepClone } from '@/pages/util/index'
 import { commitTaskData, geTaskTagList, confirmRequest } from '@/api/server'
-import { requiredCheck, noChooseCheck } from '../util'
+import { requiredCheck } from '../util'
 export default {
   components: {
     HeaderTitle,
@@ -388,13 +388,13 @@ export default {
         return this.$Message.warning(`【${tabName}】${this.$t('required_tip')}`)
       }
       // 表单至少勾选一条数据校验
-      if (!noChooseCheck(formData, this.$refs.entityTable)) {
-        const tabName = this.$refs.entityTable.activeTab
-        return this.$Notice.warning({
-          title: this.$t('warning'),
-          desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
-        })
-      }
+      // if (!noChooseCheck(formData, this.$refs.entityTable)) {
+      //   const tabName = this.$refs.entityTable.activeTab
+      //   return this.$Notice.warning({
+      //     title: this.$t('warning'),
+      //     desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
+      //   })
+      // }
       const params = {
         formData: formData,
         comment: this.taskForm.comment,

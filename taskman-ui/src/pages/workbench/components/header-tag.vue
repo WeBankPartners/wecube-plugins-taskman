@@ -87,7 +87,7 @@ export default {
           deny: this.$t('tw_reject'), // 拒绝
           approve: this.$t('tw_approve'), // 同意
           redraw: this.$t('tw_send_back'), // 退回
-          unrelated: this.$t('tw_unrelated')
+          unrelated: this.$t('tw_unrelated') // 不涉及
         }
         let resultName = ''
         if (['approve', 'check'].includes(this.data.type)) {

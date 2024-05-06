@@ -394,8 +394,8 @@ type TaskHandleForHistory struct {
 }
 
 type FormValue struct {
-	DataId string      `json:"dataId" xorm:"data_id"`
-	Value  interface{} `json:"value" xorm:"value"`
+	DataId string `json:"dataId" xorm:"data_id"`
+	Value  string `json:"value" xorm:"value"`
 }
 
 type TaskForHistory struct {

@@ -2539,10 +2539,15 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 																}
 															} else {
 																// 多选判断,都不满足才过滤
+																var entityArr []string
 																filterArr, ok1 := value.([]string)
-																entityArr, ok2 := formValue.Value.([]string)
-																if !ok1 || !ok2 {
+																err := json.Unmarshal([]byte(formValue.Value), &entityArr)
+																if !ok1 {
 																	log.Logger.Error("data value  is not array", log.JsonObj("data", data))
+																	continue
+																}
+																if err != nil {
+																	log.Logger.Error("json Unmarshal error", log.Error(err))
 																	continue
 																}
 																filterMap := convertArray2Map(filterArr)

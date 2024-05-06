@@ -191,20 +191,20 @@
                       <Option value="calculate">Calculate</Option>
                     </Select>
                   </FormItem>
+                  <!--数据集-->
                   <FormItem
-                    v-if="editElement.elementType === 'select'"
-                    :label="editElement.entity === '' ? $t('data_set') : $t('data_source')"
+                    v-if="editElement.elementType === 'select' && editElement.entity === ''"
+                    :label="$t('data_set')"
                   >
-                    <Input v-model="editElement.dataOptions" disabled style="width:70%"></Input>
-                    <Button
-                      class="custom-add-btn"
-                      :disabled="$parent.isCheck === 'Y'"
-                      @click.stop="dataOptionsMgmt"
-                      type="primary"
-                      ghost
-                      size="small"
-                      icon="ios-create-outline"
-                    ></Button>
+                    <Input v-model="editElement.dataOptions" disabled style="width:calc(100% - 38px)"></Input>
+                    <Button @click.stop="dataOptionsMgmt" type="primary" icon="md-add"></Button>
+                  </FormItem>
+                  <!--数据源-->
+                  <FormItem
+                    v-if="editElement.elementType === 'select' && editElement.entity"
+                    :label="$t('data_source')"
+                  >
+                    <Input v-model="editElement.dataOptions" disabled></Input>
                   </FormItem>
                   <!--模型数据项-->
                   <FormItem v-if="editElement.elementType === 'wecmdbEntity'" :label="$t('data_source')">
@@ -219,37 +219,59 @@
                   </FormItem>
                   <!--控制审批/任务-->
                   <FormItem v-if="['select', 'wecmdbEntity'].includes(editElement.elementType)" label="控制审批/任务">
-                    <RadioGroup v-model="editElement.controlSwitch" @on-change="paramsChanged">
-                      <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
-                      <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
-                    </RadioGroup>
+                    <i-switch
+                      v-model="editElement.controlSwitch"
+                      true-value="yes"
+                      false-value="no"
+                      false-color="#ff4949"
+                      :disabled="$parent.isCheck === 'Y'"
+                      @on-change="paramsChanged"
+                      size="default"
+                    />
                   </FormItem>
-                  <!-- <FormItem :label="$t('tags')">
-                    <Input v-model="editElement.tag" placeholder=""></Input>
-                  </FormItem> -->
                   <FormItem :label="$t('display')">
-                    <RadioGroup v-model="editElement.inDisplayName" @on-change="paramsChanged">
-                      <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
-                      <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
-                    </RadioGroup>
+                    <i-switch
+                      v-model="editElement.inDisplayName"
+                      true-value="yes"
+                      false-value="no"
+                      false-color="#ff4949"
+                      :disabled="$parent.isCheck === 'Y'"
+                      @on-change="paramsChanged"
+                      size="default"
+                    />
                   </FormItem>
                   <FormItem :label="$t('editable')">
-                    <RadioGroup v-model="editElement.isEdit" @on-change="paramsChanged">
-                      <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
-                      <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
-                    </RadioGroup>
+                    <i-switch
+                      v-model="editElement.isEdit"
+                      true-value="yes"
+                      false-value="no"
+                      false-color="#ff4949"
+                      :disabled="$parent.isCheck === 'Y'"
+                      @on-change="paramsChanged"
+                      size="default"
+                    />
                   </FormItem>
                   <FormItem :label="$t('required')">
-                    <RadioGroup v-model="editElement.required" @on-change="paramsChanged">
-                      <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
-                      <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
-                    </RadioGroup>
+                    <i-switch
+                      v-model="editElement.required"
+                      true-value="yes"
+                      false-value="no"
+                      false-color="#ff4949"
+                      :disabled="$parent.isCheck === 'Y' || editElement.controlSwitch === 'yes'"
+                      @on-change="paramsChanged"
+                      size="default"
+                    />
                   </FormItem>
                   <FormItem :label="$t('tw_default_empty')">
-                    <RadioGroup v-model="editElement.defaultClear" @on-change="paramsChanged">
-                      <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
-                      <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
-                    </RadioGroup>
+                    <i-switch
+                      v-model="editElement.defaultClear"
+                      true-value="yes"
+                      false-value="no"
+                      false-color="#ff4949"
+                      :disabled="$parent.isCheck === 'Y'"
+                      @on-change="paramsChanged"
+                      size="default"
+                    />
                   </FormItem>
                   <FormItem :label="$t('defaults')">
                     <Input
@@ -263,10 +285,15 @@
                     :label="$t('tw_multiple')"
                     v-if="['select', 'wecmdbEntity'].includes(editElement.elementType)"
                   >
-                    <RadioGroup v-model="editElement.multiple" @on-change="paramsChanged">
-                      <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
-                      <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
-                    </RadioGroup>
+                    <i-switch
+                      v-model="editElement.multiple"
+                      true-value="yes"
+                      false-value="no"
+                      false-color="#ff4949"
+                      :disabled="$parent.isCheck === 'Y'"
+                      @on-change="paramsChanged"
+                      size="default"
+                    />
                   </FormItem>
                   <FormItem :label="$t('width')">
                     <Select v-model="editElement.width" @on-change="paramsChanged" :disabled="$parent.isCheck === 'Y'">
@@ -488,6 +515,13 @@ export default {
           }
         }
         return { background: color }
+      }
+    }
+  },
+  watch: {
+    'editElement.controlSwitch' (val) {
+      if (val === 'yes') {
+        this.editElement.required = 'yes'
       }
     }
   },
@@ -931,9 +965,11 @@ export default {
       this.$refs.dataSourceConfigRef.loadPage(newDataOptions)
     },
     setDataOptions (options) {
-      this.editElement.dataOptions = JSON.stringify(options)
-      // const valueArray = options.map(d => d.value)
-      // this.editElement.filterRule = this.editElement.filterRule.filter(fr => valueArray.includes(fr))
+      if (options && options.length > 0) {
+        this.editElement.dataOptions = JSON.stringify(options)
+      } else {
+        this.editElement.dataOptions = ''
+      }
     },
     computedOption (element) {
       let res = []

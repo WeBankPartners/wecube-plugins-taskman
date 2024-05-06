@@ -47,7 +47,11 @@ export default {
   },
   methods: {
     loadPage (dataSource) {
-      this.dataSource = dataSource
+      if (dataSource && dataSource.length === 0) {
+        this.dataSource = [{ label: '', value: '' }]
+      } else {
+        this.dataSource = dataSource
+      }
       this.showModel = true
     },
     dataValidateFirst () {

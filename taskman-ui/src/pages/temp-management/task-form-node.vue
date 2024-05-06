@@ -46,7 +46,7 @@
       </Form>
       <Form ref="formInline" inline :label-width="100" class="table-form">
         <FormItem :label="$t('tw_allocation')">
-          <Select v-model="activeApprovalNode.handleMode" @on-change="changeRoleType" style="width: 200px;">
+          <Select v-model="activeApprovalNode.handleMode" @on-change="changeRoleType" style="width: 260px;">
             <Option v-for="item in roleTypeOptions" :value="item.value" :key="item.value">{{ item.label }}</Option>
           </Select>
           <span style="color: red">*</span>
@@ -58,7 +58,7 @@
         >
           <Table
             style="width:100%;"
-            :border="false"
+            :border="true"
             size="small"
             :columns="activeApprovalNode.handleMode === 'any' ? initColumns : tableColumns"
             :data="activeApprovalNode.handleTemplates"
@@ -70,6 +70,7 @@
             size="small"
             ghost
             icon="md-add"
+            style="margin-top:5px;"
           ></Button>
         </FormItem>
       </Form>
@@ -376,17 +377,25 @@ export default {
             const obj = Object.assign({}, item, { type: 2 })
             this.filterFormList.push(obj)
           })
+        let infoFormColumn = {
+          title: '信息表单(分配条件)',
+          align: 'center',
+          children: []
+        }
+        let dataFormColumn = {
+          title: '数据表单(过滤条件)',
+          align: 'center',
+          children: []
+        }
         this.filterFormList.forEach(i => {
           i.items.forEach(j => {
             if (['wecmdbEntity', 'select'].includes(j.elementType) && j.controlSwitch === 'yes') {
               // 初始化下拉选项
               this.getRefOptions(j)
               // 初始化表格列
-              const index = this.tableColumns.findIndex(column => column.key === 'action')
-              let column
               if (i.type === 1) {
-                column = {
-                  title: '信息表单:' + j.title,
+                infoFormColumn.children.push({
+                  title: j.title,
                   align: 'left',
                   minWidth: 250,
                   render: (h, params) => {
@@ -404,12 +413,12 @@ export default {
                       ></LimitSelect>
                     )
                   }
-                }
+                })
               } else if (i.type === 2) {
-                column = {
-                  title: '数据表单:' + j.title,
+                dataFormColumn.children.push({
+                  title: `${i.itemGroupName}-${j.title}`,
                   align: 'left',
-                  minWidth: 250,
+                  minWidth: 280,
                   render: (h, params) => {
                     const key = `${i.itemGroup}-${j.name}`
                     return (
@@ -426,12 +435,14 @@ export default {
                       ></LimitSelect>
                     )
                   }
-                }
+                })
               }
-              this.tableColumns.splice(index, 0, column)
             }
           })
         })
+        const index = this.tableColumns.findIndex(column => column.key === 'action')
+        this.tableColumns.splice(index, 0, infoFormColumn)
+        this.tableColumns.splice(index, 0, dataFormColumn)
       })
     },
     async getRefOptions (item) {
@@ -643,7 +654,7 @@ fieldset[disabled] .ivu-input {
     font-size: 14px;
   }
   .ivu-form-item-content {
-    line-height: 26px;
+    line-height: 22px;
   }
 }
 </style>

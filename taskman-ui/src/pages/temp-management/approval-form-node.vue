@@ -430,8 +430,7 @@ export default {
                         on-on-change={v => {
                           this.activeApprovalNode.handleTemplates[params.index].filterRule[key] = v
                           // 数据表单过滤项有值，则审批表单对应表单控件属性为不可编辑，需要传值过去判断
-                          this.$set(j, 'value', v)
-                          this.$emit('dataFormFilterChange', this.filterFormList)
+                          this.$emit('dataFormFilterChange')
                         }}
                         displayName={j.elementType === 'wecmdbEntity' ? 'displayName' : j.entity ? 'key_name' : 'label'}
                         displayValue={j.elementType === 'wecmdbEntity' ? 'id' : j.entity ? 'guid' : 'value'}
@@ -640,6 +639,7 @@ export default {
     },
     removeRoleObjItem (index) {
       this.activeApprovalNode.handleTemplates.splice(index, 1)
+      this.$emit('dataFormFilterChange')
     },
     // 使用角色
     async getUserRoles () {
@@ -661,6 +661,7 @@ export default {
         }
       ]
       this.$emit('setFormConfigStatus', !['auto'].includes(this.activeApprovalNode.handleMode))
+      this.$emit('dataFormFilterChange')
       this.paramsChanged()
     },
     changeUser (role, roleObjIndex, isClearHandler) {

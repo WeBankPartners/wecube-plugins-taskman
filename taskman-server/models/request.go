@@ -387,10 +387,9 @@ type RequestForHistory struct {
 
 type TaskHandleForHistory struct {
 	*TaskHandleTable
-	AttachFiles     []*AttachFileTable        `json:"attachFiles"`
-	FormData        []*RequestPreDataTableObj `json:"formData"`
-	FilterRule      map[string]interface{}    `json:"filterRule"`      // 下拉框过滤规则
-	ItemLatestValue map[string][]*FormValue   `json:"itemLatestValue"` // 过滤规则表单项最新值
+	AttachFiles []*AttachFileTable        `json:"attachFiles"`
+	FormData    []*RequestPreDataTableObj `json:"formData"`
+	FilterRule  map[string]interface{}    `json:"filterRule"` // 下拉框过滤规则
 }
 
 type FormValue struct {

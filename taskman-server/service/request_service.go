@@ -2048,7 +2048,6 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 			TaskHandleTable: taskHandle,
 			AttachFiles:     attachFiles,
 			FilterRule:      make(map[string]interface{}),
-			ItemLatestValue: make(map[string][]*models.FormValue),
 		}
 		if strings.TrimSpace(taskHandle.TaskHandleTemplate) != "" {
 			taskHandleTemplate := models.TaskHandleTemplateTable{}
@@ -2059,22 +2058,6 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 				if err = json.Unmarshal([]byte(taskHandleTemplate.FilterRule), &curTaskHandleForHistory.FilterRule); err != nil {
 					log.Logger.Error("GetRequestHistory json Unmarshal err", log.Error(err))
 					return
-				}
-				if len(curTaskHandleForHistory.FilterRule) > 0 {
-					for key, _ := range curTaskHandleForHistory.FilterRule {
-						strArr := strings.Split(key, "-")
-						if len(strArr) == 2 {
-							var formValueList []*models.FormValue
-							itemGroup := strArr[0]
-							name := strArr[1]
-							err = dao.X.SQL("select f.data_id,fi.value from  form_item fi join form f on fi.form =f.id where fi.request=? and fi.name=? and fi.updated_time <= ? "+
-								"and fi.del_flag=0 and exists ( SELECT id FROM form_item_template WHERE id = fi.form_item_template AND item_group = ?)", requestId, name, taskHandle.UpdatedTime, itemGroup).Find(&formValueList)
-							if err != nil {
-								return
-							}
-							curTaskHandleForHistory.ItemLatestValue[key] = formValueList
-						}
-					}
 				}
 			}
 		}
@@ -2536,10 +2519,19 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 												} else {
 													// 多选判断,都不满足才过滤
 													filterArr, ok1 := value.([]interface{})
-													entityArr, ok2 := entity.EntityData[name].([]interface{})
-													if !ok1 || !ok2 {
+													if !ok1 {
 														log.Logger.Error("data value  is not array", log.JsonObj("data", data))
 														continue
+													}
+													// entity.EntityData里面的value 可能是[]string也有可能是 a,b形式,取决是否展示,展示前面就会处理,这个地方要兼容两种格式
+													entityArr, ok2 := entity.EntityData[name].([]string)
+													if !ok2 {
+														str, ok3 := entity.EntityData[name].(string)
+														if !ok3 {
+															log.Logger.Error("entity.EntityData value is not string", log.JsonObj("data", entity.EntityData[name]))
+															continue
+														}
+														entityArr = strings.Split(str, ",")
 													}
 													filterMap := convertInterfaceArray2Map(filterArr)
 													for _, val := range entityArr {

@@ -1678,6 +1678,16 @@ func convertArray2Map(arr []string) map[string]bool {
 	return hashMap
 }
 
+func convertInterfaceArray2Map(arr []interface{}) map[interface{}]bool {
+	hashMap := make(map[interface{}]bool)
+	if len(arr) > 0 {
+		for _, str := range arr {
+			hashMap[str] = true
+		}
+	}
+	return hashMap
+}
+
 // CreateRequestCheck 创建确认定版
 func (s *RequestService) CreateRequestCheck(request models.RequestTable, operator, bindCache, userToken, language string) (err error) {
 	now := time.Now().Format(models.DateTimeFormat)
@@ -1915,13 +1925,13 @@ func (s *RequestService) AutoExecTaskHandle(request models.RequestTable, userTok
 						// 多选,有一个匹配上即可
 						if strings.EqualFold(formItemDtoTemp.Multiple, models.Yes) || strings.EqualFold(formItemDtoTemp.Multiple, models.Y) {
 							match = false
-							assignArr, ok1 := assignValue.([]string)
-							valArr, ok2 := formItemDtoTemp.Value.([]string)
+							assignArr, ok1 := assignValue.([]interface{})
+							valArr, ok2 := formItemDtoTemp.Value.([]interface{})
 							if !ok1 || !ok2 {
 								log.Logger.Error(" assignValue or form_item value  is not array", log.JsonObj("assignValue", assignValue), log.JsonObj("value", formItemDtoTemp.Value))
 								continue
 							}
-							assignMap := convertArray2Map(assignArr)
+							assignMap := convertInterfaceArray2Map(assignArr)
 							for _, val := range valArr {
 								if assignMap[val] {
 									match = true

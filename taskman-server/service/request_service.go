@@ -2540,7 +2540,7 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 															} else {
 																// 多选判断,都不满足才过滤
 																var entityArr []string
-																filterArr, ok1 := value.([]string)
+																filterArr, ok1 := value.([]interface{})
 																err := json.Unmarshal([]byte(formValue.Value), &entityArr)
 																if !ok1 {
 																	log.Logger.Error("data value  is not array", log.JsonObj("data", data))
@@ -2550,7 +2550,7 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 																	log.Logger.Error("json Unmarshal error", log.Error(err))
 																	continue
 																}
-																filterMap := convertArray2Map(filterArr)
+																filterMap := convertInterfaceArray2Map(filterArr)
 																for _, val := range entityArr {
 																	if !filterMap[val] {
 																		deleteRowIdMap[entity.Id] = true
@@ -2571,13 +2571,13 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 												}
 											} else {
 												// 多选判断,都不满足才过滤
-												filterArr, ok1 := value.([]string)
-												entityArr, ok2 := entity.EntityData[name].([]string)
+												filterArr, ok1 := value.([]interface{})
+												entityArr, ok2 := entity.EntityData[name].([]interface{})
 												if !ok1 || !ok2 {
 													log.Logger.Error("data value  is not array", log.JsonObj("data", data))
 													continue
 												}
-												filterMap := convertArray2Map(filterArr)
+												filterMap := convertInterfaceArray2Map(filterArr)
 												for _, val := range entityArr {
 													if !filterMap[val] {
 														deleteRowIdMap[entity.Id] = true

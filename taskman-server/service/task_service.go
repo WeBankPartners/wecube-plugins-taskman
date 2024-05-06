@@ -346,7 +346,11 @@ func handleCustomTask(task models.TaskTable, operator, userToken, language strin
 	if err != nil {
 		return
 	}
-	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status=?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{param.ChoseOption, param.HandleStatus, param.Comment, now, param.TaskHandleId}})
+	if strings.TrimSpace(param.ChoseOption) == "" {
+		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_status=?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{param.HandleStatus, param.Comment, now, param.TaskHandleId}})
+	} else {
+		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status=?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{param.ChoseOption, param.HandleStatus, param.Comment, now, param.TaskHandleId}})
+	}
 	if param.HandleStatus == string(models.TaskHandleResultTypeUncompleted) {
 		// 任务处理未完成,直接更新任务为未完成
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, string(models.TaskHandleResultTypeUncompleted), operator, now, task.Id}})

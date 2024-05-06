@@ -2050,28 +2050,30 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 			FilterRule:      make(map[string]interface{}),
 			ItemLatestValue: make(map[string][]*models.FormValue),
 		}
-		taskHandleTemplate := models.TaskHandleTemplateTable{}
-		if _, err = dao.X.SQL("select * from task_handle_template where id = ? ", taskHandle.TaskHandleTemplate).Get(&taskHandleTemplate); err != nil {
-			return
-		}
-		if strings.TrimSpace(taskHandleTemplate.FilterRule) != "" {
-			if err = json.Unmarshal([]byte(taskHandleTemplate.FilterRule), &curTaskHandleForHistory.FilterRule); err != nil {
-				log.Logger.Error("GetRequestHistory json Unmarshal err", log.Error(err))
+		if strings.TrimSpace(taskHandle.TaskHandleTemplate) != "" {
+			taskHandleTemplate := models.TaskHandleTemplateTable{}
+			if _, err = dao.X.SQL("select * from task_handle_template where id = ? ", taskHandle.TaskHandleTemplate).Get(&taskHandleTemplate); err != nil {
 				return
 			}
-			if len(curTaskHandleForHistory.FilterRule) > 0 {
-				for key, _ := range curTaskHandleForHistory.FilterRule {
-					strArr := strings.Split(key, "-")
-					if len(strArr) == 2 {
-						var formValueList []*models.FormValue
-						itemGroup := strArr[0]
-						name := strArr[1]
-						err = dao.X.SQL("select f.data_id,fi.value from  form_item fi join form f on fi.form =f.id where fi.request=? and fi.name=? and fi.updated_time <= ? "+
-							"and fi.del_flag=0 and exists ( SELECT id FROM form_item_template WHERE id = fi.form_item_template AND item_group = ?)", requestId, name, taskHandle.UpdatedTime, itemGroup).Find(&formValueList)
-						if err != nil {
-							return
+			if strings.TrimSpace(taskHandleTemplate.FilterRule) != "" {
+				if err = json.Unmarshal([]byte(taskHandleTemplate.FilterRule), &curTaskHandleForHistory.FilterRule); err != nil {
+					log.Logger.Error("GetRequestHistory json Unmarshal err", log.Error(err))
+					return
+				}
+				if len(curTaskHandleForHistory.FilterRule) > 0 {
+					for key, _ := range curTaskHandleForHistory.FilterRule {
+						strArr := strings.Split(key, "-")
+						if len(strArr) == 2 {
+							var formValueList []*models.FormValue
+							itemGroup := strArr[0]
+							name := strArr[1]
+							err = dao.X.SQL("select f.data_id,fi.value from  form_item fi join form f on fi.form =f.id where fi.request=? and fi.name=? and fi.updated_time <= ? "+
+								"and fi.del_flag=0 and exists ( SELECT id FROM form_item_template WHERE id = fi.form_item_template AND item_group = ?)", requestId, name, taskHandle.UpdatedTime, itemGroup).Find(&formValueList)
+							if err != nil {
+								return
+							}
+							curTaskHandleForHistory.ItemLatestValue[key] = formValueList
 						}
-						curTaskHandleForHistory.ItemLatestValue[key] = formValueList
 					}
 				}
 			}
@@ -2508,7 +2510,6 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 		for _, taskHistory := range taskHistoryList {
 			data = make(map[string]interface{})
 			taskHandleList = []*models.TaskHandleForHistory{}
-			formDataList = []*models.RequestPreDataTableObj{}
 			if len(taskHistory.TaskHandleList) > 0 {
 				for _, taskHandle := range taskHistory.TaskHandleList {
 					itemGroup = ""
@@ -2524,64 +2525,28 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 												continue
 											}
 											name := strings.Replace(key, itemGroup+"-", "", 1)
-											// 当前行数据没有过滤规则key直接过滤掉
-											if _, ok := entity.EntityData[name]; !ok && len(taskHandle.ItemLatestValue) > 0 {
-												// 当前行没有过滤规则,去表单池里面找这项最新值,根据规则判断
-												if len(taskHandle.ItemLatestValue[key]) > 0 {
-													for _, formValue := range taskHandle.ItemLatestValue[key] {
-														if formValue.DataId == entity.DataId {
-															valueStr, ok := value.(string)
-															if ok {
-																// 单选判断,不相等直接过滤
-																if valueStr != formValue.Value {
-																	deleteRowIdMap[entity.Id] = true
-																	break
-																}
-															} else {
-																// 多选判断,都不满足才过滤
-																var entityArr []string
-																filterArr, ok1 := value.([]interface{})
-																err := json.Unmarshal([]byte(formValue.Value), &entityArr)
-																if !ok1 {
-																	log.Logger.Error("data value  is not array", log.JsonObj("data", data))
-																	continue
-																}
-																if err != nil {
-																	log.Logger.Error("json Unmarshal error", log.Error(err))
-																	continue
-																}
-																filterMap := convertInterfaceArray2Map(filterArr)
-																for _, val := range entityArr {
-																	if !filterMap[val] {
-																		deleteRowIdMap[entity.Id] = true
-																		break
-																	}
-																}
-															}
-														}
-													}
-												}
-											}
-											valueStr, ok := value.(string)
-											if ok {
-												// 单选判断,不相等直接过滤
-												if valueStr != entity.EntityData[name] {
-													deleteRowIdMap[entity.Id] = true
-													break
-												}
-											} else {
-												// 多选判断,都不满足才过滤
-												filterArr, ok1 := value.([]interface{})
-												entityArr, ok2 := entity.EntityData[name].([]interface{})
-												if !ok1 || !ok2 {
-													log.Logger.Error("data value  is not array", log.JsonObj("data", data))
-													continue
-												}
-												filterMap := convertInterfaceArray2Map(filterArr)
-												for _, val := range entityArr {
-													if !filterMap[val] {
+											if _, ok := entity.EntityData[name]; ok {
+												valueStr, ok := value.(string)
+												if ok {
+													// 单选判断,不相等直接过滤
+													if valueStr != entity.EntityData[name] {
 														deleteRowIdMap[entity.Id] = true
 														break
+													}
+												} else {
+													// 多选判断,都不满足才过滤
+													filterArr, ok1 := value.([]interface{})
+													entityArr, ok2 := entity.EntityData[name].([]interface{})
+													if !ok1 || !ok2 {
+														log.Logger.Error("data value  is not array", log.JsonObj("data", data))
+														continue
+													}
+													filterMap := convertInterfaceArray2Map(filterArr)
+													for _, val := range entityArr {
+														if !filterMap[val] {
+															deleteRowIdMap[entity.Id] = true
+															break
+														}
 													}
 												}
 											}
@@ -2590,6 +2555,7 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 								}
 							}
 						}
+						formDataList = []*models.RequestPreDataTableObj{}
 						for _, formData := range taskHistory.FormData {
 							var valueList []*models.EntityTreeObj
 							if len(formData.Value) > 0 {

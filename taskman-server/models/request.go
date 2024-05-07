@@ -409,6 +409,7 @@ type TaskForHistory struct {
 	AttachFiles    []*AttachFileTable        `json:"attachFiles"`
 	HandleMode     string                    `json:"handleMode"`
 	FormData       []*RequestPreDataTableObj `json:"formData"`
+	FilterFlag     bool                      `json:"filterFlag"` //是否表单过滤
 }
 
 type PluginRequestCreateParam struct {

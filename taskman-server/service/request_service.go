@@ -2067,6 +2067,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 	uncompletedTasks := make([]string, 0)
 	taskForHistoryList := make([]*models.TaskForHistory, 0, len(tasks))
 	for _, task := range tasks {
+		filterFlag := false
 		if task.ConfirmResult == models.TaskConfirmResultUncompleted {
 			uncompletedTasks = append(uncompletedTasks, task.Name)
 		}
@@ -2086,6 +2087,16 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		var handleMode string
 		if templateInfo, isExisted := taskTmplIdMapInfo[task.TaskTemplate]; isExisted {
 			handleMode = templateInfo.HandleMode
+			var taskHandleTemplateList []*models.TaskHandleTemplateTable
+			if err = dao.X.SQL("select * from task_handle_template where task_template = ?", templateInfo.Id).Find(&taskHandleTemplateList); err != nil {
+				return
+			}
+			for _, taskHandleTemplate := range taskHandleTemplateList {
+				if strings.TrimSpace(taskHandleTemplate.FilterRule) != "" {
+					filterFlag = true
+					break
+				}
+			}
 		}
 
 		editable := false
@@ -2102,6 +2113,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 			HandleMode:     handleMode,
 			Editable:       editable,
 			FormData:       formData,
+			FilterFlag:     filterFlag,
 		}
 		if _, isExisted := taskIdMapHandle[task.Id]; isExisted {
 			taskHandleForHistoryList := taskIdMapHandle[task.Id]

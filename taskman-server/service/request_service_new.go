@@ -624,13 +624,11 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 						// 只处理自动退出&手动终止终止情况,需要发邮件
 						if newStatus == string(models.RequestStatusFaulted) || newStatus == string(models.RequestStatusTermination) {
 							go NotifyTaskWorkflowFailMail(platformDataObj.Name, platformDataObj.ProcDefName, newStatus, platformDataObj.CreatedBy, req.UserToken, language)
+							// 自动退出&手动终止,需要更新请求任务状态置为完成,不然工作台本人本组处理tab能读取到任务处理记录
+							actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,updated_time=? where request=? and status <> ?", Param: []interface{}{models.TaskStatusDone, time.Now().Format(models.DateTimeFormat), platformDataObj.Id, models.TaskStatusDone}})
 						}
 						actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?",
 							Param: []interface{}{newStatus, time.Now().Format(models.DateTimeFormat), platformDataObj.Id}})
-						// 手动终止,需要更新请求任务状态置为完成,不然工作台本人本组处理tab能读取到任务处理记录
-						if newStatus == string(models.RequestStatusTermination) {
-							actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,updated_time=? where request=? and status <> ?", Param: []interface{}{models.TaskStatusDone, time.Now().Format(models.DateTimeFormat), platformDataObj.Id, models.TaskStatusDone}})
-						}
 						platformDataObj.Status = newStatus
 					}
 					processedRequestMap[platformDataObj.Id] = true

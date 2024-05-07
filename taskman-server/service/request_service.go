@@ -2604,6 +2604,7 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 				AttachFiles:    taskHistory.AttachFiles,
 				HandleMode:     taskHistory.HandleMode,
 				FormData:       taskHistory.FormData,
+				FilterFlag:     taskHistory.FilterFlag,
 			})
 		}
 	}

@@ -451,6 +451,7 @@
   "tw_validity_period": "Validity Period",
   "tw_home": "Home",
   "tw_ref_id": "Association ID",
+  "tw_ref": "Association",
   "role_invalidDate": "Role Expiration Time",
   "role_invalidDatePlaceholder": "Not set to permanent",
   "role_invalidDateValidate": "The permission expiration time cannot be earlier than the current time",
@@ -464,5 +465,7 @@
   "tw_hasDeleted": "Deleted",
   "tw_willExpire": "Will Expire",
   "tw_expire": "Expire",
-  "tw_forever": "Perpetuity"
+  "tw_forever": "Perpetuity",
+  "tw_empty_search": "Null Search",
+  "tw_normal_search": "Normal Search"
 }

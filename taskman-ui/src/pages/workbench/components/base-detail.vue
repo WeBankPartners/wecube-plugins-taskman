@@ -112,12 +112,10 @@
             </Row>
             <Row style="margin-top:10px;" :gutter="20">
               <Col :span="12" class="info-item">
-                <div class="info-item-label">{{ '关联单ID' }}：</div>
-                <div class="info-item-value">{{ detail.refId || '-' }}</div>
-              </Col>
-              <Col :span="12" class="info-item">
-                <div class="info-item-label">{{ '关联单名称' }}：</div>
-                <div class="info-item-value">{{ detail.refName || '-' }}</div>
+                <div class="info-item-label">{{ $t('tw_ref') }}：</div>
+                <div class="info-item-value">
+                  {{ detail.refName ? `【${typeMap[detail.refType]}】${detail.refName}【${detail.refId}】` : '-' }}
+                </div>
               </Col>
             </Row>
           </div>

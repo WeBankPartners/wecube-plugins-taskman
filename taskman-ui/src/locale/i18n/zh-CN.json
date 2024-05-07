@@ -449,6 +449,7 @@
   "tw_validity_period": "时效",
   "tw_home": "首页",
   "tw_ref_id": "关联单ID",
+  "tw_ref": "关联单",
   "role_invalidDate": "权限到期",
   "role_invalidDatePlaceholder": "不选为永久有效",
   "role_invalidDateValidate": "权限到期时间不能早于当前时间",
@@ -462,5 +463,7 @@
   "tw_hasDeleted": "已删除",
   "tw_willExpire": "将到期",
   "tw_expire": "到期",
-  "tw_forever": "永久有效"
+  "tw_forever": "永久有效",
+  "tw_empty_search": "空值搜索",
+  "tw_normal_search": "常规搜索"
 }

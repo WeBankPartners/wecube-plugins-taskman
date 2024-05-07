@@ -65,7 +65,10 @@
             />
           </FormItem>
           <!--关联单-->
-          <FormItem label="关联单">
+          <FormItem :label="$t('tw_ref')">
+            <Select v-model="form.refType" @on-change="handleRefTypeChange" style="width:100px;">
+              <Option v-for="item in refTypeOptions" :value="item.value" :key="item.value">{{ item.label }}</Option>
+            </Select>
             <Select
               ref="refSelect"
               v-model="form.refId"
@@ -74,11 +77,11 @@
               @on-query-change="remoteRefData"
               :loading="refLoading"
               clearable
-              style="width:60%;"
+              style="width:calc(60% - 105px);"
               @on-open-change="handleRefOpenChange"
             >
               <Option v-for="item in refOptions" :value="item.id" :key="item.id">{{
-                `【${item.id}】${item.name}【${typeMap[item.type]}】`
+                `【${item.id}】${item.name}`
               }}</Option>
             </Select>
           </FormItem>
@@ -394,7 +397,8 @@ export default {
         }, // 自定义表单
         data: [], // 数据表单
         approvalList: [], // 审批和任务列表
-        refId: '' // 关联单Id
+        refId: '', // 关联单Id
+        refType: 1 // 关联单类型
       },
       refLoading: false,
       refOptions: [],
@@ -417,13 +421,13 @@ export default {
       userRoleList: [], // 用户角色列表
       noRequestForm: false, // 请求表单为空标识
       lang: window.localStorage.getItem('lang') || 'zh-CN',
-      typeMap: {
-        1: this.$t('tw_publish'),
-        2: this.$t('tw_request'),
-        3: this.$t('tw_question'),
-        4: this.$t('tw_event'),
-        5: this.$t('fork')
-      }
+      refTypeOptions: [
+        { value: 1, label: this.$t('tw_publish') },
+        { value: 2, label: this.$t('tw_request') },
+        { value: 3, label: this.$t('tw_question') },
+        { value: 4, label: this.$t('tw_event') },
+        { value: 5, label: this.$t('fork') }
+      ]
     }
   },
   watch: {
@@ -453,8 +457,12 @@ export default {
     })
   },
   methods: {
+    handleRefTypeChange () {
+      this.form.refId = ''
+      this.$refs.refSelect.query = ''
+    },
     handleRefOpenChange (flag) {
-      if (flag && this.refOptions.length === 0) {
+      if (flag) {
         this.remoteRefData(this.form.refId)
       }
     },
@@ -466,11 +474,11 @@ export default {
         .format('YYYY-MM-DD')
       const params = {
         tab: 'commit', // 已提交数据，不包括草稿
-        action: 0, // 所有
+        action: this.form.refType, // 所有
         permission: 'all',
         reportTimeStart: pre + ' 00:00:00',
         reportTimeEnd: cur + ' 23:59:59',
-        query: query,
+        query: query || '',
         startIndex: 0,
         pageSize: 50,
         sorting: {
@@ -550,11 +558,13 @@ export default {
       const { statusCode, data } = await getPublishInfo(params)
       if (statusCode === 'OK') {
         this.detail = data.request || {}
-        const { name, description, rootEntityId, expireDay, customForm, attachFiles, refId } = data.request || {}
+        const { name, description, rootEntityId, expireDay, customForm, attachFiles, refId, refType } =
+          data.request || {}
         this.form.name = (name && name.substr(0, 70)) || ''
         this.form.description = description
         this.form.rootEntityId = rootEntityId
         this.form.refId = refId
+        this.form.refType = refType || 1
         this.attachFiles = attachFiles
         this.role = data.request.role
         // 初始化customForm

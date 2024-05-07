@@ -58,6 +58,12 @@ export default {
           multiple: true,
           component: 'select',
           list: []
+        },
+        requestRefId: {
+          key: 'requestRefId',
+          placeholder: this.$t('tw_ref_id'),
+          nullType: 'no',
+          component: 'null-input' // 支持空值搜索
         }
       },
       // 任务工作台
@@ -105,7 +111,8 @@ export default {
       this.baseSearch.createdBy,
       this.baseSearch.templateId,
       this.baseSearch.procDefName,
-      this.baseSearch.operatorObjType
+      this.baseSearch.operatorObjType,
+      this.baseSearch.requestRefId
     ]
 
     // 待处理-定版和请求确认
@@ -131,7 +138,8 @@ export default {
       this.baseSearch.createdBy,
       this.baseSearch.templateId,
       this.baseSearch.procDefName,
-      this.baseSearch.operatorObjType
+      this.baseSearch.operatorObjType,
+      this.baseSearch.requestRefId
     ]
 
     // 已处理-任务和审批
@@ -156,6 +164,7 @@ export default {
       this.baseSearch.templateId,
       this.baseSearch.procDefName,
       this.baseSearch.operatorObjType,
+      this.baseSearch.requestRefId,
       {
         key: 'taskCreatedTime',
         label: this.$t('tw_taskCreated'), // 任务创建
@@ -189,6 +198,7 @@ export default {
       this.baseSearch.templateId,
       this.baseSearch.procDefName,
       this.baseSearch.operatorObjType,
+      this.baseSearch.requestRefId,
       {
         key: 'taskCreatedTime',
         label: this.$t('tw_taskCreated'), // 任务创建
@@ -222,6 +232,7 @@ export default {
       this.baseSearch.templateId,
       this.baseSearch.procDefName,
       this.baseSearch.operatorObjType,
+      this.baseSearch.requestRefId,
       {
         key: 'expectTime',
         label: this.$t('tw_expect_time'),
@@ -248,6 +259,7 @@ export default {
       this.baseSearch.templateId,
       this.baseSearch.procDefName,
       this.baseSearch.operatorObjType,
+      this.baseSearch.requestRefId,
       {
         key: 'createdTime',
         label: this.$t('tw_created_time'),

@@ -141,6 +141,7 @@ type PlatformDataObj struct {
 	RoleAdministrator      string `json:"roleAdministrator" xorm:"-"`                            // 角色管理员
 	ExpireDay              int    `json:"expireDay" xorm:"expire_day"`                           // 过期时间
 	RequestRefId           string `json:"requestRefId" xorm:"request_ref_id"`                    // 请求关联ID
+	RequestRefType         int    `json:"requestRefType" xorm:"-"`                               // 请求关联ID
 	RequestRefName         string `json:"requestRefName" xorm:"-"`                               // 请求关联名称
 }
 

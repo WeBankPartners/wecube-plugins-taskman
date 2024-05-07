@@ -712,6 +712,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 			if platformDataObj.RequestRefId != "" {
 				requestTemp, _ := GetSimpleRequest(platformDataObj.RequestRefId)
 				platformDataObj.RequestRefName = requestTemp.Name
+				platformDataObj.RequestRefType = requestTemp.Type
 			}
 		}
 		if len(actions) > 0 {

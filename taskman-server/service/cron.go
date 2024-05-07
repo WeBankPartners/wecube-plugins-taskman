@@ -135,6 +135,10 @@ func notifyAndUpdateWorkflowResult() {
 			// 只处理自动退出&手动终止终止情况,需要发邮件
 			if newStatus == string(models.RequestStatusFaulted) || newStatus == string(models.RequestStatusTermination) {
 				actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?", Param: []interface{}{newStatus, time.Now().Format(models.DateTimeFormat), request.Id}})
+				// 手动终止,需要更新请求任务状态置为完成,不然工作台本人本组处理tab能读取到任务处理记录
+				if newStatus == string(models.RequestStatusTermination) {
+					actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,updated_time=? where request=? and status <> ?", Param: []interface{}{models.TaskStatusDone, time.Now().Format(models.DateTimeFormat), request.Id, models.TaskStatusDone}})
+				}
 				if requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate); err != nil {
 					continue
 				}

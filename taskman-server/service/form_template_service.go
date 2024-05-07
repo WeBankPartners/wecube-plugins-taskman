@@ -516,3 +516,27 @@ func (s *FormTemplateService) DeleteWorkflowFormTemplateGroupSql(requestTemplate
 	}
 	return
 }
+
+func (s *FormTemplateService) CleanFilterCondition(requestTemplate, formType string) (err error) {
+	var ids []string
+	err = dao.X.SQL("select id from task_handle_template where task_template in (select id from task_template where request_template = ?)", requestTemplate).Find(&ids)
+	if err != nil {
+		return
+	}
+	if len(ids) > 0 {
+		for _, id := range ids {
+			switch formType {
+			case "all":
+				_, err = dao.X.Exec("update task_handle_template set assign_rule =null,filter_rule =null where id =?", id)
+			case string(models.RequestFormTypeMessage):
+				_, err = dao.X.Exec("update task_handle_template set assign_rule =null  where id =?", id)
+			case string(models.RequestFormTypeData):
+				_, err = dao.X.Exec("update task_handle_template set filter_rule =null  where id =?", id)
+			}
+			if err != nil {
+				return
+			}
+		}
+	}
+	return
+}

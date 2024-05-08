@@ -216,7 +216,7 @@
                 </div>
                 <div slot="content" class="history">
                   <!--未开启表单过滤-->
-                  <template v-if="!data.filterFlag">
+                  <!-- <template v-if="!data.filterFlag">
                     <EntityTable
                       v-if="data.formData && data.formData.length"
                       :data="data.formData"
@@ -226,26 +226,26 @@
                     <div v-else class="no-data">
                       {{ $t('tw_no_formConfig') }}
                     </div>
-                  </template>
-                  <!--开启表单过滤-->
-                  <template v-else>
-                    <Tabs>
-                      <TabPane v-for="item in data.taskHandleList" :key="item.id" :label="item.handler" :name="item.id">
-                        <!--审批和任务操作选择了【无需处理】不展示表单-->
-                        <div v-if="item.handleResult !== 'unrelated'">
-                          <EntityTable
-                            v-if="item.formData && item.formData.length"
-                            :data="item.formData"
-                            :requestId="requestId"
-                            formDisable
-                          ></EntityTable>
-                          <div v-else class="no-data">
-                            {{ $t('tw_no_formConfig') }}
-                          </div>
+                  </template> -->
+                  <Tabs>
+                    <TabPane v-for="item in data.taskHandleList" :key="item.id" :label="item.handler" :name="item.id">
+                      <!--审批和任务操作选择了【无需处理】不展示表单-->
+                      <div v-if="item.handleResult !== 'unrelated'">
+                        <EntityTable
+                          v-if="item.formData && item.formData.length"
+                          :data="item.formData"
+                          :requestId="requestId"
+                          formDisable
+                        ></EntityTable>
+                        <div v-else class="no-data">
+                          {{ $t('tw_no_formConfig') }}
                         </div>
-                      </TabPane>
-                    </Tabs>
-                  </template>
+                      </div>
+                      <div v-else class="no-data">
+                        {{ '用户选择无需处理,未提交表单' }}
+                      </div>
+                    </TabPane>
+                  </Tabs>
                 </div>
               </template>
               <!--确认-->
@@ -469,13 +469,14 @@ export default {
             }
           })
         })
+        // 请求确认数据
         const statusMap = {
           complete: this.$t('tw_completed'),
           uncompleted: this.$t('tw_incomplete')
         }
         this.completeStatus = statusMap[data.request.completeStatus] || ''
         this.uncompletedTasks = data.request.uncompletedTasks || []
-        // 当前处理-任务、审批、请求确认
+        // 当前处理【任务、审批、请求确认】
         if (['Pending', 'InProgress', 'InApproval', 'Confirm'].includes(this.detail.status)) {
           // 当前处理数据
           this.handleData = this.historyData.find(item => item.id === this.taskId && item.editable === true) || {}

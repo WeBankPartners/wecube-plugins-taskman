@@ -110,7 +110,7 @@
                 required
                 :label="$t('tw_conditional_branches')"
               >
-                <Select v-model="taskForm.choseOption">
+                <Select v-model="taskForm.procDefResult">
                   <Option v-for="option in handleData.nextOptions" :value="option" :key="option">{{ option }}</Option>
                 </Select>
               </FormItem>
@@ -297,12 +297,15 @@ export default {
   },
   computed: {
     commitTaskDisabled () {
+      // 审批操作必填校验
       const approveDisabled = this.handleData.type === 'approve' && !this.taskForm.choseOption
+      // 判断分支必填校验
       const processDisabled =
         this.handleData.type === 'implement_process' &&
         this.handleData.nextOptions &&
         this.handleData.nextOptions.length > 0 &&
-        !this.taskForm.choseOption
+        !this.taskForm.procDefResult
+      // 处理意见必填校验
       const commentDisabled =
         this.handleData.type === 'approve' && this.taskForm.choseOption === 'redraw' && !this.taskForm.comment
       if (approveDisabled || processDisabled || commentDisabled) {
@@ -412,8 +415,8 @@ export default {
       // 审批和任务操作选择了不涉及，弹框提示清空表单数据
       if (this.taskForm.choseOption === 'unrelated') {
         this.$Modal.confirm({
-          title: '提示',
-          content: '操作选择【不涉及】后，默认会清空表单，是否继续？',
+          title: '确认放弃表单修改？',
+          content: '操作选择[无需处理]类型,将不会提交表单修改,确认放弃修改吗?(操作选择其他类型可以正常提交表单)',
           'z-index': 1000000,
           loading: true,
           onOk: async () => {

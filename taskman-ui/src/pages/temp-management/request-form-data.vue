@@ -160,7 +160,7 @@
             <Panel name="1">
               {{ $t('general_attributes') }}
               <div slot="content">
-                <Form :label-width="80">
+                <Form :label-width="80" :disabled="editElement.controlSwitch === 'yes'">
                   <FormItem :label="$t('display_name')">
                     <Input
                       v-model="editElement.title"
@@ -218,23 +218,23 @@
                     </Select>
                   </FormItem>
                   <!--控制审批/任务-->
-                  <FormItem v-if="['select', 'wecmdbEntity'].includes(editElement.elementType)" label="控制审批/任务">
-                    <i-switch
-                      v-model="editElement.controlSwitch"
-                      true-value="yes"
-                      false-value="no"
-                      false-color="#ff4949"
-                      :disabled="$parent.isCheck === 'Y'"
-                      @on-change="paramsChanged"
-                      size="default"
-                    />
-                  </FormItem>
+                  <Form :label-width="80">
+                    <FormItem v-if="['select', 'wecmdbEntity'].includes(editElement.elementType)" label="控制审批/任务">
+                      <i-switch
+                        v-model="editElement.controlSwitch"
+                        true-value="yes"
+                        false-value="no"
+                        :disabled="$parent.isCheck === 'Y'"
+                        @on-change="paramsChanged"
+                        size="default"
+                      />
+                    </FormItem>
+                  </Form>
                   <FormItem :label="$t('display')">
                     <i-switch
                       v-model="editElement.inDisplayName"
                       true-value="yes"
                       false-value="no"
-                      false-color="#ff4949"
                       :disabled="$parent.isCheck === 'Y'"
                       @on-change="paramsChanged"
                       size="default"
@@ -245,7 +245,6 @@
                       v-model="editElement.isEdit"
                       true-value="yes"
                       false-value="no"
-                      false-color="#ff4949"
                       :disabled="$parent.isCheck === 'Y'"
                       @on-change="paramsChanged"
                       size="default"
@@ -256,7 +255,6 @@
                       v-model="editElement.required"
                       true-value="yes"
                       false-value="no"
-                      false-color="#ff4949"
                       :disabled="$parent.isCheck === 'Y' || editElement.controlSwitch === 'yes'"
                       @on-change="paramsChanged"
                       size="default"
@@ -267,7 +265,6 @@
                       v-model="editElement.defaultClear"
                       true-value="yes"
                       false-value="no"
-                      false-color="#ff4949"
                       :disabled="$parent.isCheck === 'Y'"
                       @on-change="paramsChanged"
                       size="default"
@@ -289,7 +286,6 @@
                       v-model="editElement.multiple"
                       true-value="yes"
                       false-value="no"
-                      false-color="#ff4949"
                       :disabled="$parent.isCheck === 'Y'"
                       @on-change="paramsChanged"
                       size="default"
@@ -309,7 +305,7 @@
             <Panel name="2">
               {{ $t('extended_attributes') }}
               <div slot="content">
-                <Form :label-width="80">
+                <Form :label-width="80" :disabled="editElement.controlSwitch === 'yes'">
                   <FormItem :label="$t('validation_rules')">
                     <Input
                       v-model="editElement.regular"
@@ -324,7 +320,7 @@
             <Panel name="3">
               {{ $t('data_item') }}
               <div slot="content">
-                <Form :label-width="80">
+                <Form :label-width="80" :disabled="editElement.controlSwitch === 'yes'">
                   <FormItem :label="$t('constraints')">
                     <Select
                       v-model="editElement.isRefInside"
@@ -401,7 +397,8 @@ import {
   getEntityByTemplateId,
   getRequestDataForm,
   deleteRequestGroupForm,
-  saveRequestGroupCustomForm
+  saveRequestGroupCustomForm,
+  cleanFilterData
 } from '@/api/server.js'
 import draggable from 'vuedraggable'
 import RequestFormDataCustom from './request-form-data-custom.vue'
@@ -519,9 +516,12 @@ export default {
     }
   },
   watch: {
-    'editElement.controlSwitch' (val) {
+    'editElement.controlSwitch' (val, oldVal) {
       if (val === 'yes') {
         this.editElement.required = 'yes'
+      }
+      if (val === 'no' && oldVal === 'yes') {
+        cleanFilterData(this.requestTemplateId, 'data')
       }
     }
   },

@@ -320,7 +320,6 @@
                               v-model="editElement.inDisplayName"
                               true-value="yes"
                               false-value="no"
-                              false-color="#ff4949"
                               :disabled="$parent.isCheck === 'Y'"
                               @on-change="paramsChanged"
                               size="default"
@@ -331,7 +330,6 @@
                               v-model="editElement.isEdit"
                               true-value="yes"
                               false-value="no"
-                              false-color="#ff4949"
                               :disabled="$parent.isCheck === 'Y' || isEditDisabled"
                               @on-change="paramsChanged"
                               size="default"
@@ -342,7 +340,6 @@
                               v-model="editElement.required"
                               true-value="yes"
                               false-value="no"
-                              false-color="#ff4949"
                               :disabled="$parent.isCheck === 'Y'"
                               @on-change="paramsChanged"
                               size="default"
@@ -353,7 +350,6 @@
                               v-model="editElement.defaultClear"
                               true-value="yes"
                               false-value="no"
-                              false-color="#ff4949"
                               :disabled="$parent.isCheck === 'Y'"
                               @on-change="paramsChanged"
                               size="default"
@@ -375,7 +371,6 @@
                               v-model="editElement.multiple"
                               true-value="yes"
                               false-value="no"
-                              false-color="#ff4949"
                               :disabled="$parent.isCheck === 'Y'"
                               @on-change="paramsChanged"
                               size="default"
@@ -1136,6 +1131,7 @@ export default {
     },
     saveApprovalFromNode () {
       this.$refs.approvalFormNodeRef.saveNode(1)
+      this.saveGroup(9, this.activeEditingNode)
     },
     nodeStatus (status) {
       this.isTopButtonDisable = status

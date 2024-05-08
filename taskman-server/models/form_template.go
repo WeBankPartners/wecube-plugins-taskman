@@ -161,6 +161,7 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 		RefId:           "",
 		SelectList:      nil,
 		Active:          false,
+		ControlSwitch:   "no",
 	}
 }
 

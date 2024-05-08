@@ -2126,6 +2126,11 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 						taskHandle.UpdatedTime = ""
 						taskHandle.CreatedTime = ""
 					}
+					// 兼容历史编排任务,判断条件选项赋值,操作重新赋值
+					if taskHandle.ProcDefResult == "" && strings.TrimSpace(task.ProcDefId) != "" {
+						taskHandle.ProcDefResult = taskHandle.HandleResult
+						taskHandle.HandleResult = taskHandle.HandleStatus
+					}
 				}
 			}
 			curTaskForHistory.TaskHandleList = taskHandleForHistoryList

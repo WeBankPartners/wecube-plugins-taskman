@@ -346,8 +346,8 @@ func handleCustomTask(task models.TaskTable, operator, userToken, language strin
 	if err != nil {
 		return
 	}
-	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status=?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{param.ChoseOption, param.HandleStatus, param.Comment, now, param.TaskHandleId}})
-	if param.HandleStatus == string(models.TaskHandleResultTypeUncompleted) {
+	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status=?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{param.ChoseOption, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId}})
+	if param.ChoseOption == string(models.TaskHandleResultTypeUncompleted) {
 		// 任务处理未完成,直接更新任务为未完成
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, string(models.TaskHandleResultTypeUncompleted), operator, now, task.Id}})
 	} else {
@@ -395,8 +395,8 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 		return getRequestErr
 	}
 	var actions, newApproveActions []*dao.ExecAction
-	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status=?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{param.ChoseOption, param.HandleStatus, param.Comment, nowTime, param.TaskHandleId}})
-	if param.HandleStatus == string(models.TaskHandleResultTypeUncompleted) {
+	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status=?,result_desc = ?,updated_time =?,proc_def_result=? where id= ?", Param: []interface{}{param.ChoseOption, models.TaskHandleResultTypeComplete, param.Comment, nowTime, param.ProcDefResult, param.TaskHandleId}})
+	if param.ChoseOption == string(models.TaskHandleResultTypeUncompleted) {
 		actions = append(actions, &dao.ExecAction{Sql: "update task set callback_data=?,result=?,task_result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{
 			string(requestBytes), param.Comment, models.TaskHandleResultTypeUncompleted, param.ChoseOption, "done", operator, nowTime, task.Id,
 		}})

@@ -416,8 +416,8 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 	if buildActionErr != nil {
 		return fmt.Errorf("build update request form data action fail,%s ", buildActionErr.Error())
 	}
-	actions = append(actions, &dao.ExecAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,name=?,description=?,expect_time=?,operator_obj=?,custom_form_cache=?,task_approval_cache=?,ref_id=?" +
-		" where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.Name, param.Description, param.ExpectTime, param.EntityName, string(customFormCache), taskApprovalCache, param.RefId, requestId}})
+	actions = append(actions, &dao.ExecAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,name=?,description=?,expect_time=?,operator_obj=?,custom_form_cache=?,task_approval_cache=?,ref_id=?,ref_type=?" +
+		" where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.Name, param.Description, param.ExpectTime, param.EntityName, string(customFormCache), taskApprovalCache, param.RefId, param.RefType, requestId}})
 	return dao.Transaction(actions)
 }
 
@@ -1887,10 +1887,10 @@ func CopyRequest(requestId, createdBy string) (result models.RequestTable, err e
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	result.Id = newRequestId()
 	requestInsertAction := dao.ExecAction{Sql: "insert into request(id,name,request_template,reporter,emergency,report_role,status," +
-		"cache,expire_time,expect_time,handler,created_by,created_time,updated_by,updated_time,parent,type,role) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+		"cache,expire_time,expect_time,handler,created_by,created_time,updated_by,updated_time,parent,type,role,ref_id,ref_type) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
 	requestInsertAction.Param = []interface{}{result.Id, parentRequest.Name, parentRequest.RequestTemplate, createdBy, parentRequest.Emergency,
 		parentRequest.ReportRole, "Draft", parentRequest.Cache, "", parentRequest.ExpectTime, parentRequest.Handler, createdBy, nowTime, createdBy,
-		nowTime, parentRequest.Id, parentRequest.Type, parentRequest.Role}
+		nowTime, parentRequest.Id, parentRequest.Type, parentRequest.Role, parentRequest.RefId, parentRequest.RefType}
 	actions = append(actions, &requestInsertAction)
 	// copy attach file
 	var attachFileRows []*models.AttachFileTable
@@ -2067,6 +2067,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 	uncompletedTasks := make([]string, 0)
 	taskForHistoryList := make([]*models.TaskForHistory, 0, len(tasks))
 	for _, task := range tasks {
+		filterFlag := false
 		if task.ConfirmResult == models.TaskConfirmResultUncompleted {
 			uncompletedTasks = append(uncompletedTasks, task.Name)
 		}
@@ -2086,6 +2087,16 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		var handleMode string
 		if templateInfo, isExisted := taskTmplIdMapInfo[task.TaskTemplate]; isExisted {
 			handleMode = templateInfo.HandleMode
+			var taskHandleTemplateList []*models.TaskHandleTemplateTable
+			if err = dao.X.SQL("select * from task_handle_template where task_template = ?", templateInfo.Id).Find(&taskHandleTemplateList); err != nil {
+				return
+			}
+			for _, taskHandleTemplate := range taskHandleTemplateList {
+				if strings.TrimSpace(taskHandleTemplate.FilterRule) != "" {
+					filterFlag = true
+					break
+				}
+			}
 		}
 
 		editable := false
@@ -2102,6 +2113,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 			HandleMode:     handleMode,
 			Editable:       editable,
 			FormData:       formData,
+			FilterFlag:     filterFlag,
 		}
 		if _, isExisted := taskIdMapHandle[task.Id]; isExisted {
 			taskHandleForHistoryList := taskIdMapHandle[task.Id]
@@ -2592,6 +2604,7 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 				AttachFiles:    taskHistory.AttachFiles,
 				HandleMode:     taskHistory.HandleMode,
 				FormData:       taskHistory.FormData,
+				FilterFlag:     taskHistory.FilterFlag,
 			})
 		}
 	}

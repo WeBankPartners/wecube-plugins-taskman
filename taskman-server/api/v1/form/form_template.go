@@ -38,6 +38,21 @@ func CleanDataForm(c *gin.Context) {
 	middleware.ReturnSuccess(c)
 }
 
+func CleanFilterCondition(c *gin.Context) {
+	var err error
+	requestTemplateId := c.Param("id")
+	formType := c.Param("type")
+	if requestTemplateId == "" {
+		middleware.ReturnParamEmptyError(c, "id")
+		return
+	}
+	if err = service.GetFormTemplateService().CleanFilterCondition(requestTemplateId, formType); err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnSuccess(c)
+}
+
 func UpdateRequestFormTemplate(c *gin.Context) {
 	var param models.FormTemplateDto
 	var err error

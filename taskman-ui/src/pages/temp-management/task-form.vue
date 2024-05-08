@@ -225,10 +225,12 @@
                           }}</Option>
                         </Select>
                       </FormItem>
-                      <FormItem :label="$t('tw_handleStatus')">
+                      <!--任务操作-->
+                      <FormItem :label="$t('t_action')">
                         <Select style="width:94%">
                           <Option value="1">{{ $t('tw_completed') }}</Option>
                           <Option value="2">{{ $t('tw_incomplete') }}</Option>
+                          <Option value="3">{{ $t('tw_unrelated') }}</Option>
                         </Select>
                       </FormItem>
                       <FormItem :label="$t('process_comments')">

@@ -83,7 +83,7 @@
           </div>
           <div class="content">
             <Form :label-width="80" label-position="left">
-              <!--处理结果-审批类型-->
+              <!--操作-审批-->
               <FormItem v-if="handleData.type === 'approve'" required :label="$t('t_action')">
                 <Select v-model="taskForm.choseOption" @on-change="handleChoseOptionChange">
                   <Option v-for="(item, index) in approvalNextOptions" :value="item.value" :key="index">{{
@@ -91,27 +91,27 @@
                   }}</Option>
                 </Select>
               </FormItem>
-              <!--处理结果-编排任务-->
+              <!--操作-任务-->
+              <FormItem
+                v-if="['implement_custom', 'implement_process'].includes(handleData.type)"
+                :label="$t('t_action')"
+              >
+                <Select v-model="taskForm.choseOption">
+                  <Option v-for="(item, index) in taskStatusList" :value="item.value" :key="index">{{
+                    item.label
+                  }}</Option>
+                </Select>
+              </FormItem>
+              <!--判断分支-编排任务-->
               <FormItem
                 v-if="
                   handleData.type === 'implement_process' && handleData.nextOptions && handleData.nextOptions.length > 0
                 "
                 required
-                :label="$t('t_action')"
+                :label="$t('tw_conditional_branches')"
               >
                 <Select v-model="taskForm.choseOption">
                   <Option v-for="option in handleData.nextOptions" :value="option" :key="option">{{ option }}</Option>
-                </Select>
-              </FormItem>
-              <!--完成状态(只有任务有)-->
-              <FormItem
-                v-if="['implement_custom', 'implement_process'].includes(handleData.type)"
-                :label="$t('tw_handleStatus')"
-              >
-                <Select v-model="taskForm.handleStatus">
-                  <Option v-for="(item, index) in taskStatusList" :value="item.value" :key="index">{{
-                    item.label
-                  }}</Option>
                 </Select>
               </FormItem>
               <!--处理意见-->
@@ -223,7 +223,7 @@ export default {
       taskForm: {
         comment: '', // 处理意见
         choseOption: '', // 处理结果
-        handleStatus: '', // 处理状态
+        procDefResult: '', // 判断分支
         attachFiles: []
       },
       // 请求确认表单
@@ -234,6 +234,7 @@ export default {
         attachFiles: []
       },
       taskTagList: [], // 任务节点列表
+      // 请求确认完成状态
       completeStatusList: [
         {
           label: this.$t('tw_completed'),
@@ -244,6 +245,7 @@ export default {
           value: 'uncompleted'
         }
       ],
+      // 审批操作
       approvalNextOptions: [
         {
           label: this.$t('tw_reject'), // 拒绝
@@ -258,18 +260,23 @@ export default {
           value: 'redraw'
         },
         {
-          label: this.$t('tw_unrelated'), // 不涉及
+          label: this.$t('tw_unrelated'), // 无需处理
           value: 'unrelated'
         }
       ],
+      // 任务操作
       taskStatusList: [
         {
-          label: this.$t('tw_completed'),
+          label: this.$t('tw_completed'), // 已完成
           value: 'complete'
         },
         {
-          label: this.$t('tw_incomplete'),
+          label: this.$t('tw_incomplete'), // 未完成
           value: 'uncompleted'
+        },
+        {
+          label: this.$t('tw_unrelated'), // 无需处理
+          value: 'unrelated'
         }
       ],
       approvalTypeName: {
@@ -315,18 +322,17 @@ export default {
             if (item.id === this.taskHandleId) {
               if (['InApproval', 'InProgress'].includes(this.detail.status)) {
                 this.taskForm.comment = item.resultDesc
-                // 通过createdTime===updatedTime判断首次编辑时，给默认值
-                if (val.type === 'approve' && item.createdTime === item.updatedTime) {
-                  this.taskForm.choseOption = 'approve'
-                } else {
-                  this.taskForm.choseOption = item.handleResult
-                }
-                if (item.createdTime === item.updatedTime) {
-                  this.taskForm.handleStatus = 'complete'
-                } else {
-                  this.taskForm.handleStatus = item.handleStatus
-                }
+                this.taskForm.choseOption = item.handleResult
                 this.taskForm.attachFiles = item.attachFiles
+                this.taskForm.procDefResult = item.procDefResult
+                // 通过createdTime===updatedTime判断首次编辑时，给操作默认值
+                if (item.createdTime === item.updatedTime) {
+                  if (val.type === 'approve') {
+                    this.taskForm.choseOption = 'approve'
+                  } else if (['implement_custom', 'implement_process'].includes(val.type)) {
+                    this.taskForm.choseOption = 'complete'
+                  }
+                }
               }
             }
           })
@@ -382,37 +388,56 @@ export default {
           }
           return item
         }) || []
-      // 表单必填项校验提示
-      if (!requiredCheck(formData, this.$refs.entityTable)) {
-        const tabName = this.$refs.entityTable.activeTab
-        return this.$Message.warning(`【${tabName}】${this.$t('required_tip')}`)
-      }
-      // 表单至少勾选一条数据校验
-      // if (!noChooseCheck(formData, this.$refs.entityTable)) {
-      //   const tabName = this.$refs.entityTable.activeTab
-      //   return this.$Notice.warning({
-      //     title: this.$t('warning'),
-      //     desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
-      //   })
-      // }
       const params = {
         formData: formData,
         comment: this.taskForm.comment,
         choseOption: this.taskForm.choseOption,
-        handleStatus: this.taskForm.handleStatus,
+        procDefResult: this.taskForm.procDefResult,
         taskHandleId: this.taskHandleId
       }
-      const { statusCode } = await commitTaskData(this.handleData.id, params)
-      if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
+      const submitRequest = async () => {
+        const { statusCode } = await commitTaskData(this.handleData.id, params)
+        if (statusCode === 'OK') {
+          this.$Notice.success({
+            title: this.$t('successful'),
+            desc: this.$t('successful')
+          })
+          this.$router.push({
+            path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=${
+              this.detail.status === 'InProgress' ? 2 : 3
+            }`
+          })
+        }
+      }
+      // 审批和任务操作选择了不涉及，弹框提示清空表单数据
+      if (this.taskForm.choseOption === 'unrelated') {
+        this.$Modal.confirm({
+          title: '提示',
+          content: '操作选择【不涉及】后，默认会清空表单，是否继续？',
+          'z-index': 1000000,
+          loading: true,
+          onOk: async () => {
+            params.formData = []
+            this.$Modal.remove()
+            submitRequest()
+          },
+          onCancel: () => {}
         })
-        this.$router.push({
-          path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=${
-            this.detail.status === 'InProgress' ? 2 : 3
-          }`
-        })
+      } else {
+        // 表单必填项校验提示
+        if (!requiredCheck(formData, this.$refs.entityTable)) {
+          const tabName = this.$refs.entityTable.activeTab
+          return this.$Message.warning(`【${tabName}】${this.$t('required_tip')}`)
+        }
+        // 表单至少勾选一条数据校验
+        // if (!noChooseCheck(formData, this.$refs.entityTable)) {
+        //   const tabName = this.$refs.entityTable.activeTab
+        //   return this.$Notice.warning({
+        //     title: this.$t('warning'),
+        //     desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
+        //   })
+        // }
+        submitRequest()
       }
     },
     // 获取关注的任务列表

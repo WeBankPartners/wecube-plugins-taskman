@@ -215,15 +215,37 @@
                   <HeaderTag class="custom-panel-header" :data="data"></HeaderTag>
                 </div>
                 <div slot="content" class="history">
-                  <EntityTable
-                    v-if="data.formData && data.formData.length"
-                    :data="data.formData"
-                    :requestId="requestId"
-                    formDisable
-                  ></EntityTable>
-                  <div v-else class="no-data">
-                    {{ $t('tw_no_formConfig') }}
-                  </div>
+                  <!--未开启表单过滤-->
+                  <template v-if="!data.filterFlag">
+                    <EntityTable
+                      v-if="data.formData && data.formData.length"
+                      :data="data.formData"
+                      :requestId="requestId"
+                      formDisable
+                    ></EntityTable>
+                    <div v-else class="no-data">
+                      {{ $t('tw_no_formConfig') }}
+                    </div>
+                  </template>
+                  <!--开启表单过滤-->
+                  <template v-else>
+                    <Tabs>
+                      <TabPane v-for="item in data.taskHandleList" :key="item.id" :label="item.handler" :name="item.id">
+                        <!--审批和任务操作选择了【无需处理】不展示表单-->
+                        <div v-if="item.handleResult !== 'unrelated'">
+                          <EntityTable
+                            v-if="item.formData && item.formData.length"
+                            :data="item.formData"
+                            :requestId="requestId"
+                            formDisable
+                          ></EntityTable>
+                          <div v-else class="no-data">
+                            {{ $t('tw_no_formConfig') }}
+                          </div>
+                        </div>
+                      </TabPane>
+                    </Tabs>
+                  </template>
                 </div>
               </template>
               <!--确认-->
@@ -436,12 +458,12 @@ export default {
       const { statusCode, data } = await getRequestHistory(this.requestId)
       if (statusCode === 'OK') {
         this.historyData = data.task || []
-        // 审批和任务表单需要替换成taskHandleList里面的
         this.historyData.forEach(val => {
           const list = val.taskHandleList || []
           list.forEach(item => {
             if (item.id === this.taskHandleId) {
-              if (['approve', 'implement_process', 'implement_custom'].includes(val.type)) {
+              // 当前处理，审批和任务表单如果开启了过滤功能，formData需要替换成taskHandleList里面的
+              if (['approve', 'implement_process', 'implement_custom'].includes(val.type) && val.filterFlag) {
                 val.formData = item.formData
               }
             }

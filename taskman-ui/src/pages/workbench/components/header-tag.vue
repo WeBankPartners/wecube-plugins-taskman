@@ -4,7 +4,7 @@
       <Col :span="3" class="line">{{ $t('handler_role') }}</Col>
       <Col :span="2" class="line">{{ $t('handler') }}</Col>
       <Col :span="2" class="line">{{ $t('t_action') }}</Col>
-      <Col :span="2" class="line">{{ $t('tw_handleStatus') }}</Col>
+      <Col :span="2" class="line">{{ $t('tw_conditional_branches') }}</Col>
       <Col :span="3" class="line">{{ $t('handle_time') }}</Col>
       <Col :span="3" class="line">{{ $t('tw_assume') }}</Col>
       <Col :span="5" class="line">{{ $t('tw_note') }}</Col>
@@ -12,17 +12,25 @@
     </Row>
     <template v-if="data.taskHandleList && data.taskHandleList.length > 0">
       <Row v-for="i in data.taskHandleList" :key="i.id" class="content" :gutter="10">
+        <!--处理角色-->
         <Col :span="3" class="line">{{ i.role || '-' }}</Col>
+        <!--处理人-->
         <Col :span="2" class="line">{{ i.handler || '-' }}</Col>
+        <!--操作-->
         <Col :span="2" class="line">{{ getOperationName(i) }}</Col>
-        <Col :span="2" class="line">{{ getHandleStatus(i) }}</Col>
+        <!--判断分支-->
+        <Col :span="2" class="line">{{ i.procDefResult || '-' }}</Col>
+        <!--处理时间-->
         <Col :span="3" class="line">{{ i.updatedTime || '-' }}</Col>
+        <!--耗时-->
         <Col :span="3" class="line">{{ getDiffTime(i) || '-' }}</Col>
+        <!--备注-->
         <Col :span="5" class="line">
           <Tooltip max-width="300" :content="i.resultDesc">
             <span class="text-overflow">{{ i.resultDesc || '-' }}</span>
           </Tooltip>
         </Col>
+        <!--附件-->
         <Col :span="4" class="line">
           <div v-for="file in i.attachFiles" style="display:inline-block;" :key="file.id">
             <Tag type="border" :closable="false" checkable @on-change="downloadFile(file)" color="primary">
@@ -33,17 +41,25 @@
       </Row>
     </template>
     <Row v-else class="content" :gutter="10">
+      <!--处理角色-->
       <Col :span="3" class="line">{{ data.role || '-' }}</Col>
+      <!--处理人-->
       <Col :span="2" class="line">{{ data.handler || '-' }}</Col>
+      <!--操作-->
       <Col :span="2" class="line">{{ data.choseOption || operation || '-' }}</Col>
+      <!--判断分支-->
       <Col :span="2" class="line">{{ '-' }}</Col>
+      <!--处理时间-->
       <Col :span="3" class="line">{{ data.updatedTime || '-' }}</Col>
+      <!--耗时-->
       <Col :span="3" class="line">{{ getDiffTime(data) || '-' }}</Col>
+      <!--备注-->
       <Col :span="5" class="line">
         <Tooltip max-width="300" :content="data.comment">
           <span style="text-overflow">{{ data.comment }}</span>
         </Tooltip>
       </Col>
+      <!--附件-->
       <Col :span="4" class="line">
         <div v-for="file in data.attachFiles" style="display:inline-block;" :key="file.id">
           <Tag type="border" :closable="false" checkable @on-change="downloadFile(file)" color="primary">
@@ -69,6 +85,7 @@ export default {
       type: Boolean,
       default: false
     },
+    // 操作
     operation: {
       type: String,
       default: ''
@@ -82,35 +99,22 @@ export default {
   computed: {
     getOperationName () {
       return function (i) {
-        // 1.编排任务接口下发，2审批和定版退回，前端枚举
+        // 审批【拒绝、同意、退回、无需处理】
+        // 任务【已完成、未完成、无需处理】
+        // 定版【退回】
         const resultMap = {
           deny: this.$t('tw_reject'), // 拒绝
           approve: this.$t('tw_approve'), // 同意
           redraw: this.$t('tw_send_back'), // 退回
-          unrelated: this.$t('tw_unrelated') // 不涉及
+          complete: this.$t('tw_completed'), // 已完成
+          uncompleted: this.$t('tw_incomplete'), // 未完成
+          unrelated: this.$t('tw_unrelated') // 无需处理
         }
         let resultName = ''
-        if (['approve', 'check'].includes(this.data.type)) {
+        if (['approve', 'check', 'implement_custom', 'implement_process'].includes(this.data.type)) {
           resultName = resultMap[i.handleResult]
         }
-        if (this.data.type === 'implement_process') {
-          resultName = i.handleResult
-        }
         return resultName || this.operation || '-'
-      }
-    },
-    getHandleStatus () {
-      return function (i) {
-        // 任务处理状态
-        const statusMap = {
-          complete: this.$t('tw_completed'),
-          uncompleted: this.$t('tw_incomplete')
-        }
-        let statusName = ''
-        if (['implement_custom', 'implement_process'].includes(this.data.type)) {
-          statusName = statusMap[i.handleStatus]
-        }
-        return statusName || '-'
       }
     },
     getDiffTime () {

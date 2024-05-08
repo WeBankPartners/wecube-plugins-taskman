@@ -545,3 +545,8 @@ alter table task_notify add index task_notify_updated_time(updated_time);
 alter table request_template_role DROP FOREIGN KEY fore_request_template_role;
 alter table request_template_group DROP FOREIGN KEY fore_template_group_role;
 #@v1.0.5-end@;
+#@v1.0.6-begin@;
+alter table request add column ref_id varchar(64) DEFAULT NULL COMMENT '引用ID';
+alter table request add index request_ref_id(ref_id);
+alter table form_item_template add column filter_rule text DEFAULT NULL COMMENT '下拉框过滤规则';
+#@v1.0.6-end@;

@@ -103,22 +103,8 @@ export default {
     // 表格列
     this.tableColumns = deepClone(this.submitAllColumn)
     this.tableColumns = this.tableColumns.filter(item => item.key !== 'rollbackDesc' && item.key !== 'action')
-    this.tableColumns.splice(1, 0, {
-      title: this.$t('tw_ref_id'),
-      width: 140,
-      key: 'requestRefId',
-      render: (h, params) => {
-        return <span>{params.row.requestRefId || '-'}</span>
-      }
-    })
     // 搜索条件
     this.searchOptions = this.submitSearch
-    this.searchOptions.push({
-      key: 'requestRefId',
-      placeholder: this.$t('tw_ref_id'),
-      nullType: 'no',
-      component: 'null-input' // 支持空值搜索
-    })
     this.searchOptions.forEach(item => {
       // 请求状态设置默认值
       if (item.key === 'status') {

@@ -263,6 +263,19 @@ export default {
             return <span>{`${params.row.roleDisplay} / ${params.row.createdBy}`}</span>
           }
         },
+        requestRefId: {
+          title: this.$t('tw_ref'),
+          width: 230,
+          key: 'requestRefId',
+          render: (h, params) => {
+            const { requestRefName, requestRefId, requestRefType } = params.row
+            return (
+              <span>
+                {requestRefName ? `【${this.typeMap[requestRefType]}】${requestRefName}【${requestRefId}】` : '-'}
+              </span>
+            )
+          }
+        },
         action: {
           title: this.$t('t_action'),
           key: 'action',
@@ -426,6 +439,13 @@ export default {
       submitColumn: [],
       draftColumn: [],
       username: window.localStorage.getItem('username'),
+      typeMap: {
+        1: this.$t('tw_publish'),
+        2: this.$t('tw_request'),
+        3: this.$t('tw_question'),
+        4: this.$t('tw_event'),
+        5: this.$t('fork')
+      },
       createRouteMap: {
         '1': 'createPublish',
         '2': 'createRequest',
@@ -491,6 +511,7 @@ export default {
       this.baseColumn.procDefName,
       this.baseColumn.operatorObjType,
       this.baseColumn.operatorObj,
+      this.baseColumn.requestRefId,
       this.baseColumn.action
     ]
 
@@ -564,6 +585,7 @@ export default {
       this.baseColumn.procDefName,
       this.baseColumn.operatorObjType,
       this.baseColumn.operatorObj,
+      this.baseColumn.requestRefId,
       this.baseColumn.action
     ]
 
@@ -601,6 +623,7 @@ export default {
       this.baseColumn.procDefName,
       this.baseColumn.operatorObjType,
       this.baseColumn.operatorObj,
+      this.baseColumn.requestRefId,
       this.baseColumn.createdBy,
       {
         title: this.$t('tw_request_commit_time'),
@@ -630,6 +653,7 @@ export default {
       this.baseColumn.procDefName,
       this.baseColumn.operatorObjType,
       this.baseColumn.operatorObj,
+      this.baseColumn.requestRefId,
       this.baseColumn.createdBy,
       {
         title: this.$t('tw_request_commit_time'),
@@ -650,6 +674,7 @@ export default {
       this.baseColumn.procDefName,
       this.baseColumn.operatorObjType,
       this.baseColumn.operatorObj,
+      this.baseColumn.requestRefId,
       this.baseColumn.handler,
       this.baseColumn.createdBy,
       {

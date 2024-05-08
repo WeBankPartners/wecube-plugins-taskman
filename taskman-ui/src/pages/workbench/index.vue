@@ -313,12 +313,16 @@ export default {
         } else {
           resetObj[key] = ''
         }
-        // 处理时间类型默认值
         this.searchOptions.forEach(i => {
+          // 处理时间类型默认值
           if (i.component === 'custom-time' && i.initValue) {
             i.dateType = 1
           } else {
             i.dateType = 4
+          }
+          // 处理空值搜索类型
+          if (i.component === 'null-input') {
+            i.nullType = 'no'
           }
         })
         // 点击清空按钮需要给默认值的表单选项

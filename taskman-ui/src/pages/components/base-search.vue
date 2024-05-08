@@ -22,8 +22,8 @@
                   style="width:90px;margin-right:-4px;"
                   @on-change="handleNullTypeChange($event, i)"
                 >
-                  <Option value="yes">空值搜索</Option>
-                  <Option value="no">正常搜索</Option>
+                  <Option value="yes">{{ $t('tw_empty_search') }}</Option>
+                  <Option value="no">{{ $t('tw_normal_search') }}</Option>
                 </Select>
                 <Input
                   v-if="i.nullType === 'no'"

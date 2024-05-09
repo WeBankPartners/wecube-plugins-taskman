@@ -196,8 +196,14 @@
                     v-if="editElement.elementType === 'select' && editElement.entity === ''"
                     :label="$t('data_set')"
                   >
-                    <Input v-model="editElement.dataOptions" disabled style="width:calc(100% - 38px)"></Input>
-                    <Button @click.stop="dataOptionsMgmt" type="primary" icon="md-add"></Button>
+                    <!-- <Input v-model="editElement.dataOptions" disabled style="width:calc(100% - 38px)"></Input> -->
+                    <Input :value="getDataOptionsDisplay" disabled style="width:calc(100% - 38px)"></Input>
+                    <Button
+                      :disabled="$parent.isCheck === 'Y'"
+                      @click.stop="dataOptionsMgmt"
+                      type="primary"
+                      icon="md-add"
+                    ></Button>
                   </FormItem>
                   <!--数据源-->
                   <FormItem
@@ -513,6 +519,11 @@ export default {
         }
         return { background: color }
       }
+    },
+    getDataOptionsDisplay () {
+      const options = JSON.parse(this.editElement.dataOptions || '[]')
+      const labelArr = options.map(item => item.label)
+      return labelArr.join(',')
     }
   },
   watch: {

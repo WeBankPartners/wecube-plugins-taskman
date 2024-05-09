@@ -138,7 +138,8 @@
                     v-if="editElement.elementType === 'select' && editElement.entity === ''"
                     :label="$t('data_set')"
                   >
-                    <Input v-model="editElement.dataOptions" disabled style="width:calc(100% - 38px)"></Input>
+                    <!-- <Input v-model="editElement.dataOptions" disabled style="width:calc(100% - 38px)"></Input> -->
+                    <Input :value="getDataOptionsDisplay" disabled style="width:calc(100% - 38px)"></Input>
                     <Button @click.stop="dataOptionsMgmt" type="primary" icon="md-add"></Button>
                   </FormItem>
                   <!--数据源-->
@@ -160,7 +161,7 @@
                     </Select>
                   </FormItem>
                   <!--控制审批/任务-->
-                  <Form label-width="80">
+                  <Form :label-width="80">
                     <FormItem v-if="['select', 'wecmdbEntity'].includes(editElement.elementType)" label="控制审批/任务">
                       <i-switch
                         v-model="editElement.controlSwitch"
@@ -360,6 +361,13 @@ export default {
     }
   },
   props: ['isCheck'],
+  computed: {
+    getDataOptionsDisplay () {
+      const options = JSON.parse(this.editElement.dataOptions || '[]')
+      const labelArr = options.map(item => item.label)
+      return labelArr.join(',')
+    }
+  },
   watch: {
     'editElement.controlSwitch' (val, oldVal) {
       if (val === 'yes') {

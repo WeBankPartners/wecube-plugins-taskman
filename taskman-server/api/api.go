@@ -78,6 +78,11 @@ func init() {
 		&handlerFuncObj{Url: "/form-template/item-group", Method: "POST", HandlerFunc: form.UpdateFormTemplateItemGroup},
 		&handlerFuncObj{Url: "/form-template/item-group/sort", Method: "POST", HandlerFunc: form.SortFormTemplateItemGroup},
 
+		&handlerFuncObj{Url: "/form-template-library", Method: "POST", HandlerFunc: form.AddFormTemplateLibrary},
+		&handlerFuncObj{Url: "/form-template-library", Method: "DELETE", HandlerFunc: form.DeleteFormTemplateLibrary},
+		&handlerFuncObj{Url: "/form-template-library/query", Method: "POST", HandlerFunc: form.QueryFormTemplateLibrary},
+		&handlerFuncObj{Url: "/form-template-library/form-type", Method: "GET", HandlerFunc: form.QueryAllFormTemplateLibraryFormType},
+
 		&handlerFuncObj{Url: "/task-template/:requestTemplate", Method: "POST", HandlerFunc: task.CreateTaskTemplate},
 		&handlerFuncObj{Url: "/task-template/:requestTemplate/:id", Method: "PUT", HandlerFunc: task.UpdateTaskTemplate},
 		&handlerFuncObj{Url: "/task-template/:requestTemplate/:id", Method: "DELETE", HandlerFunc: task.DeleteTaskTemplate},

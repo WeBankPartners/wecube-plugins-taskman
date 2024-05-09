@@ -6,6 +6,8 @@
         <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
           <Divider plain>{{ $t('custom_form') }}</Divider>
           <CustomDraggable :sortable="$parent.isCheck !== 'Y'" :clone="cloneDog"></CustomDraggable>
+          <Divider plain>{{ '表单项组件库' }}</Divider>
+          <ComponentLibraryList></ComponentLibraryList>
         </div>
       </Col>
       <!--表单预览-->
@@ -23,6 +25,7 @@
             <div :key="itemIndex" style="border: 2px dashed #A2EF4D; margin: 8px 0; padding: 8px;min-height: 48px;">
               <draggable
                 class="dragArea"
+                style="min-height: 40px;"
                 :list="item.attrs"
                 :sort="$parent.isCheck !== 'Y'"
                 group="people"
@@ -35,6 +38,7 @@
                   v-for="(element, eleIndex) in item.attrs"
                   :key="element.id"
                 >
+                  <Checkbox v-model="element.checked"></Checkbox>
                   <div
                     class="custom-title"
                     :style="
@@ -93,6 +97,12 @@
                 </div>
               </draggable>
             </div>
+            <Button
+              :key="itemIndex + '-'"
+              :disabled="getAddComponentDisabled(item.attrs)"
+              @click="componentVisible = true"
+              >新建组件</Button
+            >
           </template>
         </div>
       </Col>
@@ -282,6 +292,7 @@
       </Col>
     </Row>
     <DataSourceConfig ref="dataSourceConfigRef" @setDataOptions="setDataOptions"></DataSourceConfig>
+    <ComponentLibraryModal :visible.sync="componentVisible"></ComponentLibraryModal>
     <div class="footer">
       <div class="content">
         <Button @click="gotoForward" ghost type="primary" class="btn-footer-margin">{{ $t('forward') }}</Button>
@@ -304,12 +315,16 @@ import { saveRequsetForm, getRequestFormTemplateData, getAllDataModels, cleanFil
 import draggable from 'vuedraggable'
 import CustomDraggable from './components/custom-draggable.vue'
 import DataSourceConfig from './data-source-config.vue'
+import ComponentLibraryModal from './components/component-library-modal.vue'
+import ComponentLibraryList from './components/component-library-list.vue'
 export default {
   name: 'form-select',
   components: {
     draggable,
     CustomDraggable,
-    DataSourceConfig
+    DataSourceConfig,
+    ComponentLibraryModal,
+    ComponentLibraryList
   },
   data () {
     return {
@@ -357,15 +372,24 @@ export default {
         controlSwitch: 'no' // 控制审批/任务(下拉类型才有)
       },
       allEntityList: [],
-      formId: '' // 缓存表单id，供编辑使用
+      formId: '', // 缓存表单id，供编辑使用
+      componentVisible: false
     }
   },
   props: ['isCheck'],
   computed: {
+    // 数据集回显
     getDataOptionsDisplay () {
       const options = JSON.parse(this.editElement.dataOptions || '[]')
       const labelArr = options.map(item => item.label)
       return labelArr.join(',')
+    },
+    // 新增组件库按钮禁用
+    getAddComponentDisabled () {
+      return function (val) {
+        const checkedList = val.filter(item => item.checked) || []
+        return checkedList.length === 0
+      }
     }
   },
   watch: {
@@ -615,7 +639,7 @@ export default {
   word-wrap: break-word;
 }
 .custom-item {
-  width: calc(100% - 130px);
+  width: calc(100% - 145px);
   display: inline-block;
 }
 .btn-footer-margin {

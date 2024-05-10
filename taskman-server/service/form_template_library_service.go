@@ -35,7 +35,7 @@ func (s *FormTemplateLibraryService) QueryAllFormType() (formTypes []string, err
 	}
 	if len(list) > 0 {
 		for _, formTemplateLibrary := range list {
-			formTypeMap[formTemplateLibrary.Name] = true
+			formTypeMap[formTemplateLibrary.FormType] = true
 		}
 		for key, _ := range formTypeMap {
 			formTypes = append(formTypes, key)

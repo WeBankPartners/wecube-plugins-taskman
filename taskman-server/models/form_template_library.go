@@ -7,7 +7,6 @@ type FormTemplateLibraryTable struct {
 	CreatedTime string `json:"createdTime" xorm:"created_time"`
 	UpdatedTime string `json:"updatedTime" xorm:"updated_time"`
 	CreatedBy   string `json:"createdBy" xorm:"created_by"` // 创建人
-	UpdatedBy   string `json:"updatedBy" xorm:"updated_by"` // 更新人
 	DelFlag     int    `json:"delFlag" xorm:"del_flag"`
 }
 

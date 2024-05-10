@@ -55,7 +55,6 @@ func (s *FormTemplateLibraryService) AddFormTemplateLibrary(param models.FormTem
 			CreatedTime: now,
 			UpdatedTime: now,
 			CreatedBy:   user,
-			UpdatedBy:   user,
 		}
 		// 添加表单组件库
 		if _, err = s.formTemplateLibraryDao.Add(session, formTemplateLibrary); err != nil {
@@ -64,6 +63,7 @@ func (s *FormTemplateLibraryService) AddFormTemplateLibrary(param models.FormTem
 		// 添加表单项组件库
 		if len(param.Items) > 0 {
 			for _, item := range param.Items {
+				item.Id = guid.CreateGuid()
 				item.FormTemplateLibrary = formTemplateLibraryId
 				if _, err = s.formItemTemplateLibraryDao.Add(session, item); err != nil {
 					return err
@@ -119,7 +119,7 @@ func (s *FormTemplateLibraryService) QueryFormTemplateLibrary(param models.Query
 			}
 			if len(formItemTemplateLibraryList) > 0 {
 				for _, item := range formItemTemplateLibraryList {
-					items = append(items, item.Name)
+					items = append(items, item.Title)
 				}
 			}
 			list = append(list, &models.FormTemplateLibraryDto{
@@ -128,7 +128,7 @@ func (s *FormTemplateLibraryService) QueryFormTemplateLibrary(param models.Query
 				FormType:    formTemplateLibrary.FormType,
 				CreatedTime: formTemplateLibrary.CreatedTime,
 				CreatedBy:   formTemplateLibrary.CreatedBy,
-				FormItems:   strings.Join(items, ","),
+				FormItems:   strings.Join(items, "、"),
 			})
 		}
 	}

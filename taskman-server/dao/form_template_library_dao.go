@@ -84,7 +84,7 @@ func (d *FormTemplateLibraryDao) QueryListByCondition(condition models.QueryForm
 		params = append(params, condition.CreatedBy)
 	}
 	if condition.Name != "" {
-		sql = sql + " and like '%" + condition.Name + "%'"
+		sql = sql + " and name like '%" + condition.Name + "%'"
 	}
 	pageInfo.StartIndex = condition.StartIndex
 	pageInfo.PageSize = condition.PageSize

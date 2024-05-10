@@ -248,3 +248,6 @@ export const deleteApplyData = params => req.delete(`/taskman/api/v2/auth/roles/
 // 获取编排下的判断分支
 export const getWorkflowForkNode = taskTemplateId =>
   req.get(`/taskman/api/v1/task-template/workflow/options?taskTemplateId=${taskTemplateId}`)
+// 表单过滤数据清除(all清除所有，message清除信息表单，data清除数据表单)
+export const cleanFilterData = (taskTemplateId, type) =>
+  req.post(`/taskman/api/v1/request-template/${taskTemplateId}/filter-clean/${type}`)

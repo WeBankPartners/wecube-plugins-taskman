@@ -285,7 +285,7 @@ export default {
         },
         {
           title: this.$t('t_action'),
-          key: 'index',
+          key: 'action',
           align: 'center',
           fixed: 'right',
           width: 70,
@@ -367,11 +367,12 @@ export default {
       this.filterFormList = []
       this.tableColumns = deepClone(this.initColumns)
       Promise.all([this.getRequestFormData(), this.getInfoFormData()]).then(([formData, infoData]) => {
-        // 将信息表单和数据表单合并到过滤列表
+        // 信息表单
         this.filterFormList.push({
           type: 1,
           items: infoData
         })
+        // 数据表单
         formData &&
           formData.forEach(item => {
             const obj = Object.assign({}, item, { type: 2 })
@@ -443,8 +444,12 @@ export default {
           })
         })
         const index = this.tableColumns.findIndex(column => column.key === 'action')
-        this.tableColumns.splice(index, 0, infoFormColumn)
-        this.tableColumns.splice(index, 0, dataFormColumn)
+        if (infoFormColumn.children.length > 0) {
+          this.tableColumns.splice(index, 0, infoFormColumn)
+        }
+        if (dataFormColumn.children.length > 0) {
+          this.tableColumns.splice(index, 0, dataFormColumn)
+        }
       })
     },
     async getRefOptions (item) {

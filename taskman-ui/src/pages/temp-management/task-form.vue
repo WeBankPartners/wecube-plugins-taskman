@@ -300,7 +300,8 @@
                             v-if="editElement.elementType === 'select' && editElement.entity === ''"
                             :label="$t('data_set')"
                           >
-                            <Input v-model="editElement.dataOptions" disabled style="width:calc(100% - 38px)"></Input>
+                            <!-- <Input v-model="editElement.dataOptions" disabled style="width:calc(100% - 38px)"></Input> -->
+                            <Input :value="getDataOptionsDisplay" disabled style="width:calc(100% - 38px)"></Input>
                             <Button
                               @click.stop="dataOptionsMgmt"
                               :disabled="Boolean(editElement.copyId)"
@@ -331,7 +332,6 @@
                               v-model="editElement.inDisplayName"
                               true-value="yes"
                               false-value="no"
-                              false-color="#ff4949"
                               :disabled="$parent.isCheck === 'Y'"
                               @on-change="paramsChanged"
                               size="default"
@@ -342,7 +342,6 @@
                               v-model="editElement.isEdit"
                               true-value="yes"
                               false-value="no"
-                              false-color="#ff4949"
                               :disabled="$parent.isCheck === 'Y' || isEditDisabled"
                               @on-change="paramsChanged"
                               size="default"
@@ -353,7 +352,6 @@
                               v-model="editElement.required"
                               true-value="yes"
                               false-value="no"
-                              false-color="#ff4949"
                               :disabled="$parent.isCheck === 'Y'"
                               @on-change="paramsChanged"
                               size="default"
@@ -364,7 +362,6 @@
                               v-model="editElement.defaultClear"
                               true-value="yes"
                               false-value="no"
-                              false-color="#ff4949"
                               :disabled="$parent.isCheck === 'Y'"
                               @on-change="paramsChanged"
                               size="default"
@@ -386,7 +383,6 @@
                               v-model="editElement.multiple"
                               true-value="yes"
                               false-value="no"
-                              false-color="#ff4949"
                               :disabled="$parent.isCheck === 'Y'"
                               @on-change="paramsChanged"
                               size="default"
@@ -646,6 +642,11 @@ export default {
         }
         return { background: color }
       }
+    },
+    getDataOptionsDisplay () {
+      const options = JSON.parse(this.editElement.dataOptions || '[]')
+      const labelArr = options.map(item => item.label)
+      return labelArr.join(',')
     }
   },
   props: ['isCheck', 'requestTemplateId'],
@@ -1217,6 +1218,7 @@ export default {
     },
     saveApprovalFromNode () {
       this.$refs.approvalFormNodeRef.saveNode(1)
+      this.saveGroup(9, this.activeEditingNode)
     },
     nodeStatus (status) {
       this.isTopButtonDisable = status

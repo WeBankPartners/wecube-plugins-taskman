@@ -547,6 +547,66 @@ alter table request_template_group DROP FOREIGN KEY fore_template_group_role;
 #@v1.0.5-end@;
 #@v1.0.6-begin@;
 alter table request add column ref_id varchar(64) DEFAULT NULL COMMENT '引用ID';
+alter table request add column ref_type tinyint(2) DEFAULT NULL COMMENT '引用ID类型';
 alter table request add index request_ref_id(ref_id);
-alter table form_item_template add column filter_rule text DEFAULT NULL COMMENT '下拉框过滤规则';
+alter table form_item_template add column control_switch varchar(16) DEFAULT NULL COMMENT '控制审批/任务开关';
+alter table form_item_template add column form_item_library varchar(64) DEFAULT NULL COMMENT '表单项组件库id';
+alter table form_item_template add column hidden_condition text DEFAULT NULL COMMENT '隐藏条件';
+alter table task_handle add column proc_def_result varchar(255) DEFAULT NULL COMMENT '编排选项结果';
+
+
+DROP TABLE IF EXISTS `form_template_library`;
+CREATE TABLE IF NOT EXISTS `form_template_library` (
+  `id` varchar(64) NOT NULL,
+  `name` varchar(64) NOT NULL,
+  `form_type` varchar(255)  DEFAULT NULL,
+  `created_by` varchar(255)  DEFAULT NULL  COMMENT '创建人',
+  `created_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `updated_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `del_flag` tinyint(2) NOT NULL DEFAULT '0',
+   PRIMARY KEY (`id`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='表单组件库';
+
+
+DROP TABLE IF EXISTS `form_item_template_library`;
+CREATE TABLE IF NOT EXISTS `form_item_template_library` (
+  `id` varchar(64) NOT NULL,
+  `name` varchar(64) NOT NULL,
+  `description` varchar(255)  DEFAULT NULL,
+  `item_group` varchar(255)  DEFAULT NULL,
+  `item_group_name` varchar(255)  DEFAULT NULL,
+  `default_value` varchar(255) DEFAULT NULL,
+  `sort` int NOT NULL DEFAULT '0',
+  `package_name` varchar(255) DEFAULT NULL,
+  `entity` varchar(255) DEFAULT NULL,
+  `attr_def_id` varchar(255) DEFAULT NULL,
+  `attr_def_name` varchar(255) DEFAULT NULL,
+  `attr_def_data_type` varchar(255) DEFAULT NULL,
+  `element_type` varchar(64) NOT NULL DEFAULT 'text',
+  `title` varchar(64) DEFAULT NULL,
+  `width` int(11) DEFAULT 80,
+  `ref_package_name` varchar(255) DEFAULT NULL,
+  `ref_entity` varchar(255) DEFAULT NULL,
+  `data_options` text,
+  `required` varchar(16) NOT NULL DEFAULT 'no',
+  `regular` varchar(255) DEFAULT NULL,
+  `is_edit` varchar(16) NOT NULL DEFAULT 'yes',
+  `is_view` varchar(16) NOT NULL DEFAULT 'yes',
+  `is_output` varchar(16) NOT NULL DEFAULT 'no',
+  `in_display_name` varchar(16) NOT NULL DEFAULT 'no',
+  `is_ref_inside` varchar(16) NOT NULL DEFAULT 'no',
+  `multiple` varchar(16) NOT NULL DEFAULT 'N',
+  `default_clear`   varchar(16) default 'no' not null COMMENT '是否清空',
+  `ref_id` varchar(64) default null COMMENT '引用ID',
+  `routine_expression` text default null COMMENT '表单项计算表达式',
+  `control_switch` varchar(16) DEFAULT NULL COMMENT '控制审批/任务开关',
+  `hidden_condition`  text DEFAULT NULL COMMENT '隐藏条件',
+  `form_template_library` varchar(64) DEFAULT NULL COMMENT '表单组件库id',
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fore_form_item_template_library` FOREIGN KEY (`form_template_library`) REFERENCES `form_template_library` (`id`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='表单项模版组件库';
+
+
+ALTER TABLE form_item_template ADD CONSTRAINT  `fore_form_item_library` FOREIGN KEY (form_item_library) REFERENCES form_item_template_library(id);
+
 #@v1.0.6-end@;

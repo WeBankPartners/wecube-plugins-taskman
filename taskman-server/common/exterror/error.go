@@ -103,6 +103,10 @@ type ErrorTemplate struct {
 	RequestHandleError CustomError `json:"request_handle_error"`
 	// 模版组已经被使用,不允许删除
 	TemplateGroupHasUseDeleteError CustomError `json:"template_group_has_use_delete_error"`
+	// 表单模版组件库删除失败
+	FormTemplateLibraryDeletePermissionError CustomError `json:"form_template_library_delete_permission_error"`
+	// 表单模版组件库添加失败
+	FormTemplateLibraryAddNameRepeatError CustomError `json:"form_template_library_add_name_repeat_error"`
 }
 
 var (

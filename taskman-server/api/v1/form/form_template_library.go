@@ -2,6 +2,7 @@ package form
 
 import (
 	"fmt"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"strings"
 
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
@@ -29,7 +30,7 @@ func AddFormTemplateLibrary(c *gin.Context) {
 		return
 	}
 	if nameRepeat {
-		middleware.ReturnServerHandleError(c, fmt.Errorf("name %s repeat", param.Name))
+		middleware.ReturnError(c, exterror.New().FormTemplateLibraryAddNameRepeatError)
 		return
 	}
 	if err = service.GetFormTemplateLibraryService().AddFormTemplateLibrary(param, middleware.GetRequestUser(c)); err != nil {
@@ -51,9 +52,13 @@ func DeleteFormTemplateLibrary(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
+	if formTemplateLibraryTable == nil {
+		middleware.ReturnParamValidateError(c, fmt.Errorf("id is invalid"))
+		return
+	}
 	// 只有表单库创建用户才有该条记录删除权限
 	if formTemplateLibraryTable.CreatedBy != middleware.GetRequestUser(c) {
-		middleware.ReturnServerHandleError(c, fmt.Errorf("no deletion permission"))
+		middleware.ReturnError(c, exterror.New().FormTemplateLibraryDeletePermissionError)
 		return
 	}
 

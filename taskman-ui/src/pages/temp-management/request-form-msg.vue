@@ -168,7 +168,10 @@
                         true-value="yes"
                         false-value="no"
                         :disabled="$parent.isCheck === 'Y'"
-                        @on-change="paramsChanged"
+                        @on-change="
+                          controlSwitchChange($event)
+                          paramsChanged()
+                        "
                         size="default"
                       />
                     </FormItem>
@@ -368,16 +371,6 @@ export default {
       return labelArr.join(',')
     }
   },
-  watch: {
-    'editElement.controlSwitch' (val, oldVal) {
-      if (val === 'yes') {
-        this.editElement.required = 'yes'
-      }
-      if (val === 'no' && oldVal === 'yes') {
-        cleanFilterData(this.requestTemplateId, 'message')
-      }
-    }
-  },
   mounted () {
     this.MODALHEIGHT = document.body.scrollHeight - 400
   },
@@ -473,6 +466,14 @@ export default {
     },
     paramsChanged () {
       this.isParmasChanged = true
+    },
+    controlSwitchChange (val) {
+      // 关闭【控制审批任务】开关，清除数据
+      if (val === 'no') {
+        cleanFilterData(this.requestTemplateId, 'data')
+      } else if (val === 'yes') {
+        this.editElement.required = 'yes'
+      }
     },
     panalStatus () {
       return this.isParmasChanged

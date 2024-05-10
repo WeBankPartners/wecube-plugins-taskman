@@ -444,12 +444,13 @@ export default {
           })
         })
         const index = this.tableColumns.findIndex(column => column.key === 'action')
-        if (infoFormColumn.children.length > 0) {
-          this.tableColumns.splice(index, 0, infoFormColumn)
-        }
         if (dataFormColumn.children.length > 0) {
           this.tableColumns.splice(index, 0, dataFormColumn)
         }
+        if (infoFormColumn.children.length > 0) {
+          this.tableColumns.splice(index, 0, infoFormColumn)
+        }
+        this.$emit('dataFormFilterChange')
       })
     },
     async getRefOptions (item) {
@@ -460,7 +461,8 @@ export default {
       }
       // cmdb下发
       if (item.elementType === 'select' && item.entity) {
-        const { status, data } = await getWeCmdbOptions(item.packageName, item.entity, {})
+        if (!item.refPackageName || !item.refEntity) return
+        const { status, data } = await getWeCmdbOptions(item.refPackageName, item.refEntity, {})
         if (status === 'OK') {
           this.$set(this.filterOptions, item.name, data || [])
         }

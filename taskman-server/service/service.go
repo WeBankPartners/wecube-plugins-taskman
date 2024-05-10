@@ -38,6 +38,8 @@ var (
 	roleService *RoleService
 	// 任务处理 service
 	taskHandleService *TaskHandleService
+	// 表单库 service
+	formTemplateLibraryService *FormTemplateLibraryService
 )
 
 func New() (err error) {
@@ -63,6 +65,8 @@ func New() (err error) {
 	taskHandleDao := &dao.TaskHandleDao{DB: engine}
 	taskTemplateDao := &dao.TaskTemplateDao{DB: engine}
 	taskHandleTemplateDao := &dao.TaskHandleTemplateDao{DB: engine}
+	formItemTemplateLibraryDao := &dao.FormItemTemplateLibraryDao{DB: engine}
+	formTemplateLibraryDao := &dao.FormTemplateLibraryDao{DB: engine}
 	// 初始化Service
 	collectTemplateService = &CollectTemplateService{collectTemplateDao: collectTemplateDao}
 	requestService = &RequestService{requestDao: requestDao}
@@ -79,6 +83,7 @@ func New() (err error) {
 	requestTemplateGroupService = &RequestTemplateGroupService{requestTemplateGroupDao: requestTemplateGroupDao}
 	formTemplateService = &FormTemplateService{formTemplateDao: formTemplateDao, formItemTemplateDao: formItemTemplateDao, formDao: formDao}
 	formItemTemplateService = &FormItemTemplateService{formItemTemplateDao: formItemTemplateDao, formTemplateDao: formTemplateDao}
+	formTemplateLibraryService = &FormTemplateLibraryService{formTemplateLibraryDao: formTemplateLibraryDao, formItemTemplateLibraryDao: formItemTemplateLibraryDao}
 	roleService = &RoleService{}
 	taskHandleService = &TaskHandleService{}
 	db = engine
@@ -158,6 +163,11 @@ func GetFormItemTemplateService() *FormItemTemplateService {
 // GetTaskHandleService 获取任务处理 service
 func GetTaskHandleService() *TaskHandleService {
 	return taskHandleService
+}
+
+// GetFormTemplateLibraryService 获取表单模版库 service
+func GetFormTemplateLibraryService() *FormTemplateLibraryService {
+	return formTemplateLibraryService
 }
 
 // transaction 事务处理

@@ -342,7 +342,7 @@
                               v-model="editElement.isEdit"
                               true-value="yes"
                               false-value="no"
-                              :disabled="$parent.isCheck === 'Y' || isEditDisabled"
+                              :disabled="$parent.isCheck === 'Y' || editElement.isEditDisabled"
                               @on-change="paramsChanged"
                               size="default"
                             />
@@ -620,8 +620,7 @@ export default {
       nextNodeInfo: {}, // 缓存待切换节点信息
       displayLastGroup: false, // 控制group显示，在新增时显示最后一个，其余显示当前值
       nextGroupInfo: {},
-      forkOptions: [], // 判断分支列表
-      isEditDisabled: true
+      forkOptions: [] // 判断分支列表
     }
   },
   computed: {
@@ -656,25 +655,31 @@ export default {
     this.loadPage()
   },
   methods: {
-    // 数据表单过滤项有值，需要禁用审批表单"可编辑"属性
+    // 数据表单过滤项有值，需要禁用审批表单对应表单项"可编辑"属性
     setIsEditDisabled () {
-      this.isEditDisabled = false
-      const dataFormFilter = this.$refs.approvalFormNodeRef.filterFormList
-      const handleTemplates = this.$refs.approvalFormNodeRef.activeApprovalNode.handleTemplates
-      dataFormFilter.forEach(i => {
-        if (i.type === 2) {
-          i.items.forEach(j => {
-            const key = `${i.itemGroup}-${j.name}`
-            const hasValue = handleTemplates.some(val => {
-              return Array.isArray(val.filterRule[key]) ? val.filterRule[key].length > 0 : val.filterRule[key]
-            })
-            if (j.name === this.editElement.name && hasValue) {
-              this.editElement.isEdit = 'no'
-              this.isEditDisabled = true
-            }
+      if (this.$refs.approvalFormNodeRef.filterFormList && this.$refs.approvalFormNodeRef.filterFormList.length > 0) {
+        const dataFormObj = this.$refs.approvalFormNodeRef.filterFormList.find(i => i.type === 2)
+        const handleTemplates = this.$refs.approvalFormNodeRef.activeApprovalNode.handleTemplates
+        dataFormObj.items.forEach(j => {
+          const key = `${dataFormObj.itemGroup}-${j.name}`
+          const hasValue = handleTemplates.some(val => {
+            return Array.isArray(val.filterRule[key]) ? val.filterRule[key].length > 0 : Boolean(val.filterRule[key])
           })
-        }
-      })
+          // 遍历所有表单组，找到需要禁用的表单项
+          this.dataFormInfo.groups.forEach(group => {
+            group.items.forEach(item => {
+              const key1 = `${group.itemGroup}-${item.name}`
+              if (key1 === key && hasValue) {
+                item.isEdit = 'no'
+                this.$set(item, 'isEditDisabled', true)
+              }
+              if (key1 === key && !hasValue) {
+                this.$set(item, 'isEditDisabled', false)
+              }
+            })
+          })
+        })
+      }
     },
     async removeEmptyDataForm () {
       await removeEmptyDataForm(this.requestTemplateId)
@@ -796,6 +801,7 @@ export default {
       const { statusCode, data } = await getApprovalNodeGroups(this.requestTemplateId, node.id)
       if (statusCode === 'OK') {
         this.dataFormInfo = data
+        this.setIsEditDisabled()
         let groups = this.dataFormInfo.groups
         if (groups.length !== 0) {
           if (this.displayLastGroup) {

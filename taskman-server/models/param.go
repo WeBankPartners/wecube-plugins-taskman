@@ -156,3 +156,17 @@ type CommonParam struct {
 	Token    string   // 鉴权token
 	Language string   // 环境语言
 }
+
+type FormTemplateLibraryParam struct {
+	Name     string                          `json:"name"`
+	FormType string                          `json:"formType"`
+	Items    []*FormItemTemplateLibraryTable `json:"items"`
+}
+
+type QueryFormTemplateLibraryParam struct {
+	Name       string `json:"name"`      // 组件库名称
+	FormType   string `json:"formType"`  // 表单类型
+	CreatedBy  string `json:"createdBy"` // 创建人
+	StartIndex int    `json:"startIndex"`
+	PageSize   int    `json:"pageSize"`
+}

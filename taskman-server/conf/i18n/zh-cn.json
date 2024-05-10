@@ -151,5 +151,13 @@
   "template_group_has_use_delete_error": {
     "code": 20100029,
     "message": "删除失败:当前模版组已有模版,请先把模版迁移到其他模版组再删除"
+  },
+  "form_template_library_delete_permission_error": {
+    "code": 20100030,
+    "message": "删除失败:只允许删除本人创建的表单组件"
+  },
+  "form_template_library_add_name_repeat_error": {
+    "code": 20100031,
+    "message": "创建失败:表单组件名已存在,请修改后重试"
   }
 }

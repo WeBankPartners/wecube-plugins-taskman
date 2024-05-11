@@ -93,6 +93,7 @@ func (d *FormTemplateLibraryDao) QueryListByCondition(condition models.QueryForm
 	if condition.Name != "" {
 		sql = sql + " and name like '%" + condition.Name + "%'"
 	}
+	sql = sql + " order by updated_time desc"
 	pageInfo.StartIndex = condition.StartIndex
 	pageInfo.PageSize = condition.PageSize
 	pageInfo.TotalRows = QueryCount(sql, params...)

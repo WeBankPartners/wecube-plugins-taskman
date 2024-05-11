@@ -166,6 +166,7 @@ type FormTemplateLibraryParam struct {
 type QueryFormTemplateLibraryParam struct {
 	Name       string `json:"name"`      // 组件库名称
 	FormType   string `json:"formType"`  // 表单类型
+	Type       string `json:"type"`      // message 信息表单, data 数据表单全量查询
 	CreatedBy  string `json:"createdBy"` // 创建人
 	StartIndex int    `json:"startIndex"`
 	PageSize   int    `json:"pageSize"`

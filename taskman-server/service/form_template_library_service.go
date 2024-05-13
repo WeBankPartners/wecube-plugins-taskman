@@ -52,11 +52,9 @@ func (s *FormTemplateLibraryService) AddFormTemplateLibrary(param models.FormTem
 			Id:          formTemplateLibraryId,
 			Name:        param.Name,
 			FormType:    param.FormType,
-			CustomFlag:  param.CustomFlag,
 			CreatedTime: now,
 			UpdatedTime: now,
 			CreatedBy:   user,
-			DelFlag:     0,
 		}
 		// 添加表单组件库
 		if _, err = s.formTemplateLibraryDao.Add(session, formTemplateLibrary); err != nil {

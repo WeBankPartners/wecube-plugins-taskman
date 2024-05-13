@@ -4,7 +4,6 @@ type FormTemplateLibraryTable struct {
 	Id          string `json:"id" xorm:"'id' pk" primary-key:"id"`
 	Name        string `json:"name" xorm:"name"`
 	FormType    string `json:"formType" xorm:"form_type"`
-	CustomFlag  int    `json:"customFlag" xorm:"custom_flag"`
 	CreatedTime string `json:"createdTime" xorm:"created_time"`
 	UpdatedTime string `json:"updatedTime" xorm:"updated_time"`
 	CreatedBy   string `json:"createdBy" xorm:"created_by"` // 创建人

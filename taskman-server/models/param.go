@@ -158,18 +158,16 @@ type CommonParam struct {
 }
 
 type FormTemplateLibraryParam struct {
-	Name       string                          `json:"name"`
-	CustomFlag int                             `json:"customFlag"` // 是否是自定义表单类型
-	FormType   string                          `json:"formType"`
-	Items      []*FormItemTemplateLibraryTable `json:"items"`
+	Name     string                          `json:"name"`
+	FormType string                          `json:"formType"`
+	Items    []*FormItemTemplateLibraryTable `json:"items"`
 }
 
 type QueryFormTemplateLibraryParam struct {
-	Name       string `json:"name"`       // 组件库名称
-	FormType   string `json:"formType"`   // 表单类型
-	Type       string `json:"type"`       // message 信息表单, data 数据表单全量查询
-	CustomFlag int    `json:"customFlag"` // 是否是自定义表单类型
-	CreatedBy  string `json:"createdBy"`  // 创建人
+	Name       string `json:"name"`      // 组件库名称
+	FormType   string `json:"formType"`  // 表单类型
+	Type       string `json:"type"`      // message 信息表单, data 数据表单全量查询
+	CreatedBy  string `json:"createdBy"` // 创建人
 	StartIndex int    `json:"startIndex"`
 	PageSize   int    `json:"pageSize"`
 }

@@ -86,6 +86,10 @@ func (d *FormTemplateLibraryDao) QueryListByCondition(condition models.QueryForm
 		sql = sql + " and form_type <> ?"
 		params = append(params, models.DefaultMessageFormItemGroup)
 	}
+	if condition.CustomFlag != 0 {
+		sql = sql + " and custom_flag = ?"
+		params = append(params, condition.CustomFlag)
+	}
 	if condition.CreatedBy != "" {
 		sql = sql + " and created_by = ?"
 		params = append(params, condition.CreatedBy)

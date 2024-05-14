@@ -1,11 +1,13 @@
 package service
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"strings"
 	"time"
 	"xorm.io/xorm"
 )
@@ -197,6 +199,40 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 		}
 		return err
 	})
+	// 清除有影响 表单项 hidden_condition字段
+	var formItemTemplateMap = make(map[string]bool)
+	var hiddenCondition, newHiddenCondition []*models.QueryRequestFilterObj
+	var hiddenCond string
+	if formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplate(param.FormTemplateId); err != nil {
+		return
+	}
+	for _, item := range formItemTemplateList {
+		formItemTemplateMap[item.Name] = true
+	}
+	for _, formItem := range formItemTemplateList {
+		hiddenCond = ""
+		hiddenCondition = []*models.QueryRequestFilterObj{}
+		newHiddenCondition = []*models.QueryRequestFilterObj{}
+		if strings.TrimSpace(formItem.HiddenCondition) != "" {
+			if err = json.Unmarshal([]byte(formItem.HiddenCondition), &hiddenCondition); err != nil {
+				log.Logger.Error("hiddenCondition json Unmarshal err", log.Error(err))
+				return
+			}
+			for _, cond := range hiddenCondition {
+				if formItemTemplateMap[cond.Name] {
+					newHiddenCondition = append(newHiddenCondition, cond)
+				}
+			}
+			if len(newHiddenCondition) > 0 {
+				byteArr, _ := json.Marshal(newHiddenCondition)
+				hiddenCond = string(byteArr)
+			}
+			formItem.HiddenCondition = hiddenCond
+			if err = s.formItemTemplateDao.Update(nil, formItem); err != nil {
+				return
+			}
+		}
+	}
 	return
 }
 

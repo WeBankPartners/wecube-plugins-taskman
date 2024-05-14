@@ -251,3 +251,11 @@ export const getWorkflowForkNode = taskTemplateId =>
 // 表单过滤数据清除(all清除所有，message清除信息表单，data清除数据表单)
 export const cleanFilterData = (taskTemplateId, type) =>
   req.post(`/taskman/api/v1/request-template/${taskTemplateId}/filter-clean/${type}`)
+// 新建组件库
+export const saveTemplateLibrary = data => req.post(`/taskman/api/v1/form-template-library`, data)
+// 组件库列表
+export const getTemplateLibraryList = data => req.post(`/taskman/api/v1/form-template-library/query`, data)
+// 删除组件库
+export const deleteTemplateLibrary = params => req.delete(`/taskman/api/v1/form-template-library`, params)
+// 组件库获取表单类型
+export const getLibraryFormTypeList = () => req.get(`/taskman/api/v1/form-template-library/form-type`)

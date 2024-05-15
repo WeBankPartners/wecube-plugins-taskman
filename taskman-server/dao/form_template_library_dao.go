@@ -79,6 +79,13 @@ func (d *FormTemplateLibraryDao) QueryListByCondition(condition models.QueryForm
 		sql = sql + " and form_type = ?"
 		params = append(params, condition.FormType)
 	}
+	if condition.Type == "message" {
+		sql = sql + " and form_type = ?"
+		params = append(params, models.DefaultMessageFormItemGroup)
+	} else if condition.Type == "data" {
+		sql = sql + " and form_type <> ?"
+		params = append(params, models.DefaultMessageFormItemGroup)
+	}
 	if condition.CreatedBy != "" {
 		sql = sql + " and created_by = ?"
 		params = append(params, condition.CreatedBy)
@@ -86,6 +93,7 @@ func (d *FormTemplateLibraryDao) QueryListByCondition(condition models.QueryForm
 	if condition.Name != "" {
 		sql = sql + " and name like '%" + condition.Name + "%'"
 	}
+	sql = sql + " order by updated_time desc"
 	pageInfo.StartIndex = condition.StartIndex
 	pageInfo.PageSize = condition.PageSize
 	pageInfo.TotalRows = QueryCount(sql, params...)

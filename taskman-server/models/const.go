@@ -199,3 +199,7 @@ const (
 	TaskExecStatusAutoExitStatus       TaskExecStatus = 5 // 自动退出
 	TaskExecStatusInternallyTerminated TaskExecStatus = 6 // 手动终止
 )
+
+const (
+	DefaultMessageFormItemGroup string = "requestInfo" //默认信息表单
+)

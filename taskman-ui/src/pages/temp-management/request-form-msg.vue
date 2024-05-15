@@ -600,13 +600,13 @@ export default {
         const { arr, sameArr } = uniqueArr(deepClone(l.attrs))
         l.attrs = arr
         const titleArr = sameArr.map(i => i.title) || []
-        const message = titleArr.join(',')
+        const message = titleArr.join('、')
         if (message) {
           this.$Notice.warning({
             title: this.$t('warning'),
             render: h => {
               return (
-                <div style="">
+                <div style="word-break:break-all;">
                   表单已有表单项<span style="color: red;">{message}</span>,已过滤
                 </div>
               )

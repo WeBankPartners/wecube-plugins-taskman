@@ -54,7 +54,7 @@
 import ComponentLibraryModal from './component-library-modal.vue'
 import draggable from 'vuedraggable'
 import { getTemplateLibraryList, getLibraryFormTypeList, getAllUser } from '@/api/server'
-import { debounce } from '@/pages/util'
+import { debounce, deepClone } from '@/pages/util'
 export default {
   components: {
     ComponentLibraryModal,
@@ -122,14 +122,15 @@ export default {
   },
   methods: {
     cloneGroup (val) {
+      const arr = deepClone(val.items || [])
       // val.items[0].isActive = true
-      val.items.forEach(i => {
+      arr.forEach(i => {
         // 拖拽添加的表单项，需要添加字段formItemLibrary
         i.formItemLibrary = i.id
         // 拖拽添加的表单项，前端自定义添加c_，保存的时候会清空c_开头的id
         i.id = 'c_' + i.id
       })
-      return val.items
+      return arr
     },
     // 获取表单类型下拉列表
     async getFormTypeList () {
@@ -223,8 +224,14 @@ export default {
         flex-direction: column;
         justify-content: space-between;
         .name {
-          font-size: 13px;
           color: #2b85e4;
+          max-width: 100%;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
+          // display: -webkit-box;
+          // -webkit-line-clamp: 2;
+          // -webkit-box-orient: vertical;
         }
         .person {
           display: flex;

@@ -35,7 +35,7 @@
             style="width: 150px;"
             @on-change="handleSearch"
           >
-            <Option v-for="(i, index) in formTypeList" :value="i" :key="index">{{ i }}</Option>
+            <Option v-for="(i, index) in formTypeList" :value="i.value" :key="index">{{ i.label }}</Option>
           </Select>
           <Select
             v-model="query.createdBy"
@@ -149,7 +149,11 @@ export default {
           title: '表单类型',
           key: 'formType',
           align: 'left',
-          minWidth: 150
+          minWidth: 140,
+          render: (h, params) => {
+            const { formType } = params.row
+            return <span>{formType === 'requestInfo' ? this.$t('tw_information_form') : formType}</span>
+          }
         },
         {
           title: '表单项',
@@ -165,7 +169,7 @@ export default {
           title: '创建人',
           key: 'createdBy',
           align: 'left',
-          minWidth: 150
+          minWidth: 100
         },
         {
           title: this.$t('t_action'),
@@ -231,6 +235,13 @@ export default {
       const { statusCode, data } = await getLibraryFormTypeList()
       if (statusCode === 'OK') {
         this.formTypeList = data || []
+        this.formTypeList = this.formTypeList.map(i => {
+          const obj = { label: i, value: i }
+          if (i === 'requestInfo') {
+            obj.label = this.$t('tw_information_form') // 信息表单
+          }
+          return obj
+        })
       }
     },
     // 获取创建人下拉列表

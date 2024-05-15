@@ -606,9 +606,9 @@ export default {
             title: this.$t('warning'),
             render: h => {
               return (
-                <span>
+                <div style="">
                   表单已有表单项<span style="color: red;">{message}</span>,已过滤
-                </span>
+                </div>
               )
             }
           })

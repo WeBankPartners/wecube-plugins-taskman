@@ -38,5 +38,5 @@ func (s RoleTableSort) Swap(i, j int) {
 }
 
 func (s RoleTableSort) Less(i, j int) bool {
-	return strings.Compare(s[i].CoreId, s[j].CoreId) < 0
+	return strings.Compare(s[i].Id, s[j].Id) < 0
 }

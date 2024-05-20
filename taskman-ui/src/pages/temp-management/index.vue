@@ -1,20 +1,16 @@
 <template>
-  <div>
-    <Button @click="backToTemplate" icon="ios-undo-outline" style="margin-bottom: 8px">{{
-      $t('back_to_template')
-    }}</Button>
-    <Row type="flex">
-      <Col span="16" offset="4">
-        <Steps :current="currentStep">
-          <Step :title="$t('basic_information_settings')"></Step>
-          <Step :title="$t('form')"></Step>
-          <Step :title="$t('tw_approval')"></Step>
-          <Step :title="$t('task')"></Step>
-        </Steps>
-      </Col>
-    </Row>
+  <div class="template-management-index">
+    <div class="header-step">
+      <Button @click="backToTemplate" icon="ios-undo-outline" class="button">{{ $t('back_to_template') }}</Button>
+      <Steps :current="currentStep" class="step">
+        <Step :title="$t('basic_information_settings')"></Step>
+        <Step :title="$t('form')"></Step>
+        <Step :title="$t('tw_approval')"></Step>
+        <Step :title="$t('task')"></Step>
+      </Steps>
+    </div>
     <div></div>
-    <div v-if="currentStep !== -1" style="margin-top:16px;">
+    <div v-if="currentStep !== -1" style="margin-top:10px;">
       <BasicInfo
         @gotoStep="gotoStep"
         :isCheck="isCheck"
@@ -115,9 +111,22 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
-.header-icon {
-  float: right;
-  margin: 3px 40px 0 0 !important;
+<style lang="scss">
+.template-management-index {
+  .header-step {
+    display: flex;
+    align-items: center;
+    .button {
+      width: fit-content;
+    }
+    .step {
+      flex: 1;
+      padding: 0 200px;
+    }
+  }
+  .header-icon {
+    float: right;
+    margin: 3px 40px 0 0 !important;
+  }
 }
 </style>

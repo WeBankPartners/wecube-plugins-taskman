@@ -1,62 +1,58 @@
 <template>
-  <div>
+  <div ref="maxheight">
     <div v-if="procDefId !== '' && approvalNodes.length === 0" style="margin: 100px 0">
       <Alert style="width:400px; margin:0 auto;" type="warning" show-icon>{{
         $t('tw_workflow_has_no_manual_nodes')
       }}</Alert>
     </div>
     <Row type="flex" v-else>
-      <Col span="24" style="padding: 0 20px">
-        <div>
-          <span
-            v-for="(approval, approvalIndex) in approvalNodes"
-            :key="approval.id"
-            style="margin-right:6px;line-height: 40px;"
+      <Col span="24">
+        <span
+          v-for="(approval, approvalIndex) in approvalNodes"
+          :key="approval.id"
+          style="margin-right:6px;line-height: 40px;"
+        >
+          <div
+            :class="approval.id === activeEditingNode.id ? 'node-active' : 'node-normal'"
+            :style="nodeStyle(approval)"
+            @click="editNode(approval, true)"
           >
-            <div
-              :class="approval.id === activeEditingNode.id ? 'node-active' : 'node-normal'"
-              :style="nodeStyle(approval)"
-              @click="editNode(approval, true)"
-            >
-              <span>{{ approval.name }}</span>
-              <Icon
-                v-if="approvalNodes.length > 1 && procDefId === '' && isCheck !== 'Y'"
-                @click.stop="removeNode(approval)"
-                type="md-close"
-                color="#ed4014"
-                style="vertical-align: sub;margin-left: 4px;"
-                :size="18"
-              />
-            </div>
-            <div
-              v-if="procDefId === '' && approvalIndex !== approvalNodes.length && isCheck !== 'Y'"
-              class="ivu-divider-dashed dash-line"
-            ></div>
-            <Button
-              class="custom-add-btn"
-              v-if="procDefId === '' && isCheck !== 'Y'"
-              @click.stop="addApprovalNode(approval.sort + 1)"
-              type="success"
-              size="small"
-              shape="circle"
-              icon="md-add"
-            ></Button>
-            <div v-if="approvalIndex !== approvalNodes.length - 1" class="ivu-divider-dashed dash-line"></div>
-          </span>
-        </div>
-        <div>
-          <TaskFormNode
-            ref="approvalFormNodeRef"
-            @jumpToNode="jumpToNode"
-            @reloadParentPage="loadPage"
-            @nodeStatus="nodeStatus"
-            :isCheck="isCheck"
-            :procDefId="procDefId"
-            :nodeType="procDefId === '' ? $t('tw_auto') : $t('tw_workflow_task')"
-            @setFormConfigStatus="changeFormConfigStatus"
-            @dataFormFilterChange="setIsEditDisabled"
-          ></TaskFormNode>
-        </div>
+            <span>{{ approval.name }}</span>
+            <Icon
+              v-if="approvalNodes.length > 1 && procDefId === '' && isCheck !== 'Y'"
+              @click.stop="removeNode(approval)"
+              type="md-close"
+              color="#ed4014"
+              style="vertical-align: sub;margin-left: 4px;"
+              :size="18"
+            />
+          </div>
+          <div
+            v-if="procDefId === '' && approvalIndex !== approvalNodes.length && isCheck !== 'Y'"
+            class="ivu-divider-dashed dash-line"
+          ></div>
+          <Button
+            class="custom-add-btn"
+            v-if="procDefId === '' && isCheck !== 'Y'"
+            @click.stop="addApprovalNode(approval.sort + 1)"
+            type="success"
+            size="small"
+            shape="circle"
+            icon="md-add"
+          ></Button>
+          <div v-if="approvalIndex !== approvalNodes.length - 1" class="ivu-divider-dashed dash-line"></div>
+        </span>
+        <TaskFormNode
+          ref="approvalFormNodeRef"
+          @jumpToNode="jumpToNode"
+          @reloadParentPage="loadPage"
+          @nodeStatus="nodeStatus"
+          :isCheck="isCheck"
+          :procDefId="procDefId"
+          :nodeType="procDefId === '' ? $t('tw_auto') : $t('tw_workflow_task')"
+          @setFormConfigStatus="changeFormConfigStatus"
+          @dataFormFilterChange="setIsEditDisabled"
+        ></TaskFormNode>
         <template v-if="isShowFormConfig">
           <div class="title" style="font-size: 16px;">
             <div class="title-text">
@@ -64,66 +60,73 @@
               <span class="underline"></span>
             </div>
           </div>
-          <div>
-            <Row>
-              <!--自定义表单项-->
-              <Col span="5" style="border: 1px solid #dcdee2; padding: 0 16px">
-                <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
-                  <Divider plain>{{ $t('custom_form') }}</Divider>
-                  <CustomDraggable :sortable="$parent.isCheck !== 'Y'" :clone="cloneDog"></CustomDraggable>
+          <Row style="margin-bottom: 56px;">
+            <Col span="5" style="border: 1px solid #dcdee2;">
+              <div :style="{ height: MODALHEIGHT + 'px', overflow: 'auto', padding: '0 8px' }">
+                <!--自定义表单项-->
+                <Divider orientation="left" size="small">{{ $t('custom_form') }}</Divider>
+                <CustomDraggable :sortable="$parent.isCheck !== 'Y'" :clone="cloneDog"></CustomDraggable>
+                <!--表单项组件库-->
+                <template v-if="finalElement[0].itemGroupName">
+                  <Divider orientation="left" size="small">{{ $t('tw_template_library') }}</Divider>
+                  <ComponentLibraryList
+                    ref="libraryList"
+                    :formType="finalElement[0].itemGroupName"
+                    :groupType="nextGroupInfo.itemGroupType"
+                  ></ComponentLibraryList>
+                </template>
+              </div>
+            </Col>
+            <!--表单预览-->
+            <Col span="14" style="border: 1px solid #dcdee2; padding: 0 16px; width: 57%; margin: 0 4px">
+              <div :style="{ height: MODALHEIGHT + 'px', overflow: 'auto', paddingBottom: '10px' }">
+                <div class="title">
+                  <div class="title-text">
+                    {{ $t('tw_task_content') }}
+                    <span class="underline"></span>
+                  </div>
                 </div>
-              </Col>
-              <!--表单预览-->
-              <Col span="14" style="border: 1px solid #dcdee2; padding: 0 16px; width: 57%; margin: 0 4px">
-                <div :style="{ height: MODALHEIGHT + 'px', overflow: 'auto' }">
-                  <Divider>{{ $t('tw_preview') }}</Divider>
-                  <div class="title">
-                    <div class="title-text">
-                      {{ $t('tw_task_content') }}
-                      <span class="underline"></span>
-                    </div>
-                  </div>
-                  <div>
-                    <div class="radio-group">
-                      <div
-                        v-for="(groupItem, index) in dataFormInfo.groups"
-                        :key="index"
-                        :class="{
-                          'radio-group-radio': true,
-                          'radio-group-custom': groupItem.itemGroupType === 'custom',
-                          'radio-group-workflow': groupItem.itemGroupType === 'workflow',
-                          'radio-group-optional': groupItem.itemGroupType === 'optional'
-                        }"
-                        :style="activeStyle(groupItem)"
-                      >
-                        <Icon @click="editGroupItem(groupItem)" type="md-create" color="#2d8cf0" :size="20" />
-                        <span @click="editGroupCustomItems(groupItem)">
-                          {{ `${groupItem.itemGroupName}` }}
-                        </span>
-                        <Icon @click="removeGroupItem(groupItem)" type="md-close" color="#ed4014" :size="20" />
-                      </div>
-                      <span>
-                        <Button
-                          v-if="isCheck !== 'Y'"
-                          style="margin-top: -5px;"
-                          @click="beforeSelectItemGroup"
-                          type="primary"
-                          shape="circle"
-                          icon="md-add"
-                        ></Button>
+                <div>
+                  <div class="radio-group">
+                    <div
+                      v-for="(groupItem, index) in dataFormInfo.groups"
+                      :key="index"
+                      :class="{
+                        'radio-group-radio': true,
+                        'radio-group-custom': groupItem.itemGroupType === 'custom',
+                        'radio-group-workflow': groupItem.itemGroupType === 'workflow',
+                        'radio-group-optional': groupItem.itemGroupType === 'optional'
+                      }"
+                      :style="activeStyle(groupItem)"
+                    >
+                      <Icon @click="editGroupItem(groupItem)" type="md-create" color="#2d8cf0" :size="20" />
+                      <span @click="editGroupCustomItems(groupItem)">
+                        {{ `${groupItem.itemGroupName}` }}
                       </span>
+                      <Icon @click="removeGroupItem(groupItem)" type="md-close" color="#ed4014" :size="20" />
                     </div>
+                    <span>
+                      <Button
+                        v-if="isCheck !== 'Y'"
+                        style="margin-top: -5px;"
+                        @click="beforeSelectItemGroup"
+                        type="primary"
+                        shape="circle"
+                        icon="md-add"
+                      ></Button>
+                    </span>
                   </div>
-                  <div style="min-height: 200px;">
-                    <template v-if="finalElement.length === 1 && finalElement[0].itemGroup !== ''">
+                </div>
+                <div style="min-height: 200px;">
+                  <template v-if="finalElement.length === 1 && finalElement[0].itemGroup !== ''">
+                    <template v-for="(item, itemIndex) in finalElement">
                       <div
-                        v-for="(item, itemIndex) in finalElement"
                         :key="itemIndex"
                         style="border: 2px dotted #A2EF4D; margin: 8px 0; padding: 8px;min-height: 48px;"
                       >
-                        <div :key="itemIndex"></div>
                         <draggable
                           class="dragArea"
+                          style="min-height: 40px;"
                           :list="item.attrs"
                           :sort="$parent.isCheck !== 'Y'"
                           group="people"
@@ -136,6 +139,7 @@
                             v-for="(element, eleIndex) in item.attrs"
                             :key="element.id"
                           >
+                            <Checkbox v-model="element.checked"></Checkbox>
                             <div
                               class="custom-title"
                               :style="
@@ -197,249 +201,261 @@
                           </div>
                         </draggable>
                       </div>
-                      <div style="text-align: right;">
+                      <div
+                        v-if="isCheck !== 'Y'"
+                        :key="itemIndex + '-'"
+                        style="display:flex;justify-content:space-between;"
+                      >
                         <Button
-                          v-if="isCheck !== 'Y'"
-                          type="primary"
+                          :disabled="getAddComponentDisabled(item.attrs)"
+                          @click="createComponentLibrary"
                           size="small"
-                          ghost
-                          @click="saveGroup(9, activeEditingNode)"
-                          >{{ $t('save') }}</Button
+                          >新建组件</Button
                         >
-                        <Button size="small" @click="reloadGroup">{{ $t('tw_restore') }}</Button>
+                        <div>
+                          <Button
+                            v-if="isCheck !== 'Y'"
+                            type="primary"
+                            size="small"
+                            ghost
+                            @click="saveGroup(9, activeEditingNode)"
+                            >{{ $t('save') }}</Button
+                          >
+                          <Button size="small" @click="reloadGroup">{{ $t('tw_restore') }}</Button>
+                        </div>
                       </div>
                     </template>
-                  </div>
-                  <div class="title">
-                    <div class="title-text">
-                      {{ $t('tw_task_result') }}
-                      <span class="underline"></span>
-                    </div>
-                  </div>
-                  <div style="margin: 12px 0 0 8px;">
-                    <Form :label-width="90">
-                      <FormItem :label="$t('tw_conditional_branches')" v-if="procDefId !== ''">
-                        <Select style="width:94%" @on-open-change="getWorkflowForkNode">
-                          <Option v-for="(fork, forkIndex) in forkOptions" :value="fork" :key="forkIndex">{{
-                            fork
-                          }}</Option>
-                        </Select>
-                      </FormItem>
-                      <!--任务操作-->
-                      <FormItem :label="$t('t_action')">
-                        <Select style="width:94%">
-                          <Option value="1">{{ $t('tw_completed') }}</Option>
-                          <Option value="2">{{ $t('tw_incomplete') }}</Option>
-                          <Option value="3">{{ $t('tw_unrelated') }}</Option>
-                        </Select>
-                      </FormItem>
-                      <FormItem :label="$t('process_comments')">
-                        <Input type="textarea" :rows="2" style="width:94%"></Input>
-                      </FormItem>
-                    </Form>
+                  </template>
+                </div>
+                <div class="title">
+                  <div class="title-text">
+                    {{ $t('tw_task_result') }}
+                    <span class="underline"></span>
                   </div>
                 </div>
-                <Modal v-model="showSelectModel" :title="$t('tw_reference_global_forms')" :mask-closable="false">
-                  <Form :label-width="120">
-                    <FormItem :label="$t('tw_global_forms')">
-                      <Select style="width: 80%" v-model="itemGroup" filterable>
-                        <Option v-for="item in groupOptions" :value="item.id" :key="item.id">{{
-                          item.itemGroupName
+                <div style="margin: 8px 0 0 8px;">
+                  <Form :label-width="90">
+                    <FormItem :label="$t('tw_conditional_branches')" v-if="procDefId !== ''">
+                      <Select style="width:94%" @on-open-change="getWorkflowForkNode">
+                        <Option v-for="(fork, forkIndex) in forkOptions" :value="fork" :key="forkIndex">{{
+                          fork
                         }}</Option>
                       </Select>
                     </FormItem>
+                    <!--任务操作-->
+                    <FormItem :label="$t('t_action')">
+                      <Select style="width:94%">
+                        <Option value="1">{{ $t('tw_completed') }}</Option>
+                        <Option value="2">{{ $t('tw_incomplete') }}</Option>
+                        <Option value="3">{{ $t('tw_unrelated') }}</Option>
+                      </Select>
+                    </FormItem>
+                    <FormItem :label="$t('process_comments')">
+                      <Input type="textarea" :rows="2" style="width:94%"></Input>
+                    </FormItem>
                   </Form>
-                  <template #footer>
-                    <Button @click="showSelectModel = false">{{ $t('cancel') }}</Button>
-                    <Button @click="okSelect" :disabled="itemGroup === ''" type="primary">{{ $t('confirm') }}</Button>
-                  </template>
-                </Modal>
-              </Col>
-              <!--属性设置-->
-              <Col span="5" style="border: 1px solid #dcdee2">
-                <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
-                  <Collapse v-model="openPanel">
-                    <Panel name="1">
-                      {{ $t('general_attributes') }}
-                      <div slot="content">
-                        <Form :label-width="80">
-                          <FormItem :label="$t('display_name')">
-                            <Input
-                              v-model="editElement.title"
-                              @on-change="paramsChanged"
-                              :disabled="$parent.isCheck === 'Y' || Boolean(editElement.copyId)"
-                              placeholder=""
-                            ></Input>
-                          </FormItem>
-                          <FormItem :label="$t('tw_code')">
-                            <Input
-                              v-model="editElement.name"
-                              @on-change="paramsChanged"
-                              :disabled="
-                                $parent.isCheck === 'Y' || editElement.entity !== '' || Boolean(editElement.copyId)
-                              "
-                              placeholder=""
-                            ></Input>
-                          </FormItem>
-                          <FormItem :label="$t('data_type')">
-                            <Select
-                              v-model="editElement.elementType"
-                              :disabled="true"
-                              @on-change="editElement.defaultValue = ''"
-                            >
-                              <Option value="input">Input</Option>
-                              <Option value="select">Select</Option>
-                              <Option value="textarea">Textarea</Option>
-                              <Option value="wecmdbEntity">{{ $t('tw_entity_data_items') }}</Option>
-                              <Option value="datePicker">DatePicker</Option>
-                              <Option value="calculate">Calculate</Option>
-                            </Select>
-                          </FormItem>
-                          <!--数据集-->
-                          <FormItem
-                            v-if="editElement.elementType === 'select' && editElement.entity === ''"
-                            :label="$t('data_set')"
-                          >
-                            <!-- <Input v-model="editElement.dataOptions" disabled style="width:calc(100% - 38px)"></Input> -->
-                            <Input :value="getDataOptionsDisplay" disabled style="width:calc(100% - 38px)"></Input>
-                            <Button
-                              @click.stop="dataOptionsMgmt"
-                              :disabled="Boolean(editElement.copyId)"
-                              type="primary"
-                              icon="md-add"
-                            ></Button>
-                          </FormItem>
-                          <!--数据源-->
-                          <FormItem
-                            v-if="editElement.elementType === 'select' && editElement.entity"
-                            :label="$t('data_source')"
-                          >
-                            <Input v-model="editElement.dataOptions" disabled></Input>
-                          </FormItem>
-                          <!--模型数据项-->
-                          <FormItem v-if="editElement.elementType === 'wecmdbEntity'" :label="$t('data_source')">
-                            <Select
-                              v-model="editElement.dataOptions"
-                              filterable
-                              @on-change="paramsChanged"
-                              :disabled="$parent.isCheck === 'Y'"
-                            >
-                              <Option v-for="i in allEntityList" :value="i" :key="i">{{ i }}</Option>
-                            </Select>
-                          </FormItem>
-                          <FormItem :label="$t('display')">
-                            <i-switch
-                              v-model="editElement.inDisplayName"
-                              true-value="yes"
-                              false-value="no"
-                              :disabled="$parent.isCheck === 'Y'"
-                              @on-change="paramsChanged"
-                              size="default"
-                            />
-                          </FormItem>
-                          <FormItem :label="$t('editable')">
-                            <i-switch
-                              v-model="editElement.isEdit"
-                              true-value="yes"
-                              false-value="no"
-                              :disabled="$parent.isCheck === 'Y' || editElement.isEditDisabled"
-                              @on-change="paramsChanged"
-                              size="default"
-                            />
-                          </FormItem>
-                          <FormItem :label="$t('required')">
-                            <i-switch
-                              v-model="editElement.required"
-                              true-value="yes"
-                              false-value="no"
-                              :disabled="$parent.isCheck === 'Y'"
-                              @on-change="paramsChanged"
-                              size="default"
-                            />
-                          </FormItem>
-                          <FormItem :label="$t('tw_default_empty')">
-                            <i-switch
-                              v-model="editElement.defaultClear"
-                              true-value="yes"
-                              false-value="no"
-                              :disabled="$parent.isCheck === 'Y'"
-                              @on-change="paramsChanged"
-                              size="default"
-                            />
-                          </FormItem>
-                          <FormItem :label="$t('defaults')">
-                            <Input
-                              v-model="editElement.defaultValue"
-                              :disabled="$parent.isCheck === 'Y' || editElement.defaultClear === 'yes'"
-                              placeholder=""
-                              @on-change="paramsChanged"
-                            ></Input>
-                          </FormItem>
-                          <FormItem
-                            :label="$t('tw_multiple')"
-                            v-if="['select', 'wecmdbEntity'].includes(editElement.elementType)"
-                          >
-                            <i-switch
-                              v-model="editElement.multiple"
-                              true-value="yes"
-                              false-value="no"
-                              :disabled="$parent.isCheck === 'Y'"
-                              @on-change="paramsChanged"
-                              size="default"
-                            />
-                          </FormItem>
-                          <FormItem :label="$t('width')">
-                            <Select
-                              v-model="editElement.width"
-                              @on-change="paramsChanged"
-                              :disabled="$parent.isCheck === 'Y'"
-                            >
-                              <Option :value="6">6</Option>
-                              <Option :value="12">12</Option>
-                              <Option :value="18">18</Option>
-                              <Option :value="24">24</Option>
-                            </Select>
-                          </FormItem>
-                        </Form>
-                      </div>
-                    </Panel>
-                    <Panel name="2">
-                      {{ $t('extended_attributes') }}
-                      <div slot="content">
-                        <Form :label-width="80">
-                          <FormItem :label="$t('validation_rules')">
-                            <Input
-                              v-model="editElement.regular"
-                              :disabled="$parent.isCheck === 'Y'"
-                              :placeholder="$t('only_supports_regular')"
-                              @on-change="paramsChanged"
-                            ></Input>
-                          </FormItem>
-                        </Form>
-                      </div>
-                    </Panel>
-                    <Panel name="3">
-                      {{ $t('data_item') }}
-                      <div slot="content">
-                        <Form :label-width="80">
-                          <FormItem :label="$t('constraints')">
-                            <Select
-                              v-model="editElement.isRefInside"
-                              @on-change="paramsChanged"
-                              :disabled="$parent.isCheck === 'Y'"
-                            >
-                              <Option value="yes">yes</Option>
-                              <Option value="no">no</Option>
-                            </Select>
-                          </FormItem>
-                        </Form>
-                      </div>
-                    </Panel>
-                  </Collapse>
                 </div>
-              </Col>
-            </Row>
-          </div>
+              </div>
+              <Modal v-model="showSelectModel" :title="$t('tw_reference_global_forms')" :mask-closable="false">
+                <Form :label-width="120">
+                  <FormItem :label="$t('tw_global_forms')">
+                    <Select style="width: 80%" v-model="itemGroup" filterable>
+                      <Option v-for="item in groupOptions" :value="item.id" :key="item.id">{{
+                        item.itemGroupName
+                      }}</Option>
+                    </Select>
+                  </FormItem>
+                </Form>
+                <template #footer>
+                  <Button @click="showSelectModel = false">{{ $t('cancel') }}</Button>
+                  <Button @click="okSelect" :disabled="itemGroup === ''" type="primary">{{ $t('confirm') }}</Button>
+                </template>
+              </Modal>
+            </Col>
+            <!--属性设置-->
+            <Col span="5" style="border: 1px solid #dcdee2">
+              <div :style="{ height: MODALHEIGHT + 'px', overflow: 'auto' }">
+                <Collapse v-model="openPanel">
+                  <Panel name="1">
+                    {{ $t('general_attributes') }}
+                    <div slot="content">
+                      <Form :label-width="80" ref="attrForm" :model="editElement" :rules="ruleForm">
+                        <FormItem :label="$t('display_name')">
+                          <Input
+                            v-model="editElement.title"
+                            @on-change="paramsChanged"
+                            :disabled="$parent.isCheck === 'Y' || Boolean(editElement.copyId)"
+                            placeholder=""
+                          ></Input>
+                        </FormItem>
+                        <FormItem :label="$t('tw_code')" prop="name" style="margin-bottom:20px;">
+                          <Input
+                            v-model="editElement.name"
+                            @on-change="paramsChanged"
+                            :disabled="
+                              $parent.isCheck === 'Y' || editElement.entity !== '' || Boolean(editElement.copyId)
+                            "
+                            placeholder=""
+                          ></Input>
+                        </FormItem>
+                        <FormItem :label="$t('data_type')">
+                          <Select
+                            v-model="editElement.elementType"
+                            :disabled="true"
+                            @on-change="editElement.defaultValue = ''"
+                          >
+                            <Option value="input">Input</Option>
+                            <Option value="select">Select</Option>
+                            <Option value="textarea">Textarea</Option>
+                            <Option value="wecmdbEntity">{{ $t('tw_entity_data_items') }}</Option>
+                            <Option value="datePicker">DatePicker</Option>
+                            <Option value="calculate">Calculate</Option>
+                          </Select>
+                        </FormItem>
+                        <!--数据集-->
+                        <FormItem
+                          v-if="editElement.elementType === 'select' && editElement.entity === ''"
+                          :label="$t('data_set')"
+                        >
+                          <!-- <Input v-model="editElement.dataOptions" disabled style="width:calc(100% - 38px)"></Input> -->
+                          <Input :value="getDataOptionsDisplay" disabled style="width:calc(100% - 38px)"></Input>
+                          <Button
+                            @click.stop="dataOptionsMgmt"
+                            :disabled="Boolean(editElement.copyId)"
+                            type="primary"
+                            icon="md-add"
+                          ></Button>
+                        </FormItem>
+                        <!--数据源-->
+                        <FormItem
+                          v-if="editElement.elementType === 'select' && editElement.entity"
+                          :label="$t('data_source')"
+                        >
+                          <Input v-model="editElement.dataOptions" disabled></Input>
+                        </FormItem>
+                        <!--模型数据项-->
+                        <FormItem v-if="editElement.elementType === 'wecmdbEntity'" :label="$t('data_source')">
+                          <Select
+                            v-model="editElement.dataOptions"
+                            filterable
+                            @on-change="paramsChanged"
+                            :disabled="$parent.isCheck === 'Y'"
+                          >
+                            <Option v-for="i in allEntityList" :value="i" :key="i">{{ i }}</Option>
+                          </Select>
+                        </FormItem>
+                        <FormItem :label="$t('display')">
+                          <i-switch
+                            v-model="editElement.inDisplayName"
+                            true-value="yes"
+                            false-value="no"
+                            :disabled="$parent.isCheck === 'Y'"
+                            @on-change="paramsChanged"
+                            size="default"
+                          />
+                        </FormItem>
+                        <FormItem :label="$t('editable')">
+                          <i-switch
+                            v-model="editElement.isEdit"
+                            true-value="yes"
+                            false-value="no"
+                            :disabled="$parent.isCheck === 'Y' || editElement.isEditDisabled"
+                            @on-change="paramsChanged"
+                            size="default"
+                          />
+                        </FormItem>
+                        <FormItem :label="$t('required')">
+                          <i-switch
+                            v-model="editElement.required"
+                            true-value="yes"
+                            false-value="no"
+                            :disabled="$parent.isCheck === 'Y'"
+                            @on-change="paramsChanged"
+                            size="default"
+                          />
+                        </FormItem>
+                        <FormItem :label="$t('tw_default_empty')">
+                          <i-switch
+                            v-model="editElement.defaultClear"
+                            true-value="yes"
+                            false-value="no"
+                            :disabled="$parent.isCheck === 'Y'"
+                            @on-change="paramsChanged"
+                            size="default"
+                          />
+                        </FormItem>
+                        <FormItem :label="$t('defaults')">
+                          <Input
+                            v-model="editElement.defaultValue"
+                            :disabled="$parent.isCheck === 'Y' || editElement.defaultClear === 'yes'"
+                            placeholder=""
+                            @on-change="paramsChanged"
+                          ></Input>
+                        </FormItem>
+                        <FormItem
+                          :label="$t('tw_multiple')"
+                          v-if="['select', 'wecmdbEntity'].includes(editElement.elementType)"
+                        >
+                          <i-switch
+                            v-model="editElement.multiple"
+                            true-value="yes"
+                            false-value="no"
+                            :disabled="$parent.isCheck === 'Y'"
+                            @on-change="paramsChanged"
+                            size="default"
+                          />
+                        </FormItem>
+                        <FormItem :label="$t('width')">
+                          <Select
+                            v-model="editElement.width"
+                            @on-change="paramsChanged"
+                            :disabled="$parent.isCheck === 'Y'"
+                          >
+                            <Option :value="6">6</Option>
+                            <Option :value="12">12</Option>
+                            <Option :value="18">18</Option>
+                            <Option :value="24">24</Option>
+                          </Select>
+                        </FormItem>
+                      </Form>
+                    </div>
+                  </Panel>
+                  <Panel name="2">
+                    {{ $t('extended_attributes') }}
+                    <div slot="content">
+                      <Form :label-width="80">
+                        <FormItem :label="$t('validation_rules')">
+                          <Input
+                            v-model="editElement.regular"
+                            :disabled="$parent.isCheck === 'Y'"
+                            :placeholder="$t('only_supports_regular')"
+                            @on-change="paramsChanged"
+                          ></Input>
+                        </FormItem>
+                      </Form>
+                    </div>
+                  </Panel>
+                  <Panel name="3">
+                    {{ $t('data_item') }}
+                    <div slot="content">
+                      <Form :label-width="80">
+                        <FormItem :label="$t('constraints')">
+                          <Select
+                            v-model="editElement.isRefInside"
+                            @on-change="paramsChanged"
+                            :disabled="$parent.isCheck === 'Y'"
+                          >
+                            <Option value="yes">yes</Option>
+                            <Option value="no">no</Option>
+                          </Select>
+                        </FormItem>
+                      </Form>
+                    </div>
+                  </Panel>
+                </Collapse>
+              </div>
+            </Col>
+          </Row>
         </template>
       </Col>
       <!-- 自定义表单配置 -->
@@ -450,7 +466,6 @@
         module="other"
         v-show="['custom'].includes(itemGroupType)"
       ></RequestFormDataCustom>
-
       <!-- 编排表单配置 -->
       <RequestFormDataWorkflow
         ref="requestFormDataWorkflowRef"
@@ -461,6 +476,15 @@
         v-show="['workflow', 'optional'].includes(itemGroupType)"
       ></RequestFormDataWorkflow>
       <DataSourceConfig ref="dataSourceConfigRef" @setDataOptions="setDataOptions"></DataSourceConfig>
+      <!--组件库弹框-->
+      <ComponentLibraryModal
+        ref="library"
+        :checkedList="componentCheckedList"
+        :formType="finalElement[0].itemGroupName"
+        :groupType="nextGroupInfo.itemGroupType"
+        v-model="componentVisible"
+        @fetchList="$refs.libraryList.handleSearch()"
+      />
     </Row>
     <div class="footer">
       <div class="content" :style="isShowFormConfig ? '' : 'margin-top:48px'">
@@ -514,6 +538,9 @@ import {
   submitTemplate,
   getWorkflowForkNode
 } from '@/api/server.js'
+import ComponentLibraryModal from './components/component-library-modal.vue'
+import ComponentLibraryList from './components/component-library-list.vue'
+import { uniqueArr, deepClone, findFirstDuplicateIndex } from '@/pages/util'
 export default {
   name: 'BasicInfo',
   components: {
@@ -522,7 +549,9 @@ export default {
     RequestFormDataWorkflow,
     draggable,
     CustomDraggable,
-    DataSourceConfig
+    DataSourceConfig,
+    ComponentLibraryModal,
+    ComponentLibraryList
   },
   data () {
     return {
@@ -620,7 +649,27 @@ export default {
       nextNodeInfo: {}, // 缓存待切换节点信息
       displayLastGroup: false, // 控制group显示，在新增时显示最后一个，其余显示当前值
       nextGroupInfo: {},
-      forkOptions: [] // 判断分支列表
+      forkOptions: [], // 判断分支列表
+      componentVisible: false, // 组件库弹窗
+      componentCheckedList: [], // 当前选中组件库数据
+      // 校验编码不能重复
+      ruleForm: {
+        name: [
+          {
+            required: true,
+            validator: (rule, value, callback) => {
+              const arr = this.finalElement[0].attrs.map(i => i.name)
+              const index = findFirstDuplicateIndex(arr)
+              if (index > -1 && this.finalElement[0].attrs[index].name === this.editElement.name) {
+                return callback(new Error('编码不能重复'))
+              } else {
+                callback()
+              }
+            },
+            trigger: 'change'
+          }
+        ]
+      }
     }
   },
   computed: {
@@ -642,15 +691,24 @@ export default {
         return { background: color }
       }
     },
+    // 数据集回显
     getDataOptionsDisplay () {
       const options = JSON.parse(this.editElement.dataOptions || '[]')
       const labelArr = options.map(item => item.label)
       return labelArr.join(',')
+    },
+    // 新增组件库按钮禁用
+    getAddComponentDisabled () {
+      return function (val) {
+        const checkedList = val.filter(item => item.checked) || []
+        return checkedList.length === 0
+      }
     }
   },
   props: ['isCheck', 'requestTemplateId'],
   mounted () {
-    this.MODALHEIGHT = document.body.scrollHeight - 500
+    const clientHeight = document.documentElement.clientHeight
+    this.MODALHEIGHT = clientHeight - this.$refs.maxheight.getBoundingClientRect().top - 90
     this.removeEmptyDataForm()
     this.loadPage()
   },
@@ -878,7 +936,6 @@ export default {
       newItem.title = newItem.title + itemNo
       newItem.name = newItem.name + itemNo
       newItem.isActive = true
-      this.specialId = newItem.id
       this.paramsChanged()
       this.finalElement[0].attrs.forEach(item => {
         item.isActive = false
@@ -892,12 +949,50 @@ export default {
       }
       return result
     },
-    log (item) {
+    log () {
       this.finalElement.forEach(l => {
+        // 从组件库拖拽进来的表单组，数据需要额外处理
+        const cloneAttrs = deepClone(l.attrs || [])
+        var deleteIdx = ''
+        l.attrs.forEach((attr, idx) => {
+          for (let key of Object.keys(attr)) {
+            if (!isNaN(Number(key))) {
+              deleteIdx = idx
+              cloneAttrs.push(attr[key])
+            }
+          }
+        })
+        if (typeof deleteIdx === 'number') {
+          cloneAttrs.splice(deleteIdx, 1)
+        }
+        l.attrs = cloneAttrs
+        // 组件库拖拽有重复元素，给出提示，并过滤数据
+        const { arr, sameArr } = uniqueArr(deepClone(l.attrs))
+        l.attrs = arr
+        const titleArr = sameArr.map(i => i.title) || []
+        const message = titleArr.join(',')
+        if (message) {
+          this.$Notice.warning({
+            title: this.$t('warning'),
+            render: h => {
+              return (
+                <div style="word-break:break-all;">
+                  表单已有表单项<span style="color: red;">{message}</span>,已过滤
+                </div>
+              )
+            }
+          })
+        } else {
+          this.$Notice.success({
+            title: this.$t('successful'),
+            desc: this.$t('successful')
+          })
+        }
+        // 处理拖拽进来的表单项
         l.attrs.forEach(attr => {
           attr.itemGroup = l.itemGroup
           attr.itemGroupName = l.itemGroupName
-          if (attr.id === this.specialId) {
+          if (attr.isActive) {
             this.editElement = attr
             if (this.editElement.multiple === 'Y') {
               this.editElement.multiple = 'yes'
@@ -1037,7 +1132,7 @@ export default {
     //     onCancel: () => {}
     //   })
     // },
-    // 获取wecmdb下拉类型entity值
+    // 获取模型数据项下拉值
     async getAllDataModels () {
       const { data, statusCode } = await getAllDataModels()
       if (statusCode === 'OK') {
@@ -1074,6 +1169,7 @@ export default {
         this.editElement.multiple = 'no'
       }
       this.openPanel = '1'
+      this.$refs.attrForm.validateField('name')
     },
     // 删除自定义表单项
     removeForm (itemIndex, eleIndex, element) {
@@ -1258,6 +1354,12 @@ export default {
       } else if (element.elementType === 'wecmdbEntity') {
       }
       return res
+    },
+    // 新增组件库
+    createComponentLibrary () {
+      this.componentVisible = true
+      this.componentCheckedList = this.finalElement[0].attrs.filter(i => i.checked === true)
+      this.$refs.library.init()
     }
   }
 }
@@ -1317,11 +1419,10 @@ fieldset[disabled] .ivu-input {
   margin: 16px 64px;
 }
 .list-group-item- {
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
   margin: 8px 0;
-}
-.custom-add-btn {
-  // margin: 0 24px;
 }
 .dash-line {
   display: inline-block;
@@ -1331,13 +1432,13 @@ fieldset[disabled] .ivu-input {
   border-color: #dcdee2;
 }
 .custom-title {
-  width: 80px;
+  width: 125px;
   display: inline-block;
-  text-align: right;
+  text-align: left;
   word-wrap: break-word;
 }
 .custom-item {
-  width: calc(100% - 130px);
+  width: calc(100% - 190px);
   display: inline-block;
 }
 

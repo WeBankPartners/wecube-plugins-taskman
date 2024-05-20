@@ -1,17 +1,19 @@
 <template>
-  <div>
+  <div ref="maxheight">
     <Row>
-      <!--自定义表单项-->
-      <Col span="5" style="border: 1px solid #dcdee2; padding: 0 16px">
-        <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
-          <Divider plain>{{ $t('custom_form') }}</Divider>
+      <Col span="5" style="border: 1px solid #dcdee2;">
+        <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto', padding: '0 8px' }">
+          <!--自定义表单项-->
+          <Divider orientation="left" size="small">{{ $t('custom_form') }}</Divider>
           <CustomDraggable :sortable="$parent.isCheck !== 'Y'" :clone="cloneDog"></CustomDraggable>
+          <!--表单项组件库-->
+          <Divider orientation="left" size="small">{{ $t('tw_template_library') }}</Divider>
+          <ComponentLibraryList ref="libraryList" formType="requestInfo"></ComponentLibraryList>
         </div>
       </Col>
       <!--表单预览-->
       <Col span="14" style="border: 1px solid #dcdee2; padding: 0 16px; width: 57%; margin: 0 4px">
-        <div :style="{ height: MODALHEIGHT + 30 + 'px', overflow: 'auto' }">
-          <Divider>{{ $t('tw_preview') }}</Divider>
+        <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto', paddingBottom: '10px' }">
           <div class="title">
             <div class="title-text">
               {{ $t('request_form_details') }}
@@ -23,6 +25,7 @@
             <div :key="itemIndex" style="border: 2px dashed #A2EF4D; margin: 8px 0; padding: 8px;min-height: 48px;">
               <draggable
                 class="dragArea"
+                style="min-height: 40px;"
                 :list="item.attrs"
                 :sort="$parent.isCheck !== 'Y'"
                 group="people"
@@ -35,6 +38,7 @@
                   v-for="(element, eleIndex) in item.attrs"
                   :key="element.id"
                 >
+                  <Checkbox v-model="element.checked"></Checkbox>
                   <div
                     class="custom-title"
                     :style="
@@ -93,6 +97,13 @@
                 </div>
               </draggable>
             </div>
+            <Button
+              :key="itemIndex + '-'"
+              :disabled="getAddComponentDisabled(item.attrs)"
+              @click="createComponentLibrary"
+              size="small"
+              >新建组件</Button
+            >
           </template>
         </div>
       </Col>
@@ -103,7 +114,13 @@
             <Panel name="1">
               {{ $t('general_attributes') }}
               <div slot="content">
-                <Form :label-width="80" :disabled="editElement.controlSwitch === 'yes'">
+                <Form
+                  ref="attrForm"
+                  :model="editElement"
+                  :rules="ruleForm"
+                  :label-width="80"
+                  :disabled="editElement.controlSwitch === 'yes'"
+                >
                   <FormItem :label="$t('display_name')">
                     <Input
                       v-model="editElement.title"
@@ -112,7 +129,7 @@
                       placeholder=""
                     ></Input>
                   </FormItem>
-                  <FormItem :label="$t('tw_code')">
+                  <FormItem :label="$t('tw_code')" prop="name" style="margin-bottom:20px;">
                     <Input
                       v-model="editElement.name"
                       @on-change="paramsChanged"
@@ -285,6 +302,14 @@
       </Col>
     </Row>
     <DataSourceConfig ref="dataSourceConfigRef" @setDataOptions="setDataOptions"></DataSourceConfig>
+    <!--组件库弹框-->
+    <ComponentLibraryModal
+      ref="library"
+      formType="requestInfo"
+      v-model="componentVisible"
+      :checkedList="componentCheckedList"
+      @fetchList="$refs.libraryList.handleSearch()"
+    />
     <div class="footer">
       <div class="content">
         <Button @click="gotoForward" ghost type="primary" class="btn-footer-margin">{{ $t('forward') }}</Button>
@@ -307,12 +332,17 @@ import { saveRequsetForm, getRequestFormTemplateData, getAllDataModels, cleanFil
 import draggable from 'vuedraggable'
 import CustomDraggable from './components/custom-draggable.vue'
 import DataSourceConfig from './data-source-config.vue'
+import ComponentLibraryModal from './components/component-library-modal.vue'
+import ComponentLibraryList from './components/component-library-list.vue'
+import { uniqueArr, deepClone, findFirstDuplicateIndex } from '@/pages/util'
 export default {
   name: 'form-select',
   components: {
     draggable,
     CustomDraggable,
-    DataSourceConfig
+    DataSourceConfig,
+    ComponentLibraryModal,
+    ComponentLibraryList
   },
   data () {
     return {
@@ -360,19 +390,48 @@ export default {
         controlSwitch: 'no' // 控制审批/任务(下拉类型才有)
       },
       allEntityList: [],
-      formId: '' // 缓存表单id，供编辑使用
+      formId: '', // 缓存表单id，供编辑使用
+      componentVisible: false, // 组件库弹窗
+      componentCheckedList: [], // 当前选中组件库数据
+      // 校验编码不能重复
+      ruleForm: {
+        name: [
+          {
+            required: true,
+            validator: (rule, value, callback) => {
+              const arr = this.finalElement[0].attrs.map(i => i.name)
+              const index = findFirstDuplicateIndex(arr)
+              if (index > -1 && this.finalElement[0].attrs[index].name === this.editElement.name) {
+                return callback(new Error('编码不能重复'))
+              } else {
+                callback()
+              }
+            },
+            trigger: 'change'
+          }
+        ]
+      }
     }
   },
   props: ['isCheck'],
   computed: {
+    // 数据集回显
     getDataOptionsDisplay () {
       const options = JSON.parse(this.editElement.dataOptions || '[]')
       const labelArr = options.map(item => item.label)
       return labelArr.join(',')
+    },
+    // 新增组件库按钮禁用
+    getAddComponentDisabled () {
+      return function (val) {
+        const checkedList = val.filter(item => item.checked) || []
+        return checkedList.length === 0
+      }
     }
   },
   mounted () {
-    this.MODALHEIGHT = document.body.scrollHeight - 400
+    const clientHeight = document.documentElement.clientHeight
+    this.MODALHEIGHT = clientHeight - this.$refs.maxheight.getBoundingClientRect().top - 90
   },
   methods: {
     async loadPage (requestTemplateId) {
@@ -392,6 +451,7 @@ export default {
           ]
         }
       }
+      // 获取模型数据项下拉值
       this.getAllDataModels()
     },
     // 保存表单信息
@@ -453,6 +513,7 @@ export default {
       this.finalElement[itemIndex].attrs[eleIndex].isActive = true
       this.editElement = this.finalElement[itemIndex].attrs[eleIndex]
       this.openPanel = '1'
+      this.$refs.attrForm.validateField('name')
     },
     removeForm (itemIndex, eleIndex, element) {
       this.finalElement[itemIndex].attrs.splice(eleIndex, 1)
@@ -505,7 +566,6 @@ export default {
       newItem.title = newItem.title + itemNo
       newItem.name = newItem.name + itemNo
       newItem.isActive = true
-      this.specialId = newItem.id
       this.paramsChanged()
       this.finalElement[0].attrs.forEach(item => {
         item.isActive = false
@@ -519,19 +579,57 @@ export default {
       }
       return result
     },
-    log (item) {
+    log () {
       this.finalElement.forEach(l => {
+        // 从组件库拖拽进来的表单组，数据需要额外处理
+        const cloneAttrs = deepClone(l.attrs || [])
+        var deleteIdx = ''
+        l.attrs.forEach((attr, idx) => {
+          for (let key of Object.keys(attr)) {
+            if (!isNaN(Number(key))) {
+              deleteIdx = idx
+              cloneAttrs.push(attr[key])
+            }
+          }
+        })
+        if (typeof deleteIdx === 'number') {
+          cloneAttrs.splice(deleteIdx, 1)
+        }
+        l.attrs = cloneAttrs
+        // 组件库拖拽有重复元素，给出提示，并过滤数据
+        const { arr, sameArr } = uniqueArr(deepClone(l.attrs))
+        l.attrs = arr
+        const titleArr = sameArr.map(i => i.title) || []
+        const message = titleArr.join('、')
+        if (message) {
+          this.$Notice.warning({
+            title: this.$t('warning'),
+            render: h => {
+              return (
+                <div style="word-break:break-all;">
+                  表单已有表单项<span style="color: red;">{message}</span>,已过滤
+                </div>
+              )
+            }
+          })
+        } else {
+          this.$Notice.success({
+            title: this.$t('successful'),
+            desc: this.$t('successful')
+          })
+        }
+        // 处理拖拽进来的表单项
         l.attrs.forEach(attr => {
           attr.itemGroup = l.itemGroup
           attr.itemGroupName = l.itemGroupName
-          if (attr.id === this.specialId) {
+          if (attr.isActive) {
             this.editElement = attr
             this.openPanel = '1'
           }
         })
       })
     },
-    // 获取wecmdb下拉类型entity值
+    // 获取模型数据项下拉值
     async getAllDataModels () {
       const { data, statusCode } = await getAllDataModels()
       if (statusCode === 'OK') {
@@ -573,6 +671,12 @@ export default {
       } else if (element.elementType === 'wecmdbEntity') {
       }
       return res
+    },
+    // 新增组件库
+    createComponentLibrary () {
+      this.componentVisible = true
+      this.componentCheckedList = this.finalElement[0].attrs.filter(i => i.checked === true)
+      this.$refs.library.init()
     }
   }
 }
@@ -585,7 +689,9 @@ export default {
   margin-bottom: 16px;
 }
 .list-group-item- {
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
   margin: 8px 0;
 }
 .title {
@@ -610,13 +716,13 @@ export default {
   }
 }
 .custom-title {
-  width: 80px;
+  width: 125px;
   display: inline-block;
-  text-align: right;
+  text-align: left;
   word-wrap: break-word;
 }
 .custom-item {
-  width: calc(100% - 130px);
+  width: calc(100% - 190px);
   display: inline-block;
 }
 .btn-footer-margin {

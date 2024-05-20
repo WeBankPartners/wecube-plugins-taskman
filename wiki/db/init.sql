@@ -553,6 +553,8 @@ alter table form_item_template add column control_switch varchar(16) DEFAULT NUL
 alter table form_item_template add column form_item_library varchar(64) DEFAULT NULL COMMENT '表单项组件库id';
 alter table form_item_template add column hidden_condition text DEFAULT NULL COMMENT '隐藏条件';
 alter table task_handle add column proc_def_result varchar(255) DEFAULT NULL COMMENT '编排选项结果';
+alter table task_handle_template add column assign_rule text DEFAULT NULL COMMENT '分配规则';
+alter table task_handle_template add column filter_rule text DEFAULT NULL COMMENT '下拉框过滤规则';
 
 
 DROP TABLE IF EXISTS `form_template_library`;

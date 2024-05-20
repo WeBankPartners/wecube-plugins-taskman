@@ -1,5 +1,7 @@
 package models
 
+import "strings"
+
 type RoleTable struct {
 	Id          string `json:"id" xorm:"'id' pk" primary-key:"id"`
 	DisplayName string `json:"displayName" xorm:"display_name"`
@@ -23,4 +25,18 @@ type RoleApplyDto struct {
 	Role        *SimpleLocalRoleDto `json:"role"`
 	Status      string              `json:"status"`     // init,approve,deny,expire,preExpried
 	ExpireTime  string              `json:"expireTime"` //角色过期时间,""表示永久生效
+}
+
+type RoleTableSort []*RoleTable
+
+func (s RoleTableSort) Len() int {
+	return len(s)
+}
+
+func (s RoleTableSort) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s RoleTableSort) Less(i, j int) bool {
+	return strings.Compare(s[i].Id, s[j].Id) < 0
 }

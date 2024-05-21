@@ -1497,7 +1497,7 @@ func getRequestForm(request *models.RequestTable, taskId, userToken, language st
 		var items []*models.FormItemTemplateTable
 		dao.X.SQL("select * from form_item_template where form_template in (select id from form_template  where request_template=? and"+
 			" request_form_type = ?) order by item_group,sort", request.RequestTemplate, models.RequestFormTypeMessage).Find(&items)
-		customForm.Title = items
+		customForm.Title = models.ConvertFormItemTemplateModelList2Dto(items, &models.FormTemplateTable{})
 	}
 	form.CustomForm = customForm
 
@@ -1902,7 +1902,7 @@ func (s *RequestService) AutoExecTaskHandle(request models.RequestTable, userTok
 	}
 	for _, formItemTemplate := range customForm.Title {
 		if v, ok := customForm.Value[formItemTemplate.Name]; ok {
-			formItemDtoMap[formItemTemplate.Name] = models.ConvertFormItemTemplateAndFormItem2Dto(formItemTemplate, v)
+			formItemDtoMap[formItemTemplate.Name] = models.ConvertFormItemTemplateDtoAndFormItem2Dto(formItemTemplate, v)
 		}
 	}
 	for _, task := range taskList {

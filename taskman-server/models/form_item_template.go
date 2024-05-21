@@ -220,7 +220,7 @@ func ConvertFormItemTemplateModelList2Dto(tableList []*FormItemTemplateTable, it
 	return dtoList
 }
 
-func ConvertFormItemTemplateAndFormItem2Dto(formItemTemplate *FormItemTemplateTable, value interface{}) *FormItemDto {
+func ConvertFormItemTemplateDtoAndFormItem2Dto(formItemTemplate *FormItemTemplateDto, value interface{}) *FormItemDto {
 	return &FormItemDto{
 		Name:          formItemTemplate.Name,
 		ControlSwitch: formItemTemplate.ControlSwitch,

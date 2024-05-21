@@ -323,8 +323,8 @@ type RequestForm struct {
 }
 
 type CustomForm struct {
-	Title []*FormItemTemplateTable `json:"title"`
-	Value map[string]interface{}   `json:"value"`
+	Title []*FormItemTemplateDto `json:"title"`
+	Value map[string]interface{} `json:"value"`
 }
 
 type FilterItem struct {

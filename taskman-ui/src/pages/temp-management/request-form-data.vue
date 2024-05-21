@@ -331,7 +331,7 @@
             <Panel name="2">
               {{ $t('extended_attributes') }}
               <div slot="content">
-                <Form :label-width="80" :disabled="editElement.controlSwitch === 'yes'">
+                <Form :label-width="80" label-position="left" :disabled="editElement.controlSwitch === 'yes'">
                   <FormItem :label="$t('validation_rules')">
                     <Input
                       v-model="editElement.regular"
@@ -339,6 +339,14 @@
                       :placeholder="$t('only_supports_regular')"
                       @on-change="paramsChanged"
                     ></Input>
+                  </FormItem>
+                  <FormItem label="" :label-width="0">
+                    <HiddenCondition
+                      :disabled="$parent.isCheck === 'Y'"
+                      :finalElement="finalElement"
+                      v-model="editElement.hiddenCondition"
+                      :name="editElement.name"
+                    ></HiddenCondition>
                   </FormItem>
                 </Form>
               </div>
@@ -397,7 +405,6 @@
       module="data-form"
       v-show="['custom'].includes(itemGroupType)"
     ></RequestFormDataCustom>
-
     <!-- 编排表单配置 -->
     <RequestFormDataWorkflow
       ref="requestFormDataWorkflowRef"
@@ -407,6 +414,7 @@
       module="data-form"
       v-show="['workflow', 'optional'].includes(itemGroupType)"
     ></RequestFormDataWorkflow>
+    <!--数据集弹框-->
     <DataSourceConfig ref="dataSourceConfigRef" @setDataOptions="setDataOptions"></DataSourceConfig>
     <!--组件库弹框-->
     <ComponentLibraryModal
@@ -442,6 +450,7 @@ import CustomDraggable from './components/custom-draggable.vue'
 import DataSourceConfig from './data-source-config.vue'
 import ComponentLibraryModal from './components/component-library-modal.vue'
 import ComponentLibraryList from './components/component-library-list.vue'
+import HiddenCondition from './components/hidden-condition.vue'
 import { uniqueArr, deepClone, findFirstDuplicateIndex } from '@/pages/util'
 export default {
   name: 'form-select',
@@ -452,7 +461,8 @@ export default {
     CustomDraggable,
     DataSourceConfig,
     ComponentLibraryModal,
-    ComponentLibraryList
+    ComponentLibraryList,
+    HiddenCondition
   },
   data () {
     return {
@@ -510,7 +520,8 @@ export default {
         dataOptions: '[]',
         refEntity: '',
         refPackageName: '',
-        controlSwitch: 'no' // 控制审批/任务(下拉类型才有)
+        controlSwitch: 'no', // 控制审批/任务(下拉类型才有)
+        hiddenCondition: [] // 隐藏条件
       },
       allEntityList: [],
       groupStyle: {
@@ -534,8 +545,8 @@ export default {
       nextGroupInfo: {},
       componentVisible: false, // 组件库弹窗
       componentCheckedList: [], // 当前选中组件库数据
-      // 校验编码不能重复
       ruleForm: {
+        // 校验编码不能重复
         name: [
           {
             required: true,

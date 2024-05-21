@@ -413,7 +413,7 @@ export default {
                         displayName={j.elementType === 'wecmdbEntity' ? 'displayName' : j.entity ? 'key_name' : 'label'}
                         displayValue={j.elementType === 'wecmdbEntity' ? 'id' : j.entity ? 'guid' : 'value'}
                         options={this.filterOptions[j.name]}
-                        multiple={j.multiple === 'Y' || j.multiple === 'yes'}
+                        multiple={true}
                         style="width:100%"
                       ></LimitSelect>
                     )
@@ -437,7 +437,7 @@ export default {
                         displayName={j.elementType === 'wecmdbEntity' ? 'displayName' : j.entity ? 'key_name' : 'label'}
                         displayValue={j.elementType === 'wecmdbEntity' ? 'id' : j.entity ? 'guid' : 'value'}
                         options={this.filterOptions[j.name]}
-                        multiple={j.multiple === 'Y' || j.multiple === 'yes'}
+                        multiple={true}
                         style="width:100%"
                       ></LimitSelect>
                     )

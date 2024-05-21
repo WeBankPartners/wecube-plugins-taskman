@@ -23,70 +23,73 @@
         <div class="form">
           <Form :model="value" ref="form" label-position="left" :label-width="100">
             <Row type="flex" justify="start" :key="index">
-              <Col v-for="i in formOptions" :key="i.id" :span="i.width || 24">
-                <FormItem
-                  :label="i.title"
-                  :prop="i.name"
-                  :required="i.required === 'yes'"
-                  :rules="
-                    i.required === 'yes'
-                      ? [
-                          {
-                            required: true,
-                            message: `${i.title}${$t('can_not_be_empty')}`,
-                            trigger: ['change', 'blur']
-                          }
-                        ]
-                      : []
-                  "
-                >
-                  <!--输入框-->
-                  <Input
-                    v-if="i.elementType === 'input'"
-                    v-model="value[i.name]"
-                    :disabled="i.isEdit === 'no' || formDisable"
-                    style="width: calc(100% - 20px)"
-                  ></Input>
-                  <Input
-                    v-else-if="i.elementType === 'textarea'"
-                    v-model="value[i.name]"
-                    type="textarea"
-                    :disabled="i.isEdit === 'no' || formDisable"
-                    style="width: calc(100% - 20px)"
-                  ></Input>
-                  <LimitSelect
-                    v-if="i.elementType === 'select' || i.elementType === 'wecmdbEntity'"
-                    v-model="value[i.name]"
-                    :displayName="i.elementType === 'wecmdbEntity' ? 'displayName' : i.entity ? 'key_name' : 'label'"
-                    :displayValue="i.elementType === 'wecmdbEntity' ? 'id' : i.entity ? 'guid' : 'value'"
-                    :options="value[i.name + 'Options']"
-                    :disabled="i.isEdit === 'no' || formDisable"
-                    :multiple="i.multiple === 'Y' || i.multiple === 'yes'"
-                    style="width: calc(100% - 20px)"
-                    @open-change="handleRefOpenChange(i, value, index)"
+              <template v-for="i in formOptions">
+                <Col v-if="!value[i.name + 'Hidden']" :key="i.id" :span="i.width || 24">
+                  <FormItem
+                    :key="i.id"
+                    :label="i.title"
+                    :prop="i.name"
+                    :required="i.required === 'yes'"
+                    :rules="
+                      i.required === 'yes'
+                        ? [
+                            {
+                              required: true,
+                              message: `${i.title}${$t('can_not_be_empty')}`,
+                              trigger: ['change', 'blur']
+                            }
+                          ]
+                        : []
+                    "
                   >
-                  </LimitSelect>
-                  <!--自定义分析类型-->
-                  <Input
-                    v-else-if="i.elementType === 'calculate'"
-                    :value="value[i.name]"
-                    type="textarea"
-                    :disabled="true"
-                    style="width: calc(100% - 20px)"
-                  ></Input>
-                  <!--日期时间类型-->
-                  <DatePicker
-                    v-else-if="i.elementType === 'datePicker'"
-                    :value="value[i.name]"
-                    @on-change="$event => handleTimeChange($event, value, i.name)"
-                    format="yyyy-MM-dd HH:mm:ss"
-                    :disabled="i.isEdit === 'no' || formDisable"
-                    type="datetime"
-                    style="width: calc(100% - 20px)"
-                  >
-                  </DatePicker>
-                </FormItem>
-              </Col>
+                    <!--输入框-->
+                    <Input
+                      v-if="i.elementType === 'input'"
+                      v-model="value[i.name]"
+                      :disabled="i.isEdit === 'no' || formDisable"
+                      style="width: calc(100% - 20px)"
+                    ></Input>
+                    <Input
+                      v-else-if="i.elementType === 'textarea'"
+                      v-model="value[i.name]"
+                      type="textarea"
+                      :disabled="i.isEdit === 'no' || formDisable"
+                      style="width: calc(100% - 20px)"
+                    ></Input>
+                    <LimitSelect
+                      v-if="i.elementType === 'select' || i.elementType === 'wecmdbEntity'"
+                      v-model="value[i.name]"
+                      :displayName="i.elementType === 'wecmdbEntity' ? 'displayName' : i.entity ? 'key_name' : 'label'"
+                      :displayValue="i.elementType === 'wecmdbEntity' ? 'id' : i.entity ? 'guid' : 'value'"
+                      :options="value[i.name + 'Options']"
+                      :disabled="i.isEdit === 'no' || formDisable"
+                      :multiple="i.multiple === 'Y' || i.multiple === 'yes'"
+                      style="width: calc(100% - 20px)"
+                      @open-change="handleRefOpenChange(i, value, index)"
+                    >
+                    </LimitSelect>
+                    <!--自定义分析类型-->
+                    <Input
+                      v-else-if="i.elementType === 'calculate'"
+                      :value="value[i.name]"
+                      type="textarea"
+                      :disabled="true"
+                      style="width: calc(100% - 20px)"
+                    ></Input>
+                    <!--日期时间类型-->
+                    <DatePicker
+                      v-else-if="i.elementType === 'datePicker'"
+                      :value="value[i.name]"
+                      @on-change="$event => handleTimeChange($event, value, i.name)"
+                      format="yyyy-MM-dd HH:mm:ss"
+                      :disabled="i.isEdit === 'no' || formDisable"
+                      type="datetime"
+                      style="width: calc(100% - 20px)"
+                    >
+                    </DatePicker>
+                  </FormItem>
+                </Col>
+              </template>
             </Row>
           </Form>
         </div>
@@ -127,9 +130,10 @@
 </template>
 
 <script>
+import LimitSelect from '@/pages/components/limit-select.vue'
 import { getRefOptions, getWeCmdbOptions, saveFormData, getExpressionData } from '@/api/server'
 import { debounce, deepClone } from '@/pages/util'
-import LimitSelect from '@/pages/components/limit-select.vue'
+import { evaluateCondition } from '../evaluate'
 import dayjs from 'dayjs'
 export default {
   components: {
@@ -163,7 +167,7 @@ export default {
     return {
       requestData: [],
       activeTab: '',
-      activeItem: {},
+      activeItem: {}, // 当前选中数据
       refKeys: [], // 引用类型字段集合select类型
       calculateKeys: [], // 自定义计算分析类型集合
       formOptions: [],
@@ -234,6 +238,30 @@ export default {
       },
       deep: true,
       immediate: true
+    },
+    tableData: {
+      handler (val) {
+        if (val) {
+          val.forEach(item => {
+            // 表单隐藏逻辑
+            Object.keys(item).forEach(key => {
+              const find = this.formOptions.find(i => i.name === key) || {}
+              if (find.hiddenCondition) {
+                const conditions = find.hiddenCondition || []
+                item[key + 'Hidden'] = conditions.every(j => {
+                  return evaluateCondition(j, item[j.name])
+                })
+                // 隐藏的表单项清空
+                if (item[key + 'Hidden']) {
+                  item[key] = ''
+                }
+              }
+            })
+          })
+        }
+      },
+      immediate: true,
+      deep: true
     }
   },
   methods: {

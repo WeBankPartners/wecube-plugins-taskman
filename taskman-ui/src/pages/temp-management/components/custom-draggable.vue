@@ -74,7 +74,8 @@ export default {
           attrDefName: '',
           attrDefDataType: '',
           refEntity: '',
-          refPackageName: ''
+          refPackageName: '',
+          hiddenCondition: [] // 隐藏条件
         },
         {
           id: 3,
@@ -104,7 +105,8 @@ export default {
           attrDefName: '',
           attrDefDataType: '',
           refEntity: '',
-          refPackageName: ''
+          refPackageName: '',
+          hiddenCondition: [] // 隐藏条件
         },
         {
           id: 2,
@@ -135,7 +137,8 @@ export default {
           attrDefDataType: '',
           refEntity: '',
           refPackageName: '',
-          controlSwitch: 'no'
+          controlSwitch: 'no',
+          hiddenCondition: [] // 隐藏条件
         },
         {
           id: 5,
@@ -166,7 +169,8 @@ export default {
           attrDefDataType: '',
           refEntity: '',
           refPackageName: '',
-          controlSwitch: 'no'
+          controlSwitch: 'no',
+          hiddenCondition: [] // 隐藏条件
         },
         {
           id: 6,
@@ -197,7 +201,8 @@ export default {
           attrDefName: '',
           attrDefDataType: '',
           refEntity: '',
-          refPackageName: ''
+          refPackageName: '',
+          hiddenCondition: [] // 隐藏条件
         }
       ]
     }

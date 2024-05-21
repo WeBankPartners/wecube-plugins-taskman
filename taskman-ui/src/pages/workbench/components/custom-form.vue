@@ -1,9 +1,10 @@
+<!--信息表单-->
 <template>
   <div class="workbench-custom-form">
     <Form :model="value" ref="form" :label-position="labelPosition" :label-width="labelWidth">
       <Row type="flex" justify="start" :gutter="20">
-        <template v-for="(i, index) in options">
-          <Col :span="i.width || 24" :key="index">
+        <template v-for="(i, index) in formOptions">
+          <Col v-if="!i.hidden" :span="i.width || 24" :key="index">
             <FormItem
               :label="i.title"
               :prop="i.name"
@@ -71,23 +72,25 @@
 <script>
 import LimitSelect from '@/pages/components/limit-select.vue'
 import { getRefOptions, getWeCmdbOptions } from '@/api/server'
+import { evaluateCondition } from '../evaluate'
+import { deepClone } from '../../util'
 import dayjs from 'dayjs'
 export default {
   components: {
     LimitSelect
   },
   props: {
-    requestId: {
-      type: String,
-      default: ''
+    options: {
+      type: Array,
+      default: () => []
     },
     value: {
       type: Object,
       default: () => {}
     },
-    options: {
-      type: Array,
-      default: () => []
+    requestId: {
+      type: String,
+      default: ''
     },
     labelWidth: {
       type: Number,
@@ -105,7 +108,8 @@ export default {
   data () {
     return {
       refKeys: [],
-      entityData: {}
+      entityData: {},
+      formOptions: deepClone(this.options)
     }
   },
   watch: {
@@ -114,6 +118,18 @@ export default {
         if (val) {
           Object.keys(val).forEach(key => {
             this.entityData[key] = val[key]
+            // 表单隐藏逻辑
+            const find = this.formOptions.find(i => i.name === key) || {}
+            if (find.hiddenCondition) {
+              const conditions = find.hiddenCondition || []
+              find.hidden = conditions.every(j => {
+                return evaluateCondition(j, val[j.name])
+              })
+              // 隐藏的表单项清空
+              if (find.hidden) {
+                this.$emit('clearHiddenValue', key)
+              }
+            }
           })
         }
       },

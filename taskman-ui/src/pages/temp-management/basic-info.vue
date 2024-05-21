@@ -575,7 +575,6 @@ export default {
         this.useRolesOptions = data
         if (type && this.basicInfo.id === '' && this.useRolesOptions.length > 0) {
           this.basicInfo.useRoles.push(this.useRolesOptions[0].id)
-          this.basicInfo.pendingRole = this.useRolesOptions[0].id
           this.getPendingHandlerRoles()
         }
       }

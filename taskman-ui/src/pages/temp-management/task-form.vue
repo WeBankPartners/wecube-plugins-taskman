@@ -423,7 +423,7 @@
                   <Panel name="2">
                     {{ $t('extended_attributes') }}
                     <div slot="content">
-                      <Form :label-width="80">
+                      <Form :label-width="80" label-position="left">
                         <FormItem :label="$t('validation_rules')">
                           <Input
                             v-model="editElement.regular"
@@ -431,6 +431,14 @@
                             :placeholder="$t('only_supports_regular')"
                             @on-change="paramsChanged"
                           ></Input>
+                        </FormItem>
+                        <FormItem label="" :label-width="0">
+                          <HiddenCondition
+                            :disabled="$parent.isCheck === 'Y'"
+                            :finalElement="finalElement"
+                            v-model="editElement.hiddenCondition"
+                            :name="editElement.name"
+                          ></HiddenCondition>
                         </FormItem>
                       </Form>
                     </div>
@@ -475,6 +483,7 @@
         module="other"
         v-show="['workflow', 'optional'].includes(itemGroupType)"
       ></RequestFormDataWorkflow>
+      <!--数据集弹框-->
       <DataSourceConfig ref="dataSourceConfigRef" @setDataOptions="setDataOptions"></DataSourceConfig>
       <!--组件库弹框-->
       <ComponentLibraryModal
@@ -540,6 +549,7 @@ import {
 } from '@/api/server.js'
 import ComponentLibraryModal from './components/component-library-modal.vue'
 import ComponentLibraryList from './components/component-library-list.vue'
+import HiddenCondition from './components/hidden-condition.vue'
 import { uniqueArr, deepClone, findFirstDuplicateIndex } from '@/pages/util'
 export default {
   name: 'BasicInfo',
@@ -551,7 +561,8 @@ export default {
     CustomDraggable,
     DataSourceConfig,
     ComponentLibraryModal,
-    ComponentLibraryList
+    ComponentLibraryList,
+    HiddenCondition
   },
   data () {
     return {
@@ -620,7 +631,8 @@ export default {
         width: 24,
         dataOptions: '[]',
         refEntity: '',
-        refPackageName: ''
+        refPackageName: '',
+        hiddenCondition: [] // 隐藏条件
       },
       activeTag: {
         // 正在编辑的组
@@ -652,8 +664,8 @@ export default {
       forkOptions: [], // 判断分支列表
       componentVisible: false, // 组件库弹窗
       componentCheckedList: [], // 当前选中组件库数据
-      // 校验编码不能重复
       ruleForm: {
+        // 校验编码不能重复
         name: [
           {
             required: true,

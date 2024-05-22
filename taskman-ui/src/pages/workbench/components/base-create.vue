@@ -98,9 +98,10 @@
                 <span class="sub-header">{{ $t('tw_information_form') }}</span>
               </Divider>
               <CustomForm
-                v-model="form.customForm.value"
                 :options="form.customForm.title"
+                v-model="form.customForm.value"
                 :requestId="requestId"
+                @clearHiddenValue="clearHiddenValue"
               ></CustomForm>
             </template>
             <Divider style="margin: 20px 0 30px 0" orientation="left">
@@ -457,6 +458,9 @@ export default {
     })
   },
   methods: {
+    clearHiddenValue (key) {
+      this.form.customForm.value[key] = ''
+    },
     handleRefTypeChange () {
       this.form.refId = ''
       this.$refs.refSelect.query = ''
@@ -782,6 +786,10 @@ export default {
                 delete v.addFlag
                 v.id = ''
                 v.entityData._id = ''
+              }
+              // 删除表单隐藏属性
+              for (const key in v.entityData) {
+                delete v.entityData[key + 'Hidden']
               }
             })
           }

@@ -2347,7 +2347,11 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 						}
 					}
 					if isMulti {
-						tmpRowObj.EntityData[rowItem.Name] = strings.Split(rowItem.Value, ",")
+						if strings.TrimSpace(rowItem.Value) == "" {
+							tmpRowObj.EntityData[rowItem.Name] = []string{}
+						} else {
+							tmpRowObj.EntityData[rowItem.Name] = strings.Split(rowItem.Value, ",")
+						}
 					} else {
 						tmpRowObj.EntityData[rowItem.Name] = rowItem.Value
 					}

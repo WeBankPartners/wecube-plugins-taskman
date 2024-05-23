@@ -535,9 +535,9 @@ export default {
         this.form.customForm.title.forEach(item => {
           // 默认清空标志为false,赋值默认值
           if (item.defaultClear === 'no') {
-            this.form.customForm.value[item.name] = item.defaultValue || ''
+            this.$set(this.form.customForm.value, item.name, item.defaultValue || '')
           } else {
-            this.form.customForm.value[item.name] = ''
+            this.$set(this.form.customForm.value, item.name, '')
           }
         })
         this.expireDay = data.expireDay

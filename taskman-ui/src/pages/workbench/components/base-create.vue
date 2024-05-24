@@ -467,6 +467,7 @@ export default {
     },
     handleRefOpenChange (flag) {
       if (flag) {
+        this.refOptions = []
         this.remoteRefData(this.form.refId)
       }
     },

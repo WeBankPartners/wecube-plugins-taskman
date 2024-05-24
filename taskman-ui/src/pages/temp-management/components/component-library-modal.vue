@@ -2,15 +2,19 @@
   <Modal
     class="component-library-dialog"
     v-model="value"
-    title=""
     :mask-closable="false"
     :closable="false"
     :footer-hide="true"
-    width="1200"
+    width="80%"
   >
     <div class="content">
       <div v-if="isAdd" class="left">
-        <span class="title">新建组件</span>
+        <div class="w-header" slot="title">
+          <div class="title">
+            新建组件
+            <span class="underline"></span>
+          </div>
+        </div>
         <Form :label-width="80">
           <FormItem label="组件名" required>
             <Input v-model.trim="form.name" :maxlength="20" />
@@ -25,7 +29,12 @@
         <Button type="primary" @click="handleSave" style="float: right;" :disabled="!form.name">保存</Button>
       </div>
       <div class="right">
-        <span class="title">组件列表</span>
+        <div class="w-header" slot="title">
+          <div class="title">
+            组件列表
+            <span class="underline"></span>
+          </div>
+        </div>
         <div class="query">
           <Select
             v-model="query.formType"
@@ -74,7 +83,9 @@
           show-total
         />
       </div>
-      <Icon type="md-close" class="close" :size="24" @click="handleClose" />
+      <div class="close">
+        <Icon type="md-close" :size="24" @click="handleClose" />
+      </div>
     </div>
   </Modal>
 </template>
@@ -199,10 +210,6 @@ export default {
     }
   },
   computed: {
-    getFormItemsDisplay () {
-      const arr = this.checkedList.map(i => i.title) || []
-      return arr.join(',')
-    },
     getFormTypeDisplay () {
       if (this.form.formType === 'requestInfo') {
         // 信息表单
@@ -224,12 +231,29 @@ export default {
         }
       },
       immediate: true
+    },
+    checkedList: {
+      handler (val) {
+        if (val && val.length > 0) {
+          if (val.length === 1) {
+            this.form.name = `${val[0].title}`
+          } else {
+            this.form.name = `${val[0].title}等${val.length}项`
+          }
+        }
+      },
+      immediate: true
     }
   },
   methods: {
     init () {
-      this.form.name = ''
-      this.getList()
+      this.query = {
+        name: '',
+        formType: '',
+        createdBy: ''
+      }
+      this.tableData = []
+      this.handleSearch()
       this.getFormTypeList()
       this.getCreatedByList()
     },
@@ -336,6 +360,7 @@ export default {
   .content {
     display: flex;
     position: relative;
+    min-height: 600px;
     .left {
       width: 360px;
       padding-right: 20px;
@@ -365,6 +390,27 @@ export default {
     color: #17233d;
     font-weight: 500;
     margin-bottom: 10px;
+  }
+  .w-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    .title {
+      font-size: 16px;
+      font-weight: bold;
+      margin: 0 10px;
+      .underline {
+        display: block;
+        margin-top: -13px;
+        margin-left: -6px;
+        width: 100%;
+        padding: 0 6px;
+        height: 12px;
+        border-radius: 12px;
+        background-color: #c6eafe;
+        box-sizing: content-box;
+      }
+    }
   }
 }
 </style>

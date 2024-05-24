@@ -28,7 +28,8 @@ export default {
             { label: this.$t('status_complete'), value: 'Completed' },
             { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)' },
             { label: this.$t('status_faulted'), value: 'Faulted' },
-            { label: this.$t('status_draft'), value: 'Draft' }
+            { label: this.$t('status_draft'), value: 'Draft' },
+            { label: this.$t('tw_stop'), value: 'Stop' }
           ]
         },
         createdBy: {

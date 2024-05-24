@@ -35,6 +35,7 @@
       </draggable>
     </Card>
     <Page
+      v-show="data.length"
       class="list-page"
       :total="pagination.total"
       @on-change="handlePage"
@@ -254,7 +255,7 @@ export default {
       align-items: center;
     }
     &-page {
-      text-align: left;
+      text-align: right;
       margin: 10px 5px;
       width: 100%;
     }

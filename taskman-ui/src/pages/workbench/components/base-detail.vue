@@ -394,7 +394,8 @@ export default {
           { label: this.$t('status_complete'), value: 'Completed', color: '#7ac756' },
           { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)', color: '#f26161' },
           { label: this.$t('status_faulted'), value: 'Faulted', color: '#e29836' },
-          { label: this.$t('status_draft'), value: 'Draft', color: '#808695' }
+          { label: this.$t('status_draft'), value: 'Draft', color: '#808695' },
+          { label: this.$t('tw_stop'), value: 'Stop', color: '#ed4014' }
         ]
         const item = list.find(i => i.value === val) || {}
         return item.label

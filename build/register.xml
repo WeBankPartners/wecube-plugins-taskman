@@ -12,8 +12,8 @@
         <menu code='TASK_TASK_MANAGEMENT' cat='JOBS' displayName="Task Management" localDisplayName="任务管理">/taskman/task-mgmt</menu> -->
     <menus>
         <menu code='TASK_WORKBENCH' cat='JOBS' displayName="Dashboard" localDisplayName="工作台">/taskman/workbench/dashboard</menu>
-        <menu code='TASK_TEMPLATE_GROUP_MANAGEMENT' cat='JOBS' displayName="Template Group Management" localDisplayName="模板组管理">/taskman/template-group</menu>
         <menu code='TASK_TEMPLATE_MANAGEMENT' cat='JOBS' displayName="Template Management" localDisplayName="模板管理">/taskman/template-mgmt</menu>
+        <menu code='TASK_TEMPLATE_GROUP_MANAGEMENT' cat='JOBS' displayName="Template Group Management" localDisplayName="模板组管理">/taskman/template-group</menu>
         <menu code='TASK_REQUEST_AUDIT' cat='ADMIN' displayName="Request Audit" localDisplayName="请求审计">/taskman/requestAudit</menu>
     </menus>
 

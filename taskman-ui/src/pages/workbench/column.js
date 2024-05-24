@@ -55,7 +55,8 @@ export default {
               { label: this.$t('status_complete'), value: 'Completed', color: '#7ac756' },
               { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)', color: '#ed4014' },
               { label: this.$t('status_faulted'), value: 'Faulted', color: '#e29836' },
-              { label: this.$t('status_draft'), value: 'Draft', color: '#808695' }
+              { label: this.$t('status_draft'), value: 'Draft', color: '#808695' },
+              { label: this.$t('tw_stop'), value: 'Stop', color: '#ed4014' }
             ]
             const item = list.find(i => i.value === params.row.status)
             // 被退回的草稿添加标签

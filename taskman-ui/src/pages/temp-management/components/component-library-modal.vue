@@ -16,7 +16,7 @@
             <Input v-model.trim="form.name" :maxlength="20" />
           </FormItem>
           <FormItem label="表单类型">
-            <Tag color="primary">{{ getFormTypeDisplay }}</Tag>
+            <Tag :color="form.formType === 'requestInfo' ? 'default' : 'primary'">{{ getFormTypeDisplay }}</Tag>
           </FormItem>
           <FormItem label="表单项">
             <Tag v-for="(i, index) in checkedList" :key="index">{{ i.title }}</Tag>
@@ -152,14 +152,18 @@ export default {
           minWidth: 140,
           render: (h, params) => {
             const { formType } = params.row
-            return <span>{formType === 'requestInfo' ? this.$t('tw_information_form') : formType}</span>
+            return (
+              <Tag color={formType === 'requestInfo' ? 'default' : 'primary'}>
+                {formType === 'requestInfo' ? this.$t('tw_information_form') : formType}
+              </Tag>
+            )
           }
         },
         {
           title: '表单项',
           key: 'formItems',
           align: 'left',
-          minWidth: 200,
+          minWidth: 250,
           render: (h, params) => {
             const list = (params.row.formItems && params.row.formItems.split('、')) || []
             return <ScrollTag list={list} />
@@ -175,7 +179,6 @@ export default {
           title: this.$t('t_action'),
           key: 'action',
           align: 'center',
-          fixed: 'right',
           width: 80,
           render: (h, params) => {
             return (

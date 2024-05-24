@@ -215,6 +215,8 @@ export default {
   },
   data () {
     return {
+      jumpFrom: this.$route.query.jumpFrom || '', // 首页tabName
+      type: this.$route.query.type, // 首页类型type
       isHandle: this.$route.query.isHandle === 'Y', // 处理标志
       requestTemplate: this.$route.query.requestTemplate, // 请求模板ID
       requestId: this.$route.query.requestId, // 请求ID
@@ -410,9 +412,7 @@ export default {
             desc: this.$t('successful')
           })
           this.$router.push({
-            path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=${
-              this.detail.status === 'InProgress' ? 2 : 3
-            }`
+            path: `/taskman/workbench?tabName=${this.jumpFrom}&actionName=${this.actionName}&type=${this.type}`
           })
         }
       }

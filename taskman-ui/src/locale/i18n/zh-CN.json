@@ -468,5 +468,6 @@
   "tw_empty_search": "空值搜索",
   "tw_normal_search": "常规搜索",
   "tw_template_library": "表单项组件库",
-  "tw_stop": "暂停"
+  "tw_stop": "暂停",
+  "tw_expireTime": "有效期"
 }

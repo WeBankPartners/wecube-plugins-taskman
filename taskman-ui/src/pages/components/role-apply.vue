@@ -156,7 +156,8 @@ export default {
             return (
               <div style={this.getExpireStyle(params.row)}>
                 <span>{this.getExpireTips(params.row)}</span>
-                {['preExpired', 'expire'].includes(params.row.status) && this.activeTab !== 'deleted' && (
+                {['preExpired', 'expire'].includes(params.row.status) &&
+                  !['pending', 'deny', 'deleted'].includes(this.activeTab) && (
                   <Icon
                     type="md-time"
                     size="24"
@@ -184,12 +185,14 @@ export default {
     getExpireStyle () {
       return function ({ status }) {
         let color = ''
-        if (status === 'preExpired') {
-          color = '#ff9900'
-        } else if (status === 'expire') {
-          color = '#ed4014'
-        } else {
-          color = '#19be6b'
+        if (this.activeTab !== 'pending') {
+          if (status === 'preExpired') {
+            color = '#ff9900'
+          } else if (status === 'expire') {
+            color = '#ed4014'
+          } else {
+            color = '#19be6b'
+          }
         }
         return { color: color, display: 'flex', alignItems: 'center' }
       }
@@ -197,18 +200,22 @@ export default {
     getExpireTips () {
       return function ({ status, expireTime }) {
         let text = ''
-        if (status === 'preExpired') {
-          // 即将到期
-          text = `${expireTime}${this.$t('tw_willExpire')}`
-        } else if (status === 'expire') {
-          // 已过期
-          text = `${expireTime}${this.$t('tw_hasExpired')}`
-        } else if (expireTime) {
-          // 到期时间
-          text = `${expireTime}${this.$t('tw_expire')}`
-        } else if (!expireTime) {
-          // 永久有效
-          text = `${this.$t('tw_forever')}`
+        if (this.activeTab === 'pending') {
+          text = expireTime || this.$t('tw_forever')
+        } else {
+          if (status === 'preExpired') {
+            // 即将到期
+            text = `${expireTime}${this.$t('tw_willExpire')}`
+          } else if (status === 'expire') {
+            // 已过期
+            text = `${expireTime}${this.$t('tw_hasExpired')}`
+          } else if (expireTime) {
+            // 到期时间
+            text = `${expireTime}${this.$t('tw_expire')}`
+          } else if (!expireTime) {
+            // 永久有效
+            text = `${this.$t('tw_forever')}`
+          }
         }
         return text
       }
@@ -239,6 +246,7 @@ export default {
     openModal () {
       this.showModal = true
       this.selectedRole = []
+      this.expireTime = ''
       this.getTableData()
     },
     tabChange (val) {
@@ -317,6 +325,7 @@ export default {
       }
     },
     openTimeModal (row) {
+      this.modalExpireTime = ''
       this.timeModalVisible = true
       this.editRow = row
     },

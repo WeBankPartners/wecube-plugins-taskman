@@ -12,7 +12,7 @@
           <Button shape="circle" style="border:1px solid #dd6da6; color: #dd6da6;">{{ $t('tw_custom_form') }}</Button>
         </FormItem>
         <FormItem :label="$t('tw_form_name')">
-          <Input v-model="group.itemGroupName" style="width: 96%;" @on-change="paramsChanged"></Input>
+          <Input v-model.trim="group.itemGroupName" style="width: 96%;" @on-change="paramsChanged"></Input>
           <span style="color: red">*</span>
           <span v-if="group.itemGroupName === ''" style="color: red"
             >{{ $t('tw_form_name') }}{{ $t('can_not_be_empty') }}</span

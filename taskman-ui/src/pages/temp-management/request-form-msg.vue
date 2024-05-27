@@ -38,7 +38,7 @@
                   v-for="(element, eleIndex) in item.attrs"
                   :key="element.id"
                 >
-                  <Checkbox v-model="element.checked"></Checkbox>
+                  <Checkbox v-model="element.checked" style="margin:0;"></Checkbox>
                   <div
                     class="custom-title"
                     :style="
@@ -729,7 +729,8 @@ export default {
 }
 .custom-title {
   width: 125px;
-  display: inline-block;
+  display: flex;
+  align-items: center;
   text-align: left;
   word-wrap: break-word;
 }

@@ -156,7 +156,7 @@ export default {
             return (
               <div style={this.getExpireStyle(params.row)}>
                 <span>{this.getExpireTips(params.row)}</span>
-                {['preExpried', 'expire'].includes(params.row.status) && this.activeTab !== 'deleted' && (
+                {['preExpired', 'expire'].includes(params.row.status) && this.activeTab !== 'deleted' && (
                   <Icon
                     type="md-time"
                     size="24"
@@ -184,7 +184,7 @@ export default {
     getExpireStyle () {
       return function ({ status }) {
         let color = ''
-        if (status === 'preExpried') {
+        if (status === 'preExpired') {
           color = '#ff9900'
         } else if (status === 'expire') {
           color = '#ed4014'
@@ -197,7 +197,7 @@ export default {
     getExpireTips () {
       return function ({ status, expireTime }) {
         let text = ''
-        if (status === 'preExpried') {
+        if (status === 'preExpired') {
           // 即将到期
           text = `${expireTime}${this.$t('tw_willExpire')}`
         } else if (status === 'expire') {

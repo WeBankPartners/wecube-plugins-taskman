@@ -239,7 +239,7 @@ export default {
     getExpireStyle () {
       return function ({ status }) {
         let color = ''
-        if (status === 'preExpried') {
+        if (status === 'preExpired') {
           color = '#ff9900'
         } else if (status === 'expire') {
           color = '#ed4014'
@@ -252,7 +252,7 @@ export default {
     getExpireTips () {
       return function ({ status, expireTime }) {
         let text = ''
-        if (status === 'preExpried') {
+        if (status === 'preExpired') {
           // 即将到期
           text = `${expireTime}${this.$t('tw_willExpire')}`
         } else if (status === 'expire') {

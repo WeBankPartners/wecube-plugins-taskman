@@ -99,7 +99,7 @@
                           return date && date.valueOf() < Date.now() - 86400000
                         }
                       }"
-                      style="width:220px"
+                      style="width:185px"
                     ></DatePicker>
                   </FormItem>
                   <FormItem>

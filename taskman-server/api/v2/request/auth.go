@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -59,12 +60,15 @@ func TransAuthGetApplyRoles(c *gin.Context) {
 		middleware.ReturnSuccess(c)
 		return
 	}
-	if hasRoleList, err = rpc.QueryUserRoles(middleware.GetRequestUser(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader)); err != nil {
-		middleware.ReturnServerHandleError(c, err)
-		return
-	}
-	if len(hasRoleList) == 0 {
-		hasRoleList = make([]*models.SimpleLocalRoleDto, 0)
+	// um 账号刚登录,roles为空
+	if !CheckUserRolesIsEmpty(middleware.GetRequestRoles(c)) {
+		if hasRoleList, err = rpc.QueryUserRoles(middleware.GetRequestUser(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader)); err != nil {
+			middleware.ReturnServerHandleError(c, err)
+			return
+		}
+		if len(hasRoleList) == 0 {
+			hasRoleList = make([]*models.SimpleLocalRoleDto, 0)
+		}
 	}
 	requestParam.Filters = []*models.QueryRequestFilterObj{{Name: "status", Operator: "in", Value: "init"}}
 	requestParam.Pageable = &models.PageInfo{
@@ -247,4 +251,16 @@ func TransAuthUserRegister(c *gin.Context) {
 	} else {
 		c.Data(http.StatusOK, "application/json; charset=utf-8", responseBytes)
 	}
+}
+
+func CheckUserRolesIsEmpty(roles []string) bool {
+	if len(roles) == 0 {
+		return true
+	}
+	for _, role := range roles {
+		if strings.TrimSpace(role) != "" {
+			return false
+		}
+	}
+	return true
 }

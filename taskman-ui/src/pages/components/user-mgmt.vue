@@ -93,7 +93,7 @@
                           pengdingExpireTime = val
                         }
                       "
-                      placeholder="有效期"
+                      :placeholder="$t('tw_expireTime')"
                       :options="{
                         disabledDate(date) {
                           return date && date.valueOf() < Date.now() - 86400000

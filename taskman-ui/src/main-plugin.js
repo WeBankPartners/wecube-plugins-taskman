@@ -13,6 +13,7 @@ import Dashboard from '@/pages/workbench/index.vue'
 window.component('ValidationProvider', ValidationProvider)
 window.addHomepageComponent &&
   window.addHomepageComponent({
+    code: 'JOBS',
     name: () => {
       return window.vm.$t('tw_workbench')
     },

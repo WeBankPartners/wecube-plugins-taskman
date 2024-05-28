@@ -469,5 +469,6 @@
   "tw_forever": "Perpetuity",
   "tw_empty_search": "Null Search",
   "tw_normal_search": "Normal Search",
-  "tw_stop": "Stop"
+  "tw_stop": "Stop",
+  "tw_expireTime": "Validity"
 }

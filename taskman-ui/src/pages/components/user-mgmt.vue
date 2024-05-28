@@ -5,7 +5,7 @@
       :mask-closable="false"
       :fullscreen="isfullscreen"
       :footer-hide="true"
-      :width="900"
+      :width="1000"
       :title="$t('tw_user_mgmt')"
     >
       <div slot="header" class="custom-modal-header">
@@ -42,10 +42,11 @@
         </div>
       </div>
       <Row>
-        <Col span="12">
+        <!--角色列表-->
+        <Col span="8">
           <Card>
-            <p slot="title" style="height:24px">{{ $t('manageRole') }}</p>
-            <div class="tagContainers" :style="{ minHeight: 200 + 'px', maxHeight: tableHeight + 'px' }">
+            <p slot="title" style="height:16px">{{ $t('manageRole') }}</p>
+            <div class="tagContainers" :style="{ minHeight: 300 + 'px', maxHeight: tableHeight + 'px' }">
               <div class="role-item" v-for="item in roleList" :key="item.id">
                 <div
                   class="item-style"
@@ -58,23 +59,58 @@
             </div>
           </Card>
         </Col>
-        <Col span="12">
+        <!--用户列表-->
+        <Col span="16">
           <Card>
-            <p slot="title" style="height:24px">
-              {{ $t('tw_user') }}
-              <Button
-                type="success"
-                :disabled="!activeRole"
-                @click="startAddUser"
-                size="small"
-                ghost
-                style="margin-left: 20px;"
-                >{{ $t('tw_add_user') }}</Button
-              >
-            </p>
-            <div class="tagContainers" :style="{ minHeight: 200 + 'px', maxHeight: tableHeight + 'px' }">
+            <p slot="title" style="height:16px">{{ $t('tw_user') }}</p>
+            <div
+              v-if="activeRole"
+              class="tagContainers"
+              :style="{ minHeight: 300 + 'px', maxHeight: tableHeight + 'px' }"
+            >
+              <div class="add-user">
+                <Form inline>
+                  <FormItem>
+                    <Select
+                      v-model="pendingUser"
+                      multiple
+                      filterable
+                      @on-open-change="getPendingUserOptions"
+                      style="width:250px"
+                      :placeholder="$t('tw_user')"
+                    >
+                      <Option v-for="item in pendingUserOptions" :value="item.id" :key="item.id">{{
+                        item.username
+                      }}</Option>
+                    </Select>
+                  </FormItem>
+                  <FormItem>
+                    <DatePicker
+                      type="datetime"
+                      :value="pengdingExpireTime"
+                      @on-change="
+                        val => {
+                          pengdingExpireTime = val
+                        }
+                      "
+                      :placeholder="$t('tw_expireTime')"
+                      :options="{
+                        disabledDate(date) {
+                          return date && date.valueOf() < Date.now() - 86400000
+                        }
+                      }"
+                      style="width:185px"
+                    ></DatePicker>
+                  </FormItem>
+                  <FormItem>
+                    <Button type="primary" :disabled="!pendingUser.length || !pengdingExpireTime" @click="okSelect">{{
+                      $t('tw_add_user')
+                    }}</Button>
+                  </FormItem>
+                </Form>
+              </div>
               <div class="role-item" v-for="item in userList" :key="item.id">
-                <div class="item-style" style="width:80%;display:inline-block;">
+                <div class="item-style" style="width:90%;display:inline-block;">
                   <span style="display:inline-block;width:100px;">{{ item.username }}</span>
                   <span style="display:inline-block;margin-left:20px;" :style="getExpireStyle(item)">{{
                     getExpireTips(item)
@@ -103,6 +139,7 @@
   </div>
 </template>
 <script>
+import dayjs from 'dayjs'
 import {
   getProcessableList,
   getApplyRoles,
@@ -140,16 +177,7 @@ export default {
           key: 'expireTime',
           minWidth: 80,
           render: (h, params) => {
-            const expireFlag = params.row.expireTime && params.row.status === 'expire'
-            if (params.row.expireTime) {
-              return (
-                <span style={{ color: expireFlag ? '#ed4014' : '' }}>
-                  {`${params.row.expireTime}${expireFlag ? this.$t('tw_hasExpired') : ''}`}
-                </span>
-              )
-            } else {
-              return <span>{this.$t('tw_forever')}</span>
-            }
+            return <span>{params.row.expireTime || this.$t('tw_forever')}</span>
           }
         },
         {
@@ -227,8 +255,9 @@ export default {
       activeRole: '',
       userList: [],
       showSelectModel: false,
-      pendingUser: [], // 待添加用户
-      pendingUserOptions: [] // 待添加用户列表
+      pendingUser: [], // 添加用户列表
+      pendingUserOptions: [], // 待添加用户列表
+      pengdingExpireTime: '' // 添加用户有效期
     }
   },
   computed: {
@@ -326,6 +355,8 @@ export default {
     },
     async handleRoleClick (item) {
       this.activeRole = item.id
+      this.pendingUser = []
+      this.pengdingExpireTime = ''
       this.getUserByRole(this.activeRole)
     },
     async removeUser (item) {
@@ -370,9 +401,13 @@ export default {
       }
     },
     async okSelect () {
+      if (this.pengdingExpireTime && !dayjs(this.pengdingExpireTime).isAfter(dayjs())) {
+        return this.$Message.warning(this.$t('role_invalidDateValidate'))
+      }
       let data = this.pendingUser.map(userId => {
         return {
-          id: userId
+          id: userId,
+          expireTime: this.pengdingExpireTime
         }
       })
       const { status } = await addUserForRole(this.activeRole, data)
@@ -382,6 +417,8 @@ export default {
           desc: this.$t('successful')
         })
         this.showSelectModel = false
+        this.pendingUser = []
+        this.pengdingExpireTime = ''
         this.getUserByRole(this.activeRole)
       }
     },
@@ -401,6 +438,8 @@ export default {
           desc: this.$t('successful')
         })
         this.getTableData()
+        this.activeRole = item.role.id
+        this.getUserByRole(this.activeRole)
         this.$bus.$emit('fetchApplyCount')
       }
     },
@@ -462,5 +501,9 @@ export default {
     font-size: 18px;
     cursor: pointer;
   }
+}
+.add-user {
+  height: 36px;
+  padding-left: 5px;
 }
 </style>

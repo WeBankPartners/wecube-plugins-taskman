@@ -171,3 +171,12 @@ type QueryFormTemplateLibraryParam struct {
 	StartIndex int    `json:"startIndex"`
 	PageSize   int    `json:"pageSize"`
 }
+
+type RequestAssociationParam struct {
+	Query           string `json:"query"`  // 请求名称,模糊
+	Action          int    `json:"action"` // 类型
+	StartIndex      int    `json:"startIndex"`
+	PageSize        int    `json:"pageSize"`
+	ReportStartTime string `json:"reportTimeStart"` // 请求提交开始时间
+	ReportEndTime   string `json:"reportTimeEnd"`   // 请求提交结束时间
+}

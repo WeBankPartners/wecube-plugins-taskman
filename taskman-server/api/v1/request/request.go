@@ -560,3 +560,23 @@ func GetExpressionItemData(c *gin.Context) {
 		middleware.ReturnData(c, result)
 	}
 }
+
+// Association 请求关联单
+func Association(c *gin.Context) {
+	var param models.RequestAssociationParam
+	var pageInfo models.PageInfo
+	var rowsData []*models.SimpleRequestDto
+	var err error
+	if err = c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	if param.PageSize == 0 {
+		param.PageSize = 50
+	}
+	if pageInfo, rowsData, err = service.GetRequestService().Association(param); err != nil {
+		middleware.ReturnError(c, err)
+		return
+	}
+	middleware.ReturnPageData(c, pageInfo, rowsData)
+}

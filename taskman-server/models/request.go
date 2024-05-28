@@ -437,6 +437,11 @@ type PluginRequestCreateOutput struct {
 	Outputs   []*PluginRequestCreateOutputObj `json:"outputs"`
 }
 
+type SimpleRequestDto struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+}
+
 type PluginRequestCreateOutputObj struct {
 	CallbackParameter string `json:"callbackParameter"`
 	RequestId         string `json:"requestId"`

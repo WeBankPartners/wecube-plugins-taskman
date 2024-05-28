@@ -136,6 +136,7 @@ func init() {
 		&handlerFuncObj{Url: "/request/export", Method: "POST", HandlerFunc: request.Export},
 		&handlerFuncObj{Url: "/request/:requestId/task/list", Method: "GET", HandlerFunc: request.GetTaskList},
 		&handlerFuncObj{Url: "/request/confirm", Method: "POST", HandlerFunc: request.Confirm},
+		&handlerFuncObj{Url: "/request/association", Method: "POST", HandlerFunc: request.Association},
 
 		// For core 1:get task form template  2:create task
 		&handlerFuncObj{Url: "/plugin/task/create/meta", Method: "GET", HandlerFunc: task.GetTaskFormStruct},

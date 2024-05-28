@@ -2167,6 +2167,26 @@ func (s *RequestService) TaskHandleAutoPass(request models.RequestTable, task *m
 	return
 }
 
+// Association 关联单
+func (s *RequestService) Association(param models.RequestAssociationParam) (pageInfo models.PageInfo, rowsData []*models.SimpleRequestDto, err error) {
+	var sql = "select * from request where del_flag = 0  and status <> 'Draft'"
+	if param.Query != "" {
+		sql = sql + " and ( name like '%" + param.Query + "%') "
+	}
+	if param.Action != 0 {
+		sql = sql + fmt.Sprintf(" and type = %d", param.Action)
+	}
+	if param.ReportStartTime != "" && param.ReportEndTime != "" {
+		sql = sql + " and report_time >= '" + param.ReportStartTime + "' and report_time <= '" + param.ReportEndTime + "'"
+	}
+	pageInfo.StartIndex = param.StartIndex
+	pageInfo.PageSize = param.PageSize
+	pageInfo.TotalRows = dao.QueryCount(sql)
+	pageSQL := sql + " order by report_time desc limit ?,? "
+	err = dao.X.SQL(pageSQL, param.StartIndex, param.PageSize).Find(&rowsData)
+	return
+}
+
 // calcShowRequestRevokeButton 计算是否出请求撤回按钮
 func calcShowRequestRevokeButton(requestId, requestStatus string) bool {
 	var taskList []*models.TaskTable

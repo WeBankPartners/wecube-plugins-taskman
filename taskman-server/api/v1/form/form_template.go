@@ -235,10 +235,21 @@ func UpdateFormTemplateItemGroupConfig(c *gin.Context) {
 // UpdateFormTemplateItemGroup 更新表单组
 func UpdateFormTemplateItemGroup(c *gin.Context) {
 	var param models.FormTemplateGroupCustomDataDto
+	var codeMap = make(map[string]bool)
 	var err error
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
+	}
+	// 检查表单组code是否重复
+	if len(param.Items) > 0 {
+		for _, item := range param.Items {
+			if codeMap[item.Name] {
+				middleware.ReturnParamValidateError(c, fmt.Errorf("code %s repeat", item.Name))
+				return
+			}
+			codeMap[item.Name] = true
+		}
 	}
 	// 校验是否有修改权限
 	err = service.GetRequestTemplateService().CheckPermission(param.RequestTemplateId, middleware.GetRequestUser(c))

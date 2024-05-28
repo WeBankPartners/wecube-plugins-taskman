@@ -1408,9 +1408,10 @@ func getTaskProgress(role, userToken, language string, taskTemplateList []*model
 							taskHandle.Role = v
 						}
 						tempTaskHandleNodeList = append(tempTaskHandleNodeList, &models.TaskHandleNode{
-							Handler:     taskHandle.Handler,
-							Role:        taskHandle.Role,
-							HandlerType: taskHandle.HandlerType,
+							Handler:      taskHandle.Handler,
+							Role:         taskHandle.Role,
+							HandlerType:  taskHandle.HandlerType,
+							HandleResult: taskHandle.HandleResult,
 						})
 					}
 					requestProgress.TaskHandleList = tempTaskHandleNodeList
@@ -2171,7 +2172,7 @@ func (s *RequestService) TaskHandleAutoPass(request models.RequestTable, task *m
 func (s *RequestService) Association(param models.RequestAssociationParam) (pageInfo models.PageInfo, rowsData []*models.SimpleRequestDto, err error) {
 	var sql = "select * from request where del_flag = 0  and status <> 'Draft'"
 	if param.Query != "" {
-		sql = sql + " and ( name like '%" + param.Query + "%') "
+		sql = sql + " and ( id like '%" + param.Query + "%' or name like '%" + param.Query + "%') "
 	}
 	if param.Action != 0 {
 		sql = sql + fmt.Sprintf(" and type = %d", param.Action)

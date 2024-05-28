@@ -170,9 +170,10 @@ type TaskProgressNode struct {
 }
 
 type TaskHandleNode struct {
-	Handler     string `json:"handler"`     // 处理人
-	Role        string `json:"role"`        // 处理角色
-	HandlerType string `json:"handlerType"` // 人员设置方式:system.组内系统分配 claim.组内主动认领
+	Handler      string `json:"handler"`      // 处理人
+	Role         string `json:"role"`         // 处理角色
+	HandlerType  string `json:"handlerType"`  // 人员设置方式:system.组内系统分配 claim.组内主动认领
+	HandleResult string `json:"handleResult"` // 处理结果:unrelated 不相关
 }
 
 type ExpireObj struct {

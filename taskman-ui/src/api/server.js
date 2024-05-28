@@ -259,3 +259,5 @@ export const getTemplateLibraryList = data => req.post(`/taskman/api/v1/form-tem
 export const deleteTemplateLibrary = params => req.delete(`/taskman/api/v1/form-template-library`, params)
 // 组件库获取表单类型
 export const getLibraryFormTypeList = () => req.get(`/taskman/api/v1/form-template-library/form-type`)
+// 获取关联单列表
+export const getAssociateList = data => req.post(`/taskman/api/v1/request/association`, data)

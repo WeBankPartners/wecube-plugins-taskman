@@ -91,7 +91,6 @@ export default {
             const jsonData = params.row.inputs
             return (
               <div style="white-space: nowrap; overflow: auto;">
-                [
                 {jsonData.map((data, index) => (
                   <div key={index}>
                     {'{'}
@@ -103,7 +102,6 @@ export default {
                     {'},'}
                   </div>
                 ))}
-                ]
               </div>
             )
           }

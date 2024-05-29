@@ -57,6 +57,7 @@ func UpdateRequestFormTemplate(c *gin.Context) {
 	var param models.FormTemplateDto
 	var err error
 	var user = middleware.GetRequestUser(c)
+	var codeMap = make(map[string]bool)
 	requestTemplateId := c.Param("id")
 	if requestTemplateId == "" {
 		middleware.ReturnParamEmptyError(c, "id")
@@ -70,6 +71,16 @@ func UpdateRequestFormTemplate(c *gin.Context) {
 	if err = service.GetRequestTemplateService().CheckPermission(requestTemplateId, middleware.GetRequestUser(c)); err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
+	}
+	// 检查表单组code是否重复
+	if len(param.Items) > 0 {
+		for _, item := range param.Items {
+			if codeMap[item.Name] {
+				middleware.ReturnParamValidateError(c, fmt.Errorf("code %s repeat", item.Name))
+				return
+			}
+			codeMap[item.Name] = true
+		}
 	}
 	param.UpdatedBy = user
 	param.RequestTemplate = requestTemplateId

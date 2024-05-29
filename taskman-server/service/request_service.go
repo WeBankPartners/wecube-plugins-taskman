@@ -1576,13 +1576,15 @@ func buildEntityValueAttrData(titles []*models.FormItemTemplateDto, entityData m
 		if vv, b := titleMap[k]; b {
 			if strings.EqualFold(vv.Multiple, models.Yes) || strings.EqualFold(vv.Multiple, models.Y) {
 				var tmpV []string
-				for _, interfaceV := range v.([]interface{}) {
-					tmpV = append(tmpV, fmt.Sprintf("%s", interfaceV))
+				if newV, ok := v.([]interface{}); ok {
+					for _, interfaceV := range newV {
+						tmpV = append(tmpV, fmt.Sprintf("%s", interfaceV))
+					}
+					result = append(result, &models.RequestCacheEntityAttrValue{AttrDefId: vv.AttrDefId, AttrName: k, DataType: vv.AttrDefDataType, DataValue: strings.Join(tmpV, ",")})
+					continue
 				}
-				result = append(result, &models.RequestCacheEntityAttrValue{AttrDefId: vv.AttrDefId, AttrName: k, DataType: vv.AttrDefDataType, DataValue: strings.Join(tmpV, ",")})
-			} else {
-				result = append(result, &models.RequestCacheEntityAttrValue{AttrDefId: vv.AttrDefId, AttrName: k, DataType: vv.AttrDefDataType, DataValue: v})
 			}
+			result = append(result, &models.RequestCacheEntityAttrValue{AttrDefId: vv.AttrDefId, AttrName: k, DataType: vv.AttrDefDataType, DataValue: v})
 		}
 	}
 	return

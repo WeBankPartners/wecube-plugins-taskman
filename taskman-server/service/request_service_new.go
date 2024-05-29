@@ -1883,6 +1883,7 @@ func (s *RequestService) AutoExecTaskHandle(request models.RequestTable, userTok
 	var customForm models.CustomForm
 	var formItemDtoMap = make(map[string]*models.FormItemDto)
 	var formItemDtoTemp *models.FormItemDto
+	var formItemValue []interface{}
 	var ok, match bool
 	if taskList, err = GetTaskService().GetRequestAllDoingTask(request.Id); err != nil {
 		return
@@ -1923,48 +1924,42 @@ func (s *RequestService) AutoExecTaskHandle(request models.RequestTable, userTok
 						continue
 					}
 					for assignKey, assignValue := range assignRuleMap {
+						formItemValue = []interface{}{}
 						if formItemDtoTemp, ok = formItemDtoMap[assignKey]; !ok {
 							log.Logger.Error("formItemDtoMap is not match", log.String("assignKey", assignKey))
 							continue
 						}
 						// 多选,有一个匹配上即可
-						if strings.EqualFold(formItemDtoTemp.Multiple, models.Yes) || strings.EqualFold(formItemDtoTemp.Multiple, models.Y) {
-							match = false
-							assignArr, ok1 := assignValue.([]interface{})
-							valArr, ok2 := formItemDtoTemp.Value.([]interface{})
-							if !ok1 || !ok2 {
-								log.Logger.Error(" assignValue or form_item value  is not array", log.JsonObj("assignValue", assignValue), log.JsonObj("value", formItemDtoTemp.Value))
-								continue
-							}
-							assignMap := convertInterfaceArray2Map(assignArr)
-							for _, val := range valArr {
-								if assignMap[val] {
-									match = true
-									break
-								}
-							}
-							if !match {
-								// 设置当前处理处理自动通过
-								if err = s.TaskHandleAutoPass(request, task, taskHandleTemplate, userToken, language); err != nil {
-									return
-								}
-								break
-							}
+						match = false
+						assignArr, ok1 := assignValue.([]interface{})
+						if !ok1 {
+							log.Logger.Error(" assignValue  value  is not array", log.JsonObj("assignValue", assignValue))
+							continue
+						}
+						valArr, ok2 := formItemDtoTemp.Value.(string)
+						if ok2 {
+							formItemValue = append(formItemValue, valArr)
 						} else {
-							// 单选,需要相等
-							assignVal, ok1 := assignValue.(string)
-							val, ok2 := formItemDtoTemp.Value.(string)
-							if !ok1 || !ok2 {
-								log.Logger.Error(" assignValue or form_item value  is not string", log.JsonObj("assignValue", assignValue), log.JsonObj("value", formItemDtoTemp.Value))
+							valArr, ok2 := formItemDtoTemp.Value.([]interface{})
+							if !ok2 {
+								log.Logger.Error(" form_item value  is not array", log.JsonObj("value", formItemDtoTemp.Value))
 								continue
 							}
-							if assignVal != val {
-								// 设置当前处理处理自动通过
-								if err = s.TaskHandleAutoPass(request, task, taskHandleTemplate, userToken, language); err != nil {
-									return
-								}
+							formItemValue = append(formItemValue, valArr...)
+						}
+						assignMap := convertInterfaceArray2Map(assignArr)
+						for _, val := range formItemValue {
+							if assignMap[val] {
+								match = true
 								break
 							}
+						}
+						if !match {
+							// 设置当前处理处理自动通过
+							if err = s.TaskHandleAutoPass(request, task, taskHandleTemplate, userToken, language); err != nil {
+								return
+							}
+							break
 						}
 					}
 				}

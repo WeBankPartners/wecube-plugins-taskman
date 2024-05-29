@@ -2,6 +2,8 @@ package request
 
 import (
 	"fmt"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/try"
 	"io"
 	"net/http"
 	"time"
@@ -333,6 +335,11 @@ func StartRequest(c *gin.Context) {
 }
 
 func UpdateRequestStatus(c *gin.Context) {
+	defer try.ExceptionStack(func(e interface{}, err interface{}) {
+		retErr := fmt.Errorf("%v", err)
+		middleware.ReturnError(c, exterror.Catch(exterror.New().ServerHandleError, retErr))
+		log.Logger.Error(e.(string))
+	})
 	requestId := c.Param("requestId")
 	status := c.Param("status")
 	if requestId == "" || status == "" {

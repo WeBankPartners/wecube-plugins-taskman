@@ -1550,6 +1550,19 @@ func GetRequestPreBindData(request models.RequestTable, requestTemplate *models.
 		}
 		result.TaskNodeBindInfos = append(result.TaskNodeBindInfos, &tmpNodeBindInfo)
 	}
+	if result.RootEntityValue.Oid == "" {
+		for _, taskNode := range result.TaskNodeBindInfos {
+			for _, nodeEntity := range taskNode.BoundEntityValues {
+				if nodeEntity.EntityDataId == dataCache.RootEntityId {
+					result.RootEntityValue = *nodeEntity
+					break
+				}
+			}
+			if result.RootEntityValue.Oid != "" {
+				break
+			}
+		}
+	}
 	return
 }
 

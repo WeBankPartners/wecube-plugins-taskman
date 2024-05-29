@@ -358,7 +358,7 @@ import {
   getUserRoles,
   getHandlerRoles,
   getAdminUserByRole,
-  getPublishList
+  getAssociateList
 } from '@/api/server'
 import dayjs from 'dayjs'
 export default {
@@ -478,21 +478,15 @@ export default {
         .subtract(3, 'month')
         .format('YYYY-MM-DD')
       const params = {
-        tab: 'commit', // 已提交数据，不包括草稿
         action: this.form.refType, // 所有
-        permission: 'all',
         reportTimeStart: pre + ' 00:00:00',
         reportTimeEnd: cur + ' 23:59:59',
         query: query || '',
         startIndex: 0,
-        pageSize: 50,
-        sorting: {
-          asc: false,
-          field: 'reportTime'
-        }
+        pageSize: 50
       }
       this.refLoading = true
-      const { statusCode, data } = await getPublishList(params)
+      const { statusCode, data } = await getAssociateList(params)
       this.refLoading = false
       if (statusCode === 'OK') {
         this.refOptions = data.contents || []

@@ -372,8 +372,8 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 	if getDataErr != nil {
 		return getDataErr
 	}
-	if param.ChoseOption != "" {
-		requestParam.ResultCode = param.ChoseOption
+	if param.ProcDefResult != "" {
+		requestParam.ResultCode = param.ProcDefResult
 	}
 	for _, v := range requestParam.Results.Outputs {
 		v.Comment = param.Comment

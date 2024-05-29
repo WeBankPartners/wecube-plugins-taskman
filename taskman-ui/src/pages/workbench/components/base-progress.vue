@@ -50,8 +50,10 @@
             </Tooltip>
             <span class="mode">{{ approvalTypeName[i.approveType] || '' }}</span>
             <div v-for="(j, index) in i.taskHandleList" :key="index" class="word-eclipse">
-              <span>{{ j.role || '-' }} /</span>
-              <span>{{ j.handler || handlerType[j.handlerType] || '-' }}</span>
+              <span :style="{ color: j.handleResult === 'unrelated' ? '#c5c8ce' : '' }">{{ j.role || '-' }} /</span>
+              <span :style="{ color: j.handleResult === 'unrelated' ? '#c5c8ce' : '' }">{{
+                j.handler || handlerType[j.handlerType] || '-'
+              }}</span>
             </div>
           </div>
         </Step>
@@ -75,8 +77,10 @@
                 <span>{{ $t('tw_auto_tag') }}</span>
               </template>
               <template v-else>
-                <span>{{ j.role || '-' }} /</span>
-                <span>{{ j.handler || handlerType[j.handlerType] || '-' }}</span>
+                <span :style="{ color: j.handleResult === 'unrelated' ? '#c5c8ce' : '' }">{{ j.role || '-' }} /</span>
+                <span :style="{ color: j.handleResult === 'unrelated' ? '#c5c8ce' : '' }">{{
+                  j.handler || handlerType[j.handlerType] || '-'
+                }}</span>
               </template>
             </div>
           </div>

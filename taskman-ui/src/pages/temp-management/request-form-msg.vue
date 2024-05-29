@@ -91,9 +91,11 @@
                     type="error"
                     size="small"
                     :disabled="$parent.isCheck === 'Y'"
-                    icon="ios-close"
                     ghost
-                  ></Button>
+                    style="width:24px;display:flex;justify-content:center;"
+                  >
+                    <Icon type="ios-close" size="24"></Icon>
+                  </Button>
                 </div>
               </draggable>
             </div>

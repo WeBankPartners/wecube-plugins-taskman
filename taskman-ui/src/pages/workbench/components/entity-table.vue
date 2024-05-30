@@ -246,15 +246,11 @@ export default {
             // 表单隐藏逻辑
             Object.keys(item).forEach(key => {
               const find = this.formOptions.find(i => i.name === key) || {}
-              if (find.hiddenCondition) {
+              if (find.hiddenCondition && find.required === 'no') {
                 const conditions = find.hiddenCondition || []
                 item[key + 'Hidden'] = conditions.every(j => {
                   return evaluateCondition(j, item[j.name])
                 })
-                // 隐藏的表单项清空
-                if (item[key + 'Hidden']) {
-                  item[key] = ''
-                }
               }
             })
           })

@@ -389,8 +389,11 @@ export default {
               refKeys.forEach(ref => {
                 delete v.entityData[ref + 'Options']
               })
-              // 删除表单隐藏属性
+              // 删除表单隐藏属性, 并清空值
               for (const key in v.entityData) {
+                if (v.entityData[key + 'Hidden']) {
+                  v.entityData[key] = ''
+                }
                 delete v.entityData[key + 'Hidden']
               }
             })

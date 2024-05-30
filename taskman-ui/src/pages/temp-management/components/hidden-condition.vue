@@ -1,10 +1,20 @@
 <template>
   <div class="temp-hidden-condition">
     <div class="title">
-      <span>隐藏条件</span>
-      <Button @click.stop="handleOpenModal" type="primary" size="small" icon="md-add" class="btn"></Button>
+      <span>
+        隐藏条件
+        <span v-if="editElement.required === 'yes'" class="tips">属性必填，无法设置过滤条件</span>
+      </span>
+      <Button
+        v-if="editElement.required === 'no'"
+        @click="handleOpenModal"
+        type="success"
+        size="small"
+        icon="md-add"
+        class="btn"
+      ></Button>
     </div>
-    <div class="box">
+    <div v-if="editElement.required === 'no'" class="box">
       <Row v-for="(i, index) in value" :key="index" class="box-item">
         <Col :span="6" class="name">{{ getFormItemTitle(i.name) }}</Col>
         <Col :span="6" class="operator">{{ operatorMap[i.operator] || '-' }}</Col>
@@ -21,13 +31,14 @@
       :finalElement="finalElement"
       :data="value"
       :disabled="disabled"
-      :name="name"
+      :editElement="editElement"
       @updateData="handleUpdate"
     />
   </div>
 </template>
 
 <script>
+import { deepClone } from '../../util'
 import HiddenConditionModal from './hidden-condition-modal.vue'
 export default {
   components: {
@@ -46,14 +57,13 @@ export default {
       type: Boolean,
       default: false
     },
-    name: {
-      type: String,
-      default: ''
+    editElement: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {
     return {
-      hiddenCondition: [],
       operatorMap: {
         eq: '等于',
         neq: '不等于',
@@ -91,18 +101,36 @@ export default {
           return val
         }
       }
+    },
+    attrs () {
+      return this.finalElement[0].attrs
     }
+  },
+  watch: {
+    attrs: {
+      handler (val) {
+        if (val) {
+          // 如果预览区内对应表单项删除，则清空该条过滤条件
+          const deleteNameArr = []
+          let hiddenCondition = deepClone(this.value)
+          hiddenCondition.forEach(i => {
+            const exist = val.some(j => j.name === i.name)
+            if (!exist) {
+              deleteNameArr.push(i.name)
+            }
+          })
+          hiddenCondition = hiddenCondition.filter(item => !deleteNameArr.includes(item.name))
+          this.$emit('input', hiddenCondition)
+        }
+      }
+    },
+    deep: true
   },
   methods: {
     handleOpenModal () {
-      let initArr = []
-      if (Array.isArray(this.value) && this.value.length > 0) {
-        initArr = this.value
-      }
-      this.$refs.modal.initData(initArr)
+      this.$refs.modal.initData(this.value || [])
     },
     handleUpdate (val) {
-      this.hiddenCondition = val
       this.$emit('input', val)
     }
   }
@@ -117,6 +145,10 @@ export default {
     margin-bottom: 5px;
     .btn {
       margin-left: 25px;
+    }
+    .tips {
+      font-size: 12px;
+      margin-left: 20px;
     }
   }
   .box {

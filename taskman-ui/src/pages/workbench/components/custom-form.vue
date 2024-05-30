@@ -120,15 +120,11 @@ export default {
             this.entityData[key] = val[key]
             // 表单隐藏逻辑
             const find = this.formOptions.find(i => i.name === key) || {}
-            if (find.hiddenCondition) {
+            if (find.hiddenCondition && find.required === 'no') {
               const conditions = find.hiddenCondition || []
               find.hidden = conditions.every(j => {
                 return evaluateCondition(j, val[j.name])
               })
-              // 隐藏的表单项清空
-              if (find.hidden) {
-                this.$emit('clearHiddenValue', key)
-              }
             }
           })
         }

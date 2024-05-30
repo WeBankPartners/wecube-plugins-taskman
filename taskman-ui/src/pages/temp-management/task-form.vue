@@ -317,11 +317,12 @@
                           :label="$t('data_set')"
                         >
                           <!-- <Input v-model="editElement.dataOptions" disabled style="width:calc(100% - 38px)"></Input> -->
-                          <Input :value="getDataOptionsDisplay" disabled style="width:calc(100% - 38px)"></Input>
+                          <Input :value="getDataOptionsDisplay" disabled style="width:calc(100% - 28px)"></Input>
                           <Button
                             @click.stop="dataOptionsMgmt"
                             :disabled="Boolean(editElement.copyId)"
-                            type="primary"
+                            type="success"
+                            size="small"
                             icon="md-add"
                           ></Button>
                         </FormItem>
@@ -436,7 +437,7 @@
                             :disabled="$parent.isCheck === 'Y'"
                             :finalElement="finalElement"
                             v-model="editElement.hiddenCondition"
-                            :name="editElement.name"
+                            :editElement="editElement"
                           ></HiddenCondition>
                         </FormItem>
                       </Form>

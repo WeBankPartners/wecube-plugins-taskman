@@ -37,7 +37,7 @@
           </Form>
         </Row>
         <div style="text-align: right;margin-right: 16px;cursor: pointer">
-          <Button type="primary" ghost @click="addItem" size="small" icon="md-add"></Button>
+          <Button type="success" ghost @click="addItem" size="small" icon="md-add"></Button>
         </div>
       </div>
       <template #footer>

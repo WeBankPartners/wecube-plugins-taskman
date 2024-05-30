@@ -16,7 +16,7 @@
   "reset": "重置",
   "void": "作废",
   "next": "下一步",
-  "forward": "前一步",
+  "forward": "上一步",
   "confirm": "确定",
   "confirm_delete_content": "确定删除以下数据：",
   "confirm_delete": "删除后数据无法恢复,确认删除吗?",

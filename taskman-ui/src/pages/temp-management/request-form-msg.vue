@@ -160,8 +160,8 @@
                     :label="$t('data_set')"
                   >
                     <!-- <Input v-model="editElement.dataOptions" disabled style="width:calc(100% - 38px)"></Input> -->
-                    <Input :value="getDataOptionsDisplay" disabled style="width:calc(100% - 38px)"></Input>
-                    <Button @click.stop="dataOptionsMgmt" type="primary" icon="md-add"></Button>
+                    <Input :value="getDataOptionsDisplay" disabled style="width:calc(100% - 28px)"></Input>
+                    <Button @click.stop="dataOptionsMgmt" type="success" size="small" icon="md-add"></Button>
                   </FormItem>
                   <!--数据源-->
                   <FormItem
@@ -285,8 +285,8 @@
                     <HiddenCondition
                       :disabled="$parent.isCheck === 'Y'"
                       :finalElement="finalElement"
+                      :editElement="editElement"
                       v-model="editElement.hiddenCondition"
-                      :name="editElement.name"
                     ></HiddenCondition>
                   </FormItem>
                 </Form>

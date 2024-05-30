@@ -611,4 +611,5 @@ CREATE TABLE IF NOT EXISTS `form_item_template_library` (
 
 ALTER TABLE form_item_template ADD CONSTRAINT  `fore_form_item_library` FOREIGN KEY (form_item_library) REFERENCES form_item_template_library(id);
 
+alter table request add column preview_cache mediumtext default null comment '试算数据缓存';
 #@v1.0.6-end@;

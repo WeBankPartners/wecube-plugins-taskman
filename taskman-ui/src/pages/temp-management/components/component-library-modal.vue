@@ -261,14 +261,17 @@ export default {
     async getFormTypeList () {
       const { statusCode, data } = await getLibraryFormTypeList()
       if (statusCode === 'OK') {
-        this.formTypeList = data || []
-        this.formTypeList = this.formTypeList.map(i => {
-          const obj = { label: i, value: i }
-          if (i === 'requestInfo') {
-            obj.label = this.$t('tw_information_form') // 信息表单
+        const arr = data || []
+        this.formTypeList = arr.map(i => {
+          return {
+            label: i === 'requestInfo' ? this.$t('tw_information_form') : i,
+            value: i
           }
-          return obj
         })
+        // 将信息表单置于数组第一个
+        const index = this.formTypeList.findIndex(i => i.value === 'requestInfo')
+        const item = this.formTypeList.splice(index, 1)[0]
+        this.formTypeList.unshift(item)
       }
     },
     // 获取创建人下拉列表

@@ -47,6 +47,7 @@ type RequestTable struct {
 	TemplateVersion     string             `json:"templateVersion" xorm:"-"`                     // 模板版本
 	CustomForm          CustomForm         `json:"customForm" xorm:"-"`                          // 自定义表单
 	AssociationWorkflow bool               `json:"associationWorkflow" xorm:"-"`                 // 是否关联编排
+	PreviewCache        string             `json:"previewCache" json:"preview_cache"`            // 试算数据缓存
 }
 
 func (RequestTable) TableName() string {

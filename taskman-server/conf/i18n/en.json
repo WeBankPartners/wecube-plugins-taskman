@@ -159,5 +159,9 @@
   "form_template_library_add_name_repeat_error": {
     "code": 20100031,
     "message": "Creation failed: The form component name already exists. Please modify it and try again"
+  },
+  "form_item_code_repeat_error": {
+    "code": 20100032,
+    "message": "Save failed: In form {%s},  item {%s}'s  code %s is duplicated with for item {%s}. Please modify and save again."
   }
 }

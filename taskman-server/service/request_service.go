@@ -508,7 +508,7 @@ func UpdateRequestFormItemNew(requestId, operator, now string, param *models.Req
 		}
 		poolForms := itemGroupFormMap[tableForm.ItemGroup]
 		for _, valueObj := range tableForm.Value {
-			if valueObj.Id == "" {
+			if valueObj.EntityDataOp == "create" || valueObj.Id == "" {
 				valueObj.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, guid.CreateGuid())
 			}
 			// 判断数据行的变化

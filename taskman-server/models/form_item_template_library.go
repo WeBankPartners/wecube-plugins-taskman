@@ -32,7 +32,7 @@ type FormItemTemplateLibraryTable struct {
 	RoutineExpression   string `json:"routineExpression" xorm:"routine_expression"`      // 计算表达式
 	ControlSwitch       string `json:"controlSwitch" xorm:"control_switch"`              // 控制审批/任务开关
 	FormTemplateLibrary string `json:"formTemplateLibrary" xorm:"form_template_library"` // 表单组件库id
-	hiddenCondition     string `json:"hiddenCondition" xorm:"hidden_condition"`          // 隐藏条件
+	HiddenCondition     string `json:"hiddenCondition" xorm:"hidden_condition"`          // 隐藏条件
 }
 
 func (FormItemTemplateLibraryTable) TableName() string {

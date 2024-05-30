@@ -2614,8 +2614,47 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 						}
 						taskHandle.FormData = formDataList
 					} else {
-						// 没有配置过滤规则,表单内容和外层表单内容一致
 						taskHandle.FormData = taskHistory.FormData
+					}
+					// 当前任务已经执行完成,并行每个结点只能看到自己修改数据,而不是当前任务最新数据. 协同没有提交的,表单数据展示为空
+					if taskHistory.Status == string(models.TaskStatusDone) {
+						if taskHistory.HandleMode == string(models.TaskTemplateHandleModeAny) && strings.TrimSpace(taskHandle.HandleResult) == "" {
+							taskHandle.FormData = nil
+						} else if taskHistory.HandleMode == string(models.TaskTemplateHandleModeAll) && taskHistory.Request != "" {
+							var requestFormItems []*models.FormItemTable
+							var formItemMap = make(map[string]map[string][]*models.FormItemTable)
+							dao.X.SQL("select * from form_item where request = ? AND updated_time <= ?", taskHistory.Request, taskHandle.UpdatedTime).Find(&requestFormItems)
+							if len(requestFormItems) > 0 && len(taskHandle.FormData) > 0 {
+								for _, item := range requestFormItems {
+									itemGroup := ""
+									dataId := ""
+									dao.X.SQL("select item_group from form_item_template where id = ?", item.FormItemTemplate).Get(&itemGroup)
+									dao.X.SQL("select data_id from form where id = ?", item.Form).Get(&dataId)
+									if strings.TrimSpace(itemGroup) != "" {
+										if _, ok := formItemMap[itemGroup]; !ok {
+											formItemMap[itemGroup] = make(map[string][]*models.FormItemTable)
+										}
+										if _, ok := formItemMap[itemGroup][dataId]; !ok {
+											formItemMap[itemGroup][dataId] = []*models.FormItemTable{}
+										}
+										formItemMap[itemGroup][dataId] = append(formItemMap[itemGroup][dataId], item)
+									}
+								}
+								for _, form := range taskHandle.FormData {
+									if rowMap, ok := formItemMap[form.ItemGroup]; ok && rowMap != nil && len(form.Value) > 0 {
+										for _, entity := range form.Value {
+											if arr, ok2 := rowMap[entity.Id]; ok2 && len(arr) > 0 && len(entity.EntityData) > 0 {
+												for _, item := range arr {
+													if _, ok3 := entity.EntityData[item.Name]; ok3 {
+														entity.EntityData[item.Name] = item.Value
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
 					}
 					taskHandleList = append(taskHandleList, taskHandle)
 				}

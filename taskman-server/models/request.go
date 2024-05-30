@@ -470,3 +470,10 @@ type HistoryResultToSort struct {
 	ItemGroupSort     int                     `json:"itemGroupSort"`
 	HistoryResultElem *RequestPreDataTableObj `json:"historyResultElem"`
 }
+
+type RequestNewDataRow struct {
+	Id     string `xorm:"id"`
+	Name   string `xorm:"name"`
+	Value  string `xorm:"value"`
+	DataId string `xorm:"data_id"`
+}

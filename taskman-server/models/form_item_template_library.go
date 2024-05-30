@@ -1,5 +1,7 @@
 package models
 
+import "encoding/json"
+
 type FormItemTemplateLibraryTable struct {
 	Id                  string `json:"id" xorm:"'id' pk" primary-key:"id"`
 	Name                string `json:"name" xorm:"name"`
@@ -35,6 +37,85 @@ type FormItemTemplateLibraryTable struct {
 	HiddenCondition     string `json:"hiddenCondition" xorm:"hidden_condition"`          // 隐藏条件
 }
 
+type FormItemTemplateLibraryDto struct {
+	Id                  string                   `json:"id"`
+	Name                string                   `json:"name"`
+	Description         string                   `json:"description"`
+	ItemGroup           string                   `json:"itemGroup"`
+	ItemGroupName       string                   `json:"itemGroupName"`
+	DefaultValue        string                   `json:"defaultValue"`
+	Sort                int                      `json:"sort"`
+	PackageName         string                   `json:"packageName"`
+	Entity              string                   `json:"entity"`
+	AttrDefId           string                   `json:"attrDefId"`
+	AttrDefName         string                   `json:"attrDefName"`
+	AttrDefDataType     string                   `json:"attrDefDataType"`
+	ElementType         string                   `json:"elementType"`
+	Title               string                   `json:"title"`
+	Width               int                      `json:"width"`
+	RefPackageName      string                   `json:"refPackageName"`
+	RefEntity           string                   `json:"refEntity"`
+	DataOptions         string                   `json:"dataOptions"`
+	Required            string                   `json:"required"`
+	Regular             string                   `json:"regular"`
+	IsEdit              string                   `json:"isEdit"`
+	IsView              string                   `json:"isView"`
+	IsOutput            string                   `json:"isOutput"`
+	InDisplayName       string                   `json:"inDisplayName"`
+	IsRefInside         string                   `json:"isRefInside"`
+	Multiple            string                   `json:"multiple"`
+	DefaultClear        string                   `json:"defaultClear"`
+	RefId               string                   `json:"refId"`               // 复制数据表单ID,数据表单删除该表单项时,需要删除审批表单,任务表单对应数据项
+	RoutineExpression   string                   `json:"routineExpression"`   // 计算表达式
+	ControlSwitch       string                   `json:"controlSwitch"`       // 控制审批/任务开关
+	FormTemplateLibrary string                   `json:"formTemplateLibrary"` // 表单组件库id
+	HiddenCondition     []*QueryRequestFilterObj `json:"hiddenCondition"`     // 隐藏条件
+}
+
 func (FormItemTemplateLibraryTable) TableName() string {
 	return "form_item_template_library"
+}
+
+func ConvertFormItemTemplateLibraryDto2Model(dto *FormItemTemplateLibraryDto) *FormItemTemplateLibraryTable {
+	var hiddenCondition string
+	if len(dto.HiddenCondition) > 0 {
+		byteArr, _ := json.Marshal(dto.HiddenCondition)
+		if len(byteArr) > 0 {
+			hiddenCondition = string(byteArr)
+		}
+	}
+	return &FormItemTemplateLibraryTable{
+		Id:                  dto.Id,
+		Name:                dto.Name,
+		Description:         dto.Description,
+		ItemGroup:           dto.ItemGroup,
+		ItemGroupName:       dto.ItemGroupName,
+		DefaultValue:        dto.DefaultValue,
+		Sort:                dto.Sort,
+		PackageName:         dto.PackageName,
+		Entity:              dto.Entity,
+		AttrDefId:           dto.AttrDefId,
+		AttrDefName:         dto.AttrDefName,
+		AttrDefDataType:     dto.AttrDefDataType,
+		ElementType:         dto.ElementType,
+		Title:               dto.Title,
+		Width:               dto.Width,
+		RefPackageName:      dto.RefPackageName,
+		RefEntity:           dto.RefEntity,
+		DataOptions:         dto.DataOptions,
+		Required:            dto.Required,
+		Regular:             dto.Regular,
+		IsEdit:              dto.IsEdit,
+		IsView:              dto.IsView,
+		IsOutput:            dto.IsOutput,
+		InDisplayName:       dto.InDisplayName,
+		IsRefInside:         dto.IsRefInside,
+		Multiple:            dto.Multiple,
+		DefaultClear:        dto.DefaultClear,
+		RefId:               dto.RefId,
+		RoutineExpression:   dto.RoutineExpression,
+		ControlSwitch:       dto.ControlSwitch,
+		FormTemplateLibrary: dto.FormTemplateLibrary,
+		HiddenCondition:     hiddenCondition,
+	}
 }

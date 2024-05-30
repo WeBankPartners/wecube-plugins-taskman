@@ -158,9 +158,9 @@ type CommonParam struct {
 }
 
 type FormTemplateLibraryParam struct {
-	Name     string                          `json:"name"`
-	FormType string                          `json:"formType"`
-	Items    []*FormItemTemplateLibraryTable `json:"items"`
+	Name     string                        `json:"name"`
+	FormType string                        `json:"formType"`
+	Items    []*FormItemTemplateLibraryDto `json:"items"`
 }
 
 type QueryFormTemplateLibraryParam struct {

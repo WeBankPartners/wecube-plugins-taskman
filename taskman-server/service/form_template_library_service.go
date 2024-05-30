@@ -65,7 +65,7 @@ func (s *FormTemplateLibraryService) AddFormTemplateLibrary(param models.FormTem
 			for _, item := range param.Items {
 				item.Id = guid.CreateGuid()
 				item.FormTemplateLibrary = formTemplateLibraryId
-				if _, err = s.formItemTemplateLibraryDao.Add(session, item); err != nil {
+				if _, err = s.formItemTemplateLibraryDao.Add(session, models.ConvertFormItemTemplateLibraryDto2Model(item)); err != nil {
 					return err
 				}
 			}

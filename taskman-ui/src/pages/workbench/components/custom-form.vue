@@ -20,13 +20,13 @@
               <!--输入框-->
               <Input
                 v-if="i.elementType === 'input'"
-                v-model="value[i.name]"
+                v-model.trim="value[i.name]"
                 :disabled="i.isEdit === 'no' || disabled"
                 style="width:100%;"
               ></Input>
               <Input
                 v-else-if="i.elementType === 'textarea'"
-                v-model="value[i.name]"
+                v-model.trim="value[i.name]"
                 type="textarea"
                 :disabled="i.isEdit === 'no' || disabled"
                 style="width:100%;"

@@ -240,7 +240,7 @@
                   <span style="color:#19be6b;">{{ `${i.expireDay}${$t('day')}` }}</span>
                 </div>
                 <!--单人自定义-->
-                <div v-if="i.handleMode === 'custom'" class="step-background">
+                <div v-if="['custom', 'any', 'all'].includes(i.handleMode)" class="step-background">
                   <div v-for="(j, idx) in i.handleTemplates" :key="idx" class="form-item">
                     <!--审批角色设置-->
                     <FormItem label=" " required :label-width="15">
@@ -256,7 +256,7 @@
                         <Option v-for="i in userRoleList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
                       </Select>
                     </FormItem>
-                    <!--审批人设置-->
+                    <!--审批人设置(模板指定/建议/提交人指定/建议/组内系统分配/组内主动认领)-->
                     <FormItem label=" " required :label-width="15" style="margin-left:20px;">
                       <Input
                         v-if="['template', 'template_suggest'].includes(j.handlerType)"

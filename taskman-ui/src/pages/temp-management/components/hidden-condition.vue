@@ -95,7 +95,11 @@ export default {
   },
   methods: {
     handleOpenModal () {
-      this.$refs.modal.initData(this.value || [])
+      let initArr = []
+      if (Array.isArray(this.value) && this.value.length > 0) {
+        initArr = this.value
+      }
+      this.$refs.modal.initData(initArr)
     },
     handleUpdate (val) {
       this.hiddenCondition = val

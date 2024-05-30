@@ -45,13 +45,13 @@
                     <!--输入框-->
                     <Input
                       v-if="i.elementType === 'input'"
-                      v-model="value[i.name]"
+                      v-model.trim="value[i.name]"
                       :disabled="i.isEdit === 'no' || formDisable"
                       style="width: calc(100% - 20px)"
                     ></Input>
                     <Input
                       v-else-if="i.elementType === 'textarea'"
-                      v-model="value[i.name]"
+                      v-model.trim="value[i.name]"
                       type="textarea"
                       :disabled="i.isEdit === 'no' || formDisable"
                       style="width: calc(100% - 20px)"
@@ -361,7 +361,7 @@ export default {
         this.$set(this.tableData, index, row)
         return
       }
-      // cmdb引用下拉类型
+      // cmdb模型数据项下拉类型
       if (titleObj.elementType === 'wecmdbEntity') {
         if (!first) return
         const [packageName, ciType] = (titleObj.dataOptions && titleObj.dataOptions.split(':')) || []
@@ -392,6 +392,10 @@ export default {
         }
         // 删除掉值为空的数据
         if (!cache[key] || (Array.isArray(cache[key]) && cache[key].length === 0)) {
+          delete cache[key]
+        }
+        // 数据表单【表单隐藏标识】放到了row里面，需要删除
+        if (key.indexOf('Hidden') > -1) {
           delete cache[key]
         }
       })

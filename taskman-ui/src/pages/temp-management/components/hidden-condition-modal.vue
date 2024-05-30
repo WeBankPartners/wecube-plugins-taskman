@@ -212,7 +212,7 @@ export default {
           const deleteIndexArr = []
           this.hiddenCondition.forEach((i, index) => {
             // 新加一行空数据处理
-            if (i.name === '') {
+            if (!i.name || !i.operator) {
               this.selectAttrs.push({ elementType: 'input' })
             } else {
               const findIndex = this.finalElement[0].attrs.findIndex(j => j.name === i.name)
@@ -234,17 +234,19 @@ export default {
   },
   methods: {
     initData (arr) {
-      let hiddenCondition = deepClone(arr)
-      if (hiddenCondition.length === 0) {
-        hiddenCondition.push({
+      this.hiddenCondition = deepClone(arr)
+      if (this.hiddenCondition.length === 0) {
+        this.hiddenCondition.push({
           name: '',
           operator: '',
           value: ''
         })
       }
-      this.hiddenCondition = hiddenCondition
       this.visible = true
       this.nameList = this.finalElement[0].attrs.filter(i => i.name !== this.name)
+      this.$nextTick(() => {
+        this.$refs.form0[0].resetFields()
+      })
     },
     handleNameChange () {
       // 过滤已选表单项

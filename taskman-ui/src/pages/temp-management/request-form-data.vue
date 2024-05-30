@@ -91,6 +91,9 @@
                     :key="element.id"
                   >
                     <Checkbox v-model="element.checked" style="margin:0;"></Checkbox>
+                    <div class="require">
+                      <Icon v-if="element.required === 'yes'" size="8" type="ios-medical" />
+                    </div>
                     <div
                       class="custom-title"
                       :style="
@@ -99,9 +102,6 @@
                           : ''
                       "
                     >
-                      <span v-if="element.required === 'yes'" style="color: red;">
-                        *
-                      </span>
                       {{ element.title }}
                     </div>
                     <Input
@@ -1238,5 +1238,12 @@ fieldset[disabled] .ivu-input {
 .content {
   text-align: center; /* 居中内容 */
   padding: 10px; /* 可根据需求调整内容与边框的间距 */
+}
+
+.require {
+  color: #ed4014;
+  width: 6px;
+  display: flex;
+  align-items: center;
 }
 </style>

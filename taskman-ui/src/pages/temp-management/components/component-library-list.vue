@@ -144,6 +144,10 @@ export default {
             value: i
           }
         })
+        // 将信息表单置于数组第一个
+        const index = this.formTypeList.findIndex(i => i.value === 'requestInfo')
+        const item = this.formTypeList.splice(index, 1)[0]
+        this.formTypeList.unshift(item)
       }
     },
     // 获取创建人下拉列表

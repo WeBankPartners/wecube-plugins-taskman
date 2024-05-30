@@ -14,7 +14,7 @@
         <FormItem :label="$t('tw_form_name')">
           <Input v-model.trim="group.itemGroupName" style="width: 96%;" @on-change="paramsChanged"></Input>
           <span style="color: red">*</span>
-          <span v-if="group.itemGroupName === ''" style="color: red"
+          <span v-if="!group.itemGroupName" style="color: red"
             >{{ $t('tw_form_name') }}{{ $t('can_not_be_empty') }}</span
           >
         </FormItem>
@@ -31,7 +31,7 @@
         v-if="isCheck !== 'Y'"
         type="primary"
         style="margin-right: 8px"
-        :disabled="isSaveBtnActive()"
+        :disabled="isSaveBtnActive"
         @click="saveGroupDrawer"
         >{{ $t('save') }}</Button
       >
@@ -68,11 +68,20 @@ export default {
     }
   },
   props: ['isCheck', 'requestTemplateId', 'module'],
+  computed: {
+    // 控制保存按钮
+    isSaveBtnActive () {
+      if (!this.group.itemGroupName) {
+        return true
+      } else {
+        return false
+      }
+    }
+  },
   methods: {
     async loadPage (params) {
       this.isParmasChanged = false
       if (params.isAdd) {
-        this.group = {}
         this.group.requestTemplateId = params.requestTemplateId
         this.group.formTemplateId = params.formTemplateId
         this.group.itemGroupName = params.itemGroup
@@ -101,14 +110,6 @@ export default {
     },
     paramsChanged () {
       this.isParmasChanged = true
-    },
-    // 控制保存按钮
-    isSaveBtnActive () {
-      let res = false
-      if (this.group.itemGroupName === '') {
-        return true
-      }
-      return res
     },
     async saveGroupDrawer () {
       const { statusCode } = await saveRequestGroupForm(this.group)

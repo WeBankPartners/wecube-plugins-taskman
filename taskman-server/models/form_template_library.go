@@ -15,11 +15,11 @@ func (FormTemplateLibraryTable) TableName() string {
 }
 
 type FormTemplateLibraryDto struct {
-	Id          string                          `json:"id"`
-	Name        string                          `json:"name"`
-	FormType    string                          `json:"formType"`
-	CreatedTime string                          `json:"createdTime"`
-	CreatedBy   string                          `json:"createdBy"` // 创建人
-	FormItems   string                          `json:"formItems"` //表单项,逗号隔开
-	Items       []*FormItemTemplateLibraryTable `json:"items"`
+	Id          string                        `json:"id"`
+	Name        string                        `json:"name"`
+	FormType    string                        `json:"formType"`
+	CreatedTime string                        `json:"createdTime"`
+	CreatedBy   string                        `json:"createdBy"` // 创建人
+	FormItems   string                        `json:"formItems"` //表单项,逗号隔开
+	Items       []*FormItemTemplateLibraryDto `json:"items"`
 }

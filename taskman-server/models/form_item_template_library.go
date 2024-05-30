@@ -1,6 +1,9 @@
 package models
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"strings"
+)
 
 type FormItemTemplateLibraryTable struct {
 	Id                  string `json:"id" xorm:"'id' pk" primary-key:"id"`
@@ -118,4 +121,52 @@ func ConvertFormItemTemplateLibraryDto2Model(dto *FormItemTemplateLibraryDto) *F
 		FormTemplateLibrary: dto.FormTemplateLibrary,
 		HiddenCondition:     hiddenCondition,
 	}
+}
+
+func ConvertFormItemTemplateLibraryModel2Dto(list []*FormItemTemplateLibraryTable) []*FormItemTemplateLibraryDto {
+	var dtoList []*FormItemTemplateLibraryDto
+	if len(list) > 0 {
+		for _, library := range list {
+			var newHiddenCondition []*QueryRequestFilterObj
+			if strings.TrimSpace(library.HiddenCondition) != "" {
+				json.Unmarshal([]byte(library.HiddenCondition), &newHiddenCondition)
+			}
+			dto := &FormItemTemplateLibraryDto{
+				Id:                  library.Id,
+				Name:                library.Name,
+				Description:         library.Description,
+				ItemGroup:           library.ItemGroup,
+				ItemGroupName:       library.ItemGroupName,
+				DefaultValue:        library.DefaultValue,
+				Sort:                library.Sort,
+				PackageName:         library.PackageName,
+				Entity:              library.Entity,
+				AttrDefId:           library.AttrDefId,
+				AttrDefName:         library.AttrDefName,
+				AttrDefDataType:     library.AttrDefDataType,
+				ElementType:         library.ElementType,
+				Title:               library.Title,
+				Width:               library.Width,
+				RefPackageName:      library.RefPackageName,
+				RefEntity:           library.RefEntity,
+				DataOptions:         library.DataOptions,
+				Required:            library.Required,
+				Regular:             library.Regular,
+				IsEdit:              library.IsEdit,
+				IsView:              library.IsView,
+				IsOutput:            library.IsOutput,
+				InDisplayName:       library.InDisplayName,
+				IsRefInside:         library.IsRefInside,
+				Multiple:            library.Multiple,
+				DefaultClear:        library.DefaultClear,
+				RefId:               library.RefId,
+				RoutineExpression:   library.RoutineExpression,
+				ControlSwitch:       library.ControlSwitch,
+				FormTemplateLibrary: library.FormTemplateLibrary,
+				HiddenCondition:     newHiddenCondition,
+			}
+			dtoList = append(dtoList, dto)
+		}
+	}
+	return dtoList
 }

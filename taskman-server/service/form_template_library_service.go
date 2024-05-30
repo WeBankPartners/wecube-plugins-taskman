@@ -129,7 +129,7 @@ func (s *FormTemplateLibraryService) QueryFormTemplateLibrary(param models.Query
 				CreatedTime: formTemplateLibrary.CreatedTime,
 				CreatedBy:   formTemplateLibrary.CreatedBy,
 				FormItems:   strings.Join(items, "、"),
-				Items:       formItemTemplateLibraryList,
+				Items:       models.ConvertFormItemTemplateLibraryModel2Dto(formItemTemplateLibraryList),
 			})
 		}
 	}

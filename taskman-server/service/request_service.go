@@ -2547,6 +2547,9 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 											if _, ok := entity.EntityData[name]; ok {
 												valueStr, ok := value.(string)
 												if ok {
+													if len(valueStr) == 0 {
+														continue
+													}
 													// 单选判断,不相等直接过滤
 													if valueStr != entity.EntityData[name] {
 														deleteRowIdMap[entity.Id] = true
@@ -2558,6 +2561,9 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 													filterArr, ok1 := value.([]interface{})
 													if !ok1 {
 														log.Logger.Error("data value  is not array", log.JsonObj("data", data))
+														continue
+													}
+													if len(filterArr) == 0 {
 														continue
 													}
 													// entity.EntityData里面的value 可能是[]string也有可能是 a,b形式,取决是否展示,展示前面就会处理,这个地方要兼容两种格式

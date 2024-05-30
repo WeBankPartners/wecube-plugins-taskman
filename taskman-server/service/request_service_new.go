@@ -1936,6 +1936,9 @@ func (s *RequestService) AutoExecTaskHandle(request models.RequestTable, userTok
 							log.Logger.Error(" assignValue  value  is not array", log.JsonObj("assignValue", assignValue))
 							continue
 						}
+						if len(assignArr) == 0 {
+							continue
+						}
 						valArr, ok2 := formItemDtoTemp.Value.(string)
 						if ok2 {
 							formItemValue = append(formItemValue, valArr)

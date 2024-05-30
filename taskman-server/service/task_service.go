@@ -346,13 +346,40 @@ func handleCustomTask(task models.TaskTable, operator, userToken, language strin
 	if err != nil {
 		return
 	}
-	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status=?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{param.ChoseOption, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId}})
-	if param.ChoseOption == string(models.TaskHandleResultTypeUncompleted) {
-		// 任务处理未完成,直接更新任务为未完成
-		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, string(models.TaskHandleResultTypeUncompleted), operator, now, task.Id}})
-	} else {
-		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, GetTaskHandleService().CalcTaskResult(task.Id, param.TaskHandleId), operator, now, task.Id}})
+	// 当前审批通过,需要通过查看 task_template里面handle_mode 判断协同,并行
+	var taskHandleList []*models.TaskHandleTable
+	var taskTemplateList []*models.TaskTemplateTable
+	err = dao.X.SQL("select * from task_template where id = ?", task.TaskTemplate).Find(&taskTemplateList)
+	if err != nil {
+		return
 	}
+	if len(taskTemplateList) == 0 {
+		err = fmt.Errorf("task:%s taskTemplate is empty", task.Id)
+		return
+	}
+	if taskTemplateList[0].HandleMode == string(models.TaskTemplateHandleModeAll) {
+		// 并行模式,都要审批完成才能到下一步
+		err = dao.X.SQL("select * from task_handle where task = ? and latest_flag = 1", task.Id).Find(&taskHandleList)
+		if err != nil {
+			return
+		}
+		if len(taskHandleList) == 0 {
+			err = fmt.Errorf("task:%s taskHandleList is empty", task.Id)
+			return
+		}
+		for _, taskHandle := range taskHandleList {
+			// 存在任务节点 没有审批通过,并且不是当前节点,更新当前处理节点为完成后,return 等待其他审批人处理
+			if (taskHandle.HandleResult != string(models.TaskHandleResultTypeApprove) && taskHandle.HandleResult != string(models.TaskHandleResultTypeUnrelated)) && taskHandle.Id != param.TaskHandleId {
+				_, err = dao.X.Exec("update task_handle set handle_result = ?,handle_status = ?,result_desc = ?,updated_time =? where id = ?", param.ChoseOption, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId)
+				if err != nil {
+					return
+				}
+				return
+			}
+		}
+	}
+	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status=?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{param.ChoseOption, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId}})
+	actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, string(models.TaskHandleResultTypeComplete), operator, now, task.Id}})
 	if newApproveActions, err = GetRequestService().CreateRequestTask(request, task.Id, userToken, language, taskSort); err != nil {
 		return
 	}
@@ -395,16 +422,42 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 		return getRequestErr
 	}
 	var actions, newApproveActions []*dao.ExecAction
-	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status=?,result_desc = ?,updated_time =?,proc_def_result=? where id= ?", Param: []interface{}{param.ChoseOption, models.TaskHandleResultTypeComplete, param.Comment, nowTime, param.ProcDefResult, param.TaskHandleId}})
-	if param.ChoseOption == string(models.TaskHandleResultTypeUncompleted) {
-		actions = append(actions, &dao.ExecAction{Sql: "update task set callback_data=?,result=?,task_result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{
-			string(requestBytes), param.Comment, models.TaskHandleResultTypeUncompleted, param.ChoseOption, "done", operator, nowTime, task.Id,
-		}})
-	} else {
-		actions = append(actions, &dao.ExecAction{Sql: "update task set callback_data=?,result=?,task_result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{
-			string(requestBytes), param.Comment, GetTaskHandleService().CalcTaskResult(task.Id, param.TaskHandleId), param.ChoseOption, "done", operator, nowTime, task.Id,
-		}})
+	// 当前审批通过,需要通过查看 task_template里面handle_mode 判断协同,并行
+	var taskHandleList []*models.TaskHandleTable
+	var taskTemplateList []*models.TaskTemplateTable
+	err = dao.X.SQL("select * from task_template where id = ?", task.TaskTemplate).Find(&taskTemplateList)
+	if err != nil {
+		return err
 	}
+	if len(taskTemplateList) == 0 {
+		err = fmt.Errorf("task:%s taskTemplate is empty", task.Id)
+		return err
+	}
+	if taskTemplateList[0].HandleMode == string(models.TaskTemplateHandleModeAll) {
+		// 并行模式,都要审批完成才能到下一步
+		err = dao.X.SQL("select * from task_handle where task = ? and latest_flag = 1", task.Id).Find(&taskHandleList)
+		if err != nil {
+			return err
+		}
+		if len(taskHandleList) == 0 {
+			err = fmt.Errorf("task:%s taskHandleList is empty", task.Id)
+			return err
+		}
+		for _, taskHandle := range taskHandleList {
+			// 存在任务节点 没有审批通过,并且不是当前节点,更新当前处理节点为完成后,return 等待其他审批人处理
+			if (taskHandle.HandleResult != string(models.TaskHandleResultTypeApprove) && taskHandle.HandleResult != string(models.TaskHandleResultTypeUnrelated)) && taskHandle.Id != param.TaskHandleId {
+				_, err = dao.X.Exec("update task_handle set handle_result = ?,handle_status = ?,result_desc = ?,updated_time =? where id = ?", param.ChoseOption, models.TaskHandleResultTypeComplete, param.Comment, nowTime, param.TaskHandleId)
+				if err != nil {
+					return err
+				}
+				return nil
+			}
+		}
+	}
+	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status=?,result_desc = ?,updated_time =?,proc_def_result=? where id= ?", Param: []interface{}{param.ChoseOption, models.TaskHandleResultTypeComplete, param.Comment, nowTime, param.ProcDefResult, param.TaskHandleId}})
+	actions = append(actions, &dao.ExecAction{Sql: "update task set callback_data=?,result=?,task_result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{
+		string(requestBytes), param.Comment, param.ChoseOption, param.ChoseOption, models.TaskStatusDone, operator, nowTime, task.Id,
+	}})
 	if newApproveActions, err = GetRequestService().CreateProcessTask(request, &task, userToken, language); err != nil {
 		return err
 	}

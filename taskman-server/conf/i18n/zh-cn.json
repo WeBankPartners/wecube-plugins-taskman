@@ -159,5 +159,9 @@
   "form_template_library_add_name_repeat_error": {
     "code": 20100031,
     "message": "创建失败:表单组件名已存在,请修改后重试"
+  },
+  "form_item_code_repeat_error": {
+    "code": 20100032,
+    "message": "保存失败:表单{%s}重的表单项{%s}的编码%s与表单项{%s}的编码重复,请求改后重新保存"
   }
 }

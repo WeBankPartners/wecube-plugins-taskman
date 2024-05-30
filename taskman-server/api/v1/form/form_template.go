@@ -3,6 +3,7 @@ package form
 import (
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
@@ -57,7 +58,7 @@ func UpdateRequestFormTemplate(c *gin.Context) {
 	var param models.FormTemplateDto
 	var err error
 	var user = middleware.GetRequestUser(c)
-	var codeMap = make(map[string]bool)
+	var codeMap = make(map[string]string)
 	requestTemplateId := c.Param("id")
 	if requestTemplateId == "" {
 		middleware.ReturnParamEmptyError(c, "id")
@@ -75,11 +76,11 @@ func UpdateRequestFormTemplate(c *gin.Context) {
 	// 检查表单组code是否重复
 	if len(param.Items) > 0 {
 		for _, item := range param.Items {
-			if codeMap[item.Name] {
-				middleware.ReturnParamValidateError(c, fmt.Errorf("code %s repeat", item.Name))
+			if v, ok := codeMap[item.Name]; ok {
+				middleware.ReturnError(c, exterror.New().FormItemCodeRepeatError.WithParam(item.ItemGroup, item.Title, item.Name, v))
 				return
 			}
-			codeMap[item.Name] = true
+			codeMap[item.Name] = item.Title
 		}
 	}
 	param.UpdatedBy = user
@@ -246,7 +247,7 @@ func UpdateFormTemplateItemGroupConfig(c *gin.Context) {
 // UpdateFormTemplateItemGroup 更新表单组
 func UpdateFormTemplateItemGroup(c *gin.Context) {
 	var param models.FormTemplateGroupCustomDataDto
-	var codeMap = make(map[string]bool)
+	var codeMap = make(map[string]string)
 	var err error
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
@@ -255,11 +256,11 @@ func UpdateFormTemplateItemGroup(c *gin.Context) {
 	// 检查表单组code是否重复
 	if len(param.Items) > 0 {
 		for _, item := range param.Items {
-			if codeMap[item.Name] {
-				middleware.ReturnParamValidateError(c, fmt.Errorf("code %s repeat", item.Name))
+			if v, ok := codeMap[item.Name]; ok {
+				middleware.ReturnError(c, exterror.New().FormItemCodeRepeatError.WithParam(item.ItemGroup, item.Title, item.Name, v))
 				return
 			}
-			codeMap[item.Name] = true
+			codeMap[item.Name] = item.Title
 		}
 	}
 	// 校验是否有修改权限

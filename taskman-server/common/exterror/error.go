@@ -107,6 +107,8 @@ type ErrorTemplate struct {
 	FormTemplateLibraryDeletePermissionError CustomError `json:"form_template_library_delete_permission_error"`
 	// 表单模版组件库添加失败
 	FormTemplateLibraryAddNameRepeatError CustomError `json:"form_template_library_add_name_repeat_error"`
+	// 表单项目code重复
+	FormItemCodeRepeatError CustomError `json:"form_item_code_repeat_error"`
 }
 
 var (

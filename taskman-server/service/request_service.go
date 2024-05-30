@@ -2620,7 +2620,7 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 						}
 						taskHandle.FormData = formDataList
 					} else {
-						taskHandle.FormData = taskHistory.FormData
+						taskHandle.FormData = formDataDeepCopy(taskHistory.FormData)
 					}
 					// 当前任务已经执行完成,并行每个结点只能看到自己修改数据,而不是当前任务最新数据. 协同没有提交的,表单数据展示为空
 					if taskHistory.Status == string(models.TaskStatusDone) {
@@ -2631,6 +2631,8 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 							var formItemMap = make(map[string]map[string][]*models.FormItemTable)
 							dao.X.SQL("select * from form_item where request = ? AND updated_time <= ?", taskHistory.Request, taskHandle.UpdatedTime).Find(&requestFormItems)
 							if len(requestFormItems) > 0 && len(taskHandle.FormData) > 0 {
+								// 同一个form 下面的相同 item 取最新时间的item
+								requestFormItems = getLatestGroupFormItems(requestFormItems)
 								for _, item := range requestFormItems {
 									itemGroup := ""
 									dataId := ""
@@ -2678,4 +2680,87 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 		}
 	}
 	return newTaskHistoryList
+}
+
+// getLatestGroupFormItems 同一个form 下面的相同 item 取最新时间的item
+func getLatestGroupFormItems(formItems []*models.FormItemTable) []*models.FormItemTable {
+	var latestFormItems []*models.FormItemTable
+	var formItemMap = make(map[string][]*models.FormItemTable)
+	var latestItem *models.FormItemTable
+	var nameMap = make(map[string]bool)
+	for _, item := range formItems {
+		if _, ok := formItemMap[item.Form]; !ok {
+			formItemMap[item.Form] = []*models.FormItemTable{}
+		}
+		formItemMap[item.Form] = append(formItemMap[item.Form], item)
+	}
+	for _, itemArr := range formItemMap {
+		if len(itemArr) > 0 {
+			nameMap = make(map[string]bool)
+			for i := 0; i < len(itemArr); i++ {
+				latestItem = itemArr[i]
+				for j := i + 1; j < len(itemArr); j++ {
+					if latestItem.Name == itemArr[j].Name && compareTime(itemArr[j].UpdatedTime, latestItem.UpdatedTime) {
+						latestItem = itemArr[j]
+					}
+				}
+				if !nameMap[latestItem.Name] {
+					latestFormItems = append(latestFormItems, latestItem)
+					nameMap[latestItem.Name] = true
+				}
+			}
+		}
+	}
+	return latestFormItems
+}
+
+func compareTime(timeA, timeB string) bool {
+	loc, _ := time.LoadLocation("Local")
+	timeA1, _ := time.ParseInLocation(models.DateTimeFormat, timeA, loc)
+	timeB1, _ := time.ParseInLocation(models.DateTimeFormat, timeB, loc)
+	return timeA1.After(timeB1)
+}
+
+func formDataDeepCopy(dataList []*models.RequestPreDataTableObj) []*models.RequestPreDataTableObj {
+	var list []*models.RequestPreDataTableObj
+	var valueList []*models.EntityTreeObj
+	for _, data := range dataList {
+		valueList = []*models.EntityTreeObj{}
+		if len(data.Value) > 0 {
+			for _, obj := range data.Value {
+				entityData := make(map[string]interface{})
+				if len(obj.EntityData) > 0 {
+					for key, value := range obj.EntityData {
+						entityData[key] = value
+					}
+				}
+				valueList = append(valueList, &models.EntityTreeObj{
+					PackageName:   obj.PackageName,
+					EntityName:    obj.EntityName,
+					DataId:        obj.DataId,
+					DisplayName:   obj.DisplayName,
+					FullDataId:    obj.FullDataId,
+					Id:            obj.Id,
+					EntityData:    entityData,
+					PreviousIds:   obj.PreviousIds,
+					SucceedingIds: obj.SucceedingIds,
+					EntityDataOp:  obj.EntityDataOp,
+				})
+			}
+		}
+		list = append(list, &models.RequestPreDataTableObj{
+			PackageName:    data.PackageName,
+			Entity:         data.Entity,
+			FormTemplateId: data.FormTemplateId,
+			ItemGroup:      data.ItemGroup,
+			ItemGroupName:  data.ItemGroupName,
+			ItemGroupType:  data.ItemGroupType,
+			ItemGroupRule:  data.ItemGroupRule,
+			RefEntity:      data.RefEntity,
+			SortLevel:      data.SortLevel,
+			Title:          data.Title,
+			Value:          valueList,
+		})
+	}
+	return list
 }

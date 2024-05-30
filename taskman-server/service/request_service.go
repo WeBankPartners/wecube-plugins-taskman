@@ -730,6 +730,12 @@ func GetRequestPreData(requestId, entityDataId, userToken, language string) (res
 	if len(previewData.EntityTreeNodes) == 0 {
 		return
 	}
+	previewDataBytes, _ := json.Marshal(previewData)
+	_, err = dao.X.Exec("update request set preview_cache=? where id=?", string(previewDataBytes), requestId)
+	if err != nil {
+		err = fmt.Errorf("update request preview cache data fail,%s ", err.Error())
+		return
+	}
 	for _, entity := range result {
 		if entity.ItemGroupRule == "new" {
 			continue
@@ -988,7 +994,7 @@ func CheckRequest(request models.RequestTable, task *models.TaskTable, operator,
 	if requestTemplate == nil {
 		return
 	}
-	entityDepMap, err = AppendUselessEntity(requestTemplate.Id, userToken, language, &cacheData)
+	entityDepMap, _, err = AppendUselessEntity(requestTemplate.Id, userToken, language, &cacheData, request.Id)
 	if err != nil {
 		err = fmt.Errorf("try to append useless entity fail,%s ", err.Error())
 		return
@@ -1039,14 +1045,14 @@ func StartRequest(requestId, operator, userToken, language string, cacheData mod
 	}
 	cacheData.ProcDefId = requestTemplateTable[0].ProcDefId
 	cacheData.ProcDefKey = requestTemplateTable[0].ProcDefKey
-	entityDepMap, tmpErr := AppendUselessEntity(requestTemplateTable[0].Id, userToken, language, &cacheData)
+	entityDepMap, preData, tmpErr := AppendUselessEntity(requestTemplateTable[0].Id, userToken, language, &cacheData, requestId)
 	if tmpErr != nil {
 		return result, fmt.Errorf("try to append useless entity fail,%s ", tmpErr.Error())
 	}
 	fillBindingWithRequestData(requestId, userToken, language, &cacheData, entityDepMap)
 	cacheBytes, _ := json.Marshal(cacheData)
 	log.Logger.Info("cacheByte", log.String("cacheBytes", string(cacheBytes)))
-	startParam := BuildRequestProcessData(cacheData)
+	startParam := BuildRequestProcessData(cacheData, preData)
 	result, err = GetProcDefService().StartProcDefInstances(startParam, userToken, language)
 	if err != nil {
 		return
@@ -1082,13 +1088,13 @@ func StartRequestNew(request models.RequestTable, userToken, language string, ca
 	}
 	cacheData.ProcDefId = requestTemplateTable[0].ProcDefId
 	cacheData.ProcDefKey = requestTemplateTable[0].ProcDefKey
-	entityDepMap, tmpErr := AppendUselessEntity(requestTemplateTable[0].Id, userToken, language, &cacheData)
+	entityDepMap, preData, tmpErr := AppendUselessEntity(requestTemplateTable[0].Id, userToken, language, &cacheData, request.Id)
 	if tmpErr != nil {
 		err = fmt.Errorf("try to append useless entity fail,%s ", tmpErr.Error())
 		return
 	}
 	fillBindingWithRequestData(request.Id, userToken, language, &cacheData, entityDepMap)
-	startParam := BuildRequestProcessData(cacheData)
+	startParam := BuildRequestProcessData(cacheData, preData)
 	log.Logger.Debug("start proc instance", log.JsonObj("startParam", startParam))
 	result, err = GetProcDefService().StartProcDefInstances(startParam, userToken, language)
 	if err != nil {
@@ -1697,7 +1703,7 @@ func getAttrCat(catId, userToken string) (result []*models.EntityDataObj, err er
 	return
 }
 
-func BuildRequestProcessData(input models.RequestCacheData) (result models.RequestProcessData) {
+func BuildRequestProcessData(input models.RequestCacheData, preData *models.EntityTreeData) (result models.RequestProcessData) {
 	result.ProcDefId = input.ProcDefId
 	result.ProcDefKey = input.ProcDefKey
 	result.RootEntityOid = input.RootEntityValue.Oid
@@ -1722,13 +1728,26 @@ func BuildRequestProcessData(input models.RequestCacheData) (result models.Reque
 		tmpEntityValue := models.RequestCacheEntityValue{Oid: result.RootEntityOid, PackageName: "pseudo", EntityName: "pseudo", BindFlag: "N"}
 		result.Entities = append(result.Entities, &tmpEntityValue)
 	}
+	for _, preEntity := range preData.EntityTreeNodes {
+		existFlag := false
+		for _, entity := range result.Entities {
+			if entity.Oid == preEntity.Id {
+				existFlag = true
+				break
+			}
+		}
+		if !existFlag {
+			tmpEntity := models.RequestCacheEntityValue{Oid: preEntity.Id, PackageName: preEntity.PackageName, EntityName: preEntity.EntityName, BindFlag: "N", EntityDataId: preEntity.DataId, EntityDisplayName: preEntity.DisplayName, FullEntityDataId: preEntity.FullDataId, PreviousOids: preEntity.PreviousIds, SucceedingOids: preEntity.SucceedingIds}
+			result.Entities = append(result.Entities, &tmpEntity)
+		}
+	}
 	return result
 }
 
-func AppendUselessEntity(requestTemplateId, userToken, language string, cacheData *models.RequestCacheData) (entityDepMap map[string][]string, err error) {
+func AppendUselessEntity(requestTemplateId, userToken, language string, cacheData *models.RequestCacheData, requestId string) (entityDepMap map[string][]string, preData *models.EntityTreeData, err error) {
 	entityDepMap = make(map[string][]string)
 	if cacheData.RootEntityValue.Oid == "" || strings.HasPrefix(cacheData.RootEntityValue.Oid, "tmp") {
-		return entityDepMap, nil
+		return entityDepMap, preData, nil
 	}
 	// get core preview data list
 	rootDataId := cacheData.RootEntityValue.Oid
@@ -1739,9 +1758,16 @@ func AppendUselessEntity(requestTemplateId, userToken, language string, cacheDat
 		err = fmt.Errorf("preview root data id can not empty")
 		return
 	}
-	preData, preErr := ProcessDataPreview(requestTemplateId, rootDataId, userToken, language)
-	if preErr != nil {
-		return entityDepMap, fmt.Errorf("try to get process preview data fail,%s ", preErr.Error())
+	preData, err = getRequestPreviewCache(requestId)
+	if err != nil {
+		return
+	}
+	if preData == nil {
+		preData, err = ProcessDataPreview(requestTemplateId, rootDataId, userToken, language)
+		if err != nil {
+			err = fmt.Errorf("try to get process preview data fail,%s ", err.Error())
+			return
+		}
 	}
 	// get binding entity data
 	var entityList []*models.RequestCacheEntityValue
@@ -1774,7 +1800,7 @@ func AppendUselessEntity(requestTemplateId, userToken, language string, cacheDat
 	}
 	// preEntityList -> in preData but no int boundValues
 	if len(preEntityList) == 0 {
-		return entityDepMap, nil
+		return entityDepMap, preData, nil
 	}
 	dependEntityMap := make(map[string]*models.RequestCacheEntityAttrValue)
 	log.Logger.Info("getDependEntity", log.StringList("rootSucceeding", rootSucceeding), log.Int("preLen", len(preEntityList)), log.Int("entityLen", len(entityList)))
@@ -1798,7 +1824,7 @@ func AppendUselessEntity(requestTemplateId, userToken, language string, cacheDat
 		}
 		cacheData.TaskNodeBindInfos = append(cacheData.TaskNodeBindInfos, &newNode)
 	}
-	return entityDepMap, nil
+	return entityDepMap, preData, nil
 }
 
 func getDependEntity(succeeding []string, parent models.RequestCacheEntityAttrValue, preEntityList []*models.EntityTreeObj, entityList []*models.RequestCacheEntityValue, dependEntityMap map[string]*models.RequestCacheEntityAttrValue) {
@@ -2680,6 +2706,27 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 		}
 	}
 	return newTaskHistoryList
+}
+
+func getRequestPreviewCache(requestId string) (result *models.EntityTreeData, err error) {
+	var requestRows []*models.RequestTable
+	err = dao.X.SQL("select preview_cache from request where id=?", requestId).Find(&requestRows)
+	if err != nil {
+		err = fmt.Errorf("query request preview cache data fail,%s ", err.Error())
+		return
+	}
+	if len(requestRows) == 0 {
+		err = fmt.Errorf("can not find request row with id:%s ", requestId)
+		return
+	}
+	if requestRows[0].PreviewCache == "" {
+		return
+	}
+	result = &models.EntityTreeData{}
+	if err = json.Unmarshal([]byte(requestRows[0].PreviewCache), result); err != nil {
+		err = fmt.Errorf("json unmarshal request preview cache data fail,%s ", err.Error())
+	}
+	return
 }
 
 // getLatestGroupFormItems 同一个form 下面的相同 item 取最新时间的item

@@ -2210,6 +2210,13 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 					}
 				}
 			}
+			if len(task.FormData) > 0 {
+				for _, formData := range task.FormData {
+					if len(formData.Value) > 0 {
+						sort.Sort(models.EntityTreeObjSort(formData.Value))
+					}
+				}
+			}
 		}
 	}
 	result.Request.UncompletedTasks = uncompletedTasks

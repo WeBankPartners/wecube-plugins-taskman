@@ -2196,6 +2196,22 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		taskForHistoryList = append(taskForHistoryList, curTaskForHistory)
 	}
 	result.Task = filterFormRowByHandleTemplate(taskForHistoryList)
+	// 表单数据行 排序
+	if len(result.Task) > 0 {
+		for _, task := range result.Task {
+			if len(task.TaskHandleList) > 0 {
+				for _, taskHandle := range task.TaskHandleList {
+					if len(taskHandle.FormData) > 0 {
+						for _, formData := range taskHandle.FormData {
+							if len(formData.Value) > 0 {
+								sort.Sort(models.EntityTreeObjSort(formData.Value))
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 	result.Request.UncompletedTasks = uncompletedTasks
 	return
 }

@@ -134,7 +134,6 @@ import LimitSelect from '@/pages/components/limit-select.vue'
 import { getRefOptions, getWeCmdbOptions, saveFormData, getExpressionData } from '@/api/server'
 import { debounce, deepClone } from '@/pages/util'
 import { evaluateCondition } from '../evaluate'
-import dayjs from 'dayjs'
 export default {
   components: {
     LimitSelect
@@ -246,15 +245,11 @@ export default {
             // 表单隐藏逻辑
             Object.keys(item).forEach(key => {
               const find = this.formOptions.find(i => i.name === key) || {}
-              if (find.hiddenCondition) {
+              if (find.hiddenCondition && find.required === 'no') {
                 const conditions = find.hiddenCondition || []
                 item[key + 'Hidden'] = conditions.every(j => {
                   return evaluateCondition(j, item[j.name])
                 })
-                // 隐藏的表单项清空
-                if (item[key + 'Hidden']) {
-                  item[key] = ''
-                }
               }
             })
           })
@@ -497,7 +492,7 @@ export default {
           entityData[item.name + 'Options'] = []
         }
       })
-      const idStr = new Date().getTime().toString()
+      const idStr = new Date().getTime().toString() + Math.floor(Math.random() * 1000)
       let obj = {
         dataId: source ? source.id || '' : '',
         displayName: '',
@@ -573,13 +568,14 @@ export default {
         this.addRowSourceOptions = []
       }
     },
-    // 时间选择器默认填充当前时分秒
     handleTimeChange (e, value, name) {
-      if (e && e.split(' ') && e.split(' ')[1] === '00:00:00') {
-        value[name] = `${e.split(' ')[0]} ${dayjs().format('HH:mm:ss')}`
-      } else {
-        value[name] = e
-      }
+      // 时间选择器默认填充当前时分秒
+      // if (e && e.split(' ') && e.split(' ')[1] === '00:00:00') {
+      //   value[name] = `${e.split(' ')[0]} ${dayjs().format('HH:mm:ss')}`
+      // } else {
+      //   value[name] = e
+      // }
+      value[name] = e
     }
   }
 }

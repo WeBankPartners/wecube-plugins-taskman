@@ -73,8 +73,6 @@
 import LimitSelect from '@/pages/components/limit-select.vue'
 import { getRefOptions, getWeCmdbOptions } from '@/api/server'
 import { evaluateCondition } from '../evaluate'
-import { deepClone } from '../../util'
-import dayjs from 'dayjs'
 export default {
   components: {
     LimitSelect
@@ -109,7 +107,7 @@ export default {
     return {
       refKeys: [],
       entityData: {},
-      formOptions: deepClone(this.options)
+      formOptions: []
     }
   },
   watch: {
@@ -118,19 +116,8 @@ export default {
         if (val) {
           Object.keys(val).forEach(key => {
             this.entityData[key] = val[key]
-            // 表单隐藏逻辑
-            const find = this.formOptions.find(i => i.name === key) || {}
-            if (find.hiddenCondition) {
-              const conditions = find.hiddenCondition || []
-              find.hidden = conditions.every(j => {
-                return evaluateCondition(j, val[j.name])
-              })
-              // 隐藏的表单项清空
-              if (find.hidden) {
-                this.$emit('clearHiddenValue', key)
-              }
-            }
           })
+          this.hideFormItems()
         }
       },
       deep: true,
@@ -139,6 +126,8 @@ export default {
     options: {
       handler (val) {
         if (val && val.length) {
+          this.formOptions = this.options
+          this.hideFormItems()
           // select类型集合
           this.refKeys = []
           val.forEach(t => {
@@ -167,12 +156,27 @@ export default {
     }
   },
   methods: {
+    // 表单隐藏逻辑
+    hideFormItems () {
+      Object.keys(this.value).forEach(key => {
+        // 表单隐藏逻辑
+        const find = this.formOptions.find(i => i.name === key) || {}
+        if (find.hiddenCondition && find.required === 'no') {
+          const conditions = find.hiddenCondition || []
+          find.hidden = conditions.every(j => {
+            return evaluateCondition(j, this.value[j.name])
+          })
+        }
+      })
+    },
     handleTimeChange (e, value, name) {
-      if (e && e.split(' ') && e.split(' ')[1] === '00:00:00') {
-        value[name] = `${e.split(' ')[0]} ${dayjs().format('HH:mm:ss')}`
-      } else {
-        value[name] = e
-      }
+      // 时间选择器默认填充当前时分秒
+      // if (e && e.split(' ') && e.split(' ')[1] === '00:00:00') {
+      //   value[name] = `${e.split(' ')[0]} ${dayjs().format('HH:mm:ss')}`
+      // } else {
+      //   value[name] = e
+      // }
+      value[name] = e
     },
     async getRefOptions (titleObj) {
       // taskman模板管理配置的普通下拉类型(值用逗号拼接)

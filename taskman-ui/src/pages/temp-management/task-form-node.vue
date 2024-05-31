@@ -129,10 +129,10 @@ export default {
       roleTypeOptions: [
         // custom.单人自定义 any.协同 all.并行 admin.提交人角色管理员 auto.自动通过
         { label: this.$t('tw_single'), value: 'custom' },
-        { label: this.$t('tw_collaborative'), value: 'any' },
-        { label: this.$t('tw_parallel'), value: 'all' },
-        { label: this.$t('tw_roleAdmin'), value: 'admin' },
-        { label: this.$t('tw_autoWith'), value: 'auto' }
+        { label: this.$t('tw_collaborative_task'), value: 'any' },
+        { label: this.$t('tw_parallel_task'), value: 'all' },
+        { label: this.$t('tw_roleAdmin'), value: 'admin' }
+        // { label: this.$t('tw_autoWith'), value: 'auto' }
       ],
       approvalSingle: {
         assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定

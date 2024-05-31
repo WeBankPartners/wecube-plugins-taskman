@@ -6,6 +6,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/try"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
@@ -392,6 +393,15 @@ func GetReferenceData(c *gin.Context) {
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
+	}
+	if param.Dialect != nil {
+		if param.Dialect.AssociatedData != nil {
+			for k, v := range param.Dialect.AssociatedData {
+				if strings.HasPrefix(v, "tmp"+models.SysTableIdConnector) {
+					delete(param.Dialect.AssociatedData, k)
+				}
+			}
+		}
 	}
 	input := models.RefSelectParam{FormItemTemplateId: formItemTemplateId, RequestId: requestId, Param: &param, UserToken: c.GetHeader("Authorization")}
 	result, err := service.GetCMDBRefSelectResult(&input)

@@ -141,7 +141,7 @@ func getRefDataWithoutFilter(input *models.RefSelectParam) (result []*models.Ent
 	for _, v := range remoteRefData {
 		result = append(result, &models.EntityDataObj{Id: v.Guid, DisplayName: v.KeyName, IsNew: v.IsNew})
 	}
-	cacheData, cacheErr := getRequestCacheNewData(input.RequestId, input.FormItemTemplate)
+	cacheData, cacheErr := getRequestCacheNewDataNew(input.RequestId, input.FormItemTemplate)
 	if cacheErr != nil {
 		err = cacheErr
 		return
@@ -211,6 +211,35 @@ func getRequestCacheNewData(requestId string, formItemTemplate *models.FormItemT
 					result = append(result, &models.CiReferenceDataQueryObj{Guid: vv.Id, KeyName: vv.DisplayName, IsNew: true})
 				}
 			}
+		}
+	}
+	return
+}
+
+func getRequestCacheNewDataNew(requestId string, formItemTemplate *models.FormItemTemplateTable) (result []*models.CiReferenceDataQueryObj, err error) {
+	var newDataFormItemRows []*models.RequestNewDataRow
+	err = dao.X.SQL("select t1.id,t1.name,t1.value,t3.data_id from form_item t1 left join form_item_template t2 on t1.form_item_template=t2.id left join form t3 on t1.form=t3.id where t1.request=? and t2.entity=? and t3.data_id like 'tmp%'", requestId, formItemTemplate.RefEntity).Find(&newDataFormItemRows)
+	if err != nil {
+		err = fmt.Errorf("query request new data form item fail,%s ", err.Error())
+		return
+	}
+	rowNameMap := make(map[string]string)
+	for _, row := range newDataFormItemRows {
+		if _, b := rowNameMap[row.DataId]; b {
+			if row.Name == "displayName" || row.Name == "key_name" {
+				rowNameMap[row.DataId] = row.Id
+			}
+		} else {
+			rowNameMap[row.DataId] = row.Id
+		}
+	}
+	for _, row := range newDataFormItemRows {
+		if row.Id == rowNameMap[row.DataId] {
+			tmpOption := models.CiReferenceDataQueryObj{Guid: row.DataId, KeyName: row.DataId, IsNew: true}
+			if row.Name == "displayName" || row.Name == "key_name" {
+				tmpOption.KeyName = row.Value
+			}
+			result = append(result, &tmpOption)
 		}
 	}
 	return

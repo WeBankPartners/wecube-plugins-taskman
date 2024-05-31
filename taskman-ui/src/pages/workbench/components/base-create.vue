@@ -98,10 +98,10 @@
                 <span class="sub-header">{{ $t('tw_information_form') }}</span>
               </Divider>
               <CustomForm
+                ref="customForm"
                 :options="form.customForm.title"
                 v-model="form.customForm.value"
                 :requestId="requestId"
-                @clearHiddenValue="clearHiddenValue"
               ></CustomForm>
             </template>
             <Divider style="margin: 20px 0 30px 0" orientation="left">
@@ -458,9 +458,6 @@ export default {
     })
   },
   methods: {
-    clearHiddenValue (key) {
-      this.form.customForm.value[key] = ''
-    },
     handleRefTypeChange () {
       this.form.refId = ''
       this.$refs.refSelect.query = ''
@@ -771,25 +768,33 @@ export default {
             }
           })
           if (Array.isArray(item.value)) {
-            // 删除多余的属性
             item.value.forEach(v => {
               refKeys.forEach(ref => {
                 delete v.entityData[ref + 'Options']
               })
-              // 前端添加一行数据，删除多余属性
+              // 前端添加一行的数据，删除相应属性
               if (v.addFlag) {
                 delete v.addFlag
-                v.id = ''
-                v.entityData._id = ''
               }
-              // 删除表单隐藏属性
+              // 删除表单隐藏属性, 并清空值
               for (const key in v.entityData) {
+                if (v.entityData[key + 'Hidden']) {
+                  v.entityData[key] = ''
+                }
                 delete v.entityData[key + 'Hidden']
               }
             })
           }
           return item
         }) || []
+      // 信息表单
+      const customTitles = (this.$refs.customForm && this.$refs.customForm.formOptions) || []
+      customTitles.forEach(t => {
+        if (t.hidden) {
+          // 清空隐藏表单的值
+          this.form.customForm.value[t.name] = ''
+        }
+      })
       // 审批列表
       this.form.approvalList = [...this.approvalList, ...this.taskList]
       // 发布目标对象名称

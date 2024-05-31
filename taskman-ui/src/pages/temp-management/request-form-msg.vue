@@ -1,7 +1,7 @@
 <template>
   <div ref="maxheight">
-    <Row>
-      <Col span="5" style="border: 1px solid #dcdee2;">
+    <div class="msg-form-container">
+      <div class="left">
         <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto', padding: '0 8px' }">
           <!--自定义表单项-->
           <Divider orientation="left" size="small">{{ $t('custom_form') }}</Divider>
@@ -10,9 +10,9 @@
           <Divider orientation="left" size="small">{{ $t('tw_template_library') }}</Divider>
           <ComponentLibraryList ref="libraryList" formType="requestInfo"></ComponentLibraryList>
         </div>
-      </Col>
+      </div>
       <!--表单预览-->
-      <Col span="14" style="border: 1px solid #dcdee2; padding: 0 16px; width: 57%; margin: 0 4px">
+      <div class="center">
         <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto', paddingBottom: '10px' }">
           <div class="title">
             <div class="title-text">
@@ -110,9 +110,9 @@
             >
           </template>
         </div>
-      </Col>
+      </div>
       <!--属性设置-->
-      <Col span="5" style="border: 1px solid #dcdee2">
+      <div class="right">
         <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
           <Collapse v-model="openPanel">
             <Panel name="1">
@@ -141,7 +141,7 @@
                       placeholder=""
                     ></Input>
                   </FormItem>
-                  <FormItem :label="$t('data_type')">
+                  <FormItem :label="$t('tw_form_type')">
                     <Select
                       v-model="editElement.elementType"
                       :disabled="true"
@@ -157,21 +157,17 @@
                   <!--数据集-->
                   <FormItem
                     v-if="editElement.elementType === 'select' && editElement.entity === ''"
-                    :label="$t('data_set')"
+                    :label="$t('tw_options')"
                   >
-                    <!-- <Input v-model="editElement.dataOptions" disabled style="width:calc(100% - 38px)"></Input> -->
-                    <Input :value="getDataOptionsDisplay" disabled style="width:calc(100% - 38px)"></Input>
-                    <Button @click.stop="dataOptionsMgmt" type="primary" icon="md-add"></Button>
+                    <Input :value="getDataOptionsDisplay" disabled style="width:calc(100% - 28px)"></Input>
+                    <Button @click.stop="dataOptionsMgmt" type="success" size="small" icon="md-add"></Button>
                   </FormItem>
                   <!--数据源-->
-                  <FormItem
-                    v-if="editElement.elementType === 'select' && editElement.entity"
-                    :label="$t('data_source')"
-                  >
+                  <FormItem v-if="editElement.elementType === 'select' && editElement.entity" :label="$t('tw_options')">
                     <Input v-model="editElement.dataOptions" disabled></Input>
                   </FormItem>
                   <!--模型数据项-->
-                  <FormItem v-if="editElement.elementType === 'wecmdbEntity'" :label="$t('data_source')">
+                  <FormItem v-if="editElement.elementType === 'wecmdbEntity'" :label="$t('tw_options')">
                     <Select
                       v-model="editElement.dataOptions"
                       filterable
@@ -181,62 +177,77 @@
                       <Option v-for="i in allEntityList" :value="i" :key="i">{{ i }}</Option>
                     </Select>
                   </FormItem>
-                  <!--控制审批/任务-->
-                  <Form :label-width="80">
-                    <FormItem v-if="['select', 'wecmdbEntity'].includes(editElement.elementType)" label="控制审批/任务">
+                  <div style="display:flex;justify-content:space-between;flex-wrap:wrap;">
+                    <!--控制审批/任务-->
+                    <Form v-if="['select', 'wecmdbEntity'].includes(editElement.elementType)" :label-width="80">
+                      <FormItem label="控制审批/任务">
+                        <i-switch
+                          v-model="editElement.controlSwitch"
+                          true-value="yes"
+                          false-value="no"
+                          :disabled="$parent.isCheck === 'Y'"
+                          @on-change="
+                            controlSwitchChange($event)
+                            paramsChanged()
+                          "
+                          size="default"
+                        />
+                      </FormItem>
+                    </Form>
+                    <FormItem
+                      :label="$t('tw_multiple')"
+                      v-if="['select', 'wecmdbEntity'].includes(editElement.elementType)"
+                    >
                       <i-switch
-                        v-model="editElement.controlSwitch"
+                        v-model="editElement.multiple"
                         true-value="yes"
                         false-value="no"
                         :disabled="$parent.isCheck === 'Y'"
-                        @on-change="
-                          controlSwitchChange($event)
-                          paramsChanged()
-                        "
+                        @on-change="paramsChanged"
                         size="default"
                       />
                     </FormItem>
-                  </Form>
-                  <FormItem :label="$t('display')">
-                    <i-switch
-                      v-model="editElement.inDisplayName"
-                      true-value="yes"
-                      false-value="no"
-                      :disabled="$parent.isCheck === 'Y'"
-                      @on-change="paramsChanged"
-                      size="default"
-                    />
-                  </FormItem>
-                  <FormItem :label="$t('editable')">
-                    <i-switch
-                      v-model="editElement.isEdit"
-                      true-value="yes"
-                      false-value="no"
-                      :disabled="$parent.isCheck === 'Y'"
-                      @on-change="paramsChanged"
-                      size="default"
-                    />
-                  </FormItem>
-                  <FormItem :label="$t('required')">
-                    <i-switch
-                      v-model="editElement.required"
-                      true-value="yes"
-                      false-value="no"
-                      :disabled="$parent.isCheck === 'Y' || editElement.controlSwitch === 'yes'"
-                      @on-change="paramsChanged"
-                      size="default"
-                    />
-                  </FormItem>
-                  <FormItem :label="$t('tw_default_empty')">
-                    <i-switch
-                      v-model="editElement.defaultClear"
-                      true-value="yes"
-                      false-value="no"
-                      :disabled="$parent.isCheck === 'Y'"
-                      @on-change="paramsChanged"
-                      size="default"
-                    />
-                  </FormItem>
+                    <FormItem :label="$t('editable')">
+                      <i-switch
+                        v-model="editElement.isEdit"
+                        true-value="yes"
+                        false-value="no"
+                        :disabled="$parent.isCheck === 'Y'"
+                        @on-change="paramsChanged"
+                        size="default"
+                      />
+                    </FormItem>
+                    <FormItem :label="$t('required')">
+                      <i-switch
+                        v-model="editElement.required"
+                        true-value="yes"
+                        false-value="no"
+                        :disabled="$parent.isCheck === 'Y' || editElement.controlSwitch === 'yes'"
+                        @on-change="paramsChanged"
+                        size="default"
+                      />
+                    </FormItem>
+                    <FormItem :label="$t('display')">
+                      <i-switch
+                        v-model="editElement.inDisplayName"
+                        true-value="yes"
+                        false-value="no"
+                        :disabled="$parent.isCheck === 'Y'"
+                        @on-change="paramsChanged"
+                        size="default"
+                      />
+                    </FormItem>
+                    <FormItem :label="$t('tw_default_empty')">
+                      <i-switch
+                        v-model="editElement.defaultClear"
+                        true-value="yes"
+                        false-value="no"
+                        :disabled="$parent.isCheck === 'Y'"
+                        @on-change="paramsChanged"
+                        size="default"
+                      />
+                    </FormItem>
+                  </div>
                   <FormItem :label="$t('defaults')">
                     <Input
                       v-model="editElement.defaultValue"
@@ -244,19 +255,6 @@
                       placeholder=""
                       @on-change="paramsChanged"
                     ></Input>
-                  </FormItem>
-                  <FormItem
-                    :label="$t('tw_multiple')"
-                    v-if="['select', 'wecmdbEntity'].includes(editElement.elementType)"
-                  >
-                    <i-switch
-                      v-model="editElement.multiple"
-                      true-value="yes"
-                      false-value="no"
-                      :disabled="$parent.isCheck === 'Y'"
-                      @on-change="paramsChanged"
-                      size="default"
-                    />
                   </FormItem>
                   <FormItem :label="$t('width')">
                     <Select v-model="editElement.width" @on-change="paramsChanged" :disabled="$parent.isCheck === 'Y'">
@@ -273,6 +271,15 @@
               {{ $t('extended_attributes') }}
               <div slot="content">
                 <Form :label-width="80" label-position="left" :disabled="editElement.controlSwitch === 'yes'">
+                  <FormItem label="" :label-width="0">
+                    <HiddenCondition
+                      ref="hiddenCondition"
+                      :disabled="$parent.isCheck === 'Y'"
+                      :finalElement="finalElement"
+                      :editElement="editElement"
+                      v-model="editElement.hiddenCondition"
+                    ></HiddenCondition>
+                  </FormItem>
                   <FormItem :label="$t('validation_rules')">
                     <Input
                       v-model="editElement.regular"
@@ -281,22 +288,7 @@
                       @on-change="paramsChanged"
                     ></Input>
                   </FormItem>
-                  <FormItem label="" :label-width="0">
-                    <HiddenCondition
-                      :disabled="$parent.isCheck === 'Y'"
-                      :finalElement="finalElement"
-                      v-model="editElement.hiddenCondition"
-                      :name="editElement.name"
-                    ></HiddenCondition>
-                  </FormItem>
-                </Form>
-              </div>
-            </Panel>
-            <Panel name="3">
-              {{ $t('data_item') }}
-              <div slot="content">
-                <Form :label-width="80" :disabled="editElement.controlSwitch === 'yes'">
-                  <FormItem :label="$t('constraints')">
+                  <FormItem :label="$t('data_item') + $t('constraints')">
                     <Select
                       v-model="editElement.isRefInside"
                       @on-change="paramsChanged"
@@ -311,8 +303,8 @@
             </Panel>
           </Collapse>
         </div>
-      </Col>
-    </Row>
+      </div>
+    </div>
     <!--数据集弹框-->
     <DataSourceConfig ref="dataSourceConfigRef" @setDataOptions="setDataOptions"></DataSourceConfig>
     <!--组件库弹框-->
@@ -528,8 +520,9 @@ export default {
       })
       this.finalElement[itemIndex].attrs[eleIndex].isActive = true
       this.editElement = this.finalElement[itemIndex].attrs[eleIndex]
-      this.openPanel = '1'
-      this.$refs.attrForm.validateField('name')
+      this.openPanel = ['1', '2']
+      this.$refs.attrForm.validateField('name') // 编码重复校验
+      this.$refs.hiddenCondition.removeConditionsByAttrs(this.editElement.hiddenCondition) // 隐藏条件删除多余属性
     },
     removeForm (itemIndex, eleIndex, element) {
       this.finalElement[itemIndex].attrs.splice(eleIndex, 1)
@@ -640,7 +633,7 @@ export default {
           attr.itemGroupName = l.itemGroupName
           if (attr.isActive) {
             this.editElement = attr
-            this.openPanel = '1'
+            this.openPanel = ['1', '2']
           }
         })
       })
@@ -698,6 +691,24 @@ export default {
 }
 </script>
 <style scoped lang="scss">
+.msg-form-container {
+  display: flex;
+  .left {
+    width: 360px;
+    border: 1px solid #dcdee2;
+  }
+  .center {
+    flex: 1;
+    border: 1px solid #dcdee2;
+    padding: 0 16px;
+    width: 57%;
+    margin: 0 4px;
+  }
+  .right {
+    width: 360px;
+    border: 1px solid #dcdee2;
+  }
+}
 .active-zone {
   color: #338cf0;
 }

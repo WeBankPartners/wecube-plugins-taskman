@@ -368,6 +368,10 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 				value.EntityDataOp = "create"
 				value.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, guid.CreateGuid())
 				value.DisplayName = concatItemDisplayName(value.EntityData, nameList)
+			} else if value.EntityDataOp == "create" {
+				if !strings.HasPrefix(value.Id, "tmp") {
+					value.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, value.Id)
+				}
 			}
 		}
 	}
@@ -508,6 +512,11 @@ func UpdateRequestFormItemNew(requestId, operator, now string, param *models.Req
 		}
 		poolForms := itemGroupFormMap[tableForm.ItemGroup]
 		for _, valueObj := range tableForm.Value {
+			if valueObj.EntityDataOp == "create" && valueObj.Id != "" {
+				if !strings.HasPrefix(valueObj.Id, "tmp") {
+					valueObj.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, valueObj.Id)
+				}
+			}
 			if valueObj.Id == "" {
 				valueObj.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, guid.CreateGuid())
 			}

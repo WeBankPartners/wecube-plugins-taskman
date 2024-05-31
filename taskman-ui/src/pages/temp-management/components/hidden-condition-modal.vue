@@ -112,7 +112,7 @@
       </Row>
       <Row :gutter="5" style="cursor:pointer;">
         <Col :span="2" :offset="22">
-          <Button type="primary" ghost @click="handleAddRow" size="small" icon="md-add"></Button>
+          <Button type="success" ghost @click="handleAddRow" size="small" icon="md-add"></Button>
         </Col>
       </Row>
     </div>
@@ -136,9 +136,9 @@ export default {
       type: Boolean,
       default: false
     },
-    name: {
-      type: String,
-      default: ''
+    editElement: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {
@@ -209,24 +209,15 @@ export default {
       handler (val) {
         if (val && val.length > 0) {
           this.selectAttrs = []
-          const deleteIndexArr = []
-          this.hiddenCondition.forEach((i, index) => {
+          this.hiddenCondition.forEach(i => {
             // 新加一行空数据处理
             if (!i.name || !i.operator) {
               this.selectAttrs.push({ elementType: 'input' })
             } else {
               const findIndex = this.finalElement[0].attrs.findIndex(j => j.name === i.name)
-              if (findIndex > -1) {
-                this.selectAttrs.push(this.finalElement[0].attrs[findIndex])
-              } else {
-                deleteIndexArr.push(index)
-              }
+              this.selectAttrs.push(this.finalElement[0].attrs[findIndex])
             }
           })
-          // 删除不存在预览区的过滤条件
-          for (let idx of deleteIndexArr) {
-            this.hiddenCondition.splice(idx, 1)
-          }
         }
       },
       deep: true
@@ -243,10 +234,10 @@ export default {
         })
       }
       this.visible = true
-      this.nameList = this.finalElement[0].attrs.filter(i => i.name !== this.name)
-      this.$nextTick(() => {
-        this.$refs.form0[0].resetFields()
-      })
+      this.nameList = this.finalElement[0].attrs.filter(i => i.name !== this.editElement.name)
+      // this.$nextTick(() => {
+      //   this.$refs.form0[0].resetFields()
+      // })
     },
     handleNameChange () {
       // 过滤已选表单项

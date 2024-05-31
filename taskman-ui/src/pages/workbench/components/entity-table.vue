@@ -492,7 +492,7 @@ export default {
           entityData[item.name + 'Options'] = []
         }
       })
-      const idStr = new Date().getTime().toString()
+      const idStr = new Date().getTime().toString() + Math.floor(Math.random() * 1000)
       let obj = {
         dataId: source ? source.id || '' : '',
         displayName: '',

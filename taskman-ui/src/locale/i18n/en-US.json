@@ -316,7 +316,7 @@
   "tw_unrelated": "Unrelated",
   "tw_comments": "Comments",
   "tw_approval": "Approval",
-  "tw_date_picker": "DatePicker",
+  "tw_date_picker": "DatePicker Select",
   "tw_clear": "Clear",
   "copy": "Copy",
   "copy_success": "Copy Successful",
@@ -349,7 +349,7 @@
   "tw_enter_new_data": "Enter new data",
   "tw_select_data_all": "Select existing data - (Select all)",
   "tw_select_data_empty": "Select existing data - (Deselect)",
-  "tw_entity_data_items": "Entity data items",
+  "tw_entity_data_items": "Entity Select",
   "tw_configuration_form": "Configuration Form",
   "tw_completed": "Completed",
   "tw_incomplete": "Incomplete",
@@ -472,5 +472,6 @@
   "tw_template_library": "Component Library",
   "tw_stop": "Stop",
   "tw_expireTime": "Validity",
-  "tw_data_sourceTips": "Caution: If 【Approval/Task Control】 is enabled or this is a hidden condition, modifying options will affect existing settings."
+  "tw_data_sourceTips": "Caution: If 【Approval/Task Control】 is enabled or this is a hidden condition, modifying options will affect existing settings.",
+  "tw_options": "Options"
 }

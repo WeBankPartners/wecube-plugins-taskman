@@ -41,11 +41,11 @@
           <span class="underline"></span>
         </div>
       </div>
-      <Row>
+      <Row :gutter="12">
         <!--角色列表-->
         <Col span="8">
           <Card>
-            <p slot="title" style="height:16px">{{ $t('manageRole') }}</p>
+            <p slot="title" style="height:18px">{{ $t('manageRole') }}</p>
             <div class="tagContainers" :style="{ minHeight: 300 + 'px', maxHeight: tableHeight + 'px' }">
               <div class="role-item" v-for="item in roleList" :key="item.id">
                 <div
@@ -62,7 +62,7 @@
         <!--用户列表-->
         <Col span="16">
           <Card>
-            <p slot="title" style="height:16px">{{ $t('tw_user') }}</p>
+            <p slot="title" style="height:18px">{{ $t('tw_user') }}</p>
             <div
               v-if="activeRole"
               class="tagContainers"
@@ -301,6 +301,8 @@ export default {
   methods: {
     openModal () {
       this.showModal = true
+      this.pendingUser = []
+      this.pengdingExpireTime = ''
       this.getTableData()
       this.getRoles()
     },

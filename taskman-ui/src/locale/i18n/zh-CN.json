@@ -313,7 +313,7 @@
   "tw_unrelated": "无需处理",
   "tw_comments": "意见",
   "tw_approval": "审批",
-  "tw_date_picker": "日期选择器",
+  "tw_date_picker": "时间选择框",
   "tw_clear": "清空",
   "copy": "复制",
   "copy_success": "复制成功",
@@ -346,7 +346,7 @@
   "tw_enter_new_data": "输入新数据",
   "tw_select_data_all": "选择已有数据-默认全选",
   "tw_select_data_empty": "选择已有数据-默认不选",
-  "tw_entity_data_items": "模型数据项",
+  "tw_entity_data_items": "模型选择框",
   "tw_configuration_form": "配置表单",
   "tw_completed": "已完成",
   "tw_incomplete": "未完成",
@@ -470,5 +470,6 @@
   "tw_template_library": "组件库",
   "tw_stop": "暂停",
   "tw_expireTime": "有效期",
-  "tw_data_sourceTips": "请谨慎修改可选项:如该表单项已打开“审批/任务控制”开关,或者被其他表单项设置为隐藏条件,修改可选项将影响已有配置."
+  "tw_data_sourceTips": "请谨慎修改可选项:如该表单项已打开“审批/任务控制”开关,或者被其他表单项设置为隐藏条件,修改可选项将影响已有配置.",
+  "tw_options": "可选项"
 }

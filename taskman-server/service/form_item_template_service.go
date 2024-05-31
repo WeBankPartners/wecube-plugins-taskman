@@ -295,24 +295,31 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroup(param models.FormT
 	err = transaction(func(session *xorm.Session) error {
 		if len(insertItems) > 0 {
 			for _, item := range insertItems {
-				_, err = s.formItemTemplateDao.Add(session, item)
-				if err != nil {
+				if _, err = s.formItemTemplateDao.Add(session, item); err != nil {
 					return err
 				}
 			}
 		}
 		if len(updateItems) > 0 {
 			for _, item := range updateItems {
-				err = s.formItemTemplateDao.Update(session, item)
-				if err != nil {
+				if err = s.formItemTemplateDao.Update(session, item); err != nil {
+					return err
+				}
+				// 更新全局表单,需要更新 引用表单的title,name,multiple,dataOptions属性
+				refFormItemTemplate := &models.FormItemTemplateTable{
+					Title:       item.Title,
+					Name:        item.Name,
+					Multiple:    item.Multiple,
+					DataOptions: item.DataOptions,
+				}
+				if err = s.formItemTemplateDao.UpdateByRefId(session, refFormItemTemplate, item.Id); err != nil {
 					return err
 				}
 			}
 		}
 		if len(deleteItems) > 0 {
 			for _, item := range deleteItems {
-				err = s.formItemTemplateDao.Delete(session, item.Id)
-				if err != nil {
+				if err = s.formItemTemplateDao.DeleteByIdOrRefId(session, item.Id); err != nil {
 					return err
 				}
 			}

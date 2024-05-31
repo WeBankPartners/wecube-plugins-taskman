@@ -41,9 +41,6 @@ func (d *FormItemTemplateDao) UpdateByRefId(session *xorm.Session, formItemTempl
 		session = d.DB.NewSession()
 		defer session.Close()
 	}
-	if formItemTemplate.Id == "" {
-		return
-	}
 	affected, err = session.Where("ref_id = ?", refId).Update(formItemTemplate)
 	// 打印日志
 	logExecuteSql(session, "FormItemTemplateDao", "UpdateByRefId", formItemTemplate, affected, err)

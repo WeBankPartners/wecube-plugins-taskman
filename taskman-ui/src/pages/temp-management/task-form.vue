@@ -200,26 +200,17 @@
                           </div>
                         </draggable>
                       </div>
-                      <div
-                        v-if="isCheck !== 'Y'"
-                        :key="itemIndex + '-'"
-                        style="display:flex;justify-content:space-between;"
-                      >
+                      <div :key="itemIndex + '-'" style="display:flex;justify-content:space-between;">
                         <Button
                           :disabled="getAddComponentDisabled(item.attrs)"
                           @click="createComponentLibrary"
                           size="small"
                           >新建组件</Button
                         >
-                        <div>
-                          <Button
-                            v-if="isCheck !== 'Y'"
-                            type="primary"
-                            size="small"
-                            ghost
-                            @click="saveGroup(9, activeEditingNode)"
-                            >{{ $t('save') }}</Button
-                          >
+                        <div v-if="isCheck !== 'Y'">
+                          <Button type="primary" size="small" ghost @click="saveGroup(9, activeEditingNode)">{{
+                            $t('save')
+                          }}</Button>
                           <Button size="small" @click="reloadGroup">{{ $t('tw_restore') }}</Button>
                         </div>
                       </div>
@@ -736,25 +727,31 @@ export default {
     // 数据表单过滤项有值，需要禁用审批表单对应表单项"可编辑"属性
     setIsEditDisabled () {
       if (this.$refs.approvalFormNodeRef.filterFormList && this.$refs.approvalFormNodeRef.filterFormList.length > 0) {
-        const dataFormObj = this.$refs.approvalFormNodeRef.filterFormList.find(i => i.type === 2)
+        const dataFormList = this.$refs.approvalFormNodeRef.filterFormList.filter(i => i.type === 2)
         const handleTemplates = this.$refs.approvalFormNodeRef.activeApprovalNode.handleTemplates
-        dataFormObj.items.forEach(j => {
-          const key = `${dataFormObj.itemGroup}-${j.name}`
-          const hasValue = handleTemplates.some(val => {
-            return Array.isArray(val.filterRule[key]) ? val.filterRule[key].length > 0 : Boolean(val.filterRule[key])
-          })
-          // 遍历所有表单组，找到需要禁用的表单项
-          this.dataFormInfo.groups.forEach(group => {
-            group.items.forEach(item => {
-              const key1 = `${group.itemGroup}-${item.name}`
-              if (key1 === key && hasValue) {
-                item.isEdit = 'no'
-                this.$set(item, 'isEditDisabled', true)
-              }
-              if (key1 === key && !hasValue) {
-                this.$set(item, 'isEditDisabled', false)
-              }
-            })
+        dataFormList.forEach(group => {
+          group.items.forEach(j => {
+            if (j.controlSwitch === 'yes') {
+              const key = `${group.itemGroup}-${j.name}`
+              const hasValue = handleTemplates.some(val => {
+                return Array.isArray(val.filterRule[key])
+                  ? val.filterRule[key].length > 0
+                  : Boolean(val.filterRule[key])
+              })
+              // 遍历所有表单组，找到需要禁用的表单项
+              this.dataFormInfo.groups.forEach(group => {
+                group.items.forEach(item => {
+                  const key1 = `${group.itemGroup}-${item.name}`
+                  if (key1 === key && hasValue) {
+                    item.isEdit = 'no'
+                    this.$set(item, 'isEditDisabled', true)
+                  }
+                  if (key1 === key && !hasValue) {
+                    this.$set(item, 'isEditDisabled', false)
+                  }
+                })
+              })
+            }
           })
         })
       }

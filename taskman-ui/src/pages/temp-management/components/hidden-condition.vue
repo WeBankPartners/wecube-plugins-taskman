@@ -125,7 +125,7 @@ export default {
     removeConditionsByAttrs (arr) {
       // 如果预览区内对应表单项删除，则清空该条过滤条件
       const deleteNameArr = []
-      let hiddenCondition = deepClone(arr)
+      let hiddenCondition = deepClone(arr || [])
       hiddenCondition.forEach(i => {
         const exist = this.finalElement[0].attrs.some(j => j.name === i.name)
         if (!exist) {

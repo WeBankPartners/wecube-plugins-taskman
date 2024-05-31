@@ -134,7 +134,6 @@ import LimitSelect from '@/pages/components/limit-select.vue'
 import { getRefOptions, getWeCmdbOptions, saveFormData, getExpressionData } from '@/api/server'
 import { debounce, deepClone } from '@/pages/util'
 import { evaluateCondition } from '../evaluate'
-import dayjs from 'dayjs'
 export default {
   components: {
     LimitSelect
@@ -569,13 +568,14 @@ export default {
         this.addRowSourceOptions = []
       }
     },
-    // 时间选择器默认填充当前时分秒
     handleTimeChange (e, value, name) {
-      if (e && e.split(' ') && e.split(' ')[1] === '00:00:00') {
-        value[name] = `${e.split(' ')[0]} ${dayjs().format('HH:mm:ss')}`
-      } else {
-        value[name] = e
-      }
+      // 时间选择器默认填充当前时分秒
+      // if (e && e.split(' ') && e.split(' ')[1] === '00:00:00') {
+      //   value[name] = `${e.split(' ')[0]} ${dayjs().format('HH:mm:ss')}`
+      // } else {
+      //   value[name] = e
+      // }
+      value[name] = e
     }
   }
 }

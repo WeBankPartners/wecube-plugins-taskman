@@ -53,7 +53,7 @@
   "form_settings": "表单填写",
   "input_items": "输入项",
   "output_items": "输出项",
-  "custom_form": "自定义表单项",
+  "custom_form": "表单项",
   "general_attributes": "通用属性",
   "field_name": "字段名",
   "display_name": "显示名",
@@ -93,8 +93,8 @@
   "process_result": "处理结果",
   "process_comments": "处理意见",
   "t_input": "输入框",
-  "textare": "多行文本框",
-  "select": "选择框",
+  "textare": "文本框",
+  "select": "自定义选择框",
   "editable": "可编辑",
   "display": "显示",
   "expire_day": "超时时间",
@@ -467,7 +467,8 @@
   "tw_forever": "永久有效",
   "tw_empty_search": "空值搜索",
   "tw_normal_search": "常规搜索",
-  "tw_template_library": "表单项组件库",
+  "tw_template_library": "组件库",
   "tw_stop": "暂停",
-  "tw_expireTime": "有效期"
+  "tw_expireTime": "有效期",
+  "tw_data_sourceTips": "请谨慎修改可选项:如该表单项已打开“审批/任务控制”开关,或者被其他表单项设置为隐藏条件,修改可选项将影响已有配置."
 }

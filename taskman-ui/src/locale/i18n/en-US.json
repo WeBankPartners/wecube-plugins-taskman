@@ -54,7 +54,7 @@
   "form_settings": "Form Settings",
   "input_items": "Input Items",
   "output_items": "Output Items",
-  "custom_form": "Custom Form",
+  "custom_form": "Form Items",
   "general_attributes": "General Attributes",
   "field_name": "Field Name",
   "display_name": "Display Name",
@@ -94,8 +94,8 @@
   "process_result": "Process Result",
   "process_comments": "Process Comments",
   "t_input": "Input",
-  "textare": "Textare",
-  "select": "Select",
+  "textare": "Textarea",
+  "select": "Custom Select",
   "editable": "Editable",
   "display": "Display",
   "expire_day": "Expire Time",
@@ -469,6 +469,8 @@
   "tw_forever": "Perpetuity",
   "tw_empty_search": "Null Search",
   "tw_normal_search": "Normal Search",
+  "tw_template_library": "Component Library",
   "tw_stop": "Stop",
-  "tw_expireTime": "Validity"
+  "tw_expireTime": "Validity",
+  "tw_data_sourceTips": "Caution: If 【Approval/Task Control】 is enabled or this is a hidden condition, modifying options will affect existing settings."
 }

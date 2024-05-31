@@ -110,21 +110,10 @@ export default {
     attrs: {
       handler (val) {
         if (val) {
-          // 如果预览区内对应表单项删除，则清空该条过滤条件
-          const deleteNameArr = []
-          let hiddenCondition = deepClone(this.value)
-          hiddenCondition.forEach(i => {
-            const exist = val.some(j => j.name === i.name)
-            if (!exist) {
-              deleteNameArr.push(i.name)
-            }
-          })
-          hiddenCondition = hiddenCondition.filter(item => !deleteNameArr.includes(item.name))
-          this.$emit('input', hiddenCondition)
+          this.removeConditionsByAttrs()
         }
       }
-    },
-    deep: true
+    }
   },
   methods: {
     handleOpenModal () {
@@ -132,6 +121,19 @@ export default {
     },
     handleUpdate (val) {
       this.$emit('input', val)
+    },
+    removeConditionsByAttrs () {
+      // 如果预览区内对应表单项删除，则清空该条过滤条件
+      const deleteNameArr = []
+      let hiddenCondition = deepClone(this.value)
+      hiddenCondition.forEach(i => {
+        const exist = this.finalElement[0].attrs.some(j => j.name === i.name)
+        if (!exist) {
+          deleteNameArr.push(i.name)
+        }
+      })
+      hiddenCondition = hiddenCondition.filter(item => !deleteNameArr.includes(item.name))
+      this.$emit('input', hiddenCondition)
     }
   }
 }

@@ -335,6 +335,15 @@
               {{ $t('extended_attributes') }}
               <div slot="content">
                 <Form :label-width="80" label-position="left" :disabled="editElement.controlSwitch === 'yes'">
+                  <FormItem label="" :label-width="0">
+                    <HiddenCondition
+                      ref="hiddenCondition"
+                      :disabled="$parent.isCheck === 'Y'"
+                      :finalElement="finalElement"
+                      v-model="editElement.hiddenCondition"
+                      :editElement="editElement"
+                    ></HiddenCondition>
+                  </FormItem>
                   <FormItem :label="$t('validation_rules')">
                     <Input
                       v-model="editElement.regular"
@@ -343,22 +352,7 @@
                       @on-change="paramsChanged"
                     ></Input>
                   </FormItem>
-                  <FormItem label="" :label-width="0">
-                    <HiddenCondition
-                      :disabled="$parent.isCheck === 'Y'"
-                      :finalElement="finalElement"
-                      v-model="editElement.hiddenCondition"
-                      :editElement="editElement"
-                    ></HiddenCondition>
-                  </FormItem>
-                </Form>
-              </div>
-            </Panel>
-            <Panel name="3">
-              {{ $t('data_item') }}
-              <div slot="content">
-                <Form :label-width="80" :disabled="editElement.controlSwitch === 'yes'">
-                  <FormItem :label="$t('constraints')">
+                  <FormItem :label="$t('data_item') + $t('constraints')">
                     <Select
                       v-model="editElement.isRefInside"
                       @on-change="paramsChanged"
@@ -965,7 +959,8 @@ export default {
         this.editElement.multiple = 'no'
       }
       this.openPanel = '1'
-      this.$refs.attrForm.validateField('name')
+      this.$refs.attrForm.validateField('name') // 编码重复校验
+      this.$refs.hiddenCondition.removeConditionsByAttrs() // 隐藏条件删除多余属性
     },
     // 删除自定义表单项
     removeForm (itemIndex, eleIndex, element) {

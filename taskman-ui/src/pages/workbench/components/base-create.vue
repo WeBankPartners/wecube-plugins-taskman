@@ -775,8 +775,6 @@ export default {
               // 前端添加一行的数据，删除相应属性
               if (v.addFlag) {
                 delete v.addFlag
-                v.id = ''
-                v.entityData._id = ''
               }
               // 删除表单隐藏属性, 并清空值
               for (const key in v.entityData) {

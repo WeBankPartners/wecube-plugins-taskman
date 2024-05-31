@@ -273,6 +273,15 @@
               {{ $t('extended_attributes') }}
               <div slot="content">
                 <Form :label-width="80" label-position="left" :disabled="editElement.controlSwitch === 'yes'">
+                  <FormItem label="" :label-width="0">
+                    <HiddenCondition
+                      ref="hiddenCondition"
+                      :disabled="$parent.isCheck === 'Y'"
+                      :finalElement="finalElement"
+                      :editElement="editElement"
+                      v-model="editElement.hiddenCondition"
+                    ></HiddenCondition>
+                  </FormItem>
                   <FormItem :label="$t('validation_rules')">
                     <Input
                       v-model="editElement.regular"
@@ -281,22 +290,7 @@
                       @on-change="paramsChanged"
                     ></Input>
                   </FormItem>
-                  <FormItem label="" :label-width="0">
-                    <HiddenCondition
-                      :disabled="$parent.isCheck === 'Y'"
-                      :finalElement="finalElement"
-                      :editElement="editElement"
-                      v-model="editElement.hiddenCondition"
-                    ></HiddenCondition>
-                  </FormItem>
-                </Form>
-              </div>
-            </Panel>
-            <Panel name="3">
-              {{ $t('data_item') }}
-              <div slot="content">
-                <Form :label-width="80" :disabled="editElement.controlSwitch === 'yes'">
-                  <FormItem :label="$t('constraints')">
+                  <FormItem :label="$t('data_item') + $t('constraints')">
                     <Select
                       v-model="editElement.isRefInside"
                       @on-change="paramsChanged"
@@ -529,7 +523,8 @@ export default {
       this.finalElement[itemIndex].attrs[eleIndex].isActive = true
       this.editElement = this.finalElement[itemIndex].attrs[eleIndex]
       this.openPanel = '1'
-      this.$refs.attrForm.validateField('name')
+      this.$refs.attrForm.validateField('name') // 编码重复校验
+      this.$refs.hiddenCondition.removeConditionsByAttrs() // 隐藏条件删除多余属性
     },
     removeForm (itemIndex, eleIndex, element) {
       this.finalElement[itemIndex].attrs.splice(eleIndex, 1)

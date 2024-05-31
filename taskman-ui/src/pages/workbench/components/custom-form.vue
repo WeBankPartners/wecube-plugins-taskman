@@ -74,7 +74,6 @@ import LimitSelect from '@/pages/components/limit-select.vue'
 import { getRefOptions, getWeCmdbOptions } from '@/api/server'
 import { evaluateCondition } from '../evaluate'
 import { deepClone } from '../../util'
-import dayjs from 'dayjs'
 export default {
   components: {
     LimitSelect
@@ -164,11 +163,13 @@ export default {
   },
   methods: {
     handleTimeChange (e, value, name) {
-      if (e && e.split(' ') && e.split(' ')[1] === '00:00:00') {
-        value[name] = `${e.split(' ')[0]} ${dayjs().format('HH:mm:ss')}`
-      } else {
-        value[name] = e
-      }
+      // 时间选择器默认填充当前时分秒
+      // if (e && e.split(' ') && e.split(' ')[1] === '00:00:00') {
+      //   value[name] = `${e.split(' ')[0]} ${dayjs().format('HH:mm:ss')}`
+      // } else {
+      //   value[name] = e
+      // }
+      value[name] = e
     },
     async getRefOptions (titleObj) {
       // taskman模板管理配置的普通下拉类型(值用逗号拼接)

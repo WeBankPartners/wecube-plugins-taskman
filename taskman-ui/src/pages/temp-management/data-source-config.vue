@@ -5,23 +5,27 @@
       :title="$t('data_set')"
       :mask-closable="false"
       :closable="false"
+      :width="600"
       class="data-source-config"
     >
       <div>
         <Row>
+          <Alert type="warning" show-icon>{{ $t('tw_data_sourceTips') }}</Alert>
+        </Row>
+        <Row>
           <Col span="12">{{ $t('display_name') }}</Col>
           <Col span="10">{{ $t('value') }}</Col>
         </Row>
-        <Row v-for="(item, itemIndex) in dataSource" :key="itemIndex" style="margin:6px 0">
+        <Row v-for="(item, itemIndex) in dataSource" :key="itemIndex" :gutter="10">
           <Form :model="item" :rules="rule" :ref="'form' + itemIndex">
             <Col span="12">
               <FormItem label="" prop="label">
-                <Input v-model.trim="item.label" style="width:90%"></Input>
+                <Input v-model.trim="item.label"></Input>
               </FormItem>
             </Col>
             <Col span="10">
               <FormItem label="" prop="value">
-                <Input v-model.trim="item.value" style="width:90%"></Input>
+                <Input v-model.trim="item.value"></Input>
               </FormItem>
             </Col>
             <Col span="2">
@@ -30,15 +34,17 @@
                 ghost
                 @click="deleteItem(itemIndex)"
                 size="small"
-                style="vertical-align: sub;cursor: pointer"
+                style="cursor:pointer;margin-top:4px;"
                 icon="md-trash"
               ></Button>
             </Col>
           </Form>
         </Row>
-        <div style="text-align: right;margin-right: 16px;cursor: pointer">
-          <Button type="success" ghost @click="addItem" size="small" icon="md-add"></Button>
-        </div>
+        <Row :gutter="10">
+          <Col :offset="22" :span="2">
+            <Button type="success" ghost @click="addItem" size="small" icon="md-add" style="cursor: pointer"></Button>
+          </Col>
+        </Row>
       </div>
       <template #footer>
         <Button @click="showModel = false">{{ $t('cancel') }}</Button>
@@ -139,8 +145,9 @@ export default {
 </script>
 <style lang="scss">
 .data-source-config {
+  width: 800px;
   .ivu-form-item {
-    margin-bottom: 8px;
+    margin-bottom: 12px;
   }
   .ivu-form-item-error-tip {
     padding-top: 0px;

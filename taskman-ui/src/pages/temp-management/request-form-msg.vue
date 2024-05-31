@@ -1,6 +1,6 @@
 <template>
   <div ref="maxheight">
-    <div class="container">
+    <div class="msg-form-container">
       <div class="left">
         <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto', padding: '0 8px' }">
           <!--自定义表单项-->
@@ -691,7 +691,7 @@ export default {
 }
 </script>
 <style scoped lang="scss">
-.container {
+.msg-form-container {
   display: flex;
   .left {
     width: 360px;

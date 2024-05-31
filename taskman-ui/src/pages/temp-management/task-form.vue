@@ -60,7 +60,7 @@
               <span class="underline"></span>
             </div>
           </div>
-          <div class="container" style="margin-bottom: 56px;">
+          <div class="task-form-container" style="margin-bottom: 56px;">
             <div class="left">
               <div :style="{ height: MODALHEIGHT + 'px', overflow: 'auto', padding: '0 8px' }">
                 <!--自定义表单项-->
@@ -1414,7 +1414,7 @@ fieldset[disabled] .ivu-input {
   border-right: 1px solid #dcdee2;
 }
 
-.container {
+.task-form-container {
   display: flex;
   .left {
     width: 360px;

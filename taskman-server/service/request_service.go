@@ -2711,8 +2711,16 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 										for _, entity := range form.Value {
 											if arr, ok2 := rowMap[entity.Id]; ok2 && len(arr) > 0 && len(entity.EntityData) > 0 {
 												for _, item := range arr {
-													if _, ok3 := entity.EntityData[item.Name]; ok3 {
-														entity.EntityData[item.Name] = item.Value
+													if value, ok3 := entity.EntityData[item.Name]; ok3 {
+														if _, ok4 := value.([]interface{}); ok4 {
+															if strings.TrimSpace(item.Value) == "" {
+																entity.EntityData[item.Name] = []string{}
+															} else {
+																entity.EntityData[item.Name] = strings.Split(item.Value, ",")
+															}
+														} else {
+															entity.EntityData[item.Name] = item.Value
+														}
 													}
 												}
 											}

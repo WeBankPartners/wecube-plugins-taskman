@@ -2711,8 +2711,8 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 										for _, entity := range form.Value {
 											if arr, ok2 := rowMap[entity.Id]; ok2 && len(arr) > 0 && len(entity.EntityData) > 0 {
 												for _, item := range arr {
-													if value, ok3 := entity.EntityData[item.Name]; ok3 {
-														if _, ok4 := value.([]interface{}); ok4 {
+													if _, ok3 := entity.EntityData[item.Name]; ok3 {
+														if item.Multiple == models.Yes || item.Multiple == models.Y {
 															if strings.TrimSpace(item.Value) == "" {
 																entity.EntityData[item.Name] = []string{}
 															} else {
@@ -2775,6 +2775,7 @@ func getLatestGroupFormItems(formItems []*models.FormItemTable) []*models.FormIt
 	var formItemMap = make(map[string][]*models.FormItemTable)
 	var latestItem *models.FormItemTable
 	var nameMap = make(map[string]bool)
+	var multiple string
 	for _, item := range formItems {
 		if _, ok := formItemMap[item.Form]; !ok {
 			formItemMap[item.Form] = []*models.FormItemTable{}
@@ -2785,6 +2786,7 @@ func getLatestGroupFormItems(formItems []*models.FormItemTable) []*models.FormIt
 		if len(itemArr) > 0 {
 			nameMap = make(map[string]bool)
 			for i := 0; i < len(itemArr); i++ {
+				multiple = ""
 				latestItem = itemArr[i]
 				for j := i + 1; j < len(itemArr); j++ {
 					if latestItem.Name == itemArr[j].Name && compareTime(itemArr[j].UpdatedTime, latestItem.UpdatedTime) {
@@ -2792,6 +2794,8 @@ func getLatestGroupFormItems(formItems []*models.FormItemTable) []*models.FormIt
 					}
 				}
 				if !nameMap[latestItem.Name] {
+					dao.X.SQL("select multiple from form_item_template where id = ?", latestItem.FormItemTemplate).Get(&multiple)
+					latestItem.Multiple = multiple
 					latestFormItems = append(latestFormItems, latestItem)
 					nameMap[latestItem.Name] = true
 				}

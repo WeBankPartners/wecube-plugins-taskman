@@ -400,18 +400,8 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 	for _, v := range requestParam.Results.Outputs {
 		v.Comment = param.Comment
 	}
-	var respResult models.CallbackResult
 	requestBytes, _ := json.Marshal(requestParam)
-	b, _ := rpc.HttpPost(models.Config.Wecube.BaseUrl+callbackUrl, userToken, "", requestBytes)
-	log.Logger.Info("Callback response", log.String("body", string(b)))
-	err = json.Unmarshal(b, &respResult)
-	if err != nil {
-		return fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
-	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	if respResult.Status != "OK" {
-		return fmt.Errorf("callback fail,%s ", respResult.Message)
-	}
 	request, getRequestErr := GetSimpleRequest(task.Request)
 	if getRequestErr != nil {
 		return getRequestErr
@@ -446,6 +436,10 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 			}
 		}
 	}
+	// 回调编排
+	if err = callbackWorkflow(requestBytes, callbackUrl, userToken); err != nil {
+		return err
+	}
 	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status=?,result_desc = ?,updated_time =?,proc_def_result=? where id= ?", Param: []interface{}{param.ChoseOption, models.TaskHandleResultTypeComplete, param.Comment, nowTime, param.ProcDefResult, param.TaskHandleId}})
 	actions = append(actions, &dao.ExecAction{Sql: "update task set callback_data=?,result=?,task_result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{
 		string(requestBytes), param.Comment, param.ChoseOption, param.ChoseOption, models.TaskStatusDone, operator, nowTime, task.Id,
@@ -460,6 +454,21 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 		return err
 	}
 	return GetRequestService().AutoExecTaskHandle(request, userToken, language)
+}
+
+// callbackWorkflow 回调编排
+func callbackWorkflow(requestBytes []byte, callbackUrl, userToken string) (err error) {
+	var respResult models.CallbackResult
+	b, _ := rpc.HttpPost(models.Config.Wecube.BaseUrl+callbackUrl, userToken, "", requestBytes)
+	log.Logger.Info("Callback response", log.String("body", string(b)))
+	err = json.Unmarshal(b, &respResult)
+	if err != nil {
+		return fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
+	}
+	if respResult.Status != "OK" {
+		return fmt.Errorf("callback fail,%s ", respResult.Message)
+	}
+	return
 }
 
 func getApproveCallbackParamNew(taskId string) (result models.PluginTaskCreateResp, callbackUrl string, err error) {

@@ -431,7 +431,7 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 		for _, taskHandle := range taskHandleList {
 			// 存在任务节点 没有审批通过,并且不是当前节点,更新当前处理节点为完成后,return 等待其他审批人处理
 			if taskHandle.HandleStatus != string(models.TaskHandleResultTypeComplete) && taskHandle.Id != param.TaskHandleId {
-				_, err = dao.X.Exec("update task_handle set handle_result = ?,handle_status = ?,result_desc = ?,updated_time =? where id = ?", param.ChoseOption, models.TaskHandleResultTypeComplete, param.Comment, nowTime, param.TaskHandleId)
+				_, err = dao.X.Exec("update task_handle set handle_result = ?,handle_status = ?,result_desc = ?,updated_time =?,proc_def_result = ? where id = ?", param.ChoseOption, models.TaskHandleResultTypeComplete, param.Comment, nowTime, param.ProcDefResult, param.TaskHandleId)
 				return err
 			}
 		}

@@ -2126,6 +2126,10 @@ func (s *RequestService) TaskHandleAutoPass(request models.RequestTable, task *m
 	if task.Type == string(models.TaskTypeImplement) {
 		taskResult = models.TaskHandleResultTypeComplete
 	}
+	if strings.TrimSpace(task.ProcDefId) != "" {
+		// 编排任务,自动通过,回调编排 options 没法自动选,关闭自动通过
+		return
+	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	if taskHandleList, err = s.taskHandleDao.QueryByTask(task.Id); err != nil {
 		return
@@ -2134,6 +2138,7 @@ func (s *RequestService) TaskHandleAutoPass(request models.RequestTable, task *m
 		if taskHandle.TaskHandleTemplate == taskHandleTemplate.Id {
 			curTaskHandle = taskHandle
 		} else if taskHandle.HandleStatus == string(models.TaskHandleResultTypeUncompleted) {
+			// 由于协同没有设置 过滤规则,所以除掉协同类型,其他taskHandle处理完,handleStatus = complete
 			needPassCurTask = false
 		}
 	}

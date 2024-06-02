@@ -1719,14 +1719,16 @@ func BuildRequestProcessData(input models.RequestCacheData, preData *models.Enti
 	result.Entities = []*models.RequestCacheEntityValue{}
 	result.Bindings = []*models.RequestProcessTaskNodeBindObj{}
 	entityExistMap := make(map[string]int)
-	for _, node := range input.TaskNodeBindInfos {
-		for _, entity := range node.BoundEntityValues {
-			if _, b := entityExistMap[entity.Oid]; !b {
-				result.Entities = append(result.Entities, entity)
-				entityExistMap[entity.Oid] = 1
-			}
-			if node.NodeId != "" {
-				result.Bindings = append(result.Bindings, &models.RequestProcessTaskNodeBindObj{Oid: entity.Oid, NodeId: node.NodeId, NodeDefId: node.NodeDefId, EntityDataId: entity.EntityDataId, BindFlag: entity.BindFlag})
+	if len(input.TaskNodeBindInfos) > 0 {
+		for _, node := range input.TaskNodeBindInfos {
+			for _, entity := range node.BoundEntityValues {
+				if _, b := entityExistMap[entity.Oid]; !b {
+					result.Entities = append(result.Entities, entity)
+					entityExistMap[entity.Oid] = 1
+				}
+				if node.NodeId != "" {
+					result.Bindings = append(result.Bindings, &models.RequestProcessTaskNodeBindObj{Oid: entity.Oid, NodeId: node.NodeId, NodeDefId: node.NodeDefId, EntityDataId: entity.EntityDataId, BindFlag: entity.BindFlag})
+				}
 			}
 		}
 	}
@@ -1737,17 +1739,19 @@ func BuildRequestProcessData(input models.RequestCacheData, preData *models.Enti
 		tmpEntityValue := models.RequestCacheEntityValue{Oid: result.RootEntityOid, PackageName: "pseudo", EntityName: "pseudo", BindFlag: "N"}
 		result.Entities = append(result.Entities, &tmpEntityValue)
 	}
-	for _, preEntity := range preData.EntityTreeNodes {
-		existFlag := false
-		for _, entity := range result.Entities {
-			if entity.Oid == preEntity.Id {
-				existFlag = true
-				break
+	if preData != nil && len(preData.EntityTreeNodes) > 0 {
+		for _, preEntity := range preData.EntityTreeNodes {
+			existFlag := false
+			for _, entity := range result.Entities {
+				if entity.Oid == preEntity.Id {
+					existFlag = true
+					break
+				}
 			}
-		}
-		if !existFlag {
-			tmpEntity := models.RequestCacheEntityValue{Oid: preEntity.Id, PackageName: preEntity.PackageName, EntityName: preEntity.EntityName, BindFlag: "N", EntityDataId: preEntity.DataId, EntityDisplayName: preEntity.DisplayName, FullEntityDataId: preEntity.FullDataId, PreviousOids: preEntity.PreviousIds, SucceedingOids: preEntity.SucceedingIds}
-			result.Entities = append(result.Entities, &tmpEntity)
+			if !existFlag {
+				tmpEntity := models.RequestCacheEntityValue{Oid: preEntity.Id, PackageName: preEntity.PackageName, EntityName: preEntity.EntityName, BindFlag: "N", EntityDataId: preEntity.DataId, EntityDisplayName: preEntity.DisplayName, FullEntityDataId: preEntity.FullDataId, PreviousOids: preEntity.PreviousIds, SucceedingOids: preEntity.SucceedingIds}
+				result.Entities = append(result.Entities, &tmpEntity)
+			}
 		}
 	}
 	return result

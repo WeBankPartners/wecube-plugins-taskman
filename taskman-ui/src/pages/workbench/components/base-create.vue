@@ -43,6 +43,7 @@
                   form.expectTime = val
                 }
               "
+              :editable="false"
               :placeholder="$t('tw_please_select')"
               :options="{
                 disabledDate(date) {

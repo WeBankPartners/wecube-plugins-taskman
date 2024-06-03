@@ -93,7 +93,7 @@
             </Row>
           </Form>
         </div>
-        <div v-if="!formDisable && tableData.length > 1" class="button">
+        <div v-if="!formDisable && tableData.length > 1 && isAdd" class="button">
           <Icon type="md-trash" color="#ed4014" size="24" @click="handleDeleteRow(index)" />
         </div>
       </div>

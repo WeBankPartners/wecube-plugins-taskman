@@ -219,7 +219,7 @@
   "tw_wait_commit": "等待提交",
   "tw_commit_request": "提交",
   "tw_request_pending": "定版",
-  "tw_request_confirm": "确认",
+  "tw_request_confirm": "确认中",
   "tw_request_complete": "完成",
   "tw_cur_handler": "当前处理人",
   "tw_creatby_role": "创建人角色",
@@ -470,7 +470,7 @@
   "tw_empty_search": "空值搜索",
   "tw_normal_search": "常规搜索",
   "tw_template_library": "组件库",
-  "tw_stop": "暂停",
+  "tw_stop": "暂停中",
   "tw_expireTime": "有效期",
   "tw_data_sourceTips": "请谨慎修改可选项:如该表单项已打开“审批/任务控制”开关,或者被其他表单项设置为隐藏条件,修改可选项将影响已有配置.",
   "tw_options": "可选项"

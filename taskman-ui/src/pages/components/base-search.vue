@@ -49,6 +49,22 @@
                   <Option :key="idx" :value="j.value">{{ j.label }}</Option>
                 </template>
               </Select>
+              <Select
+                v-else-if="i.component === 'tag-select'"
+                v-model="value[i.key]"
+                :placeholder="i.placeholder"
+                clearable
+                :multiple="i.multiple || false"
+                :filterable="i.filterable || true"
+                :max-tag-count="1"
+                :style="{ width: i.width || 200 + 'px' }"
+              >
+                <template v-for="(j, idx) in i.list">
+                  <Option :key="idx" :value="j.value" :label="j.label">
+                    <Tag :color="j.color">{{ j.label }}</Tag>
+                  </Option>
+                </template>
+              </Select>
               <!--获取接口的下拉选择-->
               <Select
                 v-else-if="i.component === 'remote-select'"

@@ -49,6 +49,7 @@
           @nodeStatus="nodeStatus"
           :isCheck="isCheck"
           :procDefId="procDefId"
+          :forkOptions="forkOptions"
           :nodeType="procDefId === '' ? $t('tw_auto') : $t('tw_workflow_task')"
           @setFormConfigStatus="changeFormConfigStatus"
           @dataFormFilterChange="setIsEditDisabled"
@@ -329,7 +330,7 @@
                             v-model="editElement.dataOptions"
                             filterable
                             @on-change="paramsChanged"
-                            :disabled="$parent.isCheck === 'Y'"
+                            :disabled="$parent.isCheck === 'Y' || Boolean(editElement.copyId)"
                           >
                             <Option v-for="i in allEntityList" :value="i" :key="i">{{ i }}</Option>
                           </Select>
@@ -343,7 +344,7 @@
                               v-model="editElement.multiple"
                               true-value="yes"
                               false-value="no"
-                              :disabled="$parent.isCheck === 'Y'"
+                              :disabled="$parent.isCheck === 'Y' || Boolean(editElement.copyId)"
                               @on-change="paramsChanged"
                               size="default"
                             />
@@ -726,8 +727,9 @@ export default {
   methods: {
     // 数据表单过滤项有值，需要禁用审批表单对应表单项"可编辑"属性
     setIsEditDisabled () {
-      if (this.$refs.approvalFormNodeRef.filterFormList && this.$refs.approvalFormNodeRef.filterFormList.length > 0) {
-        const dataFormList = this.$refs.approvalFormNodeRef.filterFormList.filter(i => i.type === 2)
+      const { filterFormList } = this.$refs.approvalFormNodeRef
+      if (filterFormList && filterFormList.length > 0) {
+        const dataFormList = filterFormList.filter(i => i.type === 2)
         const handleTemplates = this.$refs.approvalFormNodeRef.activeApprovalNode.handleTemplates
         dataFormList.forEach(group => {
           group.items.forEach(j => {

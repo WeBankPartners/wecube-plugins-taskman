@@ -2159,8 +2159,7 @@ func (s *RequestService) TaskHandleAutoPass(request models.RequestTable, task *m
 		}
 	}
 	if len(actions) > 0 {
-		err = dao.Transaction(actions)
-		if err != nil {
+		if err = dao.Transaction(actions); err != nil {
 			return
 		}
 		// 通过当前任务节点,需要继续创建下一个任务

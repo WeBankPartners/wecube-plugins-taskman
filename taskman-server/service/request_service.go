@@ -2689,48 +2689,9 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 						if taskHistory.HandleMode == string(models.TaskTemplateHandleModeAny) && strings.TrimSpace(taskHandle.HandleResult) == "" {
 							taskHandle.FormData = nil
 						} else if taskHistory.HandleMode == string(models.TaskTemplateHandleModeAll) && taskHistory.Request != "" {
-							var requestFormItems []*models.FormItemTable
-							var formItemMap = make(map[string]map[string][]*models.FormItemTable)
-							dao.X.SQL("select * from form_item where request = ? AND updated_time <= ?", taskHistory.Request, taskHandle.UpdatedTime).Find(&requestFormItems)
-							if len(requestFormItems) > 0 && len(taskHandle.FormData) > 0 {
-								// 同一个form 下面的相同 item 取最新时间的item
-								requestFormItems = getLatestGroupFormItems(requestFormItems)
-								for _, item := range requestFormItems {
-									itemGroup := ""
-									dataId := ""
-									dao.X.SQL("select item_group from form_item_template where id = ?", item.FormItemTemplate).Get(&itemGroup)
-									dao.X.SQL("select data_id from form where id = ?", item.Form).Get(&dataId)
-									if strings.TrimSpace(itemGroup) != "" {
-										if _, ok := formItemMap[itemGroup]; !ok {
-											formItemMap[itemGroup] = make(map[string][]*models.FormItemTable)
-										}
-										if _, ok := formItemMap[itemGroup][dataId]; !ok {
-											formItemMap[itemGroup][dataId] = []*models.FormItemTable{}
-										}
-										formItemMap[itemGroup][dataId] = append(formItemMap[itemGroup][dataId], item)
-									}
-								}
-								for _, form := range taskHandle.FormData {
-									if rowMap, ok := formItemMap[form.ItemGroup]; ok && rowMap != nil && len(form.Value) > 0 {
-										for _, entity := range form.Value {
-											if arr, ok2 := rowMap[entity.Id]; ok2 && len(arr) > 0 && len(entity.EntityData) > 0 {
-												for _, item := range arr {
-													if _, ok3 := entity.EntityData[item.Name]; ok3 {
-														if item.Multiple == models.Yes || item.Multiple == models.Y {
-															if strings.TrimSpace(item.Value) == "" {
-																entity.EntityData[item.Name] = []string{}
-															} else {
-																entity.EntityData[item.Name] = strings.Split(item.Value, ",")
-															}
-														} else {
-															entity.EntityData[item.Name] = item.Value
-														}
-													}
-												}
-											}
-										}
-									}
-								}
+							// 并行审批,直接读取 task_handle表的 from_data数据
+							if strings.TrimSpace(taskHandle.HandleFormData) != "" {
+								json.Unmarshal([]byte(taskHandle.HandleFormData), taskHandle.FormData)
 							}
 						}
 					}
@@ -2771,49 +2732,6 @@ func getRequestPreviewCache(requestId string) (result *models.EntityTreeData, er
 		err = fmt.Errorf("json unmarshal request preview cache data fail,%s ", err.Error())
 	}
 	return
-}
-
-// getLatestGroupFormItems 同一个form 下面的相同 item 取最新时间的item
-func getLatestGroupFormItems(formItems []*models.FormItemTable) []*models.FormItemTable {
-	var latestFormItems []*models.FormItemTable
-	var formItemMap = make(map[string][]*models.FormItemTable)
-	var latestItem *models.FormItemTable
-	var nameMap = make(map[string]bool)
-	var multiple string
-	for _, item := range formItems {
-		if _, ok := formItemMap[item.Form]; !ok {
-			formItemMap[item.Form] = []*models.FormItemTable{}
-		}
-		formItemMap[item.Form] = append(formItemMap[item.Form], item)
-	}
-	for _, itemArr := range formItemMap {
-		if len(itemArr) > 0 {
-			nameMap = make(map[string]bool)
-			for i := 0; i < len(itemArr); i++ {
-				multiple = ""
-				latestItem = itemArr[i]
-				for j := i + 1; j < len(itemArr); j++ {
-					if latestItem.Name == itemArr[j].Name && compareTime(itemArr[j].UpdatedTime, latestItem.UpdatedTime) {
-						latestItem = itemArr[j]
-					}
-				}
-				if !nameMap[latestItem.Name] {
-					dao.X.SQL("select multiple from form_item_template where id = ?", latestItem.FormItemTemplate).Get(&multiple)
-					latestItem.Multiple = multiple
-					latestFormItems = append(latestFormItems, latestItem)
-					nameMap[latestItem.Name] = true
-				}
-			}
-		}
-	}
-	return latestFormItems
-}
-
-func compareTime(timeA, timeB string) bool {
-	loc, _ := time.LoadLocation("Local")
-	timeA1, _ := time.ParseInLocation(models.DateTimeFormat, timeA, loc)
-	timeB1, _ := time.ParseInLocation(models.DateTimeFormat, timeB, loc)
-	return timeA1.After(timeB1)
 }
 
 func formDataDeepCopy(dataList []*models.RequestPreDataTableObj) []*models.RequestPreDataTableObj {

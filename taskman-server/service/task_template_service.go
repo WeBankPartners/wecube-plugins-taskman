@@ -782,3 +782,7 @@ func (s *TaskTemplateService) GetCheckRoleAndHandler(requestTemplateId string) (
 	}
 	return
 }
+
+func (s *TaskTemplateService) GetTaskHandleTemplate(id string) (*models.TaskHandleTemplateTable, error) {
+	return s.taskHandleTemplateDao.Get(id)
+}

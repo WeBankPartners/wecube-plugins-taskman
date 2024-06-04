@@ -595,7 +595,7 @@ export default {
               desc: 'Successful'
             })
             this.status = 'confirm'
-            this.getTemplateList()
+            this.onSearch()
           }
         },
         onCancel: () => {}
@@ -606,7 +606,7 @@ export default {
       const { statusCode } = await copyTemplate(row.id)
       if (statusCode === 'OK') {
         this.status = 'created'
-        this.getTemplateList()
+        this.onSearch()
       }
     },
     // 退回草稿
@@ -646,7 +646,7 @@ export default {
                 desc: this.$t('successful')
               })
               this.status = 'created'
-              this.getTemplateList()
+              this.onSearch()
             }
           }
         },
@@ -673,7 +673,7 @@ export default {
               desc: 'Successful'
             })
             this.status = 'cancel'
-            this.getTemplateList()
+            this.onSearch()
           }
         },
         onCancel: () => {}
@@ -714,7 +714,7 @@ export default {
                 desc: 'Successful'
               })
               this.status = 'created'
-              this.getTemplateList()
+              this.onSearch()
             }
           },
           onCancel: () => {}
@@ -726,7 +726,7 @@ export default {
           desc: 'Successful'
         })
         this.status = 'created'
-        this.getTemplateList()
+        this.onSearch()
       } else {
         this.$Notice.warning({
           title: 'Warning',
@@ -801,7 +801,7 @@ export default {
           if (res.statusCode === 'OK') {
             this.success()
             this.status = 'created'
-            this.getTemplateList()
+            this.onSearch()
           }
         },
         onCancel: () => {}
@@ -917,7 +917,7 @@ export default {
       if (res.statusCode === 'OK') {
         this.success()
         this.status = 'disable'
-        this.getTemplateList()
+        this.onSearch()
       }
     },
     async enableTemplate (row) {
@@ -925,7 +925,7 @@ export default {
       if (res.statusCode === 'OK') {
         this.success()
         this.status = 'confirm'
-        this.getTemplateList()
+        this.onSearch()
       }
     },
     async getConfirmCount () {

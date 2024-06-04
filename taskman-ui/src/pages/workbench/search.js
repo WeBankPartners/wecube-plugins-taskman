@@ -16,20 +16,20 @@ export default {
         status: {
           key: 'status',
           placeholder: this.$t('tw_request_status'),
-          component: 'select',
+          component: 'tag-select',
           multiple: true,
           list: [
-            { label: this.$t('status_pending'), value: 'Pending' },
-            { label: this.$t('status_inProgress'), value: 'InProgress' },
-            { label: this.$t('tw_inApproval'), value: 'InApproval' },
-            { label: this.$t('tw_request_confirm'), value: 'Confirm' },
-            { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)' },
-            { label: this.$t('status_termination'), value: 'Termination' },
-            { label: this.$t('status_complete'), value: 'Completed' },
-            { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)' },
-            { label: this.$t('status_faulted'), value: 'Faulted' },
-            { label: this.$t('status_draft'), value: 'Draft' },
-            { label: this.$t('tw_stop'), value: 'Stop' }
+            { label: this.$t('status_draft'), value: 'Draft', color: '#808695' },
+            { label: this.$t('status_pending'), value: 'Pending', color: '#b886f8' },
+            { label: this.$t('tw_request_confirm'), value: 'Confirm', color: '#b886f8' },
+            { label: this.$t('tw_inApproval'), value: 'InApproval', color: '#1990ff' },
+            { label: this.$t('status_inProgress'), value: 'InProgress', color: '#1990ff' },
+            { label: this.$t('status_complete'), value: 'Completed', color: '#7ac756' },
+            { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)', color: '#ed4014' },
+            { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)', color: '#ed4014' },
+            { label: this.$t('tw_stop'), value: 'Stop', color: '#ed4014' },
+            { label: this.$t('status_faulted'), value: 'Faulted', color: '#e29836' },
+            { label: this.$t('status_termination'), value: 'Termination', color: '#e29836' }
           ]
         },
         createdBy: {

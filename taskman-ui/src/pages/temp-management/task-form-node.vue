@@ -330,9 +330,22 @@ export default {
       if (val) {
         this.getFilterFormData()
       }
+    },
+    forkOptions: {
+      handler (val) {
+        if (val && val.length > 0) {
+          this.roleTypeOptions = [
+            { label: this.$t('tw_single'), value: 'custom' },
+            { label: this.$t('tw_collaborative_task'), value: 'any' },
+            { label: this.$t('tw_roleAdmin'), value: 'admin' }
+          ]
+        }
+      },
+      deep: true,
+      immediate: true
     }
   },
-  props: ['isCheck', 'nodeType'],
+  props: ['isCheck', 'nodeType', 'forkOptions'],
   methods: {
     loadPage (params) {
       this.procDefId = params.procDefId

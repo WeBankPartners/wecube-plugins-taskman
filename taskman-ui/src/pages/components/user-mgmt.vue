@@ -77,6 +77,7 @@
                       filterable
                       @on-open-change="getPendingUserOptions"
                       style="width:250px"
+                      :max-tag-count="2"
                       :placeholder="$t('tw_user')"
                     >
                       <Option v-for="item in pendingUserOptions" :value="item.id" :key="item.id">{{

@@ -2691,7 +2691,7 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 						} else if taskHistory.HandleMode == string(models.TaskTemplateHandleModeAll) && taskHistory.Request != "" {
 							// 并行审批,直接读取 task_handle表的 from_data数据
 							if strings.TrimSpace(taskHandle.HandleFormData) != "" {
-								json.Unmarshal([]byte(taskHandle.HandleFormData), taskHandle.FormData)
+								json.Unmarshal([]byte(taskHandle.HandleFormData), &taskHandle.FormData)
 							}
 						}
 					}

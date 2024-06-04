@@ -18,7 +18,7 @@ type TaskHandleTable struct {
 	HandleStatus       string `json:"handleStatus" xorm:"handle_status"`    // 处理状态：complete 完成, uncomplete 未完成
 	LatestFlag         int    `json:"latestFlag" xorm:"latest_flag"`        // 最新标记:1表示最新，0表示非最新
 	ProcDefResult      string `json:"procDefResult" xorm:"proc_def_result"` // 编排选项结果
-	HandleFormData     string `json:"handleFormData" xorm:"form_data"`      // 并行审批表单数据
+	HandleFormData     string `json:"-" xorm:"form_data"`                   // 并行审批表单数据
 }
 
 func (TaskHandleTable) TableName() string {

@@ -227,7 +227,7 @@
                 <div style="margin: 8px 0 0 8px;">
                   <Form :label-width="90">
                     <FormItem :label="$t('tw_conditional_branches')" v-if="procDefId !== ''">
-                      <Select style="width:94%" @on-open-change="getWorkflowForkNode">
+                      <Select style="width:94%">
                         <Option v-for="(fork, forkIndex) in forkOptions" :value="fork" :key="forkIndex">{{
                           fork
                         }}</Option>
@@ -722,6 +722,7 @@ export default {
     const clientHeight = document.documentElement.clientHeight
     this.MODALHEIGHT = clientHeight - this.$refs.maxheight.getBoundingClientRect().top - 90
     this.removeEmptyDataForm()
+    this.getWorkflowForkNode()
     this.loadPage()
   },
   methods: {

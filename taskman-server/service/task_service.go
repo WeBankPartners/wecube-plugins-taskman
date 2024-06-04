@@ -204,7 +204,7 @@ func ApproveTask(task models.TaskTable, operator, userToken, language, handleMod
 	if err != nil {
 		return err
 	}
-	if handleMode == string(models.TaskTemplateHandleModeAll) && len(param.FormData) == 0 {
+	if handleMode == string(models.TaskTemplateHandleModeAll) && len(param.FormData) > 0 {
 		// 并行模式下,单独保存每个处理人的formData到 task_handle,处理历史里面并行直接读表数据回显
 		byteArr, _ := json.Marshal(param.FormData)
 		formData = string(byteArr)

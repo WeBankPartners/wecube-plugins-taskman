@@ -2123,12 +2123,10 @@ func (s *RequestService) TaskHandleAutoPass(request models.RequestTable, task *m
 	// 是否需要直接通过当前任务
 	var needPassCurTask = true
 	var taskResult = models.TaskHandleResultTypeApprove
+	var requestParam models.PluginTaskCreateResp
+	var callbackUrl string
 	if task.Type == string(models.TaskTypeImplement) {
 		taskResult = models.TaskHandleResultTypeComplete
-	}
-	if strings.TrimSpace(task.ProcDefId) != "" {
-		// 编排任务,自动通过,回调编排 options 没法自动选,关闭自动通过
-		return
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	if taskHandleList, err = s.taskHandleDao.QueryByTask(task.Id); err != nil {
@@ -2149,6 +2147,16 @@ func (s *RequestService) TaskHandleAutoPass(request models.RequestTable, task *m
 	if needPassCurTask {
 		// 更新任务到完成
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, taskResult, "system", nowTime, task.Id}})
+		if strings.TrimSpace(task.ProcDefId) != "" {
+			// 回调编排任务,自动通过,需要回调编排,编排选项为空,编排应该会stop,由人工去选择编排的判断
+			if requestParam, callbackUrl, err = getApproveCallbackParamNew(task.Id); err != nil {
+				return
+			}
+			requestBytes, _ := json.Marshal(requestParam)
+			if err = callbackWorkflow(requestBytes, callbackUrl, userToken); err != nil {
+				return
+			}
+		}
 	}
 	if len(actions) > 0 {
 		err = dao.Transaction(actions)

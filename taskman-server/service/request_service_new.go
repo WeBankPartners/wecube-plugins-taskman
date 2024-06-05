@@ -1908,6 +1908,9 @@ func (s *RequestService) AutoExecTaskHandle(request models.RequestTable, userTok
 		}
 	}
 	for _, task := range taskList {
+		if task.Status == string(models.TaskStatusDone) {
+			continue
+		}
 		taskHandleTemplateList, err2 := s.taskHandleTemplateDao.QueryByTaskTemplate(task.TaskTemplate)
 		if err2 != nil {
 			return err2
@@ -2135,6 +2138,11 @@ func (s *RequestService) TaskHandleAutoPass(request models.RequestTable, task *m
 	for _, taskHandle := range taskHandleList {
 		if taskHandle.TaskHandleTemplate == taskHandleTemplate.Id {
 			curTaskHandle = taskHandle
+			// 当前处理人已处理,直接return
+			if taskHandle.HandleStatus == string(models.TaskHandleResultTypeComplete) {
+				log.Logger.Info("taskHandle:%s repeat doing", log.String("taskHandleId", taskHandle.Id))
+				return
+			}
 		} else if taskHandle.HandleStatus == string(models.TaskHandleResultTypeUncompleted) {
 			// 由于协同没有设置 过滤规则,所以除掉协同类型,其他taskHandle处理完,handleStatus = complete
 			needPassCurTask = false

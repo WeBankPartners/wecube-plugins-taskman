@@ -166,7 +166,11 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 	}
 	createTaskHandleAction := GetTaskHandleService().CreateTaskHandleByTemplate(task.Id, userToken, language, requestTable[0], taskTemplateTable[0])
 	actions = append(actions, createTaskHandleAction...)
-	err = dao.TransactionWithoutForeignCheck(actions)
+	if err = dao.TransactionWithoutForeignCheck(actions); err != nil {
+		return
+	}
+	// 编排创建任务,走自动执行逻辑
+	err = GetRequestService().AutoExecTaskHandle(*requestTable[0], userToken, language)
 	return
 }
 

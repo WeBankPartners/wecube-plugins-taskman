@@ -718,11 +718,20 @@ export default {
     }
   },
   props: ['isCheck', 'requestTemplateId'],
+  watch: {
+    activeEditingNode: {
+      handler (val) {
+        if (val) {
+          this.getWorkflowForkNode()
+        }
+      },
+      deep: true
+    }
+  },
   mounted () {
     const clientHeight = document.documentElement.clientHeight
     this.MODALHEIGHT = clientHeight - this.$refs.maxheight.getBoundingClientRect().top - 90
     this.removeEmptyDataForm()
-    this.getWorkflowForkNode()
     this.loadPage()
   },
   methods: {

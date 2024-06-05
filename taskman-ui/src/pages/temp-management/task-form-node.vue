@@ -339,6 +339,13 @@ export default {
             { label: this.$t('tw_collaborative_task'), value: 'any' },
             { label: this.$t('tw_roleAdmin'), value: 'admin' }
           ]
+        } else {
+          this.roleTypeOptions = [
+            { label: this.$t('tw_single'), value: 'custom' },
+            { label: this.$t('tw_collaborative_task'), value: 'any' },
+            { label: this.$t('tw_parallel_task'), value: 'all' },
+            { label: this.$t('tw_roleAdmin'), value: 'admin' }
+          ]
         }
       },
       deep: true,

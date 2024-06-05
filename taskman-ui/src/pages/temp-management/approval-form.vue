@@ -782,7 +782,7 @@ export default {
         title: this.$t('confirm_delete'),
         'z-index': 1000000,
         loading: true,
-        okText: this.$t('tw_request_confirm'),
+        okText: this.$t('tw_confirm'),
         onOk: async () => {
           this.$Modal.remove()
           const { statusCode } = await removeApprovalNode(this.requestTemplateId, node.id)
@@ -969,6 +969,7 @@ export default {
           }
         })
       })
+      this.paramsChanged()
     },
     paramsChanged () {
       this.isParmasChanged = true
@@ -1044,7 +1045,7 @@ export default {
         title: this.$t('confirm_delete'),
         'z-index': 1000000,
         loading: true,
-        okText: this.$t('tw_request_confirm'),
+        okText: this.$t('tw_confirm'),
         onOk: async () => {
           this.$Modal.remove()
           const { statusCode } = await deleteRequestGroupForm(this.nextGroupInfo.itemGroupId, this.requestTemplateId)

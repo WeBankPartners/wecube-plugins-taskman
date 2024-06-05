@@ -721,6 +721,7 @@ export default {
           }
         })
       })
+      this.paramsChanged()
     },
     // 查询可添加的组
     beforeSelectItemGroup () {
@@ -868,7 +869,7 @@ export default {
         title: this.$t('confirm_delete'),
         'z-index': 1000000,
         loading: true,
-        okText: this.$t('tw_request_confirm'),
+        okText: this.$t('tw_confirm'),
         onOk: async () => {
           this.$Modal.remove()
           const { statusCode } = await deleteRequestGroupForm(this.nextGroupInfo.itemGroupId, this.requestTemplateId)

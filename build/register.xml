@@ -14,7 +14,7 @@
         <menu code='TASK_WORKBENCH' cat='JOBS' displayName="Dashboard" localDisplayName="工作台">/taskman/workbench/dashboard</menu>
         <menu code='TASK_TEMPLATE_MANAGEMENT' cat='JOBS' displayName="Template Management" localDisplayName="模板管理">/taskman/template-mgmt</menu>
         <menu code='TASK_TEMPLATE_GROUP_MANAGEMENT' cat='JOBS' displayName="Template Group Management" localDisplayName="模板组管理">/taskman/template-group</menu>
-        <menu code='TASK_REQUEST_AUDIT' cat='ADMIN' displayName="Request Audit" localDisplayName="请求审计">/taskman/requestAudit</menu>
+        <menu code='TASK_REQUEST_AUDIT' cat='ADMIN' displayName="Requests Report" localDisplayName="请求报表">/taskman/requestAudit</menu>
     </menus>
 
     <!-- 3.数据模型 - 描述本插件包的数据模型,并且描述和Framework数据模型的关系 -->

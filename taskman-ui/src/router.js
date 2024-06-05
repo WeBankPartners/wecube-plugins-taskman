@@ -37,7 +37,7 @@ export default new Router({
           path: '/taskman/requestAudit',
           name: '/taskman/requestAudit',
           component: () => import('@/pages/workbench/request-audit.vue'),
-          meta: { en: 'Request Audit', zh: '请求审计' }
+          meta: { en: 'Request Report', zh: '请求报表' }
         },
         // 工作台
         {

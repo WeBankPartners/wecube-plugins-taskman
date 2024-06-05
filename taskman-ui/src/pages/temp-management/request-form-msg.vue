@@ -637,6 +637,7 @@ export default {
           }
         })
       })
+      this.paramsChanged()
     },
     // 获取模型数据项下拉值
     async getAllDataModels () {

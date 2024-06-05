@@ -126,7 +126,7 @@ const implicitRoute = {
   },
   'taskman/requestHistory': {
     parentBreadcrumb: { 'zh-CN': '系统', 'en-US': 'System' },
-    childBreadcrumb: { 'zh-CN': '请求审计', 'en-US': 'Request Audit' }
+    childBreadcrumb: { 'zh-CN': '请求报表', 'en-US': 'Request Report' }
   }
 }
 window.addImplicitRoute(implicitRoute)

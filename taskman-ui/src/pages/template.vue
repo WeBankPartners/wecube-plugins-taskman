@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="taskman-template-list">
     <div>
       <Row>
         <Tabs v-model="status" @on-click="onSearch">
@@ -88,16 +88,15 @@
       </Row>
     </div>
     <Table
-      style="margin: 24px 0"
+      style="margin:12px 0;"
       @on-sort-change="sortTable"
       size="small"
       :loading="loading"
       :columns="tableColumns"
       :data="tableData"
-      :max-height="MODALHEIGHT"
     ></Table>
     <Page
-      style="float: right"
+      style="text-align:right;"
       :total="pagination.total"
       @on-change="changPage"
       show-sizer
@@ -545,7 +544,6 @@ export default {
     } else {
       this.headers['Accept-Language'] = 'en-US,en;q=0.9,zh;q=0.8'
     }
-    this.MODALHEIGHT = document.body.scrollHeight - 200
     this.getTemplateList()
   },
   methods: {
@@ -952,22 +950,25 @@ export default {
 }
 </style>
 <style scoped lang="scss">
-.header-icon {
-  float: right;
-  margin: 3px 40px 0 0 !important;
-}
-.badge {
-  position: absolute;
-  display: inline-block;
-  font-size: 11px;
-  background-color: #f56c6c;
-  border-radius: 10px;
-  color: #fff;
-  height: 18px;
-  line-height: 18px;
-  padding: 0 6px;
-  text-align: center;
-  white-space: nowrap;
-  margin-left: 5px;
+.taskman-template-list {
+  padding-bottom: 20px;
+  .header-icon {
+    float: right;
+    margin: 3px 40px 0 0 !important;
+  }
+  .badge {
+    position: absolute;
+    display: inline-block;
+    font-size: 11px;
+    background-color: #f56c6c;
+    border-radius: 10px;
+    color: #fff;
+    height: 18px;
+    line-height: 18px;
+    padding: 0 6px;
+    text-align: center;
+    white-space: nowrap;
+    margin-left: 5px;
+  }
 }
 </style>

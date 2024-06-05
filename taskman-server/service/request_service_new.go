@@ -2170,8 +2170,8 @@ func (s *RequestService) TaskHandleAutoPass(request models.RequestTable, task *m
 		if err = dao.Transaction(actions); err != nil {
 			return
 		}
-		// 通过当前任务节点,需要继续创建下一个任务
-		if needPassCurTask {
+		// 通过当前任务节点,需要继续创建下一个任务,如果是编排任务,需要由编排回调触发走后续流程
+		if needPassCurTask && strings.TrimSpace(task.ProcDefId) == "" {
 			actions = []*dao.ExecAction{}
 			taskSort := GetTaskService().GenerateTaskOrderByRequestId(request.Id)
 			if actions, err = s.CreateRequestApproval(request, "", userToken, language, taskSort, false); err != nil {

@@ -482,7 +482,7 @@ func callbackWorkflow(requestBytes []byte, callbackUrl, userToken string) (err e
 }
 
 func getApproveCallbackParamNew(taskId string) (result models.PluginTaskCreateResp, callbackUrl string, err error) {
-	result = models.PluginTaskCreateResp{ResultCode: "0"}
+	result = models.PluginTaskCreateResp{ResultCode: ""}
 	taskObj, tmpErr := getSimpleTask(taskId)
 	if tmpErr != nil {
 		return result, callbackUrl, tmpErr

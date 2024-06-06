@@ -8,30 +8,37 @@
     width="80%"
   >
     <div class="content">
+      <!--新建组件-->
       <div v-if="isAdd" class="left">
         <div class="w-header" slot="title">
           <div class="title">
-            新建组件
+            {{ $t('tw_add_component') }}
             <span class="underline"></span>
           </div>
         </div>
         <Form :label-width="80">
-          <FormItem label="组件名" required>
+          <!--组件名-->
+          <FormItem :label="$t('tw_component_name')" required>
             <Input v-model.trim="form.name" :maxlength="20" />
           </FormItem>
-          <FormItem label="表单类型">
+          <!--表单类型-->
+          <FormItem :label="$t('tw_form_type')">
             <Tag :color="form.formType === 'requestInfo' ? 'default' : 'primary'">{{ getFormTypeDisplay }}</Tag>
           </FormItem>
-          <FormItem label="表单项">
+          <!--表单项-->
+          <FormItem :label="$t('form_item')">
             <Tag v-for="(i, index) in checkedList" :key="index">{{ i.title }}</Tag>
           </FormItem>
         </Form>
-        <Button type="primary" @click="handleSave" style="float: right;" :disabled="!form.name">保存</Button>
+        <Button type="primary" @click="handleSave" style="float: right;" :disabled="!form.name">{{
+          $t('save')
+        }}</Button>
       </div>
+      <!--组件列表-->
       <div class="right">
         <div class="w-header" slot="title">
           <div class="title">
-            组件列表
+            {{ $t('tw_component_list') }}
             <span class="underline"></span>
           </div>
         </div>
@@ -40,7 +47,7 @@
             v-model="query.formType"
             filterable
             clearable
-            placeholder="表单类型"
+            :placeholder="$t('tw_form_type')"
             style="width: 150px;"
             @on-change="handleSearch"
           >
@@ -50,7 +57,7 @@
             v-model="query.createdBy"
             filterable
             clearable
-            placeholder="创建人"
+            :placeholder="$t('createdBy')"
             style="width: 150px;"
             @on-change="handleSearch"
           >
@@ -59,7 +66,7 @@
           <Input
             v-model.trim="query.name"
             clearable
-            placeholder="组件名"
+            :placeholder="$t('tw_component_name')"
             style="width: 300px;"
             @on-change="handleSearch"
           />
@@ -151,13 +158,13 @@ export default {
       loading: false,
       tableColumns: [
         {
-          title: '组件名',
+          title: this.$t('tw_component_name'),
           key: 'name',
           align: 'left',
           minWidth: 200
         },
         {
-          title: '表单类型',
+          title: this.$t('tw_form_type'),
           key: 'formType',
           align: 'left',
           minWidth: 140,
@@ -171,7 +178,7 @@ export default {
           }
         },
         {
-          title: '表单项',
+          title: this.$t('form_item'),
           key: 'formItems',
           align: 'left',
           minWidth: 250,
@@ -181,7 +188,7 @@ export default {
           }
         },
         {
-          title: '创建人',
+          title: this.$t('createdBy'),
           key: 'createdBy',
           align: 'left',
           minWidth: 100

@@ -242,7 +242,7 @@
                         </div>
                       </div>
                       <div v-else class="no-data">
-                        {{ '用户选择无需处理,未提交表单' }}
+                        {{ $t('tw_unRelated_tips') }}
                       </div>
                     </TabPane>
                   </Tabs>

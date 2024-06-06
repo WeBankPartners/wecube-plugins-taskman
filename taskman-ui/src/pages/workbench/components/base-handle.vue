@@ -422,8 +422,8 @@ export default {
       // 审批和任务操作选择了不涉及，弹框提示清空表单数据
       if (this.taskForm.choseOption === 'unrelated') {
         this.$Modal.confirm({
-          title: '确认放弃表单修改？',
-          content: '操作选择[无需处理]类型,将不会提交表单修改,确认放弃修改吗?(操作选择其他类型可以正常提交表单)',
+          title: this.$t('tw_formDataNotSave_confirm'),
+          content: this.$t('tw_formDataNotSave_tips'),
           'z-index': 1000000,
           loading: true,
           onOk: async () => {

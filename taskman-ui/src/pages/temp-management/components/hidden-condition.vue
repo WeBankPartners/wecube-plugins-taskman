@@ -1,9 +1,10 @@
 <template>
   <div class="temp-hidden-condition">
     <div class="title">
+      <!--隐藏条件-->
       <span>
-        隐藏条件
-        <span v-if="editElement.required === 'yes'" class="tips">属性必填，无法设置过滤条件</span>
+        {{ $t('tw_hidden_condition') }}
+        <span v-if="editElement.required === 'yes'" class="tips">{{ $t('tw_required_diableHidden') }}</span>
       </span>
       <Button
         v-if="editElement.required === 'no'"
@@ -23,7 +24,7 @@
         </Col>
       </Row>
       <div v-if="!value || value.length === 0" class="no-data">
-        暂无隐藏条件
+        {{ $t('tw_no_hiddenCondition') }}
       </div>
     </div>
     <HiddenConditionModal
@@ -65,19 +66,19 @@ export default {
   data () {
     return {
       operatorMap: {
-        eq: '等于',
-        neq: '不等于',
-        lt: '小于',
-        gt: '大于',
-        contains: '包含',
-        startsWith: '匹配开始',
-        endsWith: '匹配结束',
-        containsAll: '包含全部',
-        containsAny: '包含任意',
-        notContains: '不包含',
-        range: '在范围内',
-        empty: '为空',
-        notEmpty: '不为空'
+        eq: this.$t('tw_symbol_eq'),
+        neq: this.$t('tw_symbol_neq'),
+        lt: this.$t('tw_symbol_lt'),
+        gt: this.$t('tw_symbol_gt'),
+        contains: this.$t('tw_symbol_contains'),
+        startsWith: this.$t('tw_symbol_startsWith'),
+        endsWith: this.$t('tw_symbol_endsWith'),
+        containsAll: this.$t('tw_symbol_containsAll'),
+        containsAny: this.$t('tw_symbol_containsAny'),
+        notContains: this.$t('tw_symbol_notContains'),
+        range: this.$t('tw_symbol_range'),
+        empty: this.$t('tw_symbol_empty'),
+        notEmpty: this.$t('tw_symbol_notEmpty')
       }
     }
   },

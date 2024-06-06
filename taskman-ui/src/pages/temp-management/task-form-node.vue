@@ -398,13 +398,15 @@ export default {
             const obj = Object.assign({}, item, { type: 2 })
             this.filterFormList.push(obj)
           })
+        // 信息表单列
         let infoFormColumn = {
-          title: '信息表单(分配条件)',
+          title: this.$t('tw_msgForm_assign'),
           align: 'center',
           children: []
         }
+        // 数据表单列
         let dataFormColumn = {
-          title: '数据表单(过滤条件)',
+          title: this.$t('tw_dataForm_filter'),
           align: 'center',
           children: []
         }

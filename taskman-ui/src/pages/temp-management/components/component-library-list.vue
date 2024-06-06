@@ -2,16 +2,24 @@
   <div class="component-library-list">
     <Row>
       <Col :span="12" style="padding-right:5px;">
-        <Input :value="getFormTypeDisplay" disabled placeholder="请选择表单类型" />
+        <!--表单类型-->
+        <Input :value="getFormTypeDisplay" disabled :placeholder="$t('tw_form_typeTips')" />
       </Col>
       <Col :span="12">
-        <Select v-model="query.createdBy" clearable filterable placeholder="创建人" @on-change="handleSearch">
+        <!--创建人-->
+        <Select v-model="query.createdBy" clearable filterable :placeholder="$t('createdBy')" @on-change="handleSearch">
           <Option v-for="(i, index) in userList" :value="i.username" :key="index">{{ i.username }}</Option>
         </Select>
       </Col>
       <Col :span="24">
         <div class="group">
-          <Input v-model.trim="query.name" clearable placeholder="组件名" class="input" @on-change="handleSearch" />
+          <Input
+            v-model.trim="query.name"
+            clearable
+            :placeholder="$t('tw_component_name')"
+            class="input"
+            @on-change="handleSearch"
+          />
           <Icon type="ios-list" :size="36" class="icon" @click="handleViewTable" />
         </div>
       </Col>

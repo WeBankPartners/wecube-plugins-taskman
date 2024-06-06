@@ -1,7 +1,7 @@
 <template>
   <Modal
     v-model="visible"
-    title="隐藏条件"
+    :title="$t('tw_hidden_condition')"
     :mask-closable="false"
     :closable="false"
     :width="700"
@@ -9,8 +9,8 @@
   >
     <div class="content">
       <Row :gutter="5" style="margin-bottom:5px;">
-        <Col span="6">表单项</Col>
-        <Col span="6">符号</Col>
+        <Col span="6">{{ $t('form_item') }}</Col>
+        <Col span="6">{{ $t('tw_symbol') }}</Col>
         <Col span="12">{{ $t('value') }}</Col>
       </Row>
       <Row v-for="(i, index) in hiddenCondition" :key="index" :gutter="5">
@@ -149,34 +149,54 @@ export default {
       nameList: [], // 表单项下拉列表
       operatorList: [
         // 符号下拉列表
-        { label: '等于', value: 'eq', condition: ['input', 'singleSelect', 'dateTime'] },
-        { label: '不等于', value: 'neq', condition: ['input', 'singleSelect', 'dateTime'] },
-        { label: '小于', value: 'lt', condition: ['input', 'singleSelect', 'dateTime'] },
-        { label: '大于', value: 'gt', condition: ['input', 'singleSelect', 'dateTime'] },
-        { label: '包含', value: 'contains', condition: ['input', 'singleSelect'] },
-        { label: '匹配开始', value: 'startsWith', condition: ['input', 'singleSelect'] },
-        { label: '匹配结束', value: 'endsWith', condition: ['input', 'singleSelect'] },
-        { label: '包含全部', value: 'containsAll', condition: ['singleSelect', 'multipleSelect'] },
-        { label: '包含任意', value: 'containsAny', condition: ['singleSelect', 'multipleSelect'] },
-        { label: '不包含', value: 'notContains', condition: ['singleSelect', 'multipleSelect'] },
-        { label: '在范围内', value: 'range', condition: ['dateTime'] },
-        { label: '为空', value: 'empty', condition: ['input', 'singleSelect', 'multipleSelect', 'dateTime'] },
-        { label: '不为空', value: 'notEmpty', condition: ['input', 'singleSelect', 'multipleSelect', 'dateTime'] }
+        { label: this.$t('tw_symbol_eq'), value: 'eq', condition: ['input', 'singleSelect', 'dateTime'] },
+        { label: this.$t('tw_symbol_neq'), value: 'neq', condition: ['input', 'singleSelect', 'dateTime'] },
+        { label: this.$t('tw_symbol_lt'), value: 'lt', condition: ['input', 'singleSelect', 'dateTime'] },
+        { label: this.$t('tw_symbol_gt'), value: 'gt', condition: ['input', 'singleSelect', 'dateTime'] },
+        { label: this.$t('tw_symbol_contains'), value: 'contains', condition: ['input', 'singleSelect'] },
+        { label: this.$t('tw_symbol_startsWith'), value: 'startsWith', condition: ['input', 'singleSelect'] },
+        { label: this.$t('tw_symbol_endsWith'), value: 'endsWith', condition: ['input', 'singleSelect'] },
+        {
+          label: this.$t('tw_symbol_containsAll'),
+          value: 'containsAll',
+          condition: ['singleSelect', 'multipleSelect']
+        },
+        {
+          label: this.$t('tw_symbol_containsAny'),
+          value: 'containsAny',
+          condition: ['singleSelect', 'multipleSelect']
+        },
+        {
+          label: this.$t('tw_symbol_notContains'),
+          value: 'notContains',
+          condition: ['singleSelect', 'multipleSelect']
+        },
+        { label: this.$t('tw_symbol_range'), value: 'range', condition: ['dateTime'] },
+        {
+          label: this.$t('tw_symbol_empty'),
+          value: 'empty',
+          condition: ['input', 'singleSelect', 'multipleSelect', 'dateTime']
+        },
+        {
+          label: this.$t('tw_symbol_notEmpty'),
+          value: 'notEmpty',
+          condition: ['input', 'singleSelect', 'multipleSelect', 'dateTime']
+        }
       ],
       rule: {
-        name: [{ required: true, message: '请选择表单项', trigger: 'change' }],
-        operator: [{ required: true, message: '请选择符号', trigger: 'change' }],
+        name: [{ required: true, message: this.$t('tw_formItem_placeholder'), trigger: 'change' }],
+        operator: [{ required: true, message: this.$t('tw_symbol_placeholder'), trigger: 'change' }],
         value: [
           {
             validator: (rule, value, callback) => {
               if (!value || (Array.isArray(value) && value.length === 0)) {
-                return callback(new Error('请输入过滤值'))
+                return callback(new Error(this.$t('tw_filterValue_placeholder')))
               } else {
                 callback()
               }
             },
             required: true,
-            message: '请输入过滤值',
+            message: this.$t('tw_filterValue_placeholder'),
             trigger: 'change'
           }
         ]

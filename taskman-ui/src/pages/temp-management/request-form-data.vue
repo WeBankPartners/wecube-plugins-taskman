@@ -154,9 +154,9 @@
                 </draggable>
               </div>
               <div v-if="isCheck !== 'Y'" :key="itemIndex + '-'" style="display:flex;justify-content:space-between;">
-                <Button :disabled="getAddComponentDisabled(item.attrs)" @click="createComponentLibrary" size="small"
-                  >新建组件</Button
-                >
+                <Button :disabled="getAddComponentDisabled(item.attrs)" @click="createComponentLibrary" size="small">
+                  {{ $t('tw_add_component') }}
+                </Button>
                 <div>
                   <Button type="primary" size="small" ghost @click="saveGroup(1)">{{ $t('save') }}</Button>
                   <Button size="small" @click="restoreGroup">{{ $t('tw_restore') }}</Button>
@@ -242,7 +242,7 @@
                   <div style="display:flex;justify-content:space-between;flex-wrap:wrap;">
                     <!--控制审批/任务-->
                     <Form v-if="['select', 'wecmdbEntity'].includes(editElement.elementType)" :label-width="80">
-                      <FormItem label="控制审批/任务">
+                      <FormItem :label="$t('tw_control_approvalAndTask')">
                         <i-switch
                           v-model="editElement.controlSwitch"
                           true-value="yes"
@@ -549,7 +549,7 @@ export default {
               const arr = this.finalElement[0].attrs.map(i => i.name)
               const index = findFirstDuplicateIndex(arr)
               if (index > -1 && this.finalElement[0].attrs[index].name === this.editElement.name) {
-                return callback(new Error('编码不能重复'))
+                return callback(new Error(this.$t('tw_codeDuplicate_valid')))
               } else {
                 callback()
               }
@@ -695,7 +695,8 @@ export default {
             render: h => {
               return (
                 <div style="word-break:break-all;">
-                  表单已有表单项<span style="color: red;">{message}</span>,已过滤
+                  {this.$t('tw_formExistItems_pre')}
+                  <span style="color: red;">{message}</span>,{this.$t('tw_formExistItems_suf')}
                 </div>
               )
             }
@@ -963,9 +964,39 @@ export default {
     },
     // 删除自定义表单项
     removeForm (itemIndex, eleIndex, element) {
-      this.finalElement[itemIndex].attrs.splice(eleIndex, 1)
-      this.openPanel = ''
-      this.paramsChanged()
+      // 删除之前需确认该表单项是否是其它表单项的隐藏条件
+      const relateArr =
+        this.finalElement[0].attrs.filter(i => {
+          if (Array.isArray(i.hiddenCondition) && i.hiddenCondition.length > 0) {
+            const hasFlag = i.hiddenCondition.some(j => {
+              return j.name === element.name
+            })
+            return hasFlag
+          } else {
+            return false
+          }
+        }) || []
+      const relateTitleArr = relateArr.map(i => i.title)
+      const relateTitleStr = relateTitleArr.join('、')
+      if (relateTitleStr) {
+        this.$Modal.confirm({
+          title: this.$t('tw_confirm_delete'),
+          content: `该表单项是【${relateTitleStr}】的隐藏条件，删除表单将直接删除以上隐藏条件配置`,
+          'z-index': 1000000,
+          loading: true,
+          onOk: () => {
+            this.$Modal.remove()
+            this.finalElement[itemIndex].attrs.splice(eleIndex, 1)
+            this.openPanel = ''
+            this.paramsChanged()
+          },
+          onCancel: () => {}
+        })
+      } else {
+        this.finalElement[itemIndex].attrs.splice(eleIndex, 1)
+        this.openPanel = ''
+        this.paramsChanged()
+      }
     },
     // 保存自定义表单项
     async saveGroup (nextStep, elememt) {

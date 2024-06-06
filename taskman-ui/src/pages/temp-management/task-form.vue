@@ -1,5 +1,5 @@
 <template>
-  <div ref="maxheight">
+  <div class="taskman-task-form" ref="maxheight">
     <div v-if="procDefId !== '' && approvalNodes.length === 0" style="margin: 100px 0">
       <Alert style="width:400px; margin:0 auto;" type="warning" show-icon>{{
         $t('tw_workflow_has_no_manual_nodes')
@@ -1441,164 +1441,157 @@ fieldset[disabled] .ivu-input {
 }
 </style>
 <style lang="scss" scoped>
-.ivu-form-item {
-  margin-bottom: 16px;
-}
-.active-zone {
-  color: #338cf0;
-}
-.basci-info-right {
-  height: calc(100vh - 260px);
-}
-
-.basci-info-left {
-  @extend .basci-info-right;
-  border-right: 1px solid #dcdee2;
-}
-
-.task-form-container {
-  display: flex;
-  .left {
-    width: 360px;
-    border: 1px solid #dcdee2;
+.taskman-task-form {
+  .ivu-form-item {
+    margin-bottom: 16px;
   }
-  .center {
-    flex: 1;
-    border: 1px solid #dcdee2;
-    padding: 0 16px;
-    width: 57%;
-    margin: 0 4px;
+  .active-zone {
+    color: #338cf0;
   }
-  .right {
-    width: 360px;
-    border: 1px solid #dcdee2;
+  .basci-info-right {
+    height: calc(100vh - 260px);
   }
-}
-
-.title {
-  font-size: 14px;
-  font-weight: bold;
-  margin: 12px 0;
-  display: inline-block;
-  .title-text {
+  .basci-info-left {
+    @extend .basci-info-right;
+    border-right: 1px solid #dcdee2;
+  }
+  .task-form-container {
+    display: flex;
+    .left {
+      width: 360px;
+      border: 1px solid #dcdee2;
+    }
+    .center {
+      flex: 1;
+      border: 1px solid #dcdee2;
+      padding: 0 16px;
+      width: 57%;
+      margin: 0 4px;
+    }
+    .right {
+      width: 360px;
+      border: 1px solid #dcdee2;
+    }
+  }
+  .title {
+    font-size: 14px;
+    font-weight: bold;
+    margin: 12px 0;
     display: inline-block;
-    margin-left: 6px;
+    .title-text {
+      display: inline-block;
+      margin-left: 6px;
+    }
+    .underline {
+      display: block;
+      margin-top: -10px;
+      margin-left: -6px;
+      width: 100%;
+      padding: 0 6px;
+      height: 12px;
+      border-radius: 12px;
+      background-color: #c6eafe;
+      box-sizing: content-box;
+    }
   }
-  .underline {
-    display: block;
-    margin-top: -10px;
-    margin-left: -6px;
-    width: 100%;
-    padding: 0 6px;
-    height: 12px;
-    border-radius: 12px;
-    background-color: #c6eafe;
-    box-sizing: content-box;
+  .basci-info-content {
+    margin: 16px 64px;
   }
-}
-
-.basci-info-content {
-  margin: 16px 64px;
-}
-.list-group-item- {
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  margin: 8px 0;
-}
-.dash-line {
-  display: inline-block;
-  width: 24px;
-  vertical-align: middle;
-  margin: 0 4px;
-  border-color: #dcdee2;
-}
-.custom-title {
-  width: 125px;
-  display: flex;
-  align-items: center;
-  text-align: left;
-  word-wrap: break-word;
-}
-.custom-item {
-  width: calc(100% - 190px);
-  display: inline-block;
-}
-
-.radio-group {
-  margin-bottom: 15px;
-}
-.radio-group-radio {
-  padding: 5px 15px;
-  border-radius: 32px;
-  font-size: 12px;
-  cursor: pointer;
-  margin: 4px;
-  display: inline-block;
-}
-.radio-group-custom {
-  border: 1px solid #b886f8;
-  color: #b886f8;
-}
-.radio-group-workflow {
-  border: 1px solid #cba43f;
-  color: #cba43f;
-}
-.radio-group-optional {
-  border: 1px solid #81b337;
-  color: #81b337;
-}
-
-.node-normal {
-  height: 32px;
-  line-height: 32px;
-  display: inline-block;
-  border: 1px solid #e8eaec;
-  border-radius: 3px;
-  background: #f7f7f7;
-  font-size: 12px;
-  vertical-align: middle;
-  opacity: 1;
-  overflow: hidden;
-  padding: 0 12px;
-  cursor: pointer;
-}
-.node-active {
-  height: 32px;
-  line-height: 32px;
-  display: inline-block;
-  border-radius: 3px;
-  background: #2d8cf0;
-  font-size: 12px;
-  vertical-align: middle;
-  opacity: 1;
-  overflow: hidden;
-  color: #fff;
-  padding: 0 12px;
-  cursor: pointer;
-}
-.btn-footer-margin {
-  margin: 0 6px;
-}
-
-.footer {
-  position: fixed; /* 使用 fixed 定位，使其固定在页面底部 */
-  left: 0;
-  bottom: 0;
-  width: 100%; /* 撑满整个页面宽度 */
-  background-color: white; /* 设置背景色，可根据需求修改 */
-  z-index: 10;
-}
-
-.content {
-  text-align: center; /* 居中内容 */
-  padding: 10px; /* 可根据需求调整内容与边框的间距 */
-}
-
-.require {
-  color: #ed4014;
-  width: 6px;
-  display: flex;
-  align-items: center;
+  .list-group-item- {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin: 8px 0;
+  }
+  .dash-line {
+    display: inline-block;
+    width: 24px;
+    vertical-align: middle;
+    margin: 0 4px;
+    border-color: #dcdee2;
+  }
+  .custom-title {
+    width: 125px;
+    display: flex;
+    align-items: center;
+    text-align: left;
+    word-wrap: break-word;
+  }
+  .custom-item {
+    width: calc(100% - 190px);
+    display: inline-block;
+  }
+  .radio-group {
+    margin-bottom: 15px;
+  }
+  .radio-group-radio {
+    padding: 5px 15px;
+    border-radius: 32px;
+    font-size: 12px;
+    cursor: pointer;
+    margin: 4px;
+    display: inline-block;
+  }
+  .radio-group-custom {
+    border: 1px solid #b886f8;
+    color: #b886f8;
+  }
+  .radio-group-workflow {
+    border: 1px solid #cba43f;
+    color: #cba43f;
+  }
+  .radio-group-optional {
+    border: 1px solid #81b337;
+    color: #81b337;
+  }
+  .node-normal {
+    height: 32px;
+    line-height: 32px;
+    display: inline-block;
+    border: 1px solid #e8eaec;
+    border-radius: 3px;
+    background: #f7f7f7;
+    font-size: 12px;
+    vertical-align: middle;
+    opacity: 1;
+    overflow: hidden;
+    padding: 0 12px;
+    cursor: pointer;
+  }
+  .node-active {
+    height: 32px;
+    line-height: 32px;
+    display: inline-block;
+    border-radius: 3px;
+    background: #2d8cf0;
+    font-size: 12px;
+    vertical-align: middle;
+    opacity: 1;
+    overflow: hidden;
+    color: #fff;
+    padding: 0 12px;
+    cursor: pointer;
+  }
+  .btn-footer-margin {
+    margin: 0 6px;
+  }
+  .footer {
+    position: fixed; /* 使用 fixed 定位，使其固定在页面底部 */
+    left: 0;
+    bottom: 0;
+    width: 100%; /* 撑满整个页面宽度 */
+    background-color: white; /* 设置背景色，可根据需求修改 */
+    z-index: 10;
+  }
+  .content {
+    text-align: center; /* 居中内容 */
+    padding: 10px; /* 可根据需求调整内容与边框的间距 */
+  }
+  .require {
+    color: #ed4014;
+    width: 6px;
+    display: flex;
+    align-items: center;
+  }
 }
 </style>

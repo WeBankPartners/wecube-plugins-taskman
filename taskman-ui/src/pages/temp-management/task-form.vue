@@ -755,12 +755,39 @@ export default {
               this.dataFormInfo.groups.forEach(group => {
                 group.items.forEach(item => {
                   const key1 = `${group.itemGroup}-${item.name}`
-                  if (key1 === key && hasValue) {
-                    item.isEdit = 'no'
-                    this.$set(item, 'isEditDisabled', true)
-                  }
-                  if (key1 === key && !hasValue) {
-                    this.$set(item, 'isEditDisabled', false)
+                  if (key1 === key) {
+                    if (hasValue) {
+                      // 目前表单接口不支持批量保存，isEdit属性变化需要自动保存
+                      if (!item.isEditDisabled) {
+                        const finalElement = [
+                          {
+                            itemGroupId: group.itemGroupId,
+                            formTemplateId: this.dataFormInfo.formTemplateId,
+                            requestTemplateId: this.requestTemplateId,
+                            itemGroup: group.itemGroup,
+                            itemGroupName: group.itemGroupName,
+                            attrs: group.items || [],
+                            disableTransaction: true
+                          }
+                        ]
+                        let finalData = deepClone(finalElement[0])
+                        finalData.items = finalData.attrs.map(attr => {
+                          if (attr.id.startsWith('c_')) {
+                            attr.id = ''
+                          }
+                          return attr
+                        })
+                        delete finalData.attrs
+                        finalData.items.forEach((item, itemIndex) => {
+                          item.sort = itemIndex + 1
+                        })
+                        saveRequestGroupCustomForm(finalData)
+                      }
+                      item.isEdit = 'no'
+                      this.$set(item, 'isEditDisabled', true)
+                    } else {
+                      this.$set(item, 'isEditDisabled', false)
+                    }
                   }
                 })
               })

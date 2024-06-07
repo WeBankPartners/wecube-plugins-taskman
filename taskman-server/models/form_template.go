@@ -90,9 +90,10 @@ type FormTemplateGroupConfigureDto struct {
 
 // FormTemplateGroupCustomDataDto 表单组自定义数据dto
 type FormTemplateGroupCustomDataDto struct {
-	RequestTemplateId string                 `json:"requestTemplateId"` // 模板Id
-	FormTemplateId    string                 `json:"itemGroupId"`
-	Items             []*FormItemTemplateDto `json:"items"` // 表单项
+	RequestTemplateId  string                 `json:"requestTemplateId"` // 模板Id
+	FormTemplateId     string                 `json:"itemGroupId"`
+	Items              []*FormItemTemplateDto `json:"items"`              // 表单项
+	DisableTransaction bool                   `json:"disableTransaction"` // 关闭事务
 }
 
 // FormTemplateGroupSortDto 表单组排序dto

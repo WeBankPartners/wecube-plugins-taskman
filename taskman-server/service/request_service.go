@@ -2277,8 +2277,7 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 		for _, formTmpl := range formTemplates {
 			if formTmpl.ItemGroupType == string(models.FormItemGroupTypeWorkflow) {
 				actualFormTemplateIds = append(actualFormTemplateIds, formTmpl.Id)
-			}
-			if formTmpl.RefId != "" {
+			} else if formTmpl.RefId != "" {
 				actualFormTemplateIds = append(actualFormTemplateIds, formTmpl.RefId)
 			}
 		}

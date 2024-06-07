@@ -292,41 +292,49 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroup(param models.FormT
 			deleteItems = append(deleteItems, formItemTemplate)
 		}
 	}
-	err = transaction(func(session *xorm.Session) error {
-		if len(insertItems) > 0 {
-			for _, item := range insertItems {
-				if _, err = s.formItemTemplateDao.Add(session, item); err != nil {
-					return err
-				}
-			}
-		}
-		if len(updateItems) > 0 {
-			for _, item := range updateItems {
-				if err = s.formItemTemplateDao.Update(session, item); err != nil {
-					return err
-				}
-				// 更新全局表单,需要更新 引用表单的title,name,multiple,dataOptions属性
-				refFormItemTemplate := &models.FormItemTemplateTable{
-					Title:       item.Title,
-					Name:        item.Name,
-					Multiple:    item.Multiple,
-					DataOptions: item.DataOptions,
-				}
-				if err = s.formItemTemplateDao.UpdateByRefId(session, refFormItemTemplate, item.Id); err != nil {
-					return err
-				}
-			}
-		}
-		if len(deleteItems) > 0 {
-			for _, item := range deleteItems {
-				if err = s.formItemTemplateDao.DeleteByIdOrRefId(session, item.Id); err != nil {
-					return err
-				}
-			}
-		}
-		return err
-	})
+	if param.DisableTransaction {
+		err = s.UpdateFormItemTemplate(nil, insertItems, updateItems, deleteItems)
+	} else {
+		err = transaction(func(session *xorm.Session) error {
+			return s.UpdateFormItemTemplate(session, insertItems, updateItems, deleteItems)
+		})
+	}
 	return
+}
+
+func (s *FormItemTemplateService) UpdateFormItemTemplate(session *xorm.Session, insertItems, updateItems, deleteItems []*models.FormItemTemplateTable) (err error) {
+	if len(insertItems) > 0 {
+		for _, item := range insertItems {
+			if _, err = s.formItemTemplateDao.Add(session, item); err != nil {
+				return err
+			}
+		}
+	}
+	if len(updateItems) > 0 {
+		for _, item := range updateItems {
+			if err = s.formItemTemplateDao.Update(session, item); err != nil {
+				return err
+			}
+			// 更新全局表单,需要更新 引用表单的title,name,multiple,dataOptions属性
+			refFormItemTemplate := &models.FormItemTemplateTable{
+				Title:       item.Title,
+				Name:        item.Name,
+				Multiple:    item.Multiple,
+				DataOptions: item.DataOptions,
+			}
+			if err = s.formItemTemplateDao.UpdateByRefId(session, refFormItemTemplate, item.Id); err != nil {
+				return err
+			}
+		}
+	}
+	if len(deleteItems) > 0 {
+		for _, item := range deleteItems {
+			if err = s.formItemTemplateDao.DeleteByIdOrRefId(session, item.Id); err != nil {
+				return err
+			}
+		}
+	}
+	return err
 }
 
 func (s *FormItemTemplateService) CopyDataFormTemplateItemGroup(requestTemplateId, formTemplateId, taskTemplateId string) (err error) {

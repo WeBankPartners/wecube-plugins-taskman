@@ -216,8 +216,8 @@ export default {
               })
               this.$set(this.worklfowDataIdsObj, item.formTemplateId, ids)
             }
-            // 选择已有数据添加一行为默认不选时，清空value
-            if (item.itemGroupRule === 'exist_empty' && item.value && item.value.length) {
+            // 选择已有数据添加一行设置为【默认不选】，第一次加载数据表单清空value，审批和任务表单不需要
+            if (item.itemGroupRule === 'exist_empty' && item.value && item.value.length && this.isAdd) {
               const firstFlag = item.value.some(i => i.entityData && !i.entityData.hasOwnProperty('_id'))
               if (firstFlag) {
                 item.value = []

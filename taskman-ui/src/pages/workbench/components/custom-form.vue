@@ -12,7 +12,7 @@
               :required="i.required === 'yes'"
               :rules="
                 i.required === 'yes'
-                  ? [{ required: true, message: `${i.title}${$t('can_not_be_empty')}`, trigger: ['change', 'blur'] }]
+                  ? [{ required: true, message: `${i.title}${$t('can_not_be_empty')}`, trigger: 'change' }]
                   : []
               "
               style="margin-bottom:20px;"

@@ -157,8 +157,8 @@ export default {
             return (
               <div style={this.getExpireStyle(params.row)}>
                 <span>{this.getExpireTips(params.row)}</span>
-                {['preExpired', 'expire'].includes(params.row.status) &&
-                  !['pending', 'deny', 'deleted'].includes(this.activeTab) && (
+                {['expire'].includes(params.row.status) &&
+                  !['pending', 'inEffect', 'deny', 'deleted'].includes(this.activeTab) && (
                   <Icon
                     type="md-time"
                     size="24"

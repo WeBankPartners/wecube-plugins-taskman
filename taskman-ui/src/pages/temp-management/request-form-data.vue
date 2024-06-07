@@ -153,7 +153,7 @@
                   </div>
                 </draggable>
               </div>
-              <div v-if="isCheck !== 'Y'" :key="itemIndex + '-'" style="display:flex;justify-content:space-between;">
+              <div :key="itemIndex + '-'" style="display:flex;justify-content:space-between;">
                 <Button :disabled="getAddComponentDisabled(item.attrs)" @click="createComponentLibrary" size="small">
                   {{ $t('tw_add_component') }}
                 </Button>

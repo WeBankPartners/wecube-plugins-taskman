@@ -2583,7 +2583,6 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 	var newTaskHistoryList []*models.TaskForHistory
 	var taskHandleList []*models.TaskHandleForHistory
 	var data = make(map[string]interface{})
-	var formDataList []*models.RequestPreDataTableObj
 	var itemGroup string
 	var deleteRowIdMap = make(map[string]bool)
 	// 根据任务处理模版过滤表单内容
@@ -2655,7 +2654,7 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 								}
 							}
 						}
-						formDataList = []*models.RequestPreDataTableObj{}
+						var formDataList []*models.RequestPreDataTableObj
 						for _, formData := range taskHistory.FormData {
 							var valueList []*models.EntityTreeObj
 							if len(formData.Value) > 0 {
@@ -2680,7 +2679,7 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 							}
 							formDataList = append(formDataList, newFormData)
 						}
-						taskHandle.FormData = formDataList
+						taskHandle.FormData = formDataDeepCopy(formDataList)
 					} else {
 						taskHandle.FormData = formDataDeepCopy(taskHistory.FormData)
 					}
@@ -2691,7 +2690,10 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 						} else if taskHistory.HandleMode == string(models.TaskTemplateHandleModeAll) && taskHistory.Request != "" {
 							// 并行审批,直接读取 task_handle表的 from_data数据
 							if strings.TrimSpace(taskHandle.HandleFormData) != "" {
-								json.Unmarshal([]byte(taskHandle.HandleFormData), &taskHandle.FormData)
+								err := json.Unmarshal([]byte(taskHandle.HandleFormData), &taskHandle.FormData)
+								if err != nil {
+									log.Logger.Error("json Unmarshal err:%+v", log.Error(err))
+								}
 							}
 						}
 					}

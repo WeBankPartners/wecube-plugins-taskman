@@ -30,11 +30,12 @@
                 @on-open-change="getApplyRoles"
                 multiple
                 filterable
+                filter-by-label
                 :max-tag-count="3"
                 style="width:300px;margin-right:24px;"
                 :placeholder="$t('tw_apply_roles')"
               >
-                <Option v-for="role in roleList" :value="role.id" :key="role.id">{{ role.displayName }}</Option>
+                <Option v-for="role in roleList" :value="role.id" :key="role.id" :label="role.displayName" />
               </Select>
             </FormItem>
             <FormItem :label="$t('role_invalidDate')">

@@ -12,9 +12,9 @@
           <Button shape="circle" style="border:1px solid #dd6da6; color: #dd6da6;">{{ $t('tw_custom_form') }}</Button>
         </FormItem>
         <FormItem :label="$t('tw_form_name')">
-          <Input v-model="group.itemGroupName" style="width: 96%;" @on-change="paramsChanged"></Input>
+          <Input v-model.trim="group.itemGroupName" style="width: 96%;" @on-change="paramsChanged"></Input>
           <span style="color: red">*</span>
-          <span v-if="group.itemGroupName === ''" style="color: red"
+          <span v-if="!group.itemGroupName" style="color: red"
             >{{ $t('tw_form_name') }}{{ $t('can_not_be_empty') }}</span
           >
         </FormItem>
@@ -31,7 +31,7 @@
         v-if="isCheck !== 'Y'"
         type="primary"
         style="margin-right: 8px"
-        :disabled="isSaveBtnActive()"
+        :disabled="isSaveBtnActive"
         @click="saveGroupDrawer"
         >{{ $t('save') }}</Button
       >
@@ -50,8 +50,9 @@ export default {
       openFormConfig: false, // 配置表单控制
       groupRules: [
         // 新增一行选项
-        { label: this.$t('tw_enter_new_data'), value: 'new' },
-        { label: this.$t('tw_select_data'), value: 'exist' }
+        { label: this.$t('tw_enter_new_data'), value: 'new' }, // 输入新数据
+        { label: this.$t('tw_select_data_all'), value: 'exist' }, // 选择已有数据-默认全选
+        { label: this.$t('tw_select_data_empty'), value: 'exist_empty' } // 选择已有数据-默认不选
       ],
       group: {
         requestTemplateId: '',
@@ -60,18 +61,27 @@ export default {
         itemGroupType: '', // 组类型
         itemGroupName: '', // 组名称
         itemGroupSort: -1, // 组顺序
-        itemGroupRule: 'exist', // 新增一行
+        itemGroupRule: 'new', // 新增一行
         systemItems: [], // 预制表单字段
         customItems: [] // 自定义分析字段
       }
     }
   },
   props: ['isCheck', 'requestTemplateId', 'module'],
+  computed: {
+    // 控制保存按钮
+    isSaveBtnActive () {
+      if (!this.group.itemGroupName) {
+        return true
+      } else {
+        return false
+      }
+    }
+  },
   methods: {
     async loadPage (params) {
       this.isParmasChanged = false
       if (params.isAdd) {
-        this.group = {}
         this.group.requestTemplateId = params.requestTemplateId
         this.group.formTemplateId = params.formTemplateId
         this.group.itemGroupName = params.itemGroup
@@ -100,14 +110,6 @@ export default {
     },
     paramsChanged () {
       this.isParmasChanged = true
-    },
-    // 控制保存按钮
-    isSaveBtnActive () {
-      let res = false
-      if (this.group.itemGroupName === '') {
-        return true
-      }
-      return res
     },
     async saveGroupDrawer () {
       const { statusCode } = await saveRequestGroupForm(this.group)

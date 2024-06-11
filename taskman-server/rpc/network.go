@@ -66,3 +66,22 @@ func HttpPut(url, userToken, language string, postBytes []byte) (byteArr []byte,
 	defer resp.Body.Close()
 	return
 }
+
+// HttpDelete Delete
+func HttpDelete(url, userToken, language string) (byteArr []byte, err error) {
+	req, reqErr := http.NewRequest(http.MethodDelete, url, strings.NewReader(""))
+	if reqErr != nil {
+		err = fmt.Errorf("new http reqeust fail,%s ", reqErr.Error())
+		return
+	}
+	req.Header.Set("Authorization", userToken)
+	req.Header.Set("Accept-Language", language)
+	resp, respErr := http.DefaultClient.Do(req)
+	if respErr != nil {
+		err = fmt.Errorf("do http reqeust fail,%s ", respErr.Error())
+		return
+	}
+	byteArr, _ = io.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	return
+}

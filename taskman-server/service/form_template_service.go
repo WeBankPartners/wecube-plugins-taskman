@@ -205,10 +205,6 @@ func (s *FormTemplateService) CreateRequestFormTemplate(formTemplateDto models.F
 	if requestTemplate == nil {
 		return exterror.Catch(exterror.New().RequestParamValidateError, fmt.Errorf("param id is invalid"))
 	}
-	/*	// 请求模板的处理不是当前用户,不允许操作
-		if requestTemplate.Handler != formTemplateDto.UpdatedBy {
-			return exterror.New().DataPermissionDeny
-		}*/
 	err = transactionWithoutForeignCheck(func(session *xorm.Session) error {
 		// 设置请求表单类型
 		formTemplateDto.RequestFormType = string(models.RequestFormTypeMessage)
@@ -516,6 +512,30 @@ func (s *FormTemplateService) DeleteWorkflowFormTemplateGroupSql(requestTemplate
 			}
 			actions = append(actions, &dao.ExecAction{Sql: "delete from form_item_template where form_template=?", Param: []interface{}{formTemplate.Id}})
 			actions = append(actions, &dao.ExecAction{Sql: "delete from form_template where id=?", Param: []interface{}{formTemplate.Id}})
+		}
+	}
+	return
+}
+
+func (s *FormTemplateService) CleanFilterCondition(requestTemplate, formType string) (err error) {
+	var ids []string
+	err = dao.X.SQL("select id from task_handle_template where task_template in (select id from task_template where request_template = ?)", requestTemplate).Find(&ids)
+	if err != nil {
+		return
+	}
+	if len(ids) > 0 {
+		for _, id := range ids {
+			switch formType {
+			case "all":
+				_, err = dao.X.Exec("update task_handle_template set assign_rule =null,filter_rule =null where id =?", id)
+			case string(models.RequestFormTypeMessage):
+				_, err = dao.X.Exec("update task_handle_template set assign_rule =null  where id =?", id)
+			case string(models.RequestFormTypeData):
+				_, err = dao.X.Exec("update task_handle_template set filter_rule =null  where id =?", id)
+			}
+			if err != nil {
+				return
+			}
 		}
 	}
 	return

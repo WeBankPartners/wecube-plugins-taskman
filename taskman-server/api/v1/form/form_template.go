@@ -3,6 +3,7 @@ package form
 import (
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
@@ -38,10 +39,26 @@ func CleanDataForm(c *gin.Context) {
 	middleware.ReturnSuccess(c)
 }
 
+func CleanFilterCondition(c *gin.Context) {
+	var err error
+	requestTemplateId := c.Param("id")
+	formType := c.Param("type")
+	if requestTemplateId == "" {
+		middleware.ReturnParamEmptyError(c, "id")
+		return
+	}
+	if err = service.GetFormTemplateService().CleanFilterCondition(requestTemplateId, formType); err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnSuccess(c)
+}
+
 func UpdateRequestFormTemplate(c *gin.Context) {
 	var param models.FormTemplateDto
 	var err error
 	var user = middleware.GetRequestUser(c)
+	var codeMap = make(map[string]string)
 	requestTemplateId := c.Param("id")
 	if requestTemplateId == "" {
 		middleware.ReturnParamEmptyError(c, "id")
@@ -50,6 +67,21 @@ func UpdateRequestFormTemplate(c *gin.Context) {
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
+	}
+	// 校验是否有修改权限
+	if err = service.GetRequestTemplateService().CheckPermission(requestTemplateId, middleware.GetRequestUser(c)); err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	// 检查表单组code是否重复
+	if len(param.Items) > 0 {
+		for _, item := range param.Items {
+			if v, ok := codeMap[item.Name]; ok {
+				middleware.ReturnError(c, exterror.New().FormItemCodeRepeatError.WithParam(item.ItemGroup, item.Title, item.Name, v))
+				return
+			}
+			codeMap[item.Name] = item.Title
+		}
 	}
 	param.UpdatedBy = user
 	param.RequestTemplate = requestTemplateId
@@ -215,10 +247,21 @@ func UpdateFormTemplateItemGroupConfig(c *gin.Context) {
 // UpdateFormTemplateItemGroup 更新表单组
 func UpdateFormTemplateItemGroup(c *gin.Context) {
 	var param models.FormTemplateGroupCustomDataDto
+	var codeMap = make(map[string]string)
 	var err error
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
+	}
+	// 检查表单组code是否重复
+	if len(param.Items) > 0 {
+		for _, item := range param.Items {
+			if v, ok := codeMap[item.Name]; ok {
+				middleware.ReturnError(c, exterror.New().FormItemCodeRepeatError.WithParam(item.ItemGroup, item.Title, item.Name, v))
+				return
+			}
+			codeMap[item.Name] = item.Title
+		}
 	}
 	// 校验是否有修改权限
 	err = service.GetRequestTemplateService().CheckPermission(param.RequestTemplateId, middleware.GetRequestUser(c))

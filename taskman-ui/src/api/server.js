@@ -243,6 +243,21 @@ export const addUserForRole = (roleId, data) => req.post(`/taskman/api/v2/auth/r
 export const handleApplication = data => req.put(`/taskman/api/v2/auth/roles/apply`, data)
 // 申请列表-用户视角
 export const getApplyList = data => req.post(`/taskman/api/v2/auth/roles/apply/byapplier`, data)
+// 删除角色申请记录
+export const deleteApplyData = params => req.delete(`/taskman/api/v2/auth/roles/apply`, params)
 // 获取编排下的判断分支
 export const getWorkflowForkNode = taskTemplateId =>
   req.get(`/taskman/api/v1/task-template/workflow/options?taskTemplateId=${taskTemplateId}`)
+// 表单过滤数据清除(all清除所有，message清除信息表单，data清除数据表单)
+export const cleanFilterData = (taskTemplateId, type) =>
+  req.post(`/taskman/api/v1/request-template/${taskTemplateId}/filter-clean/${type}`)
+// 新建组件库
+export const saveTemplateLibrary = data => req.post(`/taskman/api/v1/form-template-library`, data)
+// 组件库列表
+export const getTemplateLibraryList = data => req.post(`/taskman/api/v1/form-template-library/query`, data)
+// 删除组件库
+export const deleteTemplateLibrary = params => req.delete(`/taskman/api/v1/form-template-library`, params)
+// 组件库获取表单类型
+export const getLibraryFormTypeList = () => req.get(`/taskman/api/v1/form-template-library/form-type`)
+// 获取关联单列表
+export const getAssociateList = data => req.post(`/taskman/api/v1/request/association`, data)

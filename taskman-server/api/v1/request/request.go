@@ -2,8 +2,11 @@ package request
 
 import (
 	"fmt"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/try"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
@@ -333,6 +336,11 @@ func StartRequest(c *gin.Context) {
 }
 
 func UpdateRequestStatus(c *gin.Context) {
+	defer try.ExceptionStack(func(e interface{}, err interface{}) {
+		retErr := fmt.Errorf("%v", err)
+		middleware.ReturnError(c, exterror.Catch(exterror.New().ServerHandleError, retErr))
+		log.Logger.Error(e.(string))
+	})
 	requestId := c.Param("requestId")
 	status := c.Param("status")
 	if requestId == "" || status == "" {
@@ -385,6 +393,15 @@ func GetReferenceData(c *gin.Context) {
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
+	}
+	if param.Dialect != nil {
+		if param.Dialect.AssociatedData != nil {
+			for k, v := range param.Dialect.AssociatedData {
+				if strings.HasPrefix(v, "tmp"+models.SysTableIdConnector) {
+					delete(param.Dialect.AssociatedData, k)
+				}
+			}
+		}
 	}
 	input := models.RefSelectParam{FormItemTemplateId: formItemTemplateId, RequestId: requestId, Param: &param, UserToken: c.GetHeader("Authorization")}
 	result, err := service.GetCMDBRefSelectResult(&input)
@@ -559,4 +576,24 @@ func GetExpressionItemData(c *gin.Context) {
 	} else {
 		middleware.ReturnData(c, result)
 	}
+}
+
+// Association 请求关联单
+func Association(c *gin.Context) {
+	var param models.RequestAssociationParam
+	var pageInfo models.PageInfo
+	var rowsData []*models.SimpleRequestDto
+	var err error
+	if err = c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	if param.PageSize == 0 {
+		param.PageSize = 50
+	}
+	if pageInfo, rowsData, err = service.GetRequestService().Association(param); err != nil {
+		middleware.ReturnError(c, err)
+		return
+	}
+	middleware.ReturnPageData(c, pageInfo, rowsData)
 }

@@ -1,11 +1,13 @@
 package service
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"strings"
 	"time"
 	"xorm.io/xorm"
 )
@@ -197,6 +199,40 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 		}
 		return err
 	})
+	// 清除有影响 表单项 hidden_condition字段
+	var formItemTemplateMap = make(map[string]bool)
+	var hiddenCondition, newHiddenCondition []*models.QueryRequestFilterObj
+	var hiddenCond string
+	if formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplate(param.FormTemplateId); err != nil {
+		return
+	}
+	for _, item := range formItemTemplateList {
+		formItemTemplateMap[item.Name] = true
+	}
+	for _, formItem := range formItemTemplateList {
+		hiddenCond = ""
+		hiddenCondition = []*models.QueryRequestFilterObj{}
+		newHiddenCondition = []*models.QueryRequestFilterObj{}
+		if strings.TrimSpace(formItem.HiddenCondition) != "" {
+			if err = json.Unmarshal([]byte(formItem.HiddenCondition), &hiddenCondition); err != nil {
+				log.Logger.Error("hiddenCondition json Unmarshal err", log.Error(err))
+				return
+			}
+			for _, cond := range hiddenCondition {
+				if formItemTemplateMap[cond.Name] {
+					newHiddenCondition = append(newHiddenCondition, cond)
+				}
+			}
+			if len(newHiddenCondition) > 0 {
+				byteArr, _ := json.Marshal(newHiddenCondition)
+				hiddenCond = string(byteArr)
+			}
+			formItem.HiddenCondition = hiddenCond
+			if err = s.formItemTemplateDao.Update(nil, formItem); err != nil {
+				return
+			}
+		}
+	}
 	return
 }
 
@@ -256,34 +292,49 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroup(param models.FormT
 			deleteItems = append(deleteItems, formItemTemplate)
 		}
 	}
-	err = transaction(func(session *xorm.Session) error {
-		if len(insertItems) > 0 {
-			for _, item := range insertItems {
-				_, err = s.formItemTemplateDao.Add(session, item)
-				if err != nil {
-					return err
-				}
-			}
-		}
-		if len(updateItems) > 0 {
-			for _, item := range updateItems {
-				err = s.formItemTemplateDao.Update(session, item)
-				if err != nil {
-					return err
-				}
-			}
-		}
-		if len(deleteItems) > 0 {
-			for _, item := range deleteItems {
-				err = s.formItemTemplateDao.Delete(session, item.Id)
-				if err != nil {
-					return err
-				}
-			}
-		}
-		return err
-	})
+	if param.DisableTransaction {
+		err = s.UpdateFormItemTemplate(nil, insertItems, updateItems, deleteItems)
+	} else {
+		err = transaction(func(session *xorm.Session) error {
+			return s.UpdateFormItemTemplate(session, insertItems, updateItems, deleteItems)
+		})
+	}
 	return
+}
+
+func (s *FormItemTemplateService) UpdateFormItemTemplate(session *xorm.Session, insertItems, updateItems, deleteItems []*models.FormItemTemplateTable) (err error) {
+	if len(insertItems) > 0 {
+		for _, item := range insertItems {
+			if _, err = s.formItemTemplateDao.Add(session, item); err != nil {
+				return err
+			}
+		}
+	}
+	if len(updateItems) > 0 {
+		for _, item := range updateItems {
+			if err = s.formItemTemplateDao.Update(session, item); err != nil {
+				return err
+			}
+			// 更新全局表单,需要更新 引用表单的title,name,multiple,dataOptions属性
+			refFormItemTemplate := &models.FormItemTemplateTable{
+				Title:       item.Title,
+				Name:        item.Name,
+				Multiple:    item.Multiple,
+				DataOptions: item.DataOptions,
+			}
+			if err = s.formItemTemplateDao.UpdateByRefId(session, refFormItemTemplate, item.Id); err != nil {
+				return err
+			}
+		}
+	}
+	if len(deleteItems) > 0 {
+		for _, item := range deleteItems {
+			if err = s.formItemTemplateDao.DeleteByIdOrRefId(session, item.Id); err != nil {
+				return err
+			}
+		}
+	}
+	return err
 }
 
 func (s *FormItemTemplateService) CopyDataFormTemplateItemGroup(requestTemplateId, formTemplateId, taskTemplateId string) (err error) {

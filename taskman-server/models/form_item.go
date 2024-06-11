@@ -13,6 +13,7 @@ type FormItemTable struct {
 	OriginalId       string `json:"originalId" xorm:"original_id"`
 	TaskHandle       string `json:"taskHandle" xorm:"task_handle"`
 	DelFlag          bool   `json:"delFlag" xorm:"del_flag"`
+	Multiple         string `json:"multiple" xorm:"-"`
 }
 
 func (FormItemTable) TableName() string {

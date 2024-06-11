@@ -72,7 +72,7 @@ func handleCreateRequest(param *models.RequestTable, roles []string, userToken, 
 	}
 	var items []*models.FormItemTemplateTable
 	dao.X.SQL("select * from form_item_template where form_template in (select id from form_template where request_template=? and request_form_type = ?) order by sort", template.Id, models.RequestFormTypeMessage).Find(&items)
-	param.CustomForm.Title = items
+	param.CustomForm.Title = models.ConvertFormItemTemplateModelList2Dto(items, &models.FormTemplateTable{})
 	if template.ProcDefId != "" {
 		param.AssociationWorkflow = true
 	}

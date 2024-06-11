@@ -35,6 +35,18 @@ func (d *FormItemTemplateDao) Update(session *xorm.Session, formItemTemplate *mo
 	return
 }
 
+func (d *FormItemTemplateDao) UpdateByRefId(session *xorm.Session, formItemTemplate *models.FormItemTemplateTable, refId string) (err error) {
+	var affected int64
+	if session == nil {
+		session = d.DB.NewSession()
+		defer session.Close()
+	}
+	affected, err = session.Where("ref_id = ?", refId).Update(formItemTemplate)
+	// 打印日志
+	logExecuteSql(session, "FormItemTemplateDao", "UpdateByRefId", formItemTemplate, affected, err)
+	return
+}
+
 func (d *FormItemTemplateDao) Get(formItemTemplateId string) (*models.FormItemTemplateTable, error) {
 	var formItemTemplate *models.FormItemTemplateTable
 	var found bool

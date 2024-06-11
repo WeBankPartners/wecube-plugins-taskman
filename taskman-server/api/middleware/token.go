@@ -20,9 +20,9 @@ func GetRequestRoles(c *gin.Context) []string {
 
 var (
 	whiteListUrl = map[string]struct{}{
-		models.UrlPrefix + "/api/v1/login/seed":          {},
-		models.UrlPrefix + "/api/v1/login":               {},
-		models.UrlPrefix + "/api/v2/auth/roles":          {},
+		models.UrlPrefix + "/api/v1/login/seed": {},
+		models.UrlPrefix + "/api/v1/login":      {},
+		//models.UrlPrefix + "/api/v2/auth/roles":          {},
 		models.UrlPrefix + "/api/v2/auth/roles/apply":    {},
 		models.UrlPrefix + "/api/v2/auth/users/register": {},
 	}
@@ -37,10 +37,19 @@ func isWhiteListUrl(url string) (result bool) {
 }
 
 func AuthCoreRequestToken() gin.HandlerFunc {
+	var index int
 	return func(c *gin.Context) {
 		if isWhiteListUrl(c.Request.RequestURI) {
 			c.Next()
 		} else {
+			uri := c.Request.RequestURI
+			if index = strings.Index(uri, "?"); index > 0 {
+				// 非登录情况下放行,登录情况下需要鉴权初始化用户和角色
+				if uri[:index] == "/api/v2/auth/roles" && strings.TrimSpace(c.GetHeader("Authorization")) == "" {
+					c.Next()
+					return
+				}
+			}
 			err := authCoreRequest(c)
 			if err != nil {
 				log.Logger.Error("Validate core token fail", log.Error(err))
@@ -51,29 +60,6 @@ func AuthCoreRequestToken() gin.HandlerFunc {
 			}
 		}
 	}
-}
-
-func AuthCorePluginToken() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		err := authCoreRequest(c)
-		if err != nil {
-			log.Logger.Error("Validate core token fail", log.Error(err))
-			c.JSON(http.StatusOK, pluginInterfaceResultObj{ResultCode: "1", ResultMessage: "Token authority validate fail", Results: pluginInterfaceResultOutput{Outputs: []string{}}})
-			c.Abort()
-		} else {
-			c.Next()
-		}
-	}
-}
-
-type pluginInterfaceResultObj struct {
-	ResultCode    string                      `json:"resultCode"`
-	ResultMessage string                      `json:"resultMessage"`
-	Results       pluginInterfaceResultOutput `json:"results"`
-}
-
-type pluginInterfaceResultOutput struct {
-	Outputs []string `json:"outputs"`
 }
 
 func authCoreRequest(c *gin.Context) error {

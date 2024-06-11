@@ -2,6 +2,7 @@ package template
 
 import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
@@ -59,18 +60,26 @@ func UpdateRequestTemplateGroup(c *gin.Context) {
 }
 
 func DeleteRequestTemplateGroup(c *gin.Context) {
+	var err error
+	var list []*models.RequestTemplateTable
 	id := c.Query("id")
 	if id == "" {
 		middleware.ReturnParamEmptyError(c, "id")
 		return
 	}
-	err := service.GetRequestTemplateGroupService().CheckRequestTemplateGroupRoles(id, middleware.GetRequestRoles(c))
-	if err != nil {
+	if err = service.GetRequestTemplateGroupService().CheckRequestTemplateGroupRoles(id, middleware.GetRequestRoles(c)); err != nil {
 		middleware.ReturnDataPermissionError(c, err)
 		return
 	}
-	err = service.GetRequestTemplateGroupService().DeleteRequestTemplateGroup(id)
-	if err != nil {
+	if list, err = service.GetRequestTemplateService().QueryRequestTemplateListByRequestTemplateGroup(id); err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if len(list) > 0 {
+		middleware.ReturnServerHandleError(c, exterror.New().TemplateGroupHasUseDeleteError)
+		return
+	}
+	if err = service.GetRequestTemplateGroupService().DeleteRequestTemplateGroup(id); err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}

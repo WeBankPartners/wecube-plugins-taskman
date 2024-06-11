@@ -14,12 +14,7 @@
           :multiple="multiple"
         >
           <template v-for="i in optionsData">
-            <Option
-              :label="objectOption ? i[displayName] : i"
-              :value="objectOption ? i[displayValue] : i"
-              :key="objectOption ? i[displayValue] : i"
-            >
-            </Option>
+            <Option :label="i[displayName]" :value="i[displayValue]" :key="i[displayValue]"> </Option>
           </template>
           <!--加载更多-->
           <Option v-if="optionsData.length >= 20" style="padding:0px;" label="" value="">
@@ -69,11 +64,6 @@ export default {
     displayValue: {
       type: String,
       default: 'value'
-    },
-    // 下拉选项是否是对象类型
-    objectOption: {
-      type: Boolean,
-      default: false
     },
     value: {
       type: String | Array
@@ -157,6 +147,7 @@ export default {
     handleSelect (val) {
       // this.limitQueryFlag = true
       this.$emit('input', val)
+      this.$emit('on-change', val)
     },
     getList () {
       // if (this.query) {

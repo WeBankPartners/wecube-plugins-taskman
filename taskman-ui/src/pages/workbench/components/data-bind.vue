@@ -68,7 +68,13 @@
       @on-close="viewVisible = false"
     >
       <div class="content" :style="{ maxHeight: maxHeight + 'px' }">
-        <CustomForm v-model="formValue" :options="formOptions" :requestId="requestId" disabled></CustomForm>
+        <CustomForm
+          v-if="viewVisible"
+          v-model="formValue"
+          :options="formOptions"
+          :requestId="requestId"
+          disabled
+        ></CustomForm>
       </div>
     </Drawer>
   </div>
@@ -182,18 +188,22 @@ export default {
   },
   methods: {
     handleViewForm (item) {
-      this.viewVisible = true
-      this.formData.forEach(data => {
-        if (data.entity === item.entityName) {
+      this.formOptions = []
+      this.formValue = {}
+      const formData = deepClone(this.formData)
+      formData.forEach(data => {
+        if (`${data.packageName}:${data.entity}` === `${item.packageName}:${item.entityName}`) {
           this.formOptions = data.title || []
-          data.value &&
-            data.value.forEach(value => {
-              if (value.dataId === item.dataId) {
-                this.formValue = value.entityData
-              }
-            })
+          this.formValue = item.entityData
+          // data.value &&
+          //   data.value.forEach(value => {
+          //     if (value.id === item.dataId) {
+          //       this.formValue = value.entityData
+          //     }
+          //   })
         }
       })
+      this.viewVisible = true
     },
     async requestParent () {
       const { data } = await requestParent(this.requestId)

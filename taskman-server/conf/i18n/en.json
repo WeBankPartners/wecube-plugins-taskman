@@ -147,5 +147,21 @@
   "request_handle_error": {
     "code": 20100028,
     "message": "Failed to process the request: The request was withdrawn by the submitter, please refresh and try again"
+  },
+  "template_group_has_use_delete_error": {
+    "code": 20100029,
+    "message": "Delete failed: The current template group already has a template. Please migrate the template to another template group before deleting it"
+  },
+  "form_template_library_delete_permission_error": {
+    "code": 20100030,
+    "message": "Delete failed: Only form components created by oneself are allowed to be deleted"
+  },
+  "form_template_library_add_name_repeat_error": {
+    "code": 20100031,
+    "message": "Creation failed: The form component name already exists. Please modify it and try again"
+  },
+  "form_item_code_repeat_error": {
+    "code": 20100032,
+    "message": "Save failed: In form %s,  item %s's  code %s is duplicated with for item %s. Please modify and save again."
   }
 }

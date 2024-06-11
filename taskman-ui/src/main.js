@@ -4,6 +4,7 @@ import App from './App.vue'
 import router from './router'
 import ViewUI from 'view-design'
 import 'view-design/dist/styles/iview.css'
+import './style/index.scss'
 import VueI18n from 'vue-i18n'
 import locale from 'view-design/dist/locale/en-US'
 import './locale/i18n'
@@ -13,6 +14,7 @@ import { getCookie } from '@/pages/util/cookie'
 Vue.component('ValidationProvider', ValidationProvider)
 
 Vue.config.productionTip = false
+Vue.prototype.$bus = new Vue()
 
 Vue.use(ViewUI, {
   transfer: true,

@@ -41,10 +41,13 @@ type RequestTable struct {
 	Notes               string             `json:"notes" xorm:"notes"`                           // 请求确认备注
 	TaskApprovalCache   string             `json:"taskApprovalCache" xorm:"task_approval_cache"` // 任务审批cache
 	CompleteStatus      string             `json:"completeStatus" xorm:"complete_status"`        // 任务完成状态
+	RefId               string             `json:"refId" xorm:"ref_id"`                          // 引用ID
+	RefType             int                `json:"refType" xorm:"ref_type"`                      // 引用ID类型
 	ExpireDay           int                `json:"expireDay" xorm:"-"`                           // 模板过期时间
 	TemplateVersion     string             `json:"templateVersion" xorm:"-"`                     // 模板版本
 	CustomForm          CustomForm         `json:"customForm" xorm:"-"`                          // 自定义表单
 	AssociationWorkflow bool               `json:"associationWorkflow" xorm:"-"`                 // 是否关联编排
+	PreviewCache        string             `json:"previewCache" json:"preview_cache"`            // 试算数据缓存
 }
 
 func (RequestTable) TableName() string {
@@ -138,6 +141,9 @@ type PlatformDataObj struct {
 	HandlerType            string `json:"handlerType" xorm:"-"`                                  // 人员设置方式,template.模板指定，custom 提交人指定等
 	RoleAdministrator      string `json:"roleAdministrator" xorm:"-"`                            // 角色管理员
 	ExpireDay              int    `json:"expireDay" xorm:"expire_day"`                           // 过期时间
+	RequestRefId           string `json:"requestRefId" xorm:"request_ref_id"`                    // 请求关联ID
+	RequestRefType         int    `json:"requestRefType" xorm:"-"`                               // 请求关联ID
+	RequestRefName         string `json:"requestRefName" xorm:"-"`                               // 请求关联名称
 }
 
 // RequestProgress 请求进度
@@ -165,9 +171,10 @@ type TaskProgressNode struct {
 }
 
 type TaskHandleNode struct {
-	Handler     string `json:"handler"`     // 处理人
-	Role        string `json:"role"`        // 处理角色
-	HandlerType string `json:"handlerType"` // 人员设置方式:system.组内系统分配 claim.组内主动认领
+	Handler      string `json:"handler"`      // 处理人
+	Role         string `json:"role"`         // 处理角色
+	HandlerType  string `json:"handlerType"`  // 人员设置方式:system.组内系统分配 claim.组内主动认领
+	HandleResult string `json:"handleResult"` // 处理结果:unrelated 不相关
 }
 
 type ExpireObj struct {
@@ -277,6 +284,8 @@ type RequestProDataV2Dto struct {
 	Name         string                    `json:"name"`
 	Description  string                    `json:"description"`
 	ExpectTime   string                    `json:"expectTime"` // 期望完成时间
+	RefId        string                    `json:"refId"`      // 引用ID
+	RefType      int                       `json:"refType"`    // 引用ID类型
 	EntityName   string                    `json:"entityName"` // 操作单元
 	RootEntityId string                    `json:"rootEntityId"`
 	Data         []*RequestPreDataTableObj `json:"data"`
@@ -310,11 +319,14 @@ type RequestForm struct {
 	FormData            []*RequestPreDataTableObj `json:"formData"`
 	RootEntityId        string                    `json:"rootEntityId"`
 	RevokeBtn           bool                      `json:"revokeBtn"` // 是否出撤回按钮
+	RefId               string                    `json:"refId"`     // 引用ID
+	RefType             int                       `json:"refType"`   // 引用ID类型
+	RefName             string                    `json:"refName"`   // 引用请求名称
 }
 
 type CustomForm struct {
-	Title []*FormItemTemplateTable `json:"title"`
-	Value map[string]interface{}   `json:"value"`
+	Title []*FormItemTemplateDto `json:"title"`
+	Value map[string]interface{} `json:"value"`
 }
 
 type FilterItem struct {
@@ -381,7 +393,14 @@ type RequestForHistory struct {
 
 type TaskHandleForHistory struct {
 	*TaskHandleTable
-	AttachFiles []*AttachFileTable `json:"attachFiles"`
+	AttachFiles []*AttachFileTable        `json:"attachFiles"`
+	FormData    []*RequestPreDataTableObj `json:"formData"`
+	FilterRule  map[string]interface{}    `json:"filterRule"` // 下拉框过滤规则
+}
+
+type FormValue struct {
+	DataId string `json:"dataId" xorm:"data_id"`
+	Value  string `json:"value" xorm:"value"`
 }
 
 type TaskForHistory struct {
@@ -392,6 +411,7 @@ type TaskForHistory struct {
 	AttachFiles    []*AttachFileTable        `json:"attachFiles"`
 	HandleMode     string                    `json:"handleMode"`
 	FormData       []*RequestPreDataTableObj `json:"formData"`
+	FilterFlag     bool                      `json:"filterFlag"` //是否表单过滤
 }
 
 type PluginRequestCreateParam struct {
@@ -419,6 +439,11 @@ type PluginRequestCreateOutput struct {
 	Outputs   []*PluginRequestCreateOutputObj `json:"outputs"`
 }
 
+type SimpleRequestDto struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+}
+
 type PluginRequestCreateOutputObj struct {
 	CallbackParameter string `json:"callbackParameter"`
 	RequestId         string `json:"requestId"`
@@ -444,4 +469,11 @@ func (s TaskProgressNodeSort) Less(i, j int) bool {
 type HistoryResultToSort struct {
 	ItemGroupSort     int                     `json:"itemGroupSort"`
 	HistoryResultElem *RequestPreDataTableObj `json:"historyResultElem"`
+}
+
+type RequestNewDataRow struct {
+	Id     string `xorm:"id"`
+	Name   string `xorm:"name"`
+	Value  string `xorm:"value"`
+	DataId string `xorm:"data_id"`
 }

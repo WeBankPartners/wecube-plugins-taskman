@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 type ProcEntityDataQueryParam struct {
 	AdditionalFilters []*EntityQueryObj `json:"additionalFilters"`
@@ -168,4 +171,18 @@ type PluginQueryExpressionDataResponse struct {
 type GetProcessNodeAllowOptionsResponse struct {
 	HttpResponseMeta
 	Data []string `json:"data"`
+}
+
+type EntityTreeObjSort []*EntityTreeObj
+
+func (s EntityTreeObjSort) Len() int {
+	return len(s)
+}
+
+func (s EntityTreeObjSort) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s EntityTreeObjSort) Less(i, j int) bool {
+	return strings.Compare(s[i].Id, s[j].Id) < 0
 }

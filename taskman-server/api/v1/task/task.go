@@ -138,7 +138,9 @@ func ApproveTask(c *gin.Context) {
 	var err error
 	var operator = middleware.GetRequestUser(c)
 	var taskHandle *models.TaskHandleTable
+	var taskHandleTemplate *models.TaskHandleTemplateTable
 	var request models.RequestTable
+	var handleMode string
 	for _, v := range param.FormData {
 		tmpErr := validateFormRequire(v)
 		if tmpErr != nil {
@@ -199,7 +201,16 @@ func ApproveTask(c *gin.Context) {
 		middleware.ReturnTaskApproveNotPermissionError(c)
 		return
 	}
-	err = service.ApproveTask(taskTable, operator, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), param)
+	if taskHandle.TaskHandleTemplate != "" {
+		if taskHandleTemplate, err = service.GetTaskTemplateService().GetTaskHandleTemplate(taskHandle.TaskHandleTemplate); err != nil {
+			middleware.ReturnServerHandleError(c, err)
+			return
+		}
+		if taskHandleTemplate != nil {
+			handleMode = taskHandleTemplate.HandleMode
+		}
+	}
+	err = service.ApproveTask(taskTable, operator, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), handleMode, param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

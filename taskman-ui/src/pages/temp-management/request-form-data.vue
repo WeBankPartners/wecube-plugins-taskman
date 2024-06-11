@@ -1,37 +1,25 @@
 <template>
-  <div>
-    <Row>
-      <Col span="5" style="border: 1px solid #dcdee2; padding: 0 16px">
-        <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
-          <Divider plain>{{ $t('custom_form') }}</Divider>
-          <draggable
-            class="dragArea"
-            :list="customElement"
-            :group="{ name: 'people', pull: 'clone', put: false }"
-            :sort="$parent.isCheck !== 'Y'"
-            :clone="cloneDog"
-          >
-            <div class="list-group-item-" style="width: 100%" v-for="element in customElement" :key="element.id">
-              <Input v-if="element.elementType === 'input'" :placeholder="$t('t_input')" />
-              <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
-              <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
-              <Select v-if="element.elementType === 'wecmdbEntity'" :placeholder="$t('tw_entity_data_items')"></Select>
-              <DatePicker
-                v-if="element.elementType === 'datePicker'"
-                :type="element.type"
-                :placeholder="$t('tw_date_picker')"
-                style="width:100%"
-              ></DatePicker>
-              <div v-if="element.elementType === 'group'" style="width: 100%; height: 80px; border: 1px solid #5ea7f4">
-                <span style="margin: 8px; color: #bbbbbb"> Item Group </span>
-              </div>
-            </div>
-          </draggable>
+  <div ref="maxheight">
+    <div class="request-form-container">
+      <div class="left">
+        <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto', padding: '0 8px' }">
+          <!--自定义表单项-->
+          <Divider orientation="left" size="small">{{ $t('custom_form') }}</Divider>
+          <CustomDraggable :sortable="$parent.isCheck !== 'Y'" :clone="cloneDog"></CustomDraggable>
+          <!--表单项组件库-->
+          <template v-if="finalElement[0].itemGroupName">
+            <Divider orientation="left" size="small">{{ $t('tw_template_library') }}</Divider>
+            <ComponentLibraryList
+              ref="libraryList"
+              :formType="finalElement[0].itemGroupName"
+              :groupType="nextGroupInfo.itemGroupType"
+            ></ComponentLibraryList>
+          </template>
         </div>
-      </Col>
-      <Col span="14" style="border: 1px solid #dcdee2; padding: 0 16px; width: 57%; margin: 0 4px">
-        <div :style="{ height: MODALHEIGHT + 30 + 'px', overflow: 'auto' }">
-          <Divider>{{ $t('tw_preview') }}</Divider>
+      </div>
+      <!--表单预览-->
+      <div class="center">
+        <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto', paddingBottom: '10px' }">
           <div class="title">
             <div class="title-text">
               {{ $t('request_form_details') }}
@@ -85,99 +73,113 @@
             </div>
           </div>
           <template v-if="finalElement.length === 1 && finalElement[0].itemGroup !== ''">
-            <div
-              v-for="(item, itemIndex) in finalElement"
-              :key="itemIndex"
-              style="border: 2px dotted #A2EF4D; margin: 8px 0; padding: 8px;min-height: 48px;"
-            >
-              <draggable
-                class="dragArea"
-                :list="item.attrs"
-                :sort="$parent.isCheck !== 'Y'"
-                group="people"
-                @change="log(item)"
-              >
-                <div
-                  @click="selectElement(itemIndex, eleIndex)"
-                  :class="['list-group-item-', element.isActive ? 'active-zone' : '']"
-                  :style="{ width: (element.width / 24) * 100 + '%' }"
-                  v-for="(element, eleIndex) in item.attrs"
-                  :key="element.id"
+            <template v-for="(item, itemIndex) in finalElement">
+              <div :key="itemIndex" style="border: 2px dotted #A2EF4D; margin: 8px 0; padding: 8px;min-height: 48px;">
+                <draggable
+                  class="dragArea"
+                  style="min-height: 40px;"
+                  :list="item.attrs"
+                  :sort="$parent.isCheck !== 'Y'"
+                  group="people"
+                  @change="log(item)"
                 >
                   <div
-                    class="custom-title"
-                    :style="
-                      ['calculate', 'textarea'].includes(element.elementType)
-                        ? 'vertical-align: top;word-break: break-all;'
-                        : ''
-                    "
+                    @click="selectElement(itemIndex, eleIndex)"
+                    :class="['list-group-item-', element.isActive ? 'active-zone' : '']"
+                    :style="{ width: (element.width / 24) * 100 + '%' }"
+                    v-for="(element, eleIndex) in item.attrs"
+                    :key="element.id"
                   >
-                    <span v-if="element.required === 'yes'" style="color: red;">
-                      *
-                    </span>
-                    {{ element.title }}
+                    <Checkbox v-model="element.checked" style="margin:0;"></Checkbox>
+                    <div class="require">
+                      <Icon v-if="element.required === 'yes'" size="8" type="ios-medical" />
+                    </div>
+                    <div
+                      class="custom-title"
+                      :style="
+                        ['calculate', 'textarea'].includes(element.elementType)
+                          ? 'vertical-align: top;word-break: break-all;'
+                          : ''
+                      "
+                    >
+                      {{ element.title }}
+                    </div>
+                    <Input
+                      v-if="element.elementType === 'input'"
+                      :disabled="element.isEdit === 'no'"
+                      v-model="element.defaultValue"
+                      placeholder=""
+                      class="custom-item"
+                    />
+                    <Input
+                      v-if="['calculate', 'textarea'].includes(element.elementType)"
+                      :disabled="element.isEdit === 'no'"
+                      v-model="element.defaultValue"
+                      type="textarea"
+                      :rows="2"
+                      class="custom-item"
+                    />
+                    <Select
+                      v-if="element.elementType === 'select'"
+                      :disabled="element.isEdit === 'no'"
+                      class="custom-item"
+                      :multiple="element.multiple === 'yes'"
+                    >
+                      <Option v-for="item in computedOption(element)" :value="item.value" :key="item.label">{{
+                        item.label
+                      }}</Option>
+                    </Select>
+                    <Select
+                      v-if="element.elementType === 'wecmdbEntity'"
+                      :disabled="element.isEdit === 'no'"
+                      v-model="element.defaultValue"
+                      class="custom-item"
+                    ></Select>
+                    <DatePicker
+                      v-if="element.elementType === 'datePicker'"
+                      class="custom-item"
+                      :type="element.type"
+                    ></DatePicker>
+                    <Button
+                      @click.stop="removeForm(itemIndex, eleIndex, element)"
+                      type="error"
+                      size="small"
+                      :disabled="$parent.isCheck === 'Y'"
+                      ghost
+                      style="width:24px;display:flex;justify-content:center;"
+                    >
+                      <Icon type="ios-close" size="24"></Icon>
+                    </Button>
                   </div>
-                  <Input
-                    v-if="element.elementType === 'input'"
-                    :disabled="element.isEdit === 'no'"
-                    v-model="element.defaultValue"
-                    placeholder=""
-                    class="custom-item"
-                  />
-                  <Input
-                    v-if="['calculate', 'textarea'].includes(element.elementType)"
-                    :disabled="element.isEdit === 'no'"
-                    v-model="element.defaultValue"
-                    type="textarea"
-                    :rows="2"
-                    class="custom-item"
-                  />
-                  <Select
-                    v-if="element.elementType === 'select'"
-                    :disabled="element.isEdit === 'no'"
-                    class="custom-item"
-                    :multiple="element.multiple === 'yes'"
-                  >
-                    <Option v-for="item in element.dataOptions.split(',')" :value="item" :key="item">{{ item }}</Option>
-                  </Select>
-                  <Select
-                    v-if="element.elementType === 'wecmdbEntity'"
-                    :disabled="element.isEdit === 'no'"
-                    v-model="element.defaultValue"
-                    class="custom-item"
-                  ></Select>
-                  <DatePicker
-                    v-if="element.elementType === 'datePicker'"
-                    class="custom-item"
-                    :type="element.type"
-                  ></DatePicker>
-                  <Button
-                    @click.stop="removeForm(itemIndex, eleIndex, element)"
-                    type="error"
-                    size="small"
-                    :disabled="$parent.isCheck === 'Y'"
-                    icon="ios-close"
-                    ghost
-                  ></Button>
+                </draggable>
+              </div>
+              <div :key="itemIndex + '-'" style="display:flex;justify-content:space-between;">
+                <Button :disabled="getAddComponentDisabled(item.attrs)" @click="createComponentLibrary" size="small">
+                  {{ $t('tw_add_component') }}
+                </Button>
+                <div>
+                  <Button type="primary" size="small" ghost @click="saveGroup(1)">{{ $t('save') }}</Button>
+                  <Button size="small" @click="restoreGroup">{{ $t('tw_restore') }}</Button>
                 </div>
-              </draggable>
-            </div>
-            <div style="text-align: right;">
-              <Button v-if="isCheck !== 'Y'" type="primary" size="small" ghost @click="saveGroup(1)">{{
-                $t('save')
-              }}</Button>
-              <Button size="small" @click="restoreGroup">{{ $t('tw_restore') }}</Button>
-            </div>
+              </div>
+            </template>
           </template>
         </div>
-      </Col>
-      <Col span="5" style="border: 1px solid #dcdee2">
+      </div>
+      <!--属性设置-->
+      <div class="right">
         <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
           <Collapse v-model="openPanel">
             <Panel name="1">
               {{ $t('general_attributes') }}
               <div slot="content">
-                <Form :label-width="80">
+                <Form
+                  ref="attrForm"
+                  :model="editElement"
+                  :rules="ruleForm"
+                  :label-width="80"
+                  :disabled="editElement.controlSwitch === 'yes'"
+                >
                   <FormItem :label="$t('display_name')">
                     <Input
                       v-model="editElement.title"
@@ -186,7 +188,7 @@
                       placeholder=""
                     ></Input>
                   </FormItem>
-                  <FormItem :label="$t('tw_code')">
+                  <FormItem :label="$t('tw_code')" prop="name" style="margin-bottom:20px;">
                     <Input
                       v-model="editElement.name"
                       @on-change="paramsChanged"
@@ -194,7 +196,7 @@
                       placeholder=""
                     ></Input>
                   </FormItem>
-                  <FormItem :label="$t('data_type')">
+                  <FormItem :label="$t('tw_form_type')">
                     <Select
                       v-model="editElement.elementType"
                       :disabled="true"
@@ -208,19 +210,26 @@
                       <Option value="calculate">Calculate</Option>
                     </Select>
                   </FormItem>
+                  <!--数据集-->
                   <FormItem
-                    v-if="editElement.elementType === 'select'"
-                    :label="editElement.entity === '' ? $t('data_set') : $t('data_source')"
+                    v-if="editElement.elementType === 'select' && editElement.entity === ''"
+                    :label="$t('tw_options')"
                   >
-                    <Input
-                      v-model="editElement.dataOptions"
+                    <Input :value="getDataOptionsDisplay" disabled style="width:calc(100% - 28px)"></Input>
+                    <Button
                       :disabled="$parent.isCheck === 'Y'"
-                      placeholder="eg:a,b"
-                      @on-change="paramsChanged"
-                    ></Input>
+                      @click.stop="dataOptionsMgmt"
+                      type="success"
+                      size="small"
+                      icon="md-add"
+                    ></Button>
                   </FormItem>
-                  <!--添加wecmdbEntity类型，根据选择配置生成url(用于获取下拉配置)-->
-                  <FormItem v-if="editElement.elementType === 'wecmdbEntity'" :label="$t('data_source')">
+                  <!--数据源-->
+                  <FormItem v-if="editElement.elementType === 'select' && editElement.entity" :label="$t('tw_options')">
+                    <Input v-model="editElement.dataOptions" disabled></Input>
+                  </FormItem>
+                  <!--模型数据项-->
+                  <FormItem v-if="editElement.elementType === 'wecmdbEntity'" :label="$t('tw_options')">
                     <Select
                       v-model="editElement.dataOptions"
                       filterable
@@ -230,33 +239,77 @@
                       <Option v-for="i in allEntityList" :value="i" :key="i">{{ i }}</Option>
                     </Select>
                   </FormItem>
-                  <!-- <FormItem :label="$t('tags')">
-                    <Input v-model="editElement.tag" placeholder=""></Input>
-                  </FormItem> -->
-                  <FormItem :label="$t('display')">
-                    <RadioGroup v-model="editElement.inDisplayName" @on-change="paramsChanged">
-                      <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
-                      <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
-                    </RadioGroup>
-                  </FormItem>
-                  <FormItem :label="$t('editable')">
-                    <RadioGroup v-model="editElement.isEdit" @on-change="paramsChanged">
-                      <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
-                      <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
-                    </RadioGroup>
-                  </FormItem>
-                  <FormItem :label="$t('required')">
-                    <RadioGroup v-model="editElement.required" @on-change="paramsChanged">
-                      <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
-                      <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
-                    </RadioGroup>
-                  </FormItem>
-                  <FormItem :label="$t('tw_default_empty')">
-                    <RadioGroup v-model="editElement.defaultClear" @on-change="paramsChanged">
-                      <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
-                      <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
-                    </RadioGroup>
-                  </FormItem>
+                  <div style="display:flex;justify-content:space-between;flex-wrap:wrap;">
+                    <!--控制审批/任务-->
+                    <Form v-if="['select', 'wecmdbEntity'].includes(editElement.elementType)" :label-width="80">
+                      <FormItem :label="$t('tw_control_approvalAndTask')">
+                        <i-switch
+                          v-model="editElement.controlSwitch"
+                          true-value="yes"
+                          false-value="no"
+                          :disabled="$parent.isCheck === 'Y'"
+                          @on-change="
+                            controlSwitchChange($event)
+                            paramsChanged()
+                          "
+                          size="default"
+                        />
+                      </FormItem>
+                    </Form>
+                    <FormItem
+                      :label="$t('tw_multiple')"
+                      v-if="['select', 'wecmdbEntity'].includes(editElement.elementType)"
+                    >
+                      <i-switch
+                        v-model="editElement.multiple"
+                        true-value="yes"
+                        false-value="no"
+                        :disabled="$parent.isCheck === 'Y'"
+                        @on-change="paramsChanged"
+                        size="default"
+                      />
+                    </FormItem>
+                    <FormItem :label="$t('editable')">
+                      <i-switch
+                        v-model="editElement.isEdit"
+                        true-value="yes"
+                        false-value="no"
+                        :disabled="$parent.isCheck === 'Y'"
+                        @on-change="paramsChanged"
+                        size="default"
+                      />
+                    </FormItem>
+                    <FormItem :label="$t('required')">
+                      <i-switch
+                        v-model="editElement.required"
+                        true-value="yes"
+                        false-value="no"
+                        :disabled="$parent.isCheck === 'Y' || editElement.controlSwitch === 'yes'"
+                        @on-change="paramsChanged"
+                        size="default"
+                      />
+                    </FormItem>
+                    <FormItem :label="$t('display')">
+                      <i-switch
+                        v-model="editElement.inDisplayName"
+                        true-value="yes"
+                        false-value="no"
+                        :disabled="$parent.isCheck === 'Y'"
+                        @on-change="paramsChanged"
+                        size="default"
+                      />
+                    </FormItem>
+                    <FormItem :label="$t('tw_default_empty')">
+                      <i-switch
+                        v-model="editElement.defaultClear"
+                        true-value="yes"
+                        false-value="no"
+                        :disabled="$parent.isCheck === 'Y'"
+                        @on-change="paramsChanged"
+                        size="default"
+                      />
+                    </FormItem>
+                  </div>
                   <FormItem :label="$t('defaults')">
                     <Input
                       v-model="editElement.defaultValue"
@@ -264,15 +317,6 @@
                       placeholder=""
                       @on-change="paramsChanged"
                     ></Input>
-                  </FormItem>
-                  <FormItem
-                    :label="$t('tw_multiple')"
-                    v-if="['select', 'wecmdbEntity'].includes(editElement.elementType)"
-                  >
-                    <RadioGroup v-model="editElement.multiple" @on-change="paramsChanged">
-                      <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
-                      <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
-                    </RadioGroup>
                   </FormItem>
                   <FormItem :label="$t('width')">
                     <Select v-model="editElement.width" @on-change="paramsChanged" :disabled="$parent.isCheck === 'Y'">
@@ -288,7 +332,16 @@
             <Panel name="2">
               {{ $t('extended_attributes') }}
               <div slot="content">
-                <Form :label-width="80">
+                <Form :label-width="80" label-position="left" :disabled="editElement.controlSwitch === 'yes'">
+                  <FormItem label="" :label-width="0">
+                    <HiddenCondition
+                      ref="hiddenCondition"
+                      :disabled="$parent.isCheck === 'Y'"
+                      :finalElement="finalElement"
+                      v-model="editElement.hiddenCondition"
+                      :editElement="editElement"
+                    ></HiddenCondition>
+                  </FormItem>
                   <FormItem :label="$t('validation_rules')">
                     <Input
                       v-model="editElement.regular"
@@ -297,14 +350,7 @@
                       @on-change="paramsChanged"
                     ></Input>
                   </FormItem>
-                </Form>
-              </div>
-            </Panel>
-            <Panel name="3">
-              {{ $t('data_item') }}
-              <div slot="content">
-                <Form :label-width="80">
-                  <FormItem :label="$t('constraints')">
+                  <FormItem :label="$t('data_item') + $t('constraints')">
                     <Select
                       v-model="editElement.isRefInside"
                       @on-change="paramsChanged"
@@ -319,8 +365,8 @@
             </Panel>
           </Collapse>
         </div>
-      </Col>
-    </Row>
+      </div>
+    </div>
     <Modal v-model="showSelectModel" :title="$t('tw_create_form')" :mask-closable="false">
       <div style="margin: 40px 0 60px 0">
         <Form :label-width="120">
@@ -354,7 +400,6 @@
       module="data-form"
       v-show="['custom'].includes(itemGroupType)"
     ></RequestFormDataCustom>
-
     <!-- 编排表单配置 -->
     <RequestFormDataWorkflow
       ref="requestFormDataWorkflowRef"
@@ -364,6 +409,17 @@
       module="data-form"
       v-show="['workflow', 'optional'].includes(itemGroupType)"
     ></RequestFormDataWorkflow>
+    <!--数据集弹框-->
+    <DataSourceConfig ref="dataSourceConfigRef" @setDataOptions="setDataOptions"></DataSourceConfig>
+    <!--组件库弹框-->
+    <ComponentLibraryModal
+      ref="library"
+      :checkedList="componentCheckedList"
+      :formType="finalElement[0].itemGroupName"
+      :groupType="nextGroupInfo.itemGroupType"
+      v-model="componentVisible"
+      @fetchList="$refs.libraryList.handleSearch()"
+    />
     <div class="footer">
       <div class="content">
         <Button @click="gotoForward" ghost type="primary" class="btn-footer-margin">{{ $t('forward') }}</Button>
@@ -379,171 +435,34 @@ import {
   getEntityByTemplateId,
   getRequestDataForm,
   deleteRequestGroupForm,
-  saveRequestGroupCustomForm
+  saveRequestGroupCustomForm,
+  cleanFilterData
 } from '@/api/server.js'
 import draggable from 'vuedraggable'
 import RequestFormDataCustom from './request-form-data-custom.vue'
 import RequestFormDataWorkflow from './request-form-data-workflow.vue'
+import CustomDraggable from './components/custom-draggable.vue'
+import DataSourceConfig from './data-source-config.vue'
+import ComponentLibraryModal from './components/component-library-modal.vue'
+import ComponentLibraryList from './components/component-library-list.vue'
+import HiddenCondition from './components/hidden-condition.vue'
+import { uniqueArr, deepClone, findFirstDuplicateIndex } from '@/pages/util'
 export default {
   name: 'form-select',
+  components: {
+    draggable,
+    RequestFormDataCustom,
+    RequestFormDataWorkflow,
+    CustomDraggable,
+    DataSourceConfig,
+    ComponentLibraryModal,
+    ComponentLibraryList,
+    HiddenCondition
+  },
   data () {
     return {
       isParmasChanged: false, // 参数变化标志位
       MODALHEIGHT: 200,
-      customElement: [
-        // 预制自定义表单项目
-        {
-          id: 1,
-          name: 'input',
-          title: 'Input',
-          elementType: 'input',
-          defaultValue: '',
-          defaultClear: 'no',
-          // tag: '',
-          itemGroup: '',
-          itemGroupName: '',
-          packageName: '',
-          entity: '',
-          width: 24,
-          dataOptions: '',
-          regular: '',
-          inDisplayName: 'yes',
-          isEdit: 'yes',
-          multiple: 'no',
-          selectList: [],
-          isRefInside: 'no',
-          required: 'no',
-          isView: 'yes',
-          isOutput: 'no',
-          sort: 0,
-          attrDefId: '',
-          attrDefName: '',
-          attrDefDataType: '',
-          refEntity: '',
-          refPackageName: ''
-        },
-        {
-          id: 3,
-          name: 'textarea',
-          title: 'Textarea',
-          elementType: 'textarea',
-          defaultClear: 'no',
-          defaultValue: '',
-          // tag: '',
-          itemGroup: '',
-          itemGroupName: '',
-          packageName: '',
-          entity: '',
-          width: 24,
-          dataOptions: '',
-          regular: '',
-          inDisplayName: 'yes',
-          isEdit: 'yes',
-          multiple: 'no',
-          selectList: [],
-          isRefInside: 'no',
-          required: 'no',
-          isView: 'yes',
-          isOutput: 'no',
-          sort: 0,
-          attrDefId: '',
-          attrDefName: '',
-          attrDefDataType: '',
-          refEntity: '',
-          refPackageName: ''
-        },
-        {
-          id: 2,
-          name: 'select',
-          title: 'Select',
-          elementType: 'select',
-          defaultValue: '',
-          defaultClear: 'no',
-          // tag: '',
-          itemGroup: '',
-          itemGroupName: '',
-          packageName: '',
-          entity: '',
-          width: 24,
-          dataOptions: '',
-          regular: '',
-          inDisplayName: 'yes',
-          isEdit: 'yes',
-          multiple: 'no',
-          selectList: [],
-          isRefInside: 'no',
-          required: 'no',
-          isView: 'yes',
-          isOutput: 'no',
-          sort: 0,
-          attrDefId: '',
-          attrDefName: '',
-          attrDefDataType: '',
-          refEntity: '',
-          refPackageName: ''
-        },
-        {
-          id: 5,
-          name: 'wecmdbEntity',
-          title: 'WecmdbEntity',
-          elementType: 'wecmdbEntity',
-          defaultValue: '',
-          defaultClear: 'no',
-          // tag: '',
-          itemGroup: '',
-          itemGroupName: '',
-          packageName: '',
-          entity: '',
-          width: 24,
-          dataOptions: '',
-          regular: '',
-          inDisplayName: 'yes',
-          isEdit: 'yes',
-          multiple: 'no',
-          selectList: [],
-          isRefInside: 'no',
-          required: 'no',
-          isView: 'yes',
-          isOutput: 'no',
-          sort: 0,
-          attrDefId: '',
-          attrDefName: '',
-          attrDefDataType: '',
-          refEntity: '',
-          refPackageName: ''
-        },
-        {
-          id: 6,
-          name: 'datePicker',
-          title: 'datePicker',
-          elementType: 'datePicker',
-          type: 'datetime',
-          defaultValue: '',
-          defaultClear: 'no',
-          // tag: '',
-          itemGroup: '',
-          itemGroupName: '',
-          packageName: '',
-          entity: '',
-          width: 24,
-          dataOptions: '',
-          regular: '',
-          inDisplayName: 'yes',
-          isEdit: 'yes',
-          multiple: 'no',
-          selectList: [],
-          isRefInside: 'no',
-          required: 'no',
-          isView: 'yes',
-          isOutput: 'no',
-          sort: 0,
-          attrDefId: '',
-          attrDefName: '',
-          attrDefDataType: '',
-          refEntity: '',
-          refPackageName: ''
-        }
-      ],
       dataFormInfo: {
         associationWorkflow: false,
         formTemplateId: '',
@@ -593,9 +512,11 @@ export default {
         sort: 0,
         title: '',
         width: 24,
-        dataOptions: '',
+        dataOptions: '[]',
         refEntity: '',
-        refPackageName: ''
+        refPackageName: '',
+        controlSwitch: 'no', // 控制审批/任务(下拉类型才有)
+        hiddenCondition: [] // 隐藏条件
       },
       allEntityList: [],
       groupStyle: {
@@ -616,7 +537,27 @@ export default {
         }
       },
       displayLastGroup: false, // 控制group显示，在新增时显示最后一个，其余显示当前值\
-      nextGroupInfo: {}
+      nextGroupInfo: {},
+      componentVisible: false, // 组件库弹窗
+      componentCheckedList: [], // 当前选中组件库数据
+      ruleForm: {
+        // 校验编码不能重复
+        name: [
+          {
+            required: true,
+            validator: (rule, value, callback) => {
+              const arr = this.finalElement[0].attrs.map(i => i.name)
+              const index = findFirstDuplicateIndex(arr)
+              if (index > -1 && this.finalElement[0].attrs[index].name === this.editElement.name) {
+                return callback(new Error(this.$t('tw_codeDuplicate_valid')))
+              } else {
+                callback()
+              }
+            },
+            trigger: 'change'
+          }
+        ]
+      }
     }
   },
   props: ['isCheck'],
@@ -638,10 +579,24 @@ export default {
         }
         return { background: color }
       }
+    },
+    // 数据集回显
+    getDataOptionsDisplay () {
+      const options = JSON.parse(this.editElement.dataOptions || '[]')
+      const labelArr = options.map(item => item.label)
+      return labelArr.join(',')
+    },
+    // 新增组件库按钮禁用
+    getAddComponentDisabled () {
+      return function (val) {
+        const checkedList = val.filter(item => item.checked) || []
+        return checkedList.length === 0
+      }
     }
   },
   mounted () {
-    this.MODALHEIGHT = document.body.scrollHeight - 400
+    const clientHeight = document.documentElement.clientHeight
+    this.MODALHEIGHT = clientHeight - this.$refs.maxheight.getBoundingClientRect().top - 90
   },
   methods: {
     async loadPage (requestTemplateId) {
@@ -669,6 +624,7 @@ export default {
           }
         }
       }
+      // 获取模型数据项下拉值
       this.getAllDataModels()
     },
     // 放弃编辑，重新加载group
@@ -687,7 +643,6 @@ export default {
       newItem.title = newItem.title + itemNo
       newItem.name = newItem.name + itemNo
       newItem.isActive = true
-      this.specialId = newItem.id
       this.paramsChanged()
       this.finalElement[0].attrs.forEach(item => {
         item.isActive = false
@@ -704,17 +659,70 @@ export default {
     paramsChanged () {
       this.isParmasChanged = true
     },
-    log (item) {
+    controlSwitchChange (val) {
+      // 关闭【控制审批任务】开关，清除数据
+      if (val === 'no') {
+        cleanFilterData(this.requestTemplateId, 'data')
+      } else if (val === 'yes') {
+        this.editElement.required = 'yes'
+      }
+    },
+    log () {
       this.finalElement.forEach(l => {
+        // 从组件库拖拽进来的表单组，数据需要额外处理
+        const cloneAttrs = deepClone(l.attrs || [])
+        var deleteIdx = ''
+        l.attrs.forEach((attr, idx) => {
+          for (let key of Object.keys(attr)) {
+            if (!isNaN(Number(key))) {
+              deleteIdx = idx
+              cloneAttrs.push(attr[key])
+            }
+          }
+        })
+        if (typeof deleteIdx === 'number') {
+          cloneAttrs.splice(deleteIdx, 1)
+        }
+        l.attrs = cloneAttrs
+        // 组件库拖拽有重复元素，给出提示，并过滤数据
+        const { arr, sameArr } = uniqueArr(deepClone(l.attrs))
+        l.attrs = arr
+        const titleArr = sameArr.map(i => i.title) || []
+        const message = titleArr.join(',')
+        if (message) {
+          this.$Notice.warning({
+            title: this.$t('warning'),
+            render: h => {
+              return (
+                <div style="word-break:break-all;">
+                  {this.$t('tw_formExistItems_pre')}
+                  <span style="color: red;">{message}</span>,{this.$t('tw_formExistItems_suf')}
+                </div>
+              )
+            }
+          })
+        } else {
+          this.$Notice.success({
+            title: this.$t('successful'),
+            desc: this.$t('successful')
+          })
+        }
+        // 处理拖拽进来的表单项
         l.attrs.forEach(attr => {
           attr.itemGroup = l.itemGroup
           attr.itemGroupName = l.itemGroupName
-          if (attr.id === this.specialId) {
+          if (attr.isActive) {
             this.editElement = attr
-            this.openPanel = '1'
+            if (this.editElement.multiple === 'Y') {
+              this.editElement.multiple = 'yes'
+            } else if (this.editElement.multiple === 'N') {
+              this.editElement.multiple = 'no'
+            }
+            this.openPanel = ['1', '2']
           }
         })
       })
+      this.paramsChanged()
     },
     // 查询可添加的组
     beforeSelectItemGroup () {
@@ -862,7 +870,7 @@ export default {
         title: this.$t('confirm_delete'),
         'z-index': 1000000,
         loading: true,
-        okText: this.$t('tw_request_confirm'),
+        okText: this.$t('tw_confirm'),
         onOk: async () => {
           this.$Modal.remove()
           const { statusCode } = await deleteRequestGroupForm(this.nextGroupInfo.itemGroupId, this.requestTemplateId)
@@ -915,10 +923,10 @@ export default {
         this.$refs.requestFormDataWorkflowRef.loadPage(params)
       }
     },
-    // 获取wecmdb下拉类型entity值
+    // 获取模型数据项下拉值
     async getAllDataModels () {
-      const { data, status } = await getAllDataModels()
-      if (status === 'OK') {
+      const { data, statusCode } = await getAllDataModels()
+      if (statusCode === 'OK') {
         this.allEntityList = []
         const sortData = data.map(_ => {
           return {
@@ -945,13 +953,50 @@ export default {
       })
       this.finalElement[itemIndex].attrs[eleIndex].isActive = true
       this.editElement = this.finalElement[itemIndex].attrs[eleIndex]
-      this.openPanel = '1'
+      if (this.editElement.multiple === 'Y') {
+        this.editElement.multiple = 'yes'
+      } else if (this.editElement.multiple === 'N') {
+        this.editElement.multiple = 'no'
+      }
+      this.openPanel = ['1', '2']
+      this.$refs.attrForm.validateField('name') // 编码重复校验
+      this.$refs.hiddenCondition.removeConditionsByAttrs(this.editElement.hiddenCondition) // 隐藏条件删除多余属性
     },
     // 删除自定义表单项
     removeForm (itemIndex, eleIndex, element) {
-      this.finalElement[itemIndex].attrs.splice(eleIndex, 1)
-      this.openPanel = ''
-      this.paramsChanged()
+      // 删除之前需确认该表单项是否是其它表单项的隐藏条件
+      const relateArr =
+        this.finalElement[0].attrs.filter(i => {
+          if (Array.isArray(i.hiddenCondition) && i.hiddenCondition.length > 0) {
+            const hasFlag = i.hiddenCondition.some(j => {
+              return j.name === element.name
+            })
+            return hasFlag
+          } else {
+            return false
+          }
+        }) || []
+      const relateTitleArr = relateArr.map(i => i.title)
+      const relateTitleStr = relateTitleArr.join('、')
+      if (relateTitleStr) {
+        this.$Modal.confirm({
+          title: this.$t('tw_confirm_delete'),
+          content: `该表单项是【${relateTitleStr}】的隐藏条件，删除表单将直接删除以上隐藏条件配置`,
+          'z-index': 1000000,
+          loading: true,
+          onOk: () => {
+            this.$Modal.remove()
+            this.finalElement[itemIndex].attrs.splice(eleIndex, 1)
+            this.openPanel = ''
+            this.paramsChanged()
+          },
+          onCancel: () => {}
+        })
+      } else {
+        this.finalElement[itemIndex].attrs.splice(eleIndex, 1)
+        this.openPanel = ''
+        this.paramsChanged()
+      }
     },
     // 保存自定义表单项
     async saveGroup (nextStep, elememt) {
@@ -1063,12 +1108,33 @@ export default {
     // 此处的select在选中再点时，会将选中值当做条件过滤，这里清空query
     clearQuery () {
       this.$refs.selectRef.query = ''
+    },
+    // #region 普通select数据集配置逻辑
+    dataOptionsMgmt () {
+      let newDataOptions = JSON.parse(this.editElement.dataOptions || '[]')
+      this.$refs.dataSourceConfigRef.loadPage(newDataOptions)
+    },
+    setDataOptions (options) {
+      if (options && options.length > 0) {
+        this.editElement.dataOptions = JSON.stringify(options)
+      } else {
+        this.editElement.dataOptions = ''
+      }
+    },
+    computedOption (element) {
+      let res = []
+      if (element.elementType === 'select') {
+        res = JSON.parse(element.dataOptions || '[]')
+      } else if (element.elementType === 'wecmdbEntity') {
+      }
+      return res
+    },
+    // 新增组件库
+    createComponentLibrary () {
+      this.componentVisible = true
+      this.componentCheckedList = this.finalElement[0].attrs.filter(i => i.checked === true)
+      this.$refs.library.init()
     }
-  },
-  components: {
-    draggable,
-    RequestFormDataCustom,
-    RequestFormDataWorkflow
   }
 }
 </script>
@@ -1113,6 +1179,24 @@ fieldset[disabled] .ivu-input {
 }
 </style>
 <style scoped lang="scss">
+.request-form-container {
+  display: flex;
+  .left {
+    width: 360px;
+    border: 1px solid #dcdee2;
+  }
+  .center {
+    flex: 1;
+    border: 1px solid #dcdee2;
+    padding: 0 16px;
+    width: 57%;
+    margin: 0 4px;
+  }
+  .right {
+    width: 360px;
+    border: 1px solid #dcdee2;
+  }
+}
 .active-zone {
   color: #338cf0;
 }
@@ -1120,7 +1204,9 @@ fieldset[disabled] .ivu-input {
   margin-bottom: 16px;
 }
 .list-group-item- {
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
   margin: 8px 0;
 }
 .title {
@@ -1145,13 +1231,14 @@ fieldset[disabled] .ivu-input {
   }
 }
 .custom-title {
-  width: 80px;
-  display: inline-block;
-  text-align: right;
+  width: 125px;
+  display: flex;
+  align-items: center;
+  text-align: left;
   word-wrap: break-word;
 }
 .custom-item {
-  width: calc(100% - 130px);
+  width: calc(100% - 190px);
   display: inline-block;
 }
 
@@ -1195,5 +1282,12 @@ fieldset[disabled] .ivu-input {
 .content {
   text-align: center; /* 居中内容 */
   padding: 10px; /* 可根据需求调整内容与边框的间距 */
+}
+
+.require {
+  color: #ed4014;
+  width: 6px;
+  display: flex;
+  align-items: center;
 }
 </style>

@@ -100,8 +100,10 @@ export default {
     } else {
       this.headers['Accept-Language'] = 'en-US,en;q=0.9,zh;q=0.8'
     }
+    // 表格列
     this.tableColumns = deepClone(this.submitAllColumn)
     this.tableColumns = this.tableColumns.filter(item => item.key !== 'rollbackDesc' && item.key !== 'action')
+    // 搜索条件
     this.searchOptions = this.submitSearch
     this.searchOptions.forEach(item => {
       // 请求状态设置默认值
@@ -278,8 +280,8 @@ export default {
     width: auto;
     height: 30px;
     position: absolute;
-    right: 30px;
-    top: 95px;
+    right: 22px;
+    top: 88px;
     font-size: 14px;
   }
 }

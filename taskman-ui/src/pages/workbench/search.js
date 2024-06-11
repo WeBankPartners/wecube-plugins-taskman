@@ -16,19 +16,20 @@ export default {
         status: {
           key: 'status',
           placeholder: this.$t('tw_request_status'),
-          component: 'select',
+          component: 'tag-select',
           multiple: true,
           list: [
-            { label: this.$t('status_pending'), value: 'Pending' },
-            { label: this.$t('status_inProgress'), value: 'InProgress' },
-            { label: this.$t('tw_inApproval'), value: 'InApproval' },
-            { label: this.$t('tw_request_confirm'), value: 'Confirm' },
-            { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)' },
-            { label: this.$t('status_termination'), value: 'Termination' },
-            { label: this.$t('status_complete'), value: 'Completed' },
-            { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)' },
-            { label: this.$t('status_faulted'), value: 'Faulted' },
-            { label: this.$t('status_draft'), value: 'Draft' }
+            { label: this.$t('status_draft'), value: 'Draft', color: '#808695' },
+            { label: this.$t('status_pending'), value: 'Pending', color: '#b886f8' },
+            { label: this.$t('tw_request_confirm'), value: 'Confirm', color: '#b886f8' },
+            { label: this.$t('tw_inApproval'), value: 'InApproval', color: '#1990ff' },
+            { label: this.$t('status_inProgress'), value: 'InProgress', color: '#1990ff' },
+            { label: this.$t('status_complete'), value: 'Completed', color: '#7ac756' },
+            { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)', color: '#ed4014' },
+            { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)', color: '#ed4014' },
+            { label: this.$t('tw_stop'), value: 'Stop', color: '#ed4014' },
+            { label: this.$t('status_faulted'), value: 'Faulted', color: '#e29836' },
+            { label: this.$t('status_termination'), value: 'Termination', color: '#e29836' }
           ]
         },
         createdBy: {
@@ -58,6 +59,12 @@ export default {
           multiple: true,
           component: 'select',
           list: []
+        },
+        requestRefId: {
+          key: 'requestRefId',
+          placeholder: this.$t('tw_ref_id'),
+          nullType: 'no',
+          component: 'null-input' // 支持空值搜索
         }
       },
       // 任务工作台
@@ -105,7 +112,8 @@ export default {
       this.baseSearch.createdBy,
       this.baseSearch.templateId,
       this.baseSearch.procDefName,
-      this.baseSearch.operatorObjType
+      this.baseSearch.operatorObjType,
+      this.baseSearch.requestRefId
     ]
 
     // 待处理-定版和请求确认
@@ -131,7 +139,8 @@ export default {
       this.baseSearch.createdBy,
       this.baseSearch.templateId,
       this.baseSearch.procDefName,
-      this.baseSearch.operatorObjType
+      this.baseSearch.operatorObjType,
+      this.baseSearch.requestRefId
     ]
 
     // 已处理-任务和审批
@@ -156,6 +165,7 @@ export default {
       this.baseSearch.templateId,
       this.baseSearch.procDefName,
       this.baseSearch.operatorObjType,
+      this.baseSearch.requestRefId,
       {
         key: 'taskCreatedTime',
         label: this.$t('tw_taskCreated'), // 任务创建
@@ -189,6 +199,7 @@ export default {
       this.baseSearch.templateId,
       this.baseSearch.procDefName,
       this.baseSearch.operatorObjType,
+      this.baseSearch.requestRefId,
       {
         key: 'taskCreatedTime',
         label: this.$t('tw_taskCreated'), // 任务创建
@@ -222,6 +233,7 @@ export default {
       this.baseSearch.templateId,
       this.baseSearch.procDefName,
       this.baseSearch.operatorObjType,
+      this.baseSearch.requestRefId,
       {
         key: 'expectTime',
         label: this.$t('tw_expect_time'),
@@ -248,6 +260,7 @@ export default {
       this.baseSearch.templateId,
       this.baseSearch.procDefName,
       this.baseSearch.operatorObjType,
+      this.baseSearch.requestRefId,
       {
         key: 'createdTime',
         label: this.$t('tw_created_time'),

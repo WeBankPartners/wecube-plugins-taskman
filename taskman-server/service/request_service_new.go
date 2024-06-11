@@ -178,11 +178,11 @@ func GetMyPendingCountByScene(param models.CountPlatformParam, scene int, user s
 func getPlatRequestSQL(where, sql string) string {
 	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,r.del_flag,rt.id as template_id,rt.name as template_name,rt.parent_id,"+
 		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,r.type as type,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.handler,r.created_time,r.updated_time,rt.proc_def_name,rt.proc_def_version,"+
-		"r.expect_time,r.revoke_flag,r.confirm_time as approval_time,rt.expire_day from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) ", where, sql)
+		"r.expect_time,r.revoke_flag,r.confirm_time as approval_time,rt.expire_day,r.ref_id as request_ref_id from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) ", where, sql)
 }
 
 func getPlatTaskSQL(where, sql string) string {
-	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,r.del_flag,rt.id as template_id,rt.name as template_name,rt.parent_id,r.proc_instance_id,r.operator_obj,rt.proc_def_id,r.type as type,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.created_time,r.updated_time,rt.proc_def_name,r.expect_time,r.revoke_flag,t.id as task_id,t.name as task_name,t.task_handle_role,t.task_created_time,t.task_approval_time as task_approval_time,t.updated_time as task_updated_time,t.status as task_status,t.expire_time as task_expect_time,t.task_handler as task_handler,t.task_handle_id,t.task_handle_created_time,t.task_handle_updated_time from (%s) t left join request r on t.request=r.id join request_template rt on r.request_template = rt.id) temp %s", sql, where)
+	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,r.del_flag,rt.id as template_id,rt.name as template_name,rt.parent_id,r.proc_instance_id,r.operator_obj,rt.proc_def_id,r.type as type,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.created_time,r.updated_time,rt.proc_def_name,r.expect_time,r.revoke_flag,t.id as task_id,t.name as task_name,t.task_handle_role,t.task_created_time,t.task_approval_time as task_approval_time,t.updated_time as task_updated_time,t.status as task_status,t.expire_time as task_expect_time,t.task_handler as task_handler,t.task_handle_id,t.task_handle_created_time,t.task_handle_updated_time,r.ref_id as request_ref_id from (%s) t left join request r on t.request=r.id join request_template rt on r.request_template = rt.id) temp %s", sql, where)
 }
 
 func pendingTaskSQL(queryTimeStart, queryTimeEnd string, templateType int, userRolesFilterSql string, userRolesFilterParam []interface{}, taskType models.TaskType) (sql string, queryParam []interface{}) {
@@ -386,6 +386,7 @@ func getRequestExportData(language string, rowsData []*models.PlatformDataObj) (
 			"创建人",
 			"创建人角色",
 			"请求提交时间",
+			"关联单ID",
 		}
 		days = "日"
 	} else {
@@ -406,6 +407,7 @@ func getRequestExportData(language string, rowsData []*models.PlatformDataObj) (
 			"Creator",
 			"Creator Role",
 			"Request Submission",
+			"Association ID",
 		}
 		days = "days"
 	}
@@ -431,6 +433,7 @@ func getRequestExportData(language string, rowsData []*models.PlatformDataObj) (
 			row.CreatedBy,
 			row.RoleDisplay,
 			row.ReportTime,
+			row.RequestRefId,
 		}
 	}
 	return
@@ -621,6 +624,8 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 						// 只处理自动退出&手动终止终止情况,需要发邮件
 						if newStatus == string(models.RequestStatusFaulted) || newStatus == string(models.RequestStatusTermination) {
 							go NotifyTaskWorkflowFailMail(platformDataObj.Name, platformDataObj.ProcDefName, newStatus, platformDataObj.CreatedBy, req.UserToken, language)
+							// 自动退出&手动终止,需要更新请求任务状态置为完成,不然工作台本人本组处理tab能读取到任务处理记录
+							actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,updated_time=? where request=? and status <> ?", Param: []interface{}{models.TaskStatusDone, time.Now().Format(models.DateTimeFormat), platformDataObj.Id, models.TaskStatusDone}})
 						}
 						actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?",
 							Param: []interface{}{newStatus, time.Now().Format(models.DateTimeFormat), platformDataObj.Id}})
@@ -705,6 +710,11 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 				platformDataObj.TaskHandleRoleDisplay = strings.Join(newRoleDisplayArr, ",")
 			} else {
 				platformDataObj.TaskHandleRoleDisplay = roleDisplayMap[platformDataObj.TaskHandleRole]
+			}
+			if platformDataObj.RequestRefId != "" {
+				requestTemp, _ := GetSimpleRequest(platformDataObj.RequestRefId)
+				platformDataObj.RequestRefName = requestTemp.Name
+				platformDataObj.RequestRefType = requestTemp.Type
 			}
 		}
 		if len(actions) > 0 {
@@ -905,6 +915,9 @@ func transCommonRequestToSQL(param models.CommonRequestParam) (where string) {
 	if param.Name != "" {
 		where = where + " and ( name like '%" + param.Name + "%') "
 	}
+	if param.Query != "" {
+		where = where + " and ( id like '%" + param.Query + "%' or name like '%" + param.Query + "%') "
+	}
 	if len(param.TemplateId) > 0 {
 		where = where + " and template_id in (" + getSQL(param.TemplateId) + ")"
 	}
@@ -955,6 +968,13 @@ func transCommonRequestToSQL(param models.CommonRequestParam) (where string) {
 	}
 	if param.TaskHandleUpdatedStartTime != "" && param.TaskHandleUpdatedEndTime != "" {
 		where = where + " and task_handle_updated_time >= '" + param.TaskHandleUpdatedStartTime + "' and task_handle_updated_time <= '" + param.TaskHandleUpdatedEndTime + "'"
+	}
+	if param.RequestRefId != "" {
+		if param.RequestRefId == models.WeCubeEmptySearch {
+			where = where + " and ( request_ref_id is null or request_ref_id = '')"
+		} else {
+			where = where + " and ( request_ref_id like '%" + param.RequestRefId + "%') "
+		}
 	}
 	return
 }
@@ -1388,9 +1408,10 @@ func getTaskProgress(role, userToken, language string, taskTemplateList []*model
 							taskHandle.Role = v
 						}
 						tempTaskHandleNodeList = append(tempTaskHandleNodeList, &models.TaskHandleNode{
-							Handler:     taskHandle.Handler,
-							Role:        taskHandle.Role,
-							HandlerType: taskHandle.HandlerType,
+							Handler:      taskHandle.Handler,
+							Role:         taskHandle.Role,
+							HandlerType:  taskHandle.HandlerType,
+							HandleResult: taskHandle.HandleResult,
 						})
 					}
 					requestProgress.TaskHandleList = tempTaskHandleNodeList
@@ -1477,7 +1498,7 @@ func getRequestForm(request *models.RequestTable, taskId, userToken, language st
 		var items []*models.FormItemTemplateTable
 		dao.X.SQL("select * from form_item_template where form_template in (select id from form_template  where request_template=? and"+
 			" request_form_type = ?) order by item_group,sort", request.RequestTemplate, models.RequestFormTypeMessage).Find(&items)
-		customForm.Title = items
+		customForm.Title = models.ConvertFormItemTemplateModelList2Dto(items, &models.FormTemplateTable{})
 	}
 	form.CustomForm = customForm
 
@@ -1494,6 +1515,12 @@ func getRequestForm(request *models.RequestTable, taskId, userToken, language st
 		form.OperatorObj = cacheObj.EntityName
 	}
 	form.RevokeBtn = calcShowRequestRevokeButton(request.Id, request.Status)
+	form.RefId = request.RefId
+	form.RefType = request.RefType
+	if form.RefId != "" {
+		requestTemp, _ := GetSimpleRequest(form.RefId)
+		form.RefName = requestTemp.Name
+	}
 	return
 }
 
@@ -1647,7 +1674,17 @@ func convertMap2Array(hashMap map[string]bool) (arr []string) {
 }
 
 func convertArray2Map(arr []string) map[string]bool {
-	hashMap := make(map[string]bool, 0)
+	hashMap := make(map[string]bool)
+	if len(arr) > 0 {
+		for _, str := range arr {
+			hashMap[str] = true
+		}
+	}
+	return hashMap
+}
+
+func convertInterfaceArray2Map(arr []interface{}) map[interface{}]bool {
+	hashMap := make(map[interface{}]bool)
 	if len(arr) > 0 {
 		for _, str := range arr {
 			hashMap[str] = true
@@ -1760,8 +1797,10 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 	if len(approvalActions) > 0 {
 		actions = append(actions, approvalActions...)
 	}
-	err = dao.Transaction(actions)
-	return
+	if err = dao.Transaction(actions); err != nil {
+		return
+	}
+	return s.AutoExecTaskHandle(request, userToken, language)
 }
 
 // CreateRequestApproval 创建请求审批, submitFlag 当前是否正在提交请求,如果是 taskList直接为空
@@ -1834,6 +1873,104 @@ func (s *RequestService) CreateRequestApproval(request models.RequestTable, curT
 	}
 	if len(requestTaskActions) > 0 {
 		actions = append(actions, requestTaskActions...)
+	}
+	return
+}
+
+// AutoExecTaskHandle 当请求模版信息表单配置了控制审批、任务操作就需要根据模版配置自动执行操作
+func (s *RequestService) AutoExecTaskHandle(request models.RequestTable, userToken, language string) (err error) {
+	var taskList []*models.TaskTable
+	var customForm models.CustomForm
+	var formItemDtoMap = make(map[string]*models.FormItemDto)
+	var formItemDtoTemp *models.FormItemDto
+	var formItemValue []interface{}
+	var ok, match bool
+	if taskList, err = GetTaskService().GetRequestAllDoingTask(request.Id); err != nil {
+		return
+	}
+	if len(taskList) == 0 {
+		return
+	}
+	// 自定义表单内容
+	if request.CustomFormCache == "" {
+		return
+	}
+	if err = json.Unmarshal([]byte(request.CustomFormCache), &customForm); err != nil {
+		log.Logger.Error("json Unmarshal", log.Error(err), log.String("CustomFormCache", request.CustomFormCache))
+		return
+	}
+	if len(customForm.Title) == 0 || len(customForm.Value) == 0 {
+		return
+	}
+	for _, formItemTemplate := range customForm.Title {
+		if v, ok := customForm.Value[formItemTemplate.Name]; ok {
+			formItemDtoMap[formItemTemplate.Name] = models.ConvertFormItemTemplateDtoAndFormItem2Dto(formItemTemplate, v)
+		}
+	}
+	for _, task := range taskList {
+		if task.Status == string(models.TaskStatusDone) {
+			continue
+		}
+		taskHandleTemplateList, err2 := s.taskHandleTemplateDao.QueryByTaskTemplate(task.TaskTemplate)
+		if err2 != nil {
+			return err2
+		}
+		if len(taskHandleTemplateList) > 0 {
+			for _, taskHandleTemplate := range taskHandleTemplateList {
+				if strings.TrimSpace(taskHandleTemplate.AssignRule) != "" {
+					assignRuleMap := map[string]interface{}{}
+					if err = json.Unmarshal([]byte(taskHandleTemplate.AssignRule), &assignRuleMap); err != nil {
+						log.Logger.Error("AutoExecTaskHandle AssignRule Unmarshal err", log.Error(err))
+						continue
+					}
+					if len(assignRuleMap) == 0 {
+						continue
+					}
+					for assignKey, assignValue := range assignRuleMap {
+						formItemValue = []interface{}{}
+						if formItemDtoTemp, ok = formItemDtoMap[assignKey]; !ok {
+							log.Logger.Error("formItemDtoMap is not match", log.String("assignKey", assignKey))
+							continue
+						}
+						// 多选,有一个匹配上即可
+						match = false
+						assignArr, ok1 := assignValue.([]interface{})
+						if !ok1 {
+							log.Logger.Error(" assignValue  value  is not array", log.JsonObj("assignValue", assignValue))
+							continue
+						}
+						if len(assignArr) == 0 {
+							continue
+						}
+						valArr, ok2 := formItemDtoTemp.Value.(string)
+						if ok2 {
+							formItemValue = append(formItemValue, valArr)
+						} else {
+							valArr, ok2 := formItemDtoTemp.Value.([]interface{})
+							if !ok2 {
+								log.Logger.Error(" form_item value  is not array", log.JsonObj("value", formItemDtoTemp.Value))
+								continue
+							}
+							formItemValue = append(formItemValue, valArr...)
+						}
+						assignMap := convertInterfaceArray2Map(assignArr)
+						for _, val := range formItemValue {
+							if assignMap[val] {
+								match = true
+								break
+							}
+						}
+						if !match {
+							// 设置当前处理处理自动通过
+							if err = s.TaskHandleAutoPass(request, task, taskHandleTemplate, userToken, language); err != nil {
+								return
+							}
+							break
+						}
+					}
+				}
+			}
+		}
 	}
 	return
 }
@@ -1978,6 +2115,94 @@ func (s *RequestService) CreateProcessTask(request models.RequestTable, task *mo
 		}
 		return
 	}
+	return
+}
+
+// TaskHandleAutoPass 审批任务处理人自动通过
+func (s *RequestService) TaskHandleAutoPass(request models.RequestTable, task *models.TaskTable, taskHandleTemplate *models.TaskHandleTemplateTable, userToken, language string) (err error) {
+	var actions []*dao.ExecAction
+	var taskHandleList []*models.TaskHandleTable
+	var curTaskHandle *models.TaskHandleTable
+	// 是否需要直接通过当前任务
+	var needPassCurTask = true
+	var taskResult = models.TaskHandleResultTypeApprove
+	var requestParam models.PluginTaskCreateResp
+	var callbackUrl string
+	if task.Type == string(models.TaskTypeImplement) {
+		taskResult = models.TaskHandleResultTypeComplete
+	}
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	if taskHandleList, err = s.taskHandleDao.QueryByTask(task.Id); err != nil {
+		return
+	}
+	for _, taskHandle := range taskHandleList {
+		if taskHandle.TaskHandleTemplate == taskHandleTemplate.Id {
+			curTaskHandle = taskHandle
+			// 当前处理人已处理,直接return
+			if taskHandle.HandleStatus == string(models.TaskHandleResultTypeComplete) {
+				log.Logger.Info("taskHandle:%s repeat doing", log.String("taskHandleId", taskHandle.Id))
+				return
+			}
+		} else if taskHandle.HandleStatus == string(models.TaskHandleResultTypeUncompleted) {
+			// 由于协同没有设置 过滤规则,所以除掉协同类型,其他taskHandle处理完,handleStatus = complete
+			needPassCurTask = false
+		}
+	}
+	if curTaskHandle != nil {
+		// 更新处理人
+		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status = ?,updated_time =? where id= ?", Param: []interface{}{models.TaskHandleResultTypeUnrelated, models.TaskHandleResultTypeComplete, nowTime, curTaskHandle.Id}})
+	}
+	if needPassCurTask {
+		// 更新任务到完成
+		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, taskResult, "system", nowTime, task.Id}})
+		if strings.TrimSpace(task.ProcDefId) != "" {
+			// 回调编排任务,自动通过,需要回调编排,编排选项为空,编排应该会stop,由人工去选择编排的判断
+			if requestParam, callbackUrl, err = getApproveCallbackParamNew(task.Id); err != nil {
+				return
+			}
+			requestBytes, _ := json.Marshal(requestParam)
+			if err = callbackWorkflow(requestBytes, callbackUrl, userToken); err != nil {
+				return
+			}
+		}
+	}
+	if len(actions) > 0 {
+		if err = dao.Transaction(actions); err != nil {
+			return
+		}
+		// 通过当前任务节点,需要继续创建下一个任务,如果是编排任务,需要由编排回调触发走后续流程
+		if needPassCurTask && strings.TrimSpace(task.ProcDefId) == "" {
+			actions = []*dao.ExecAction{}
+			taskSort := GetTaskService().GenerateTaskOrderByRequestId(request.Id)
+			if actions, err = s.CreateRequestApproval(request, "", userToken, language, taskSort, false); err != nil {
+				return
+			}
+			if err = dao.Transaction(actions); err != nil {
+				return
+			}
+			return GetRequestService().AutoExecTaskHandle(request, userToken, language)
+		}
+	}
+	return
+}
+
+// Association 关联单
+func (s *RequestService) Association(param models.RequestAssociationParam) (pageInfo models.PageInfo, rowsData []*models.SimpleRequestDto, err error) {
+	var sql = "select * from request where del_flag = 0  and status <> 'Draft'"
+	if param.Query != "" {
+		sql = sql + " and ( id like '%" + param.Query + "%' or name like '%" + param.Query + "%') "
+	}
+	if param.Action != 0 {
+		sql = sql + fmt.Sprintf(" and type = %d", param.Action)
+	}
+	if param.ReportStartTime != "" && param.ReportEndTime != "" {
+		sql = sql + " and report_time >= '" + param.ReportStartTime + "' and report_time <= '" + param.ReportEndTime + "'"
+	}
+	pageInfo.StartIndex = param.StartIndex
+	pageInfo.PageSize = param.PageSize
+	pageInfo.TotalRows = dao.QueryCount(sql)
+	pageSQL := sql + " order by report_time desc limit ?,? "
+	err = dao.X.SQL(pageSQL, param.StartIndex, param.PageSize).Find(&rowsData)
 	return
 }
 

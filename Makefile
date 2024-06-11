@@ -35,3 +35,7 @@ upload: package
 	docker exec $(container_id) mc cp /package/$(project_dir)-$(version).zip wecubeS3/wecube-plugin-package-bucket
 	docker rm -f $(container_id)
 	rm -rf $(project_dir)-$(version).zip
+
+build_taskman_server:
+	chmod +x ./build/*.sh
+	docker run --rm -v $(current_dir):/go/src/github.com/WeBankPartners/$(project_dir) --name build_$(project_dir) golang:1.19.1 /bin/bash /go/src/github.com/WeBankPartners/$(project_dir)/build/build-server.sh

@@ -23,75 +23,77 @@
         <div class="form">
           <Form :model="value" ref="form" label-position="left" :label-width="100">
             <Row type="flex" justify="start" :key="index">
-              <Col v-for="i in formOptions" :key="i.id" :span="i.width || 24">
-                <FormItem
-                  :label="i.title"
-                  :prop="i.name"
-                  :required="i.required === 'yes'"
-                  :rules="
-                    i.required === 'yes'
-                      ? [
-                          {
-                            required: true,
-                            message: `${i.title}${$t('can_not_be_empty')}`,
-                            trigger: ['change', 'blur']
-                          }
-                        ]
-                      : []
-                  "
-                >
-                  <!--输入框-->
-                  <Input
-                    v-if="i.elementType === 'input'"
-                    v-model="value[i.name]"
-                    :disabled="i.isEdit === 'no' || formDisable"
-                    style="width: calc(100% - 20px)"
-                  ></Input>
-                  <Input
-                    v-else-if="i.elementType === 'textarea'"
-                    v-model="value[i.name]"
-                    type="textarea"
-                    :disabled="i.isEdit === 'no' || formDisable"
-                    style="width: calc(100% - 20px)"
-                  ></Input>
-                  <LimitSelect
-                    v-if="i.elementType === 'select' || i.elementType === 'wecmdbEntity'"
-                    v-model="value[i.name]"
-                    :displayName="i.elementType === 'wecmdbEntity' ? 'displayName' : 'key_name'"
-                    :displayValue="i.elementType === 'wecmdbEntity' ? 'id' : 'guid'"
-                    :objectOption="!!i.entity || i.elementType === 'wecmdbEntity'"
-                    :options="value[i.name + 'Options']"
-                    :disabled="i.isEdit === 'no' || formDisable"
-                    :multiple="i.multiple === 'Y' || i.multiple === 'yes'"
-                    style="width: calc(100% - 20px)"
-                    @open-change="handleRefOpenChange(i, value, index)"
+              <template v-for="i in formOptions">
+                <Col v-if="!value[i.name + 'Hidden']" :key="i.id" :span="i.width || 24">
+                  <FormItem
+                    :key="i.id"
+                    :label="i.title"
+                    :prop="i.name"
+                    :required="i.required === 'yes'"
+                    :rules="
+                      i.required === 'yes'
+                        ? [
+                            {
+                              required: true,
+                              message: `${i.title}${$t('can_not_be_empty')}`,
+                              trigger: ['change', 'blur']
+                            }
+                          ]
+                        : []
+                    "
                   >
-                  </LimitSelect>
-                  <!--自定义分析类型-->
-                  <Input
-                    v-else-if="i.elementType === 'calculate'"
-                    :value="value[i.name]"
-                    type="textarea"
-                    :disabled="true"
-                    style="width: calc(100% - 20px)"
-                  ></Input>
-                  <!--日期时间类型-->
-                  <DatePicker
-                    v-else-if="i.elementType === 'datePicker'"
-                    :value="value[i.name]"
-                    @on-change="$event => handleTimeChange($event, value, i.name)"
-                    format="yyyy-MM-dd HH:mm:ss"
-                    :disabled="i.isEdit === 'no' || formDisable"
-                    type="datetime"
-                    style="width: calc(100% - 20px)"
-                  >
-                  </DatePicker>
-                </FormItem>
-              </Col>
+                    <!--输入框-->
+                    <Input
+                      v-if="i.elementType === 'input'"
+                      v-model.trim="value[i.name]"
+                      :disabled="i.isEdit === 'no' || formDisable"
+                      style="width: calc(100% - 20px)"
+                    ></Input>
+                    <Input
+                      v-else-if="i.elementType === 'textarea'"
+                      v-model.trim="value[i.name]"
+                      type="textarea"
+                      :disabled="i.isEdit === 'no' || formDisable"
+                      style="width: calc(100% - 20px)"
+                    ></Input>
+                    <LimitSelect
+                      v-if="i.elementType === 'select' || i.elementType === 'wecmdbEntity'"
+                      v-model="value[i.name]"
+                      :displayName="i.elementType === 'wecmdbEntity' ? 'displayName' : i.entity ? 'key_name' : 'label'"
+                      :displayValue="i.elementType === 'wecmdbEntity' ? 'id' : i.entity ? 'guid' : 'value'"
+                      :options="value[i.name + 'Options']"
+                      :disabled="i.isEdit === 'no' || formDisable"
+                      :multiple="i.multiple === 'Y' || i.multiple === 'yes'"
+                      style="width: calc(100% - 20px)"
+                      @open-change="handleRefOpenChange(i, value, index)"
+                    >
+                    </LimitSelect>
+                    <!--自定义分析类型-->
+                    <Input
+                      v-else-if="i.elementType === 'calculate'"
+                      :value="value[i.name]"
+                      type="textarea"
+                      :disabled="true"
+                      style="width: calc(100% - 20px)"
+                    ></Input>
+                    <!--日期时间类型-->
+                    <DatePicker
+                      v-else-if="i.elementType === 'datePicker'"
+                      :value="value[i.name]"
+                      @on-change="$event => handleTimeChange($event, value, i.name)"
+                      format="yyyy-MM-dd HH:mm:ss"
+                      :disabled="i.isEdit === 'no' || formDisable"
+                      type="datetime"
+                      style="width: calc(100% - 20px)"
+                    >
+                    </DatePicker>
+                  </FormItem>
+                </Col>
+              </template>
             </Row>
           </Form>
         </div>
-        <div v-if="!formDisable && tableData.length > 1" class="button">
+        <div v-if="!formDisable && tableData.length > 1 && isAdd" class="button">
           <Icon type="md-trash" color="#ed4014" size="24" @click="handleDeleteRow(index)" />
         </div>
       </div>
@@ -102,7 +104,7 @@
       <!--选择已有数据添加一行-->
       <Select
         ref="addRowSelect"
-        v-else-if="activeItem.itemGroupRule === 'exist'"
+        v-else-if="['exist', 'exist_empty'].includes(activeItem.itemGroupRule)"
         v-model="addRowSource"
         filterable
         clearable
@@ -128,10 +130,10 @@
 </template>
 
 <script>
+import LimitSelect from '@/pages/components/limit-select.vue'
 import { getRefOptions, getWeCmdbOptions, saveFormData, getExpressionData } from '@/api/server'
 import { debounce, deepClone } from '@/pages/util'
-import LimitSelect from '@/pages/components/limit-select.vue'
-import dayjs from 'dayjs'
+import { evaluateCondition } from '../evaluate'
 export default {
   components: {
     LimitSelect
@@ -164,7 +166,7 @@ export default {
     return {
       requestData: [],
       activeTab: '',
-      activeItem: {},
+      activeItem: {}, // 当前选中数据
       refKeys: [], // 引用类型字段集合select类型
       calculateKeys: [], // 自定义计算分析类型集合
       formOptions: [],
@@ -199,26 +201,62 @@ export default {
         if (val && val.length) {
           this.requestData = deepClone(val)
           this.requestData.forEach(item => {
+            if (!item.value) {
+              item.value = []
+            }
             // 无表单数据，不是选择已有数据添加一行，默认添加一行
-            if (item.value.length === 0 && this.autoAddRow && item.itemGroupRule !== 'exist') {
+            if (item.value.length === 0 && this.autoAddRow && !['exist', 'exist_empty'].includes(item.itemGroupRule)) {
               this.handleAddRow(item)
             }
-            // 备份编排类表单初始value
-            if (item.itemGroupRule === 'exist' && item.itemGroupType === 'workflow') {
+            // 备份编排类表单系统下发数据id集合
+            if (['exist', 'exist_empty'].includes(item.itemGroupRule) && item.itemGroupType === 'workflow') {
               const list = item.value || []
               const ids = list.map(item => {
                 return item.dataId
               })
               this.$set(this.worklfowDataIdsObj, item.formTemplateId, ids)
             }
+            // 选择已有数据添加一行设置为【默认不选】，第一次加载数据表单清空value，审批和任务表单不需要
+            if (item.itemGroupRule === 'exist_empty' && item.value && item.value.length && this.isAdd) {
+              const firstFlag = item.value.some(i => i.entityData && !i.entityData.hasOwnProperty('_id'))
+              if (firstFlag) {
+                item.value = []
+              }
+            }
           })
           this.activeTab = this.requestData[0].entity || this.requestData[0].itemGroup
           this.activeItem = this.requestData[0]
           this.initTableData()
+        } else {
+          this.requestData = []
+          this.activeTab = ''
+          this.activeItem = {}
+          this.formOptions = []
+          this.tableData = []
         }
       },
       deep: true,
       immediate: true
+    },
+    tableData: {
+      handler (val) {
+        if (val) {
+          val.forEach(item => {
+            // 表单隐藏逻辑
+            Object.keys(item).forEach(key => {
+              const find = this.formOptions.find(i => i.name === key) || {}
+              if (find.hiddenCondition && find.required === 'no') {
+                const conditions = find.hiddenCondition || []
+                item[key + 'Hidden'] = conditions.every(j => {
+                  return evaluateCondition(j, item[j.name])
+                })
+              }
+            })
+          })
+        }
+      },
+      immediate: true,
+      deep: true
     }
   },
   methods: {
@@ -311,14 +349,14 @@ export default {
       })
     },
     async getRefOptions (titleObj, row, index, first) {
-      // taskman模板管理配置的普通下拉类型(值用逗号拼接)
+      // 模板自定义下拉类型
       if (titleObj.elementType === 'select' && titleObj.entity === '') {
         if (!first) return
-        row[titleObj.name + 'Options'] = (titleObj.dataOptions && titleObj.dataOptions.split(',')) || []
+        row[titleObj.name + 'Options'] = JSON.parse(titleObj.dataOptions || '[]')
         this.$set(this.tableData, index, row)
         return
       }
-      // taskman模板管理配置的引用下拉类型
+      // cmdb模型数据项下拉类型
       if (titleObj.elementType === 'wecmdbEntity') {
         if (!first) return
         const [packageName, ciType] = (titleObj.dataOptions && titleObj.dataOptions.split(':')) || []
@@ -349,6 +387,10 @@ export default {
         }
         // 删除掉值为空的数据
         if (!cache[key] || (Array.isArray(cache[key]) && cache[key].length === 0)) {
+          delete cache[key]
+        }
+        // 数据表单【表单隐藏标识】放到了row里面，需要删除
+        if (key.indexOf('Hidden') > -1) {
           delete cache[key]
         }
       })
@@ -415,7 +457,7 @@ export default {
         const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
         this.handleAddRow(data)
         this.initTableData()
-      } else if (this.activeItem.itemGroupRule === 'exist') {
+      } else if (['exist', 'exist_empty'].includes(this.activeItem.itemGroupRule)) {
         if (this.addRowSource) {
           const source = this.addRowSourceOptions.find(i => i.id === this.addRowSource)
           const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
@@ -450,7 +492,7 @@ export default {
           entityData[item.name + 'Options'] = []
         }
       })
-      const idStr = new Date().getTime().toString()
+      const idStr = new Date().getTime().toString() + Math.floor(Math.random() * 1000)
       let obj = {
         dataId: source ? source.id || '' : '',
         displayName: '',
@@ -526,13 +568,14 @@ export default {
         this.addRowSourceOptions = []
       }
     },
-    // 时间选择器默认填充当前时分秒
     handleTimeChange (e, value, name) {
-      if (e && e.split(' ') && e.split(' ')[1] === '00:00:00') {
-        value[name] = `${e.split(' ')[0]} ${dayjs().format('HH:mm:ss')}`
-      } else {
-        value[name] = e
-      }
+      // 时间选择器默认填充当前时分秒
+      // if (e && e.split(' ') && e.split(' ')[1] === '00:00:00') {
+      //   value[name] = `${e.split(' ')[0]} ${dayjs().format('HH:mm:ss')}`
+      // } else {
+      //   value[name] = e
+      // }
+      value[name] = e
     }
   }
 }

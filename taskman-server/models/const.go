@@ -9,6 +9,9 @@ const (
 	AdminRole            = "SUPER_ADMIN"
 	UploadFileMaxSize    = 10485760
 	DefaultHttpErrorCode = "ERROR"
+	WeCubeEmptySearch    = "WeCube-empty-search" //查询空数据
+	Yes                  = "yes"
+	Y                    = "y"
 )
 
 // RequestStatus 定义请求状态
@@ -34,7 +37,8 @@ type RequestTemplateStatus string
 
 const (
 	RequestTemplateStatusCreated  RequestTemplateStatus = "created" // 创建
-	RequestTemplateStatusDisabled RequestTemplateStatus = "disable" // 禁用
+	RequestTemplateStatusDisabled RequestTemplateStatus = "disable" // 禁用,所有版本不可用
+	RequestTemplateStatusCancel   RequestTemplateStatus = "cancel"  // 作废,当前版本失效
 	RequestTemplateStatusPending  RequestTemplateStatus = "pending" // 待发布
 	RequestTemplateStatusConfirm  RequestTemplateStatus = "confirm" // 已发布
 )
@@ -69,9 +73,10 @@ const (
 type FormItemElementType string
 
 const (
-	FormItemElementTypeInput     FormItemElementType = "input"
-	FormItemElementTypeSelect    FormItemElementType = "select"
-	FormItemElementTypeCalculate FormItemElementType = "calculate" //计算类型
+	FormItemElementTypeInput        FormItemElementType = "input"
+	FormItemElementTypeSelect       FormItemElementType = "select"
+	FormItemElementTypeCalculate    FormItemElementType = "calculate" //计算类型
+	FormItemElementTypeWeCMDBEntity FormItemElementType = "wecmdbEntity"
 )
 
 // TaskType 任务模板、任务 类型
@@ -125,6 +130,7 @@ const (
 	TaskHandleResultTypeApprove     TaskHandleResultType = "approve"     // 同意
 	TaskHandleResultTypeDeny        TaskHandleResultType = "deny"        // 拒绝
 	TaskHandleResultTypeRedraw      TaskHandleResultType = "redraw"      // 打回
+	TaskHandleResultTypeUnrelated   TaskHandleResultType = "unrelated"   // 不相关
 	TaskHandleResultTypeComplete    TaskHandleResultType = "complete"    // 完成
 	TaskHandleResultTypeUncompleted TaskHandleResultType = "uncompleted" // 未完成
 )
@@ -192,4 +198,8 @@ const (
 	TaskExecStatusFail                 TaskExecStatus = 4 // 报错失败,被拒绝了
 	TaskExecStatusAutoExitStatus       TaskExecStatus = 5 // 自动退出
 	TaskExecStatusInternallyTerminated TaskExecStatus = 6 // 手动终止
+)
+
+const (
+	DefaultMessageFormItemGroup string = "requestInfo" //默认信息表单
 )

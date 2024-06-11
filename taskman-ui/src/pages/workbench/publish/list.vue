@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import BaseList from './components/base-list.vue'
+import BaseList from '../components/base-list.vue'
 export default {
   components: {
     BaseList

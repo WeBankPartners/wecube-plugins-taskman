@@ -1,7 +1,7 @@
 <template>
   <Row type="flex">
-    <Col span="24" style="padding: 0 20px">
-      <div style="border-bottom: 1px solid #dcdee2">
+    <Col span="24">
+      <div>
         <div @click="changTab('msgForm')" :class="activeTab === 'msgForm' ? 'tab-active' : 'tab'">
           1.{{ this.$t('tw_information_form') }}
         </div>
@@ -9,7 +9,7 @@
           2.{{ this.$t('tw_data_form') }}
         </div>
       </div>
-      <div style="margin-top: 16px;">
+      <div style="margin-top:8px;">
         <RequestFormMsg
           v-if="activeTab === 'msgForm'"
           @gotoStep="gotoStep"

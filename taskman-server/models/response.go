@@ -140,3 +140,8 @@ type RemoteLoginResp struct {
 	HttpResponseMeta
 	Data interface{} `json:"data"`
 }
+
+type ListRoleApplyResponse struct {
+	HttpResponseMeta
+	Data *RoleApply `json:"data"`
+}

@@ -98,6 +98,7 @@ type RequestConfirmParam struct {
 type CommonRequestParam struct {
 	Id                         string               `json:"id"`                          // ID
 	Name                       string               `json:"name"`                        // Name
+	Query                      string               `json:"query"`                       // Id and Name 通用查询
 	TemplateId                 []string             `json:"templateId"`                  // 模版id
 	Status                     []string             `json:"status"`                      // 请求状态 Pending InProgress(Faulted)
 	OperatorObj                string               `json:"operatorObj"`                 // 操作对象
@@ -124,6 +125,7 @@ type CommonRequestParam struct {
 	TaskExpectEndTime          string               `json:"taskExpectTimeEnd" `          // 任务期望结束时间
 	TaskHandleUpdatedStartTime string               `json:"taskHandleUpdatedTimeStart" ` // 处理节点更新开始时间
 	TaskHandleUpdatedEndTime   string               `json:"taskHandleUpdatedTimeEnd" `   // 处理结束时间
+	RequestRefId               string               `json:"requestRefId" `               // 请求RefId
 	StartIndex                 int                  `json:"startIndex"`
 	PageSize                   int                  `json:"pageSize"`
 	Sorting                    *QueryRequestSorting `json:"sorting"` // 排序字段
@@ -153,4 +155,28 @@ type CommonParam struct {
 	Roles    []string // 用户角色
 	Token    string   // 鉴权token
 	Language string   // 环境语言
+}
+
+type FormTemplateLibraryParam struct {
+	Name     string                        `json:"name"`
+	FormType string                        `json:"formType"`
+	Items    []*FormItemTemplateLibraryDto `json:"items"`
+}
+
+type QueryFormTemplateLibraryParam struct {
+	Name       string `json:"name"`      // 组件库名称
+	FormType   string `json:"formType"`  // 表单类型
+	Type       string `json:"type"`      // message 信息表单, data 数据表单全量查询
+	CreatedBy  string `json:"createdBy"` // 创建人
+	StartIndex int    `json:"startIndex"`
+	PageSize   int    `json:"pageSize"`
+}
+
+type RequestAssociationParam struct {
+	Query           string `json:"query"`  // 请求名称,模糊
+	Action          int    `json:"action"` // 类型
+	StartIndex      int    `json:"startIndex"`
+	PageSize        int    `json:"pageSize"`
+	ReportStartTime string `json:"reportTimeStart"` // 请求提交开始时间
+	ReportEndTime   string `json:"reportTimeEnd"`   // 请求提交结束时间
 }

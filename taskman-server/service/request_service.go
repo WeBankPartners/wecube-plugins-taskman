@@ -23,7 +23,9 @@ import (
 )
 
 type RequestService struct {
-	requestDao *dao.RequestDao
+	requestDao            *dao.RequestDao
+	taskHandleTemplateDao *dao.TaskHandleTemplateDao
+	taskHandleDao         *dao.TaskHandleDao
 }
 
 var (
@@ -366,6 +368,10 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 				value.EntityDataOp = "create"
 				value.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, guid.CreateGuid())
 				value.DisplayName = concatItemDisplayName(value.EntityData, nameList)
+			} else if value.EntityDataOp == "create" {
+				if !strings.HasPrefix(value.Id, "tmp") {
+					value.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, value.Id)
+				}
 			}
 		}
 	}
@@ -385,6 +391,25 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 		}
 	}
 	if len(param.ApprovalList) > 0 {
+		for _, approval := range param.ApprovalList {
+			if approval != nil && len(approval.HandleTemplates) > 0 {
+				for _, handleTemplate := range approval.HandleTemplates {
+					taskHandle, _ := GetRequestService().taskHandleTemplateDao.Get(handleTemplate.Id)
+					if taskHandle != nil {
+						if strings.TrimSpace(taskHandle.AssignRule) != "" {
+							if err = json.Unmarshal([]byte(taskHandle.AssignRule), &handleTemplate.AssignRule); err != nil {
+								return err
+							}
+						}
+						if strings.TrimSpace(taskHandle.FilterRule) != "" {
+							if err = json.Unmarshal([]byte(taskHandle.FilterRule), &handleTemplate.FilterRule); err != nil {
+								return err
+							}
+						}
+					}
+				}
+			}
+		}
 		approvalBytes, _ := json.Marshal(param.ApprovalList)
 		if approvalBytes != nil {
 			taskApprovalCache = string(approvalBytes)
@@ -395,8 +420,8 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 	if buildActionErr != nil {
 		return fmt.Errorf("build update request form data action fail,%s ", buildActionErr.Error())
 	}
-	actions = append(actions, &dao.ExecAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,name=?,description=?,expect_time=?,operator_obj=?,custom_form_cache=?,task_approval_cache=?" +
-		" where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.Name, param.Description, param.ExpectTime, param.EntityName, string(customFormCache), taskApprovalCache, requestId}})
+	actions = append(actions, &dao.ExecAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,name=?,description=?,expect_time=?,operator_obj=?,custom_form_cache=?,task_approval_cache=?,ref_id=?,ref_type=?" +
+		" where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.Name, param.Description, param.ExpectTime, param.EntityName, string(customFormCache), taskApprovalCache, param.RefId, param.RefType, requestId}})
 	return dao.Transaction(actions)
 }
 
@@ -439,7 +464,7 @@ func UpdateRequestFormItem(requestId, operator, now string, param *models.Reques
 				"updated_time) values (?,?,?,?,?,?,?,?)", Param: []interface{}{newFormId, requestId, v.FormTemplateId, valueObj.Id, operator, now, operator, now}})
 			tmpGuidList := guid.CreateGuidList(len(v.Title))
 			for i, title := range v.Title {
-				if title.Multiple == "Y" {
+				if strings.EqualFold(title.Multiple, models.Yes) || strings.EqualFold(title.Multiple, models.Y) {
 					if tmpV, b := valueObj.EntityData[title.Name]; b {
 						var tmpStringV []string
 						for _, interfaceV := range tmpV.([]interface{}) {
@@ -481,12 +506,17 @@ func UpdateRequestFormItemNew(requestId, operator, now string, param *models.Req
 		isColumnMultiMap := make(map[string]int)
 		for _, title := range tableForm.Title {
 			columnNameIdMap[title.Name] = title.Id
-			if title.Multiple == "Y" {
+			if strings.EqualFold(title.Multiple, models.Yes) || strings.EqualFold(title.Multiple, models.Y) {
 				isColumnMultiMap[title.Name] = 1
 			}
 		}
 		poolForms := itemGroupFormMap[tableForm.ItemGroup]
 		for _, valueObj := range tableForm.Value {
+			if valueObj.EntityDataOp == "create" && valueObj.Id != "" {
+				if !strings.HasPrefix(valueObj.Id, "tmp") {
+					valueObj.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, valueObj.Id)
+				}
+			}
 			if valueObj.Id == "" {
 				valueObj.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, guid.CreateGuid())
 			}
@@ -523,8 +553,8 @@ func UpdateRequestFormItemNew(requestId, operator, now string, param *models.Req
 						}
 						valueString = strings.Join(tmpV, ",")
 					} else {
-						err = fmt.Errorf("row:%s key:%s value:%v is not array,format to []interface{} fail", valueObj.Id, k, v)
-						return
+						// 多选非必填情况下,valueString 为空
+						valueString = ""
 					}
 				}
 				// 从数据池里尝试查找有没有已存在的数据(同一个itemGroup，同一个数据行下的同一属性)
@@ -576,7 +606,7 @@ func UpdateSingleRequestForm(requestId, operator, now string, param *models.Requ
 			"updated_time) values (?,?,?,?,?,?,?,?)", Param: []interface{}{newFormId, requestId, param.FormTemplateId, valueObj.Id, operator, now, operator, now}})
 		tmpGuidList := guid.CreateGuidList(len(param.Title))
 		for i, title := range param.Title {
-			if title.Multiple == "Y" {
+			if strings.EqualFold(title.Multiple, models.Yes) || strings.EqualFold(title.Multiple, models.Y) {
 				if tmpV, b := valueObj.EntityData[title.Name]; b {
 					var tmpStringV []string
 					for _, interfaceV := range tmpV.([]interface{}) {
@@ -707,6 +737,12 @@ func GetRequestPreData(requestId, entityDataId, userToken, language string) (res
 		return result, previewErr
 	}
 	if len(previewData.EntityTreeNodes) == 0 {
+		return
+	}
+	previewDataBytes, _ := json.Marshal(previewData)
+	_, err = dao.X.Exec("update request set preview_cache=? where id=?", string(previewDataBytes), requestId)
+	if err != nil {
+		err = fmt.Errorf("update request preview cache data fail,%s ", err.Error())
 		return
 	}
 	for _, entity := range result {
@@ -967,7 +1003,7 @@ func CheckRequest(request models.RequestTable, task *models.TaskTable, operator,
 	if requestTemplate == nil {
 		return
 	}
-	entityDepMap, err = AppendUselessEntity(requestTemplate.Id, userToken, language, &cacheData)
+	entityDepMap, _, err = AppendUselessEntity(requestTemplate.Id, userToken, language, &cacheData, request.Id)
 	if err != nil {
 		err = fmt.Errorf("try to append useless entity fail,%s ", err.Error())
 		return
@@ -1004,8 +1040,10 @@ func CheckRequest(request models.RequestTable, task *models.TaskTable, operator,
 	if len(approvalActions) > 0 {
 		actions = append(actions, approvalActions...)
 	}
-	err = dao.Transaction(actions)
-	return
+	if err = dao.Transaction(actions); err != nil {
+		return
+	}
+	return GetRequestService().AutoExecTaskHandle(request, userToken, language)
 }
 
 func StartRequest(requestId, operator, userToken, language string, cacheData models.RequestCacheData) (result *models.StartInstanceResultData, err error) {
@@ -1016,14 +1054,14 @@ func StartRequest(requestId, operator, userToken, language string, cacheData mod
 	}
 	cacheData.ProcDefId = requestTemplateTable[0].ProcDefId
 	cacheData.ProcDefKey = requestTemplateTable[0].ProcDefKey
-	entityDepMap, tmpErr := AppendUselessEntity(requestTemplateTable[0].Id, userToken, language, &cacheData)
+	entityDepMap, preData, tmpErr := AppendUselessEntity(requestTemplateTable[0].Id, userToken, language, &cacheData, requestId)
 	if tmpErr != nil {
 		return result, fmt.Errorf("try to append useless entity fail,%s ", tmpErr.Error())
 	}
 	fillBindingWithRequestData(requestId, userToken, language, &cacheData, entityDepMap)
 	cacheBytes, _ := json.Marshal(cacheData)
 	log.Logger.Info("cacheByte", log.String("cacheBytes", string(cacheBytes)))
-	startParam := BuildRequestProcessData(cacheData)
+	startParam := BuildRequestProcessData(cacheData, preData)
 	result, err = GetProcDefService().StartProcDefInstances(startParam, userToken, language)
 	if err != nil {
 		return
@@ -1059,13 +1097,13 @@ func StartRequestNew(request models.RequestTable, userToken, language string, ca
 	}
 	cacheData.ProcDefId = requestTemplateTable[0].ProcDefId
 	cacheData.ProcDefKey = requestTemplateTable[0].ProcDefKey
-	entityDepMap, tmpErr := AppendUselessEntity(requestTemplateTable[0].Id, userToken, language, &cacheData)
+	entityDepMap, preData, tmpErr := AppendUselessEntity(requestTemplateTable[0].Id, userToken, language, &cacheData, request.Id)
 	if tmpErr != nil {
 		err = fmt.Errorf("try to append useless entity fail,%s ", tmpErr.Error())
 		return
 	}
 	fillBindingWithRequestData(request.Id, userToken, language, &cacheData, entityDepMap)
-	startParam := BuildRequestProcessData(cacheData)
+	startParam := BuildRequestProcessData(cacheData, preData)
 	log.Logger.Debug("start proc instance", log.JsonObj("startParam", startParam))
 	result, err = GetProcDefService().StartProcDefInstances(startParam, userToken, language)
 	if err != nil {
@@ -1527,6 +1565,19 @@ func GetRequestPreBindData(request models.RequestTable, requestTemplate *models.
 		}
 		result.TaskNodeBindInfos = append(result.TaskNodeBindInfos, &tmpNodeBindInfo)
 	}
+	if result.RootEntityValue.Oid == "" {
+		for _, taskNode := range result.TaskNodeBindInfos {
+			for _, nodeEntity := range taskNode.BoundEntityValues {
+				if nodeEntity.EntityDataId == dataCache.RootEntityId {
+					result.RootEntityValue = *nodeEntity
+					break
+				}
+			}
+			if result.RootEntityValue.Oid != "" {
+				break
+			}
+		}
+	}
 	return
 }
 
@@ -1538,15 +1589,17 @@ func buildEntityValueAttrData(titles []*models.FormItemTemplateDto, entityData m
 	}
 	for k, v := range entityData {
 		if vv, b := titleMap[k]; b {
-			if vv.Multiple == "Y" {
+			if strings.EqualFold(vv.Multiple, models.Yes) || strings.EqualFold(vv.Multiple, models.Y) {
 				var tmpV []string
-				for _, interfaceV := range v.([]interface{}) {
-					tmpV = append(tmpV, fmt.Sprintf("%s", interfaceV))
+				if newV, ok := v.([]interface{}); ok {
+					for _, interfaceV := range newV {
+						tmpV = append(tmpV, fmt.Sprintf("%s", interfaceV))
+					}
+					result = append(result, &models.RequestCacheEntityAttrValue{AttrDefId: vv.AttrDefId, AttrName: k, DataType: vv.AttrDefDataType, DataValue: strings.Join(tmpV, ",")})
+					continue
 				}
-				result = append(result, &models.RequestCacheEntityAttrValue{AttrDefId: vv.AttrDefId, AttrName: k, DataType: vv.AttrDefDataType, DataValue: strings.Join(tmpV, ",")})
-			} else {
-				result = append(result, &models.RequestCacheEntityAttrValue{AttrDefId: vv.AttrDefId, AttrName: k, DataType: vv.AttrDefDataType, DataValue: v})
 			}
+			result = append(result, &models.RequestCacheEntityAttrValue{AttrDefId: vv.AttrDefId, AttrName: k, DataType: vv.AttrDefDataType, DataValue: v})
 		}
 	}
 	return
@@ -1659,21 +1712,23 @@ func getAttrCat(catId, userToken string) (result []*models.EntityDataObj, err er
 	return
 }
 
-func BuildRequestProcessData(input models.RequestCacheData) (result models.RequestProcessData) {
+func BuildRequestProcessData(input models.RequestCacheData, preData *models.EntityTreeData) (result models.RequestProcessData) {
 	result.ProcDefId = input.ProcDefId
 	result.ProcDefKey = input.ProcDefKey
 	result.RootEntityOid = input.RootEntityValue.Oid
 	result.Entities = []*models.RequestCacheEntityValue{}
 	result.Bindings = []*models.RequestProcessTaskNodeBindObj{}
 	entityExistMap := make(map[string]int)
-	for _, node := range input.TaskNodeBindInfos {
-		for _, entity := range node.BoundEntityValues {
-			if _, b := entityExistMap[entity.Oid]; !b {
-				result.Entities = append(result.Entities, entity)
-				entityExistMap[entity.Oid] = 1
-			}
-			if node.NodeId != "" {
-				result.Bindings = append(result.Bindings, &models.RequestProcessTaskNodeBindObj{Oid: entity.Oid, NodeId: node.NodeId, NodeDefId: node.NodeDefId, EntityDataId: entity.EntityDataId, BindFlag: entity.BindFlag})
+	if len(input.TaskNodeBindInfos) > 0 {
+		for _, node := range input.TaskNodeBindInfos {
+			for _, entity := range node.BoundEntityValues {
+				if _, b := entityExistMap[entity.Oid]; !b {
+					result.Entities = append(result.Entities, entity)
+					entityExistMap[entity.Oid] = 1
+				}
+				if node.NodeId != "" {
+					result.Bindings = append(result.Bindings, &models.RequestProcessTaskNodeBindObj{Oid: entity.Oid, NodeId: node.NodeId, NodeDefId: node.NodeDefId, EntityDataId: entity.EntityDataId, BindFlag: entity.BindFlag})
+				}
 			}
 		}
 	}
@@ -1684,13 +1739,28 @@ func BuildRequestProcessData(input models.RequestCacheData) (result models.Reque
 		tmpEntityValue := models.RequestCacheEntityValue{Oid: result.RootEntityOid, PackageName: "pseudo", EntityName: "pseudo", BindFlag: "N"}
 		result.Entities = append(result.Entities, &tmpEntityValue)
 	}
+	if preData != nil && len(preData.EntityTreeNodes) > 0 {
+		for _, preEntity := range preData.EntityTreeNodes {
+			existFlag := false
+			for _, entity := range result.Entities {
+				if entity.Oid == preEntity.Id {
+					existFlag = true
+					break
+				}
+			}
+			if !existFlag {
+				tmpEntity := models.RequestCacheEntityValue{Oid: preEntity.Id, PackageName: preEntity.PackageName, EntityName: preEntity.EntityName, BindFlag: "N", EntityDataId: preEntity.DataId, EntityDisplayName: preEntity.DisplayName, FullEntityDataId: preEntity.FullDataId, PreviousOids: preEntity.PreviousIds, SucceedingOids: preEntity.SucceedingIds}
+				result.Entities = append(result.Entities, &tmpEntity)
+			}
+		}
+	}
 	return result
 }
 
-func AppendUselessEntity(requestTemplateId, userToken, language string, cacheData *models.RequestCacheData) (entityDepMap map[string][]string, err error) {
+func AppendUselessEntity(requestTemplateId, userToken, language string, cacheData *models.RequestCacheData, requestId string) (entityDepMap map[string][]string, preData *models.EntityTreeData, err error) {
 	entityDepMap = make(map[string][]string)
 	if cacheData.RootEntityValue.Oid == "" || strings.HasPrefix(cacheData.RootEntityValue.Oid, "tmp") {
-		return entityDepMap, nil
+		return entityDepMap, preData, nil
 	}
 	// get core preview data list
 	rootDataId := cacheData.RootEntityValue.Oid
@@ -1701,9 +1771,16 @@ func AppendUselessEntity(requestTemplateId, userToken, language string, cacheDat
 		err = fmt.Errorf("preview root data id can not empty")
 		return
 	}
-	preData, preErr := ProcessDataPreview(requestTemplateId, rootDataId, userToken, language)
-	if preErr != nil {
-		return entityDepMap, fmt.Errorf("try to get process preview data fail,%s ", preErr.Error())
+	preData, err = getRequestPreviewCache(requestId)
+	if err != nil {
+		return
+	}
+	if preData == nil {
+		preData, err = ProcessDataPreview(requestTemplateId, rootDataId, userToken, language)
+		if err != nil {
+			err = fmt.Errorf("try to get process preview data fail,%s ", err.Error())
+			return
+		}
 	}
 	// get binding entity data
 	var entityList []*models.RequestCacheEntityValue
@@ -1736,7 +1813,7 @@ func AppendUselessEntity(requestTemplateId, userToken, language string, cacheDat
 	}
 	// preEntityList -> in preData but no int boundValues
 	if len(preEntityList) == 0 {
-		return entityDepMap, nil
+		return entityDepMap, preData, nil
 	}
 	dependEntityMap := make(map[string]*models.RequestCacheEntityAttrValue)
 	log.Logger.Info("getDependEntity", log.StringList("rootSucceeding", rootSucceeding), log.Int("preLen", len(preEntityList)), log.Int("entityLen", len(entityList)))
@@ -1760,7 +1837,7 @@ func AppendUselessEntity(requestTemplateId, userToken, language string, cacheDat
 		}
 		cacheData.TaskNodeBindInfos = append(cacheData.TaskNodeBindInfos, &newNode)
 	}
-	return entityDepMap, nil
+	return entityDepMap, preData, nil
 }
 
 func getDependEntity(succeeding []string, parent models.RequestCacheEntityAttrValue, preEntityList []*models.EntityTreeObj, entityList []*models.RequestCacheEntityValue, dependEntityMap map[string]*models.RequestCacheEntityAttrValue) {
@@ -1864,10 +1941,10 @@ func CopyRequest(requestId, createdBy string) (result models.RequestTable, err e
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	result.Id = newRequestId()
 	requestInsertAction := dao.ExecAction{Sql: "insert into request(id,name,request_template,reporter,emergency,report_role,status," +
-		"cache,expire_time,expect_time,handler,created_by,created_time,updated_by,updated_time,parent,type,role) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+		"cache,expire_time,expect_time,handler,created_by,created_time,updated_by,updated_time,parent,type,role,ref_id,ref_type) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
 	requestInsertAction.Param = []interface{}{result.Id, parentRequest.Name, parentRequest.RequestTemplate, createdBy, parentRequest.Emergency,
 		parentRequest.ReportRole, "Draft", parentRequest.Cache, "", parentRequest.ExpectTime, parentRequest.Handler, createdBy, nowTime, createdBy,
-		nowTime, parentRequest.Id, parentRequest.Type, parentRequest.Role}
+		nowTime, parentRequest.Id, parentRequest.Type, parentRequest.Role, parentRequest.RefId, parentRequest.RefType}
 	actions = append(actions, &requestInsertAction)
 	// copy attach file
 	var attachFileRows []*models.AttachFileTable
@@ -2024,6 +2101,19 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		curTaskHandleForHistory := &models.TaskHandleForHistory{
 			TaskHandleTable: taskHandle,
 			AttachFiles:     attachFiles,
+			FilterRule:      make(map[string]interface{}),
+		}
+		if strings.TrimSpace(taskHandle.TaskHandleTemplate) != "" {
+			taskHandleTemplate := models.TaskHandleTemplateTable{}
+			if _, err = dao.X.SQL("select * from task_handle_template where id = ? ", taskHandle.TaskHandleTemplate).Get(&taskHandleTemplate); err != nil {
+				return
+			}
+			if strings.TrimSpace(taskHandleTemplate.FilterRule) != "" {
+				if err = json.Unmarshal([]byte(taskHandleTemplate.FilterRule), &curTaskHandleForHistory.FilterRule); err != nil {
+					log.Logger.Error("GetRequestHistory json Unmarshal err", log.Error(err))
+					return
+				}
+			}
 		}
 		taskIdMapHandle[taskHandle.Task] = append(taskIdMapHandle[taskHandle.Task], curTaskHandleForHistory)
 	}
@@ -2031,6 +2121,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 	uncompletedTasks := make([]string, 0)
 	taskForHistoryList := make([]*models.TaskForHistory, 0, len(tasks))
 	for _, task := range tasks {
+		filterFlag := false
 		if task.ConfirmResult == models.TaskConfirmResultUncompleted {
 			uncompletedTasks = append(uncompletedTasks, task.Name)
 		}
@@ -2050,6 +2141,16 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		var handleMode string
 		if templateInfo, isExisted := taskTmplIdMapInfo[task.TaskTemplate]; isExisted {
 			handleMode = templateInfo.HandleMode
+			var taskHandleTemplateList []*models.TaskHandleTemplateTable
+			if err = dao.X.SQL("select * from task_handle_template where task_template = ?", templateInfo.Id).Find(&taskHandleTemplateList); err != nil {
+				return
+			}
+			for _, taskHandleTemplate := range taskHandleTemplateList {
+				if strings.TrimSpace(taskHandleTemplate.FilterRule) != "" {
+					filterFlag = true
+					break
+				}
+			}
 		}
 
 		editable := false
@@ -2066,6 +2167,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 			HandleMode:     handleMode,
 			Editable:       editable,
 			FormData:       formData,
+			FilterFlag:     filterFlag,
 		}
 		if _, isExisted := taskIdMapHandle[task.Id]; isExisted {
 			taskHandleForHistoryList := taskIdMapHandle[task.Id]
@@ -2077,6 +2179,11 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 					if taskHandle.HandleResult == "" && taskHandle.HandleStatus == string(models.TaskHandleResultTypeUncompleted) {
 						taskHandle.UpdatedTime = ""
 						taskHandle.CreatedTime = ""
+					}
+					// 兼容历史编排任务,判断条件选项赋值,操作重新赋值
+					if taskHandle.ProcDefResult == "" && strings.TrimSpace(task.ProcDefId) != "" {
+						taskHandle.ProcDefResult = taskHandle.HandleResult
+						taskHandle.HandleResult = taskHandle.HandleStatus
 					}
 				}
 			}
@@ -2092,7 +2199,30 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 
 		taskForHistoryList = append(taskForHistoryList, curTaskForHistory)
 	}
-	result.Task = taskForHistoryList
+	result.Task = filterFormRowByHandleTemplate(taskForHistoryList)
+	// 表单数据行 排序
+	if len(result.Task) > 0 {
+		for _, task := range result.Task {
+			if len(task.TaskHandleList) > 0 {
+				for _, taskHandle := range task.TaskHandleList {
+					if len(taskHandle.FormData) > 0 {
+						for _, formData := range taskHandle.FormData {
+							if len(formData.Value) > 0 {
+								sort.Sort(models.EntityTreeObjSort(formData.Value))
+							}
+						}
+					}
+				}
+			}
+			if len(task.FormData) > 0 {
+				for _, formData := range task.FormData {
+					if len(formData.Value) > 0 {
+						sort.Sort(models.EntityTreeObjSort(formData.Value))
+					}
+				}
+			}
+		}
+	}
 	result.Request.UncompletedTasks = uncompletedTasks
 	return
 }
@@ -2147,7 +2277,7 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 		for _, formTmpl := range formTemplates {
 			if formTmpl.ItemGroupType == string(models.FormItemGroupTypeWorkflow) {
 				actualFormTemplateIds = append(actualFormTemplateIds, formTmpl.Id)
-			} else {
+			} else if formTmpl.RefId != "" {
 				actualFormTemplateIds = append(actualFormTemplateIds, formTmpl.RefId)
 			}
 		}
@@ -2287,14 +2417,18 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 					isMulti := false
 					for _, tmpTitle := range formTable.Title {
 						if tmpTitle.Name == rowItem.Name {
-							if tmpTitle.Multiple == "Y" {
+							if strings.EqualFold(tmpTitle.Multiple, models.Yes) || strings.EqualFold(tmpTitle.Multiple, models.Y) {
 								isMulti = true
 								break
 							}
 						}
 					}
 					if isMulti {
-						tmpRowObj.EntityData[rowItem.Name] = strings.Split(rowItem.Value, ",")
+						if strings.TrimSpace(rowItem.Value) == "" {
+							tmpRowObj.EntityData[rowItem.Name] = []string{}
+						} else {
+							tmpRowObj.EntityData[rowItem.Name] = strings.Split(rowItem.Value, ",")
+						}
 					} else {
 						tmpRowObj.EntityData[rowItem.Name] = rowItem.Value
 					}
@@ -2442,4 +2576,206 @@ func SaveRequestForm(requestId, operator string, param *models.RequestPreDataTab
 		err = dao.Transaction(actions)
 	}
 	return
+}
+
+// 根据模版审批任务配置审批节点,filter_rule规则进行过滤
+func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*models.TaskForHistory {
+	var newTaskHistoryList []*models.TaskForHistory
+	var taskHandleList []*models.TaskHandleForHistory
+	var data = make(map[string]interface{})
+	var itemGroup string
+	var deleteRowIdMap = make(map[string]bool)
+	// 根据任务处理模版过滤表单内容
+	if len(taskHistoryList) > 0 {
+		for _, taskHistory := range taskHistoryList {
+			data = make(map[string]interface{})
+			taskHandleList = []*models.TaskHandleForHistory{}
+			if len(taskHistory.TaskHandleList) > 0 {
+				for _, taskHandle := range taskHistory.TaskHandleList {
+					itemGroup = ""
+					deleteRowIdMap = make(map[string]bool)
+					if len(taskHandle.FilterRule) > 0 && len(taskHistory.FormData) > 0 {
+						for _, formData := range taskHistory.FormData {
+							if len(formData.Title) > 0 && len(formData.Value) > 0 {
+								itemGroup = formData.Title[0].ItemGroup
+								for _, entity := range formData.Value {
+									if len(entity.EntityData) > 0 {
+										for key, value := range taskHandle.FilterRule {
+											if !strings.HasPrefix(key, itemGroup+"-") {
+												continue
+											}
+											name := strings.Replace(key, itemGroup+"-", "", 1)
+											if _, ok := entity.EntityData[name]; ok {
+												valueStr, ok := value.(string)
+												if ok {
+													if len(valueStr) == 0 {
+														continue
+													}
+													// 单选判断,不相等直接过滤
+													if valueStr != entity.EntityData[name] {
+														deleteRowIdMap[entity.Id] = true
+														break
+													}
+												} else {
+													// 多选判断,都不满足才过滤
+													exist := false
+													filterArr, ok1 := value.([]interface{})
+													if !ok1 {
+														log.Logger.Error("data value  is not array", log.JsonObj("data", data))
+														continue
+													}
+													if len(filterArr) == 0 {
+														continue
+													}
+													// entity.EntityData里面的value 可能是[]string也有可能是 a,b形式,取决是否展示,展示前面就会处理,这个地方要兼容两种格式
+													entityArr, ok2 := entity.EntityData[name].([]string)
+													if !ok2 {
+														str, ok3 := entity.EntityData[name].(string)
+														if !ok3 {
+															log.Logger.Error("entity.EntityData value is not string", log.JsonObj("data", entity.EntityData[name]))
+															continue
+														}
+														entityArr = strings.Split(str, ",")
+													}
+													filterMap := convertInterfaceArray2Map(filterArr)
+													for _, val := range entityArr {
+														if filterMap[val] {
+															exist = true
+															break
+														}
+													}
+													if !exist {
+														deleteRowIdMap[entity.Id] = true
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+						var formDataList []*models.RequestPreDataTableObj
+						for _, formData := range taskHistory.FormData {
+							var valueList []*models.EntityTreeObj
+							if len(formData.Value) > 0 {
+								for _, entity := range formData.Value {
+									if !deleteRowIdMap[entity.Id] {
+										valueList = append(valueList, entity)
+									}
+								}
+							}
+							newFormData := &models.RequestPreDataTableObj{
+								PackageName:    formData.PackageName,
+								Entity:         formData.Entity,
+								FormTemplateId: formData.FormTemplateId,
+								ItemGroup:      formData.ItemGroup,
+								ItemGroupName:  formData.ItemGroupName,
+								ItemGroupType:  formData.ItemGroupType,
+								ItemGroupRule:  formData.ItemGroupRule,
+								RefEntity:      formData.RefEntity,
+								SortLevel:      formData.SortLevel,
+								Title:          formData.Title,
+								Value:          valueList,
+							}
+							formDataList = append(formDataList, newFormData)
+						}
+						taskHandle.FormData = formDataDeepCopy(formDataList)
+					} else {
+						taskHandle.FormData = formDataDeepCopy(taskHistory.FormData)
+					}
+					// 当前任务已经执行完成,并行每个结点只能看到自己修改数据,而不是当前任务最新数据. 协同没有提交的,表单数据展示为空
+					if taskHistory.Status == string(models.TaskStatusDone) {
+						if taskHistory.HandleMode == string(models.TaskTemplateHandleModeAny) && strings.TrimSpace(taskHandle.HandleResult) == "" {
+							taskHandle.FormData = nil
+						} else if taskHistory.HandleMode == string(models.TaskTemplateHandleModeAll) && taskHistory.Request != "" {
+							// 并行审批,直接读取 task_handle表的 from_data数据
+							if strings.TrimSpace(taskHandle.HandleFormData) != "" {
+								err := json.Unmarshal([]byte(taskHandle.HandleFormData), &taskHandle.FormData)
+								if err != nil {
+									log.Logger.Error("json Unmarshal err:%+v", log.Error(err))
+								}
+							}
+						}
+					}
+					taskHandleList = append(taskHandleList, taskHandle)
+				}
+			}
+			newTaskHistoryList = append(newTaskHistoryList, &models.TaskForHistory{
+				TaskTable:      taskHistory.TaskTable,
+				Editable:       taskHistory.Editable,
+				TaskHandleList: taskHandleList,
+				NextOptions:    taskHistory.NextOptions,
+				AttachFiles:    taskHistory.AttachFiles,
+				HandleMode:     taskHistory.HandleMode,
+				FormData:       taskHistory.FormData,
+				FilterFlag:     taskHistory.FilterFlag,
+			})
+		}
+	}
+	return newTaskHistoryList
+}
+
+func getRequestPreviewCache(requestId string) (result *models.EntityTreeData, err error) {
+	var requestRows []*models.RequestTable
+	err = dao.X.SQL("select preview_cache from request where id=?", requestId).Find(&requestRows)
+	if err != nil {
+		err = fmt.Errorf("query request preview cache data fail,%s ", err.Error())
+		return
+	}
+	if len(requestRows) == 0 {
+		err = fmt.Errorf("can not find request row with id:%s ", requestId)
+		return
+	}
+	if requestRows[0].PreviewCache == "" {
+		return
+	}
+	result = &models.EntityTreeData{}
+	if err = json.Unmarshal([]byte(requestRows[0].PreviewCache), result); err != nil {
+		err = fmt.Errorf("json unmarshal request preview cache data fail,%s ", err.Error())
+	}
+	return
+}
+
+func formDataDeepCopy(dataList []*models.RequestPreDataTableObj) []*models.RequestPreDataTableObj {
+	var list []*models.RequestPreDataTableObj
+	var valueList []*models.EntityTreeObj
+	for _, data := range dataList {
+		valueList = []*models.EntityTreeObj{}
+		if len(data.Value) > 0 {
+			for _, obj := range data.Value {
+				entityData := make(map[string]interface{})
+				if len(obj.EntityData) > 0 {
+					for key, value := range obj.EntityData {
+						entityData[key] = value
+					}
+				}
+				valueList = append(valueList, &models.EntityTreeObj{
+					PackageName:   obj.PackageName,
+					EntityName:    obj.EntityName,
+					DataId:        obj.DataId,
+					DisplayName:   obj.DisplayName,
+					FullDataId:    obj.FullDataId,
+					Id:            obj.Id,
+					EntityData:    entityData,
+					PreviousIds:   obj.PreviousIds,
+					SucceedingIds: obj.SucceedingIds,
+					EntityDataOp:  obj.EntityDataOp,
+				})
+			}
+		}
+		list = append(list, &models.RequestPreDataTableObj{
+			PackageName:    data.PackageName,
+			Entity:         data.Entity,
+			FormTemplateId: data.FormTemplateId,
+			ItemGroup:      data.ItemGroup,
+			ItemGroupName:  data.ItemGroupName,
+			ItemGroupType:  data.ItemGroupType,
+			ItemGroupRule:  data.ItemGroupRule,
+			RefEntity:      data.RefEntity,
+			SortLevel:      data.SortLevel,
+			Title:          data.Title,
+			Value:          valueList,
+		})
+	}
+	return list
 }

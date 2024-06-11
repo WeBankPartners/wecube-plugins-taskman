@@ -2,6 +2,7 @@ import 'regenerator-runtime/runtime'
 import router from './router-plugin'
 import routerP from './router-plugin-p'
 import 'view-design/dist/styles/iview.css'
+import './style/index.scss'
 import './locale/i18n'
 import zhCN from '@/locale/i18n/zh-CN.json'
 import enUS from '@/locale/i18n/en-US.json'
@@ -9,9 +10,11 @@ import { ValidationProvider } from 'vee-validate'
 import './vee-validate-local-config'
 
 import Dashboard from '@/pages/workbench/index.vue'
+
 window.component('ValidationProvider', ValidationProvider)
 window.addHomepageComponent &&
   window.addHomepageComponent({
+    code: 'TASK_WORKBENCH',
     name: () => {
       return window.vm.$t('tw_workbench')
     },
@@ -123,7 +126,7 @@ const implicitRoute = {
   },
   'taskman/requestHistory': {
     parentBreadcrumb: { 'zh-CN': '系统', 'en-US': 'System' },
-    childBreadcrumb: { 'zh-CN': '请求审计', 'en-US': 'Request Audit' }
+    childBreadcrumb: { 'zh-CN': '请求报表', 'en-US': 'Request Report' }
   }
 }
 window.addImplicitRoute(implicitRoute)

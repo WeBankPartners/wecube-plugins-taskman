@@ -1,5 +1,10 @@
 package models
 
+import (
+	"encoding/json"
+	"strings"
+)
+
 type FormItemTemplateTable struct {
 	Id                string           `json:"id" xorm:"'id' pk" primary-key:"id"`
 	Name              string           `json:"name" xorm:"name"`
@@ -29,52 +34,65 @@ type FormItemTemplateTable struct {
 	IsRefInside       string           `json:"isRefInside" xorm:"is_ref_inside"`
 	Multiple          string           `json:"multiple" xorm:"multiple"`
 	DefaultClear      string           `json:"defaultClear" xorm:"default_clear"`
-	RefId             string           `json:"refId" xorm:"ref_id"`                         //复制数据表单ID,数据表单删除该表单项时,需要删除审批表单,任务表单对应数据项
-	RoutineExpression string           `json:"routineExpression" xorm:"routine_expression"` //计算表达式
+	RefId             string           `json:"refId" xorm:"ref_id"`                         // 复制数据表单ID,数据表单删除该表单项时,需要删除审批表单,任务表单对应数据项
+	RoutineExpression string           `json:"routineExpression" xorm:"routine_expression"` // 计算表达式
+	ControlSwitch     string           `json:"controlSwitch" xorm:"control_switch"`         // 控制审批/任务开关
+	FormItemLibrary   *string          `json:"formItemLibrary" xorm:"form_item_library"`    // 表单项组件库
+	HiddenCondition   string           `json:"hiddenCondition" xorm:"hidden_condition"`     // 隐藏条件
 	SelectList        []*EntityDataObj `json:"selectList" xorm:"-"`
 	Active            bool             `json:"active" xorm:"-"` // 是否选中状态
 }
 
 type FormItemTemplateDto struct {
-	Id                string           `json:"id"`
-	Name              string           `json:"name"`
-	Description       string           `json:"description"`
-	FormTemplate      string           `json:"itemGroupId"`
-	ItemGroup         string           `json:"itemGroup"`
-	ItemGroupType     string           `json:"itemGroupType"` //表单组类型:workflow 编排数据,optional 自选,custom 自定义
-	ItemGroupName     string           `json:"itemGroupName"`
-	ItemGroupSort     int              `json:"ItemGroupSort"` // item_group 排序
-	ItemGroupRule     string           `json:"itemGroupRule"` // item_group_rule 新增一行规则,new 输入新数据,exist 选择已有数据
-	DefaultValue      string           `json:"defaultValue"`
-	Sort              int              `json:"sort"`
-	PackageName       string           `json:"packageName"`
-	Entity            string           `json:"entity"`
-	AttrDefId         string           `json:"attrDefId"`
-	AttrDefName       string           `json:"attrDefName"`
-	AttrDefDataType   string           `json:"attrDefDataType"`
-	ElementType       string           `json:"elementType"`
-	Title             string           `json:"title"`
-	Width             int              `json:"width"`
-	RefPackageName    string           `json:"refPackageName"`
-	RefEntity         string           `json:"refEntity"`
-	DataOptions       string           `json:"dataOptions"`
-	Required          string           `json:"required"`
-	Regular           string           `json:"regular"`
-	IsEdit            string           `json:"isEdit"`
-	IsView            string           `json:"isView"`
-	IsOutput          string           `json:"isOutput"`
-	InDisplayName     string           `json:"inDisplayName"`
-	IsRefInside       string           `json:"isRefInside"`
-	Multiple          string           `json:"multiple"`
-	DefaultClear      string           `json:"defaultClear"`
-	RefId             string           `json:"copyId"`            //复制数据表单ID,数据表单删除该表单项时,需要删除审批表单,任务表单对应数据项
-	RoutineExpression string           `json:"routineExpression"` //计算表达式
-	SelectList        []*EntityDataObj `json:"selectList"`
-	Active            bool             `json:"active"` // 是否选中状态
+	Id                string                   `json:"id"`
+	Name              string                   `json:"name"`
+	Description       string                   `json:"description"`
+	FormTemplate      string                   `json:"itemGroupId"`
+	ItemGroup         string                   `json:"itemGroup"`
+	ItemGroupType     string                   `json:"itemGroupType"` //表单组类型:workflow 编排数据,optional 自选,custom 自定义
+	ItemGroupName     string                   `json:"itemGroupName"`
+	ItemGroupSort     int                      `json:"ItemGroupSort"` // item_group 排序
+	ItemGroupRule     string                   `json:"itemGroupRule"` // item_group_rule 新增一行规则,new 输入新数据,exist 选择已有数据
+	DefaultValue      string                   `json:"defaultValue"`
+	Sort              int                      `json:"sort"`
+	PackageName       string                   `json:"packageName"`
+	Entity            string                   `json:"entity"`
+	AttrDefId         string                   `json:"attrDefId"`
+	AttrDefName       string                   `json:"attrDefName"`
+	AttrDefDataType   string                   `json:"attrDefDataType"`
+	ElementType       string                   `json:"elementType"`
+	Title             string                   `json:"title"`
+	Width             int                      `json:"width"`
+	RefPackageName    string                   `json:"refPackageName"`
+	RefEntity         string                   `json:"refEntity"`
+	DataOptions       string                   `json:"dataOptions"`
+	Required          string                   `json:"required"`
+	Regular           string                   `json:"regular"`
+	IsEdit            string                   `json:"isEdit"`
+	IsView            string                   `json:"isView"`
+	IsOutput          string                   `json:"isOutput"`
+	InDisplayName     string                   `json:"inDisplayName"`
+	IsRefInside       string                   `json:"isRefInside"`
+	Multiple          string                   `json:"multiple"`
+	DefaultClear      string                   `json:"defaultClear"`
+	RefId             string                   `json:"copyId"`            // 复制数据表单ID,数据表单删除该表单项时,需要删除审批表单,任务表单对应数据项
+	RoutineExpression string                   `json:"routineExpression"` // 计算表达式
+	ControlSwitch     string                   `json:"controlSwitch"`     // 控制审批/任务开关
+	HiddenCondition   []*QueryRequestFilterObj `json:"hiddenCondition"`   // 隐藏条件
+	FormItemLibrary   *string                  `json:"formItemLibrary"`   // 表单项组件库
+	SelectList        []*EntityDataObj         `json:"selectList"`
+	Active            bool                     `json:"active"` // 是否选中状态
 }
 
 func (FormItemTemplateTable) TableName() string {
 	return "form_item_template"
+}
+
+type FormItemDto struct {
+	Name          string      `json:"name"`
+	ControlSwitch string      `json:"controlSwitch"` // 控制审批/任务开关
+	Multiple      string      `json:"multiple"`
+	Value         interface{} `json:"value"`
 }
 
 type FormItemTemplateDtoSort []*FormItemTemplateDto
@@ -101,13 +119,20 @@ func (s FormItemTemplateDtoSort) Less(i, j int) bool {
 }
 
 func ConvertFormItemTemplateDto2Model(dto *FormItemTemplateDto) *FormItemTemplateTable {
+	var hiddenCondition string
+	if len(dto.HiddenCondition) > 0 {
+		byteArr, _ := json.Marshal(dto.HiddenCondition)
+		if len(byteArr) > 0 {
+			hiddenCondition = string(byteArr)
+		}
+	}
 	return &FormItemTemplateTable{
 		Id:                dto.Id,
 		Name:              dto.Name,
 		Description:       dto.Description,
-		FormTemplate:      dto.FormTemplate,
 		ItemGroup:         dto.ItemGroup,
 		ItemGroupName:     dto.ItemGroupName,
+		FormTemplate:      dto.FormTemplate,
 		DefaultValue:      dto.DefaultValue,
 		Sort:              dto.Sort,
 		PackageName:       dto.PackageName,
@@ -131,9 +156,12 @@ func ConvertFormItemTemplateDto2Model(dto *FormItemTemplateDto) *FormItemTemplat
 		Multiple:          dto.Multiple,
 		DefaultClear:      dto.DefaultClear,
 		RefId:             dto.RefId,
+		RoutineExpression: dto.RoutineExpression,
+		ControlSwitch:     dto.ControlSwitch,
+		FormItemLibrary:   dto.FormItemLibrary,
+		HiddenCondition:   hiddenCondition,
 		SelectList:        dto.SelectList,
 		Active:            dto.Active,
-		RoutineExpression: dto.RoutineExpression,
 	}
 }
 
@@ -142,9 +170,10 @@ func ConvertFormItemTemplateModel2Dto(model *FormItemTemplateTable, itemGroup Fo
 		Id:                model.Id,
 		Name:              model.Name,
 		Description:       model.Description,
+		FormTemplate:      model.FormTemplate,
 		ItemGroup:         model.ItemGroup,
 		ItemGroupName:     model.ItemGroupName,
-		FormTemplate:      model.FormTemplate,
+		ItemGroupSort:     0,
 		DefaultValue:      model.DefaultValue,
 		Sort:              model.Sort,
 		PackageName:       model.PackageName,
@@ -168,13 +197,18 @@ func ConvertFormItemTemplateModel2Dto(model *FormItemTemplateTable, itemGroup Fo
 		Multiple:          model.Multiple,
 		DefaultClear:      model.DefaultClear,
 		RefId:             model.RefId,
+		RoutineExpression: model.RoutineExpression,
+		ControlSwitch:     model.ControlSwitch,
+		FormItemLibrary:   model.FormItemLibrary,
 		SelectList:        model.SelectList,
 		Active:            model.Active,
-		RoutineExpression: model.RoutineExpression,
 	}
 	dto.ItemGroupType = itemGroup.ItemGroupType
 	dto.ItemGroupRule = itemGroup.ItemGroupRule
 	dto.ItemGroupSort = itemGroup.ItemGroupSort
+	if strings.TrimSpace(model.HiddenCondition) != "" {
+		json.Unmarshal([]byte(model.HiddenCondition), &dto.HiddenCondition)
+	}
 	return dto
 }
 
@@ -184,4 +218,13 @@ func ConvertFormItemTemplateModelList2Dto(tableList []*FormItemTemplateTable, it
 		dtoList = append(dtoList, ConvertFormItemTemplateModel2Dto(model, *itemGroup))
 	}
 	return dtoList
+}
+
+func ConvertFormItemTemplateDtoAndFormItem2Dto(formItemTemplate *FormItemTemplateDto, value interface{}) *FormItemDto {
+	return &FormItemDto{
+		Name:          formItemTemplate.Name,
+		ControlSwitch: formItemTemplate.ControlSwitch,
+		Multiple:      formItemTemplate.Multiple,
+		Value:         value,
+	}
 }

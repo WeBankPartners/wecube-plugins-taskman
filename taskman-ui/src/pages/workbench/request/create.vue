@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import BaseCreate from '../publish/components/base-create.vue'
+import BaseCreate from '../components/base-create.vue'
 export default {
   components: {
     BaseCreate

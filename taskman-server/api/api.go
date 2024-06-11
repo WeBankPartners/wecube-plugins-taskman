@@ -66,6 +66,7 @@ func init() {
 		&handlerFuncObj{Url: "/request-template/enable/:id", Method: "POST", HandlerFunc: template.EnableRequestTemplate},
 		&handlerFuncObj{Url: "/request-form-template/:id", Method: "GET", HandlerFunc: form.GetRequestFormTemplate},
 		&handlerFuncObj{Url: "/request-template/:id/data-form-clean", Method: "POST", HandlerFunc: form.CleanDataForm},
+		&handlerFuncObj{Url: "/request-template/:id/filter-clean/:type", Method: "POST", HandlerFunc: form.CleanFilterCondition},
 		&handlerFuncObj{Url: "/request-form-template/:id", Method: "POST", HandlerFunc: form.UpdateRequestFormTemplate},
 		&handlerFuncObj{Url: "/request-form-template/:id/data-form", Method: "GET", HandlerFunc: form.GetDataFormTemplate},
 		&handlerFuncObj{Url: "/request-form-template/:id/form/:task-template-id", Method: "GET", HandlerFunc: form.GetFormTemplate},
@@ -76,6 +77,11 @@ func init() {
 		&handlerFuncObj{Url: "/form-template/item-group", Method: "DELETE", HandlerFunc: form.DeleteFormTemplateItemGroup},
 		&handlerFuncObj{Url: "/form-template/item-group", Method: "POST", HandlerFunc: form.UpdateFormTemplateItemGroup},
 		&handlerFuncObj{Url: "/form-template/item-group/sort", Method: "POST", HandlerFunc: form.SortFormTemplateItemGroup},
+
+		&handlerFuncObj{Url: "/form-template-library", Method: "POST", HandlerFunc: form.AddFormTemplateLibrary},
+		&handlerFuncObj{Url: "/form-template-library", Method: "DELETE", HandlerFunc: form.DeleteFormTemplateLibrary},
+		&handlerFuncObj{Url: "/form-template-library/query", Method: "POST", HandlerFunc: form.QueryFormTemplateLibrary},
+		&handlerFuncObj{Url: "/form-template-library/form-type", Method: "GET", HandlerFunc: form.QueryAllFormTemplateLibraryFormType},
 
 		&handlerFuncObj{Url: "/task-template/:requestTemplate", Method: "POST", HandlerFunc: task.CreateTaskTemplate},
 		&handlerFuncObj{Url: "/task-template/:requestTemplate/:id", Method: "PUT", HandlerFunc: task.UpdateTaskTemplate},
@@ -130,6 +136,7 @@ func init() {
 		&handlerFuncObj{Url: "/request/export", Method: "POST", HandlerFunc: request.Export},
 		&handlerFuncObj{Url: "/request/:requestId/task/list", Method: "GET", HandlerFunc: request.GetTaskList},
 		&handlerFuncObj{Url: "/request/confirm", Method: "POST", HandlerFunc: request.Confirm},
+		&handlerFuncObj{Url: "/request/association", Method: "POST", HandlerFunc: request.Association},
 
 		// For core 1:get task form template  2:create task
 		&handlerFuncObj{Url: "/plugin/task/create/meta", Method: "GET", HandlerFunc: task.GetTaskFormStruct},
@@ -169,6 +176,7 @@ func init() {
 		&handlerFuncObj{Url: "/auth/roles/:roleId/users/revoke", Method: "POST", HandlerFunc: requestNew.TransAuthRemoveUserFromRole},
 		&handlerFuncObj{Url: "/auth/roles/:roleId/users", Method: "POST", HandlerFunc: requestNew.TransAuthAddUserForRole},
 		&handlerFuncObj{Url: "/auth/roles/apply", Method: "PUT", HandlerFunc: requestNew.TransAuthHandleApplication},
+		&handlerFuncObj{Url: "/auth/roles/apply", Method: "DELETE", HandlerFunc: requestNew.TransApplyDelete},
 		&handlerFuncObj{Url: "/auth/roles/apply/byapplier", Method: "POST", HandlerFunc: requestNew.TransAuthGetApplyList},
 		&handlerFuncObj{Url: "/auth/users/register", Method: "POST", HandlerFunc: requestNew.TransAuthUserRegister},
 	)

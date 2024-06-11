@@ -55,7 +55,8 @@ export default {
               { label: this.$t('status_complete'), value: 'Completed', color: '#7ac756' },
               { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)', color: '#ed4014' },
               { label: this.$t('status_faulted'), value: 'Faulted', color: '#e29836' },
-              { label: this.$t('status_draft'), value: 'Draft', color: '#808695' }
+              { label: this.$t('status_draft'), value: 'Draft', color: '#808695' },
+              { label: this.$t('tw_stop'), value: 'Stop', color: '#ed4014' }
             ]
             const item = list.find(i => i.value === params.row.status)
             // 被退回的草稿添加标签
@@ -263,6 +264,19 @@ export default {
             return <span>{`${params.row.roleDisplay} / ${params.row.createdBy}`}</span>
           }
         },
+        requestRefId: {
+          title: this.$t('tw_ref'),
+          width: 230,
+          key: 'requestRefId',
+          render: (h, params) => {
+            const { requestRefName, requestRefId, requestRefType } = params.row
+            return (
+              <span>
+                {requestRefName ? `【${this.typeMap[requestRefType]}】${requestRefName}【${requestRefId}】` : '-'}
+              </span>
+            )
+          }
+        },
         action: {
           title: this.$t('t_action'),
           key: 'action',
@@ -392,7 +406,6 @@ export default {
                         onClick={() => {
                           this.hanldeLaunch(params.row)
                         }}
-                        style="margin-right:5px;"
                       >
                         <Icon type="ios-send" size="16"></Icon>
                       </Button>
@@ -409,6 +422,7 @@ export default {
                         onClick={() => {
                           this.handleDeleteDraft(params.row)
                         }}
+                        style="margin-left:5px;"
                       >
                         <Icon type="md-trash" size="16"></Icon>
                       </Button>
@@ -426,6 +440,13 @@ export default {
       submitColumn: [],
       draftColumn: [],
       username: window.localStorage.getItem('username'),
+      typeMap: {
+        1: this.$t('tw_publish'),
+        2: this.$t('tw_request'),
+        3: this.$t('tw_question'),
+        4: this.$t('tw_event'),
+        5: this.$t('fork')
+      },
       createRouteMap: {
         '1': 'createPublish',
         '2': 'createRequest',
@@ -491,6 +512,7 @@ export default {
       this.baseColumn.procDefName,
       this.baseColumn.operatorObjType,
       this.baseColumn.operatorObj,
+      this.baseColumn.requestRefId,
       this.baseColumn.action
     ]
 
@@ -564,6 +586,7 @@ export default {
       this.baseColumn.procDefName,
       this.baseColumn.operatorObjType,
       this.baseColumn.operatorObj,
+      this.baseColumn.requestRefId,
       this.baseColumn.action
     ]
 
@@ -601,6 +624,7 @@ export default {
       this.baseColumn.procDefName,
       this.baseColumn.operatorObjType,
       this.baseColumn.operatorObj,
+      this.baseColumn.requestRefId,
       this.baseColumn.createdBy,
       {
         title: this.$t('tw_request_commit_time'),
@@ -630,6 +654,7 @@ export default {
       this.baseColumn.procDefName,
       this.baseColumn.operatorObjType,
       this.baseColumn.operatorObj,
+      this.baseColumn.requestRefId,
       this.baseColumn.createdBy,
       {
         title: this.$t('tw_request_commit_time'),
@@ -650,6 +675,7 @@ export default {
       this.baseColumn.procDefName,
       this.baseColumn.operatorObjType,
       this.baseColumn.operatorObj,
+      this.baseColumn.requestRefId,
       this.baseColumn.handler,
       this.baseColumn.createdBy,
       {

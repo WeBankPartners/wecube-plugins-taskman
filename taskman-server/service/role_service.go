@@ -4,6 +4,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
+	"sort"
 	"strings"
 )
 
@@ -88,6 +89,9 @@ func (s *RoleService) GetRoleList(ids []string, userToken, language string) (res
 				Email:       value.Email,
 			})
 		}
+		if len(result) > 0 {
+			sort.Sort(models.RoleTableSort(result))
+		}
 		return
 	}
 	for _, id := range ids {
@@ -99,6 +103,9 @@ func (s *RoleService) GetRoleList(ids []string, userToken, language string) (res
 				Email:       v.Email,
 			})
 		}
+	}
+	if len(result) > 0 {
+		sort.Sort(models.RoleTableSort(result))
 	}
 	return
 }

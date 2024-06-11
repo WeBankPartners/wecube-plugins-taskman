@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <div class="taskman-template-list">
     <div>
       <Row>
-        <Tabs v-model="status" @on-click="getTemplateList()">
+        <Tabs v-model="status" @on-click="onSearch">
           <!--已发布-->
           <TabPane :label="$t('status_confirm')" name="confirm"></TabPane>
           <!--草稿-->
@@ -11,6 +11,8 @@
           <TabPane :label="pendingLabel" name="pending"></TabPane>
           <!--已禁用-->
           <TabPane :label="$t('tw_template_status_disable')" name="disable"></TabPane>
+          <!--已作废-->
+          <TabPane :label="$t('tw_template_status_cancel')" name="cancel"></TabPane>
         </Tabs>
       </Row>
       <Row>
@@ -86,16 +88,15 @@
       </Row>
     </div>
     <Table
-      style="margin: 24px 0"
+      style="margin:12px 0;"
       @on-sort-change="sortTable"
       size="small"
       :loading="loading"
       :columns="tableColumns"
       :data="tableData"
-      :max-height="MODALHEIGHT"
     ></Table>
     <Page
-      style="float: right"
+      style="text-align:right;"
       :total="pagination.total"
       @on-change="changPage"
       show-sizer
@@ -293,7 +294,7 @@ export default {
           title: this.$t('t_action'),
           key: 'action',
           fixed: 'right',
-          width: 205,
+          width: 325,
           align: 'center',
           render: (h, params) => {
             return (
@@ -334,7 +335,7 @@ export default {
                     </Button>
                   </Tooltip>
                 )}
-                {/* 查看 */ ['pending', 'confirm', 'disable'].includes(this.status) && (
+                {/* 查看 */ ['pending', 'confirm', 'disable', 'cancel'].includes(this.status) && (
                   <Tooltip content={this.$t('detail')} placement="top">
                     <Button
                       size="small"
@@ -382,7 +383,7 @@ export default {
                     </Button>
                   </Tooltip>
                 )}
-                {/* 变更 */ this.status === 'confirm' && (
+                {/* 变更 */ (this.status === 'confirm' || (this.status === 'cancel' && params.row.cancelEdit)) && (
                   <Tooltip content={this.$t('fork')} placement="top">
                     <Button
                       size="small"
@@ -415,6 +416,18 @@ export default {
                       onClick={() => this.disableTemplate(params.row)}
                     >
                       <Icon type="md-lock" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
+                )}
+                {/* 作废 */ this.status === 'confirm' && (
+                  <Tooltip content={this.$t('void')} placement="top">
+                    <Button
+                      size="small"
+                      type="warning"
+                      style="margin-right:5px;"
+                      onClick={() => this.cancelTemplate(params.row)}
+                    >
+                      <Icon type="md-cut" size="16"></Icon>
                     </Button>
                   </Tooltip>
                 )}
@@ -474,10 +487,26 @@ export default {
       ]
     }
   },
+  computed: {
+    actionWidth () {
+      if (this.status === 'confirm') {
+        return 235
+      } else if (this.status === 'pending') {
+        return 140
+      } else {
+        return 120
+      }
+    }
+  },
   watch: {
     // 给草稿页签动态插入退回原因
     status: {
       handler (val) {
+        this.tableColumns.forEach(item => {
+          if (item.key === 'action') {
+            item.width = this.actionWidth
+          }
+        })
         if (val === 'created') {
           const index = this.tableColumns.findIndex(i => i.key === 'mgmtRoles')
           this.tableColumns.splice(index, 0, {
@@ -515,7 +544,6 @@ export default {
     } else {
       this.headers['Accept-Language'] = 'en-US,en;q=0.9,zh;q=0.8'
     }
-    this.MODALHEIGHT = document.body.scrollHeight - 200
     this.getTemplateList()
   },
   methods: {
@@ -565,7 +593,7 @@ export default {
               desc: 'Successful'
             })
             this.status = 'confirm'
-            this.getTemplateList()
+            this.onSearch()
           }
         },
         onCancel: () => {}
@@ -576,7 +604,7 @@ export default {
       const { statusCode } = await copyTemplate(row.id)
       if (statusCode === 'OK') {
         this.status = 'created'
-        this.getTemplateList()
+        this.onSearch()
       }
     },
     // 退回草稿
@@ -616,8 +644,34 @@ export default {
                 desc: this.$t('successful')
               })
               this.status = 'created'
-              this.getTemplateList()
+              this.onSearch()
             }
+          }
+        },
+        onCancel: () => {}
+      })
+    },
+    // 作废
+    async cancelTemplate (row) {
+      this.$Modal.confirm({
+        title: this.$t('tw_confirmCancel'),
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          this.$Modal.remove()
+          const params = {
+            requestTemplateId: row.id,
+            status: 'confirm',
+            targetStatus: 'cancel'
+          }
+          const { statusCode } = await updateTemplateStatus(params)
+          if (statusCode === 'OK') {
+            this.$Notice.success({
+              title: 'Successful',
+              desc: 'Successful'
+            })
+            this.status = 'cancel'
+            this.onSearch()
           }
         },
         onCancel: () => {}
@@ -658,7 +712,7 @@ export default {
                 desc: 'Successful'
               })
               this.status = 'created'
-              this.getTemplateList()
+              this.onSearch()
             }
           },
           onCancel: () => {}
@@ -670,7 +724,7 @@ export default {
           desc: 'Successful'
         })
         this.status = 'created'
-        this.getTemplateList()
+        this.onSearch()
       } else {
         this.$Notice.warning({
           title: 'Warning',
@@ -733,6 +787,7 @@ export default {
         desc: this.$t('successful')
       })
     },
+    // 变更
     forkTemplate (row) {
       this.$Modal.confirm({
         title: this.$t('confirm_change'),
@@ -744,7 +799,7 @@ export default {
           if (res.statusCode === 'OK') {
             this.success()
             this.status = 'created'
-            this.getTemplateList()
+            this.onSearch()
           }
         },
         onCancel: () => {}
@@ -860,7 +915,7 @@ export default {
       if (res.statusCode === 'OK') {
         this.success()
         this.status = 'disable'
-        this.getTemplateList()
+        this.onSearch()
       }
     },
     async enableTemplate (row) {
@@ -868,7 +923,7 @@ export default {
       if (res.statusCode === 'OK') {
         this.success()
         this.status = 'confirm'
-        this.getTemplateList()
+        this.onSearch()
       }
     },
     async getConfirmCount () {
@@ -895,22 +950,25 @@ export default {
 }
 </style>
 <style scoped lang="scss">
-.header-icon {
-  float: right;
-  margin: 3px 40px 0 0 !important;
-}
-.badge {
-  position: absolute;
-  display: inline-block;
-  font-size: 11px;
-  background-color: #f56c6c;
-  border-radius: 10px;
-  color: #fff;
-  height: 18px;
-  line-height: 18px;
-  padding: 0 6px;
-  text-align: center;
-  white-space: nowrap;
-  margin-left: 5px;
+.taskman-template-list {
+  padding-bottom: 20px;
+  .header-icon {
+    float: right;
+    margin: 3px 40px 0 0 !important;
+  }
+  .badge {
+    position: absolute;
+    display: inline-block;
+    font-size: 11px;
+    background-color: #f56c6c;
+    border-radius: 10px;
+    color: #fff;
+    height: 18px;
+    line-height: 18px;
+    padding: 0 6px;
+    text-align: center;
+    white-space: nowrap;
+    margin-left: 5px;
+  }
 }
 </style>

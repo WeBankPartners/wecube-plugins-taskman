@@ -40,6 +40,7 @@
     "bpmn-js-properties-panel": "^0.32.2",
     "camunda-bpmn-moddle": "^3.0.0",
     "chalk": "^2.0.1",
+    "commit-message-validator": "^1.0.2",
     "compression-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^4.0.1",
     "css-loader": "^0.28.11",
@@ -85,7 +86,8 @@
   ],
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged"
+      "pre-commit": "lint-staged",
+      "commit-msg": "commit-message-validator"
     }
   },
   "lint-staged": {
@@ -94,5 +96,13 @@
       "eslint --fix",
       "git add"
     ]
+  },
+  "config": {
+    "commit-message-validator": {
+      "pattern": [
+        "^(feat|fix|docs|style|refactor|test|perf|chore): .{3,}"
+      ],
+      "errorMessage": "Commit message cannot match pattern: ^(feat|fix|docs|style|refactor|test|perf|chore): .{3,}"
+    }
   }
 }

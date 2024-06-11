@@ -27,9 +27,12 @@ export default {
 
 <style lang="scss" scoped>
 .taskman-scroll-column {
-  max-height: 72px;
-  padding-right: 3px;
+  max-height: 76px;
+  padding-right: 0px;
   padding: 6px 0;
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: -5px;
   .tag {
     width: fit-content;
     padding: 2px 5px;
@@ -37,14 +40,13 @@ export default {
     border: 1px solid #e8eaec;
     border-radius: 3px;
     font-size: 12px;
-    &:not(:last-child) {
-      margin-bottom: 5px;
-    }
+    margin-right: 5px;
+    margin-bottom: 5px;
   }
 }
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 3px;
+  height: 3px;
 }
 ::-webkit-scrollbar-thumb {
   background-color: #c1c1c1;

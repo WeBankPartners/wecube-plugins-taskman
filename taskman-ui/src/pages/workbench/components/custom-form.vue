@@ -1,9 +1,10 @@
+<!--信息表单-->
 <template>
   <div class="workbench-custom-form">
     <Form :model="value" ref="form" :label-position="labelPosition" :label-width="labelWidth">
       <Row type="flex" justify="start" :gutter="20">
-        <template v-for="(i, index) in options">
-          <Col :span="i.width || 24" :key="index">
+        <template v-for="(i, index) in formOptions">
+          <Col v-if="!i.hidden" :span="i.width || 24" :key="index">
             <FormItem
               :label="i.title"
               :prop="i.name"
@@ -11,7 +12,7 @@
               :required="i.required === 'yes'"
               :rules="
                 i.required === 'yes'
-                  ? [{ required: true, message: `${i.title}${$t('can_not_be_empty')}`, trigger: ['change', 'blur'] }]
+                  ? [{ required: true, message: `${i.title}${$t('can_not_be_empty')}`, trigger: 'change' }]
                   : []
               "
               style="margin-bottom:20px;"
@@ -19,13 +20,13 @@
               <!--输入框-->
               <Input
                 v-if="i.elementType === 'input'"
-                v-model="value[i.name]"
+                v-model.trim="value[i.name]"
                 :disabled="i.isEdit === 'no' || disabled"
                 style="width:100%;"
               ></Input>
               <Input
                 v-else-if="i.elementType === 'textarea'"
-                v-model="value[i.name]"
+                v-model.trim="value[i.name]"
                 type="textarea"
                 :disabled="i.isEdit === 'no' || disabled"
                 style="width:100%;"
@@ -33,9 +34,8 @@
               <LimitSelect
                 v-else-if="i.elementType === 'select' || i.elementType === 'wecmdbEntity'"
                 v-model="value[i.name]"
-                :displayName="i.elementType === 'wecmdbEntity' ? 'displayName' : 'key_name'"
-                :displayValue="i.elementType === 'wecmdbEntity' ? 'id' : 'guid'"
-                :objectOption="!!i.entity || i.elementType === 'wecmdbEntity'"
+                :displayName="i.elementType === 'wecmdbEntity' ? 'displayName' : i.entity ? 'key_name' : 'label'"
+                :displayValue="i.elementType === 'wecmdbEntity' ? 'id' : i.entity ? 'guid' : 'value'"
                 :options="entityData[i.name + 'Options']"
                 :disabled="i.isEdit === 'no' || disabled"
                 :multiple="i.multiple === 'Y' || i.multiple === 'yes'"
@@ -72,23 +72,23 @@
 <script>
 import LimitSelect from '@/pages/components/limit-select.vue'
 import { getRefOptions, getWeCmdbOptions } from '@/api/server'
-import dayjs from 'dayjs'
+import { evaluateCondition } from '../evaluate'
 export default {
   components: {
     LimitSelect
   },
   props: {
-    requestId: {
-      type: String,
-      default: ''
+    options: {
+      type: Array,
+      default: () => []
     },
     value: {
       type: Object,
       default: () => {}
     },
-    options: {
-      type: Array,
-      default: () => []
+    requestId: {
+      type: String,
+      default: ''
     },
     labelWidth: {
       type: Number,
@@ -106,7 +106,8 @@ export default {
   data () {
     return {
       refKeys: [],
-      entityData: {}
+      entityData: {},
+      formOptions: []
     }
   },
   watch: {
@@ -116,6 +117,7 @@ export default {
           Object.keys(val).forEach(key => {
             this.entityData[key] = val[key]
           })
+          this.hideFormItems()
         }
       },
       deep: true,
@@ -124,6 +126,8 @@ export default {
     options: {
       handler (val) {
         if (val && val.length) {
+          this.formOptions = this.options
+          this.hideFormItems()
           // select类型集合
           this.refKeys = []
           val.forEach(t => {
@@ -152,22 +156,32 @@ export default {
     }
   },
   methods: {
+    // 表单隐藏逻辑
+    hideFormItems () {
+      Object.keys(this.value).forEach(key => {
+        // 表单隐藏逻辑
+        const find = this.formOptions.find(i => i.name === key) || {}
+        if (find.hiddenCondition && find.required === 'no') {
+          const conditions = find.hiddenCondition || []
+          find.hidden = conditions.every(j => {
+            return evaluateCondition(j, this.value[j.name])
+          })
+        }
+      })
+    },
     handleTimeChange (e, value, name) {
-      if (e && e.split(' ') && e.split(' ')[1] === '00:00:00') {
-        value[name] = `${e.split(' ')[0]} ${dayjs().format('HH:mm:ss')}`
-      } else {
-        value[name] = e
-      }
+      // 时间选择器默认填充当前时分秒
+      // if (e && e.split(' ') && e.split(' ')[1] === '00:00:00') {
+      //   value[name] = `${e.split(' ')[0]} ${dayjs().format('HH:mm:ss')}`
+      // } else {
+      //   value[name] = e
+      // }
+      value[name] = e
     },
     async getRefOptions (titleObj) {
       // taskman模板管理配置的普通下拉类型(值用逗号拼接)
       if (titleObj.elementType === 'select' && titleObj.entity === '') {
-        // this.entityData[titleObj.name + 'Options'] = (titleObj.dataOptions && titleObj.dataOptions.split(',')) || []
-        this.$set(
-          this.entityData,
-          titleObj.name + 'Options',
-          (titleObj.dataOptions && titleObj.dataOptions.split(',')) || []
-        )
+        this.$set(this.entityData, titleObj.name + 'Options', JSON.parse(titleObj.dataOptions || '[]'))
         return
       }
       // taskman模板管理配置的引用下拉类型

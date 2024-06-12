@@ -337,6 +337,19 @@ export default {
             item.filterRule = {}
           }
         })
+        if (val.handleTemplates && val.handleTemplates.length === 0) {
+          val.handleTemplates = [
+            {
+              assign: 'template',
+              handlerType: 'template_suggest',
+              role: '',
+              handler: '',
+              handlerOptions: [],
+              assignRule: {},
+              filterRule: {}
+            }
+          ]
+        }
       },
       immediate: true,
       deep: true

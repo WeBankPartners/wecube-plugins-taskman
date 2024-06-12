@@ -738,7 +738,7 @@ export default {
   methods: {
     // 数据表单过滤项有值，需要禁用审批表单对应表单项"可编辑"属性
     setIsEditDisabled () {
-      const { filterFormList } = this.$refs.approvalFormNodeRef
+      const { filterFormList } = this.$refs.approvalFormNodeRef || {}
       if (filterFormList && filterFormList.length > 0) {
         const dataFormList = filterFormList.filter(i => i.type === 2)
         const handleTemplates = this.$refs.approvalFormNodeRef.activeApprovalNode.handleTemplates

@@ -105,12 +105,6 @@
       @on-page-size-change="changePageSize"
       show-total
     />
-    <Modal v-model="modalShow" width="300">
-      <p>{{ $t('confirm_disable') }}</p>
-      <template #footer>
-        <Button type="error" size="large" long @click="disableInit">{{ $t('confirm') }}</Button>
-      </template>
-    </Modal>
   </div>
 </template>
 
@@ -145,7 +139,6 @@ export default {
       mgmtRoles: [],
       type: [],
       tags: '',
-      modalShow: false,
       pagination: {
         pageSize: 10,
         currentPage: 1,
@@ -907,16 +900,21 @@ export default {
       this.getConfirmCount()
     },
     disableTemplate (row) {
-      this.modalShow = row.id
-    },
-    async disableInit () {
-      const res = await disableTemplate(this.modalShow)
-      this.modalShow = false
-      if (res.statusCode === 'OK') {
-        this.success()
-        this.status = 'disable'
-        this.onSearch()
-      }
+      this.$Modal.confirm({
+        title: this.$t('confirm_disable'),
+        'z-index': 1000000,
+        loading: false,
+        onOk: async () => {
+          this.$Modal.remove()
+          const res = await disableTemplate(row.id)
+          if (res.statusCode === 'OK') {
+            this.success()
+            this.status = 'disable'
+            this.onSearch()
+          }
+        },
+        onCancel: () => {}
+      })
     },
     async enableTemplate (row) {
       const res = await enableTemplate(row.id)

@@ -104,7 +104,7 @@ func UpdateRequestTemplateHandler(c *gin.Context) {
 		return
 	}
 	if err := service.GetRequestTemplateService().CheckRequestTemplateRoles(param.RequestTemplateId, middleware.GetRequestRoles(c)); err != nil {
-		middleware.ReturnDataPermissionError(c, err)
+		middleware.ReturnRequestTemplateUpdatePermissionError(c, err)
 		return
 	}
 	err = service.GetRequestTemplateService().UpdateRequestTemplateHandler(requestTemplate.Id, middleware.GetRequestUser(c))
@@ -246,7 +246,7 @@ func UpdateRequestTemplate(c *gin.Context) {
 	}
 	if len(list) > 0 {
 		// 只有一条数据,判断是否为当前数据
-		if len(list) == 1 && param.Id == list[0].Id {
+		if len(list) == 1 && (param.Id == list[0].Id || list[0].Status == string(models.RequestTemplateStatusCancel)) {
 			repeatFlag = false
 		} else {
 			for _, template := range list {
@@ -294,7 +294,7 @@ func DeleteRequestTemplate(c *gin.Context) {
 		return
 	}
 	if err := service.GetRequestTemplateService().CheckRequestTemplateRoles(id, middleware.GetRequestRoles(c)); err != nil {
-		middleware.ReturnDataPermissionError(c, err)
+		middleware.ReturnRequestTemplateUpdatePermissionError(c, err)
 		return
 	}
 	_, err := service.GetRequestTemplateService().DeleteRequestTemplate(id, false)

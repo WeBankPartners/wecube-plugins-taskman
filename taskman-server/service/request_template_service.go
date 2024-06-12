@@ -1849,7 +1849,7 @@ func (s *RequestTemplateService) CheckPermission(requestTemplateId, user string)
 	}
 	// 请求模板的更新人不是当前用户,不允许操作
 	if requestTemplate.UpdatedBy != user {
-		err = exterror.New().DataPermissionDeny
+		err = exterror.New().TemplateUpdatePermissionDeny
 	}
 	return
 }

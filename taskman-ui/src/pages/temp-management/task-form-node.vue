@@ -157,6 +157,7 @@ export default {
       ],
       useRolesOptions: [], // 使用角色
       isSaveNodeDisable: true,
+      needChangeStatus: false,
       filterFormList: [], // 信息表单和数据表单过滤项配置
       tableColumns: [],
       initColumns: [
@@ -311,8 +312,10 @@ export default {
   watch: {
     activeApprovalNode: {
       handler (val) {
-        this.isSaveNodeDisable = this.isSaveBtnActive()
-        this.$emit('nodeStatus', this.isSaveNodeDisable)
+        if (this.needChangeStatus) {
+          this.isSaveNodeDisable = this.isSaveBtnActive()
+          this.$emit('nodeStatus', this.isSaveNodeDisable)
+        }
         // 将后台下发的null转换成{},避免报错
         val.handleTemplates.forEach(item => {
           if (!item.assignRule) {
@@ -355,6 +358,7 @@ export default {
   props: ['isCheck', 'nodeType', 'forkOptions'],
   methods: {
     loadPage (params) {
+      this.needChangeStatus = true
       this.procDefId = params.procDefId
       this.isParmasChanged = false
       this.requestTemplateId = params.requestTemplateId

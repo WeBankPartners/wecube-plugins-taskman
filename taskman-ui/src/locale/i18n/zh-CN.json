@@ -507,5 +507,6 @@
   "tw_control_approvalAndTask": "控制审批/任务",
   "tw_unRelated_tips": "用户选择无需处理,未提交表单",
   "tw_formDataNotSave_confirm": "确认放弃表单修改？",
-  "tw_formDataNotSave_tips": "操作选择[无需处理]类型,将不会提交表单修改,确认放弃修改吗?(操作选择其他类型可以正常提交表单)"
+  "tw_formDataNotSave_tips": "操作选择[无需处理]类型,将不会提交表单修改,确认放弃修改吗?(操作选择其他类型可以正常提交表单)",
+  "tw_condition": "表单条件"
 }

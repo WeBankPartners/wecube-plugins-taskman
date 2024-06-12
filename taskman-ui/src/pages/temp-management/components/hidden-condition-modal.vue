@@ -14,11 +14,11 @@
         <Col span="12">{{ $t('value') }}</Col>
       </Row>
       <Row v-for="(i, index) in hiddenCondition" :key="index" :gutter="5">
-        <Form :model="hiddenCondition[index]" :rules="rule" :ref="'form' + index">
+        <Form :model="i" :rules="rule" :ref="'form' + index">
           <!--表单项-->
           <Col :span="6">
             <FormItem label="" prop="name">
-              <Select v-model="hiddenCondition[index].name" :disabled="disabled" @on-change="handleNameChange">
+              <Select v-model="i.name" :disabled="disabled" @on-change="handleNameChange">
                 <Option v-for="j in nameList" :key="j.id" :value="j.name">{{ j.title }}</Option>
               </Select>
             </FormItem>
@@ -26,28 +26,24 @@
           <!--符号-->
           <Col :span="6">
             <FormItem label="" prop="operator">
-              <Select
-                v-model="hiddenCondition[index].operator"
-                :disabled="disabled"
-                @on-change="handleOperatorChange($event, index)"
-              >
-                <Option v-for="(j, index) in getOperatorList(selectAttrs[index])" :key="index" :value="j.value">{{
+              <Select v-model="i.operator" :disabled="disabled" @on-change="handleOperatorChange($event, index)">
+                <Option v-for="(j, index) in selectAttrs[index].operatorList" :key="index" :value="j.value">{{
                   j.label
                 }}</Option>
               </Select>
             </FormItem>
           </Col>
-          <!--隐藏值-->
-          <Col v-if="!['empty', 'notEmpty'].includes(hiddenCondition[index].operator)" :span="10">
+          <!--值-->
+          <Col v-if="!['empty', 'notEmpty'].includes(i.operator)" :span="10">
             <FormItem label="" prop="value">
               <template v-if="selectAttrs[index].elementType === 'datePicker'">
                 <DatePicker
-                  v-if="hiddenCondition[index].operator === 'range'"
-                  :value="hiddenCondition[index].value"
+                  v-if="i.operator === 'range'"
+                  :value="i.value"
                   :disabled="disabled"
                   @on-change="
                     val => {
-                      hiddenCondition[index].value = val
+                      i.value = val
                     }
                   "
                   type="datetimerange"
@@ -57,10 +53,10 @@
                 />
                 <DatePicker
                   v-else
-                  :value="hiddenCondition[index].value"
+                  :value="i.value"
                   @on-change="
                     val => {
-                      hiddenCondition[index].value = val
+                      i.value = val
                     }
                   "
                   format="yyyy-MM-dd HH:mm:ss"
@@ -71,31 +67,43 @@
               </template>
               <!--输入框-->
               <Input
-                v-else
-                v-model="hiddenCondition[index].value"
-                :placeholder="
-                  ['containsAll', 'containsAny', 'notContains'].includes(hiddenCondition[index].operator)
-                    ? 'eg：a,b,c'
-                    : ''
+                v-else-if="
+                  ['textarea', 'input'].includes(selectAttrs[index].elementType) ||
+                    ['lt', 'gt', 'contains', 'startsWith', 'endsWith'].includes(i.operator)
                 "
+                v-model="i.value"
+                :placeholder="['containsAll', 'containsAny', 'notContains'].includes(i.operator) ? 'eg：a,b,c' : ''"
                 :disabled="disabled"
               ></Input>
-              <!-- <Select
-                v-if="selectAttrs[index].elementType === 'select' || selectAttrs[index].elementType === 'wecmdbEntity'"
-                v-model="editElement.hiddenCondition[index].value"
+              <Select
+                v-else-if="['select', 'wecmdbEntity'].includes(selectAttrs[index].elementType)"
+                v-model="i.value"
                 :disabled="disabled"
-                placeholder="值"
-                @on-change="paramsChanged"
-                @open-change="getRefOptions($event, index)"
+                :multiple="['eq', 'neq'].includes(i.operator) ? false : true"
+                clearable
+                filterable
+                placeholder=""
+                @on-open-change="getRefOptions($event, index)"
               >
                 <Option
-                  v-for="(j, idx)  refOptionMap[editElement.hiddenCondition[index].name]"
+                  v-for="(j, idx) in refOptionMap[i.name]"
                   :key="idx"
-                  :value="selectAttrs[index].elementType === 'wecmdbEntity' ? 'displayName' : j.entity ? 'key_name' : 'label'"
-                >
-                  {{ j }}
-                </Option>
-              </Select> -->
+                  :label="
+                    selectAttrs[index].elementType === 'wecmdbEntity'
+                      ? j.displayName
+                      : selectAttrs[index].entity
+                      ? j.key_name
+                      : j.label
+                  "
+                  :value="
+                    selectAttrs[index].elementType === 'wecmdbEntity'
+                      ? j.id
+                      : selectAttrs[index].entity
+                      ? j.guid
+                      : j.value
+                  "
+                />
+              </Select>
             </FormItem>
           </Col>
           <Col :span="2">
@@ -147,6 +155,7 @@ export default {
       hiddenCondition: [], // 隐藏条件
       selectAttrs: [], // 隐藏条件对应表单项配置
       nameList: [], // 表单项下拉列表
+      refOptionMap: {},
       operatorList: [
         // 符号下拉列表
         { label: this.$t('tw_symbol_eq'), value: 'eq', condition: ['input', 'singleSelect', 'dateTime'] },
@@ -203,46 +212,6 @@ export default {
       }
     }
   },
-  computed: {
-    // 获取符号可选下拉列表
-    getOperatorList () {
-      return function (item) {
-        if (!item) return this.operatorList
-        let type = ''
-        if (['input', 'textarea'].includes(item.elementType)) {
-          type = 'input'
-        } else if (item.elementType === 'datePicker') {
-          type = 'dateTime'
-        } else if (['select', 'wecmdbEntity'].includes(item.elementType)) {
-          if (['Y', 'yes'].includes(item.multiple)) {
-            type = 'multipleSelect'
-          } else {
-            type = 'singleSelect'
-          }
-        }
-        return this.operatorList.filter(i => i.condition.includes(type))
-      }
-    }
-  },
-  watch: {
-    hiddenCondition: {
-      handler (val) {
-        if (val && val.length > 0) {
-          this.selectAttrs = []
-          this.hiddenCondition.forEach(i => {
-            // 新加一行空数据处理
-            if (!i.name || !i.operator) {
-              this.selectAttrs.push({ elementType: 'input' })
-            } else {
-              const findIndex = this.finalElement[0].attrs.findIndex(j => j.name === i.name)
-              this.selectAttrs.push(this.finalElement[0].attrs[findIndex])
-            }
-          })
-        }
-      },
-      deep: true
-    }
-  },
   methods: {
     initData (arr) {
       this.hiddenCondition = deepClone(arr)
@@ -255,9 +224,19 @@ export default {
       }
       this.visible = true
       this.nameList = this.finalElement[0].attrs.filter(i => i.name !== this.editElement.name)
-      // this.$nextTick(() => {
-      //   this.$refs.form0[0].resetFields()
-      // })
+      this.refreshSelectAttrs()
+    },
+    refreshSelectAttrs () {
+      this.selectAttrs = []
+      this.hiddenCondition.forEach(i => {
+        // 新加一行空数据处理
+        if (!i.name) {
+          this.selectAttrs.push({ elementType: 'input' })
+        } else {
+          const findIndex = this.finalElement[0].attrs.findIndex(j => j.name === i.name)
+          this.selectAttrs.push(this.finalElement[0].attrs[findIndex])
+        }
+      })
     },
     handleNameChange () {
       // 过滤已选表单项
@@ -265,6 +244,22 @@ export default {
       //   const arr = this.hiddenCondition.map(m => m.name)
       //   return !arr.includes(i.name)
       // })
+      this.refreshSelectAttrs()
+      this.selectAttrs.forEach(item => {
+        let type = ''
+        if (['input', 'textarea'].includes(item.elementType)) {
+          type = 'input'
+        } else if (item.elementType === 'datePicker') {
+          type = 'dateTime'
+        } else if (['select', 'wecmdbEntity'].includes(item.elementType)) {
+          if (['Y', 'yes'].includes(item.multiple)) {
+            type = 'multipleSelect'
+          } else {
+            type = 'singleSelect'
+          }
+        }
+        item.operatorList = this.operatorList.filter(i => i.condition.includes(type))
+      })
     },
     handleOperatorChange (val, index) {
       if (val === 'range') {
@@ -283,13 +278,15 @@ export default {
         operator: '',
         value: ''
       })
+      this.refreshSelectAttrs()
     },
     handleDeleteItem (index) {
       this.hiddenCondition.splice(index, 1)
+      this.refreshSelectAttrs()
     },
     async getRefOptions (flag, index) {
       if (!flag) return
-      const name = this.value.hiddenCondition[index].name
+      const name = this.hiddenCondition[index].name
       const item = this.finalElement[0].attrs.find(i => i.name === name)
       // 模板自定义下拉类型
       if (item.elementType === 'select' && item.entity === '') {

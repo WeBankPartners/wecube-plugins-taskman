@@ -4,6 +4,7 @@ import (
 	"github.com/WeBankPartners/go-common-lib/guid"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"sort"
 	"strings"
 	"time"
 	"xorm.io/xorm"
@@ -62,8 +63,9 @@ func (s *FormTemplateLibraryService) AddFormTemplateLibrary(param models.FormTem
 		}
 		// 添加表单项组件库
 		if len(param.Items) > 0 {
-			for _, item := range param.Items {
-				item.Id = guid.CreateGuid()
+			ids := guid.CreateGuidList(len(param.Items))
+			for i, item := range param.Items {
+				item.Id = ids[i]
 				item.FormTemplateLibrary = formTemplateLibraryId
 				if _, err = s.formItemTemplateLibraryDao.Add(session, models.ConvertFormItemTemplateLibraryDto2Model(item)); err != nil {
 					return err
@@ -117,6 +119,7 @@ func (s *FormTemplateLibraryService) QueryFormTemplateLibrary(param models.Query
 			if formItemTemplateLibraryList, err = s.formItemTemplateLibraryDao.QueryByFormTemplateLibrary(formTemplateLibrary.Id); err != nil {
 				return
 			}
+			sort.Sort(models.FormItemTemplateLibraryTableSort(formItemTemplateLibraryList))
 			if len(formItemTemplateLibraryList) > 0 {
 				for _, item := range formItemTemplateLibraryList {
 					items = append(items, item.Title)

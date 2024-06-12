@@ -170,3 +170,17 @@ func ConvertFormItemTemplateLibraryModel2Dto(list []*FormItemTemplateLibraryTabl
 	}
 	return dtoList
 }
+
+type FormItemTemplateLibraryTableSort []*FormItemTemplateLibraryTable
+
+func (s FormItemTemplateLibraryTableSort) Len() int {
+	return len(s)
+}
+
+func (s FormItemTemplateLibraryTableSort) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s FormItemTemplateLibraryTableSort) Less(i, j int) bool {
+	return strings.Compare(s[i].Id, s[j].Id) < 0
+}

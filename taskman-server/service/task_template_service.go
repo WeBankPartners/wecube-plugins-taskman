@@ -120,37 +120,38 @@ func (s *TaskTemplateService) CreateTaskTemplate(param *models.TaskTemplateDto, 
 }
 
 func (s *TaskTemplateService) CheckHandleTemplates(param *models.TaskTemplateDto) error {
+	if param.HandleMode == string(models.TaskTemplateHandleModeAdmin) {
+		return nil
+	}
 	if param.HandleMode == string(models.TaskTemplateHandleModeAuto) {
 		if len(param.HandleTemplates) > 0 {
 			return fmt.Errorf("param handleMode %s should not has handleTemplates", param.HandleMode)
 		}
 	} else {
-		if len(param.HandleTemplates) == 0 && param.HandleMode != string(models.TaskTemplateHandleModeAdmin) {
+		if len(param.HandleTemplates) == 0 {
 			return fmt.Errorf("param handleMode %s need handleTemplates", param.HandleMode)
 		}
-		if len(param.HandleTemplates) > 0 {
-			for _, handleTemplate := range param.HandleTemplates {
-				if handleTemplate.Assign != string(models.TaskHandleTemplateAssignTypeTemplate) &&
-					(handleTemplate.HandlerType == string(models.TaskHandleTemplateHandlerTypeTemplate) || handleTemplate.HandlerType == string(models.TaskHandleTemplateHandlerTypeTemplateSuggest)) {
-					return fmt.Errorf("param assign %s not match handlerType %s", handleTemplate.Assign, handleTemplate.HandlerType)
+		for _, handleTemplate := range param.HandleTemplates {
+			if handleTemplate.Assign != string(models.TaskHandleTemplateAssignTypeTemplate) &&
+				(handleTemplate.HandlerType == string(models.TaskHandleTemplateHandlerTypeTemplate) || handleTemplate.HandlerType == string(models.TaskHandleTemplateHandlerTypeTemplateSuggest)) {
+				return fmt.Errorf("param assign %s not match handlerType %s", handleTemplate.Assign, handleTemplate.HandlerType)
+			}
+			if handleTemplate.Assign == string(models.TaskHandleTemplateAssignTypeTemplate) {
+				if handleTemplate.Role == "" {
+					return fmt.Errorf("param assign %s not match role %s", handleTemplate.Assign, handleTemplate.Role)
 				}
-				if handleTemplate.Assign == string(models.TaskHandleTemplateAssignTypeTemplate) {
-					if handleTemplate.Role == "" {
-						return fmt.Errorf("param assign %s not match role %s", handleTemplate.Assign, handleTemplate.Role)
-					}
-				} else {
-					if handleTemplate.Role != "" {
-						return fmt.Errorf("param assign %s not match role %s", handleTemplate.Assign, handleTemplate.Role)
-					}
+			} else {
+				if handleTemplate.Role != "" {
+					return fmt.Errorf("param assign %s not match role %s", handleTemplate.Assign, handleTemplate.Role)
 				}
-				if handleTemplate.HandlerType == string(models.TaskHandleTemplateHandlerTypeTemplate) || handleTemplate.HandlerType == string(models.TaskHandleTemplateHandlerTypeTemplateSuggest) {
-					if handleTemplate.Handler == "" {
-						return fmt.Errorf("param handlerType %s not match handler %s", handleTemplate.HandlerType, handleTemplate.Handler)
-					}
-				} else {
-					if handleTemplate.Handler != "" {
-						return fmt.Errorf("param handlerType %s not match handler %s", handleTemplate.HandlerType, handleTemplate.Handler)
-					}
+			}
+			if handleTemplate.HandlerType == string(models.TaskHandleTemplateHandlerTypeTemplate) || handleTemplate.HandlerType == string(models.TaskHandleTemplateHandlerTypeTemplateSuggest) {
+				if handleTemplate.Handler == "" {
+					return fmt.Errorf("param handlerType %s not match handler %s", handleTemplate.HandlerType, handleTemplate.Handler)
+				}
+			} else {
+				if handleTemplate.Handler != "" {
+					return fmt.Errorf("param handlerType %s not match handler %s", handleTemplate.HandlerType, handleTemplate.Handler)
 				}
 			}
 		}

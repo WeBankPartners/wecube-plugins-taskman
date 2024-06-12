@@ -593,37 +593,6 @@ func UpdateRequestFormItemNew(requestId, operator, now string, param *models.Req
 	return
 }
 
-func UpdateSingleRequestForm(requestId, operator, now string, param *models.RequestPreDataTableObj) []*dao.ExecAction {
-	var actions []*dao.ExecAction
-	var newFormId string
-	actions = append(actions, &dao.ExecAction{Sql: "delete from form_item where form in (select id from form where request = ? and form_template=?)", Param: []interface{}{requestId, param.FormTemplateId}})
-	actions = append(actions, &dao.ExecAction{Sql: "delete from form where request = ? and form_template=?", Param: []interface{}{requestId, param.FormTemplateId}})
-	tmpFormIdList := guid.CreateGuidList(len(param.Value))
-	for valueIndex, valueObj := range param.Value {
-		// 每行记录新增一个表单
-		newFormId = tmpFormIdList[valueIndex]
-		actions = append(actions, &dao.ExecAction{Sql: "insert into form(id,request,form_template,data_id,created_by,created_time,updated_by," +
-			"updated_time) values (?,?,?,?,?,?,?,?)", Param: []interface{}{newFormId, requestId, param.FormTemplateId, valueObj.Id, operator, now, operator, now}})
-		tmpGuidList := guid.CreateGuidList(len(param.Title))
-		for i, title := range param.Title {
-			if strings.EqualFold(title.Multiple, models.Yes) || strings.EqualFold(title.Multiple, models.Y) {
-				if tmpV, b := valueObj.EntityData[title.Name]; b {
-					var tmpStringV []string
-					for _, interfaceV := range tmpV.([]interface{}) {
-						tmpStringV = append(tmpStringV, fmt.Sprintf("%s", interfaceV))
-					}
-					actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time) values (?,?,?,?,?,?,?)",
-						Param: []interface{}{tmpGuidList[i], newFormId, title.Id, title.Name, strings.Join(tmpStringV, ","), requestId, now}})
-				}
-			} else {
-				actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time) values (?,?,?,?,?,?,?)",
-					Param: []interface{}{tmpGuidList[i], newFormId, title.Id, title.Name, valueObj.EntityData[title.Name], requestId, now}})
-			}
-		}
-	}
-	return actions
-}
-
 func UpdateSingleRequestFormNew(requestId, operator, now string, param *models.RequestPreDataTableObj) (actions []*dao.ExecAction, err error) {
 	updateParam := models.RequestPreDataDto{Data: []*models.RequestPreDataTableObj{param}}
 	actions, err = UpdateRequestFormItemNew(requestId, operator, now, &updateParam)

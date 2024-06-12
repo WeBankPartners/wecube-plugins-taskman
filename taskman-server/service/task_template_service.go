@@ -317,7 +317,7 @@ func (s *TaskTemplateService) UpdateTaskTemplate(param *models.TaskTemplateDto, 
 	var deleteTaskHandleTemplateIds []string
 	var updateTaskHandleTemplates []*models.TaskHandleTemplateTable
 	var newTaskHandleTemplates []*models.TaskHandleTemplateTable
-	if param.HandleMode == string(models.TaskTemplateHandleModeAdmin) || param.HandleMode == string(models.TaskTemplateHandleModeAuto) {
+	if param.HandleMode == string(models.TaskTemplateHandleModeAuto) {
 		deleteTaskHandleTemplateAll = true
 	} else {
 		// 查询任务处理模板

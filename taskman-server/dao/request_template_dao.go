@@ -105,7 +105,7 @@ func (d *RequestTemplateDao) Get(requestTemplateId string) (*models.RequestTempl
 	return nil, nil
 }
 
-func (d *RequestTemplateDao) QueryListByName(name string) (list []*models.RequestTemplateTable, err error) {
-	err = d.DB.Where("name = ?", name).Find(&list)
+func (d *RequestTemplateDao) QueryListByNameNotContainsCancel(name string) (list []*models.RequestTemplateTable, err error) {
+	err = d.DB.Where("name = ? and status <> ?", name, models.RequestTemplateStatusCancel).Find(&list)
 	return
 }

@@ -974,7 +974,7 @@ func (s *RequestTemplateService) CopyConfirmRequestTemplate(requestTemplateId, o
 	newRequestTemplateId := guid.CreateGuid()
 	var requestName = requestTemplate.Name + "(1)"
 	// 查询 当前requestName是否存在
-	if list, err = s.requestTemplateDao.QueryListByName(requestName); err != nil {
+	if list, err = s.requestTemplateDao.QueryListByNameNotContainsCancel(requestName); err != nil {
 		return
 	}
 	if len(list) > 0 {
@@ -1904,8 +1904,8 @@ func (s *RequestTemplateService) GetConfirmCount(user, userToken, language strin
 	return
 }
 
-func (s *RequestTemplateService) QueryListByName(name string) (list []*models.RequestTemplateTable, err error) {
-	return s.requestTemplateDao.QueryListByName(name)
+func (s *RequestTemplateService) QueryListByNameNotContainsCancel(name string) (list []*models.RequestTemplateTable, err error) {
+	return s.requestTemplateDao.QueryListByNameNotContainsCancel(name)
 }
 
 func (s *RequestTemplateService) CreateWorkflowFormTemplate(session *xorm.Session, requestTemplateId, procDefId, userToken, language string) (err error) {

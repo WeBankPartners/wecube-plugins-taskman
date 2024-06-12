@@ -52,7 +52,7 @@ func CreateRequestTemplate(c *gin.Context) {
 		return
 	}
 	// 校验名称是否重复
-	list, err = service.GetRequestTemplateService().QueryListByName(param.Name)
+	list, err = service.GetRequestTemplateService().QueryListByNameNotContainsCancel(param.Name)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -239,26 +239,27 @@ func UpdateRequestTemplate(c *gin.Context) {
 		return
 	}
 	// 校验名称重复
-	list, err = service.GetRequestTemplateService().QueryListByName(param.Name)
+	list, err = service.GetRequestTemplateService().QueryListByNameNotContainsCancel(param.Name)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	if len(list) > 0 {
-		// 只有一条数据,判断是否为当前数据
-		if len(list) == 1 && (param.Id == list[0].Id || list[0].Status == string(models.RequestTemplateStatusCancel)) {
-			repeatFlag = false
-		} else {
-			for _, template := range list {
-				// 说明是 相同模版的不同版本
-				if template.Id == param.RecordId {
-					repeatFlag = false
-				}
-			}
-		}
-	} else {
+	switch len(list) {
+	case 0:
 		// 没有查询到数据repeat为false
 		repeatFlag = false
+	case 1:
+		// 只有一条数据,判断是否为当前数据
+		if param.Id == list[0].Id {
+			repeatFlag = false
+		}
+	default:
+		for _, template := range list {
+			// 说明是 相同模版的不同版本
+			if template.Id == param.RecordId {
+				repeatFlag = false
+			}
+		}
 	}
 	if repeatFlag {
 		middleware.ReturnError(c, exterror.New().RequestTemplateNameRepeatError)

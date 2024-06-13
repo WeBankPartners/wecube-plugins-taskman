@@ -16,7 +16,7 @@
       ></Button>
     </div>
     <div v-if="editElement.required === 'no'" class="box">
-      <Row v-for="(i, index) in value" :key="index" class="box-item">
+      <Row v-for="(i, index) in value" :key="index" class="box-item" :gutter="5">
         <Col :span="6" class="name">{{ getFormItemTitle(i.name) }}</Col>
         <Col :span="6" class="operator">{{ operatorMap[i.operator] || '-' }}</Col>
         <Col :span="12" class="value">
@@ -160,22 +160,23 @@ export default {
     flex-direction: column;
     min-height: 50px;
     border: 1px dashed #d7dadc;
-    padding: 0 10px 10px 10px;
+    padding: 0 5px 10px 5px;
     &-item {
       display: flex;
       font-size: 12px;
       line-height: 20px;
       margin-top: 10px;
       width: 100%;
+      word-break: break-all;
       .name {
-        text-align: center;
+        text-align: left;
       }
       .operator {
-        text-align: center;
+        text-align: left;
         color: #2db7f5;
       }
       .value {
-        text-align: center;
+        text-align: left;
         overflow: hidden;
         max-width: 100%;
         text-overflow: ellipsis;

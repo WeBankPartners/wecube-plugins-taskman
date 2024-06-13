@@ -18,7 +18,7 @@
           <!--表单项-->
           <Col :span="6">
             <FormItem label="" prop="name">
-              <Select v-model="i.name" :disabled="disabled" @on-change="handleNameChange">
+              <Select v-model="i.name" :disabled="disabled" @on-change="handleNameChange(index)">
                 <Option v-for="j in nameList" :key="j.id" :value="j.name">{{ j.title }}</Option>
               </Select>
             </FormItem>
@@ -223,10 +223,18 @@ export default {
         })
       }
       this.visible = true
+      // 表单项下拉列表
       this.nameList = this.finalElement[0].attrs.filter(i => i.name !== this.editElement.name)
-      this.refreshSelectAttrs()
+      // 刷新符号下拉列表
+      this.refreshSelectAttrs(true)
+      // 获取值为select类型下拉列表
+      this.selectAttrs.forEach((item, index) => {
+        if (['select', 'wecmdbEntity'].includes(item.elementType)) {
+          this.getRefOptions(true, index)
+        }
+      })
     },
-    refreshSelectAttrs () {
+    refreshSelectAttrs (need) {
       this.selectAttrs = []
       this.hiddenCondition.forEach(i => {
         // 新加一行空数据处理
@@ -237,29 +245,30 @@ export default {
           this.selectAttrs.push(this.finalElement[0].attrs[findIndex])
         }
       })
-    },
-    handleNameChange () {
-      // 过滤已选表单项
-      // this.nameList = this.nameList.filter(i => {
-      //   const arr = this.hiddenCondition.map(m => m.name)
-      //   return !arr.includes(i.name)
-      // })
-      this.refreshSelectAttrs()
-      this.selectAttrs.forEach(item => {
-        let type = ''
-        if (['input', 'textarea'].includes(item.elementType)) {
-          type = 'input'
-        } else if (item.elementType === 'datePicker') {
-          type = 'dateTime'
-        } else if (['select', 'wecmdbEntity'].includes(item.elementType)) {
-          if (['Y', 'yes'].includes(item.multiple)) {
-            type = 'multipleSelect'
-          } else {
-            type = 'singleSelect'
+      // 刷新符号下拉列表
+      if (need) {
+        this.selectAttrs.forEach(item => {
+          let type = ''
+          if (['input', 'textarea'].includes(item.elementType)) {
+            type = 'input'
+          } else if (item.elementType === 'datePicker') {
+            type = 'dateTime'
+          } else if (['select', 'wecmdbEntity'].includes(item.elementType)) {
+            if (['Y', 'yes'].includes(item.multiple)) {
+              type = 'multipleSelect'
+            } else {
+              type = 'singleSelect'
+            }
           }
-        }
-        item.operatorList = this.operatorList.filter(i => i.condition.includes(type))
-      })
+          item.operatorList = this.operatorList.filter(i => i.condition.includes(type))
+        })
+      }
+    },
+    handleNameChange (index) {
+      // 清空符号和值
+      this.hiddenCondition[index].operator = ''
+      this.hiddenCondition[index].value = ''
+      this.refreshSelectAttrs(true)
     },
     handleOperatorChange (val, index) {
       if (val === 'range') {

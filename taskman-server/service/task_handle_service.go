@@ -27,15 +27,26 @@ func (s *TaskHandleService) CreateTaskHandleByTemplate(taskId, userToken, langua
 				if taskTemplateDto.Id == taskTemplate.Id && len(taskTemplateDto.HandleTemplates) > 0 {
 					// 角色管理员
 					if taskTemplate.HandleMode == string(models.TaskTemplateHandleModeAdmin) {
+						taskHandleTemplateList, _ := GetTaskTemplateService().QueryTaskHandleTemplateByTaskTemplate(taskTemplate.Id)
 						result, _ := GetRoleService().GetRoleAdministrators(request.Role, userToken, language)
 						if len(result) > 0 && result[0] != "" {
-							actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle (id,task,role,handler,created_time,updated_time) values(?,?,?,?,?,?)",
-								Param: []interface{}{guid.CreateGuid(), taskId, request.Role, result[0], now, now}})
+							if len(taskHandleTemplateList) > 0 && taskHandleTemplateList[0].Id != "" {
+								actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle (id,task_handle_template,task,role,handler,created_time,updated_time) values(?,?,?,?,?,?,?)",
+									Param: []interface{}{guid.CreateGuid(), taskHandleTemplateList[0].Id, taskId, request.Role, result[0], now, now}})
+							} else {
+								actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle (id,task,role,handler,created_time,updated_time) values(?,?,?,?,?,?)",
+									Param: []interface{}{guid.CreateGuid(), taskId, request.Role, result[0], now, now}})
+							}
 							go NotifyTaskAssignMail(request.Name, taskTemplate.Name, calcExpireTime(now, taskTemplate.ExpireDay), result[0], userToken, language)
 						} else {
 							// 没有找到角色管理员,用本组兜底
-							actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle (id,task,role,created_time,updated_time) values(?,?,?,?,?,?)",
-								Param: []interface{}{guid.CreateGuid(), taskId, request.Role, now, now}})
+							if len(taskHandleTemplateList) > 0 && taskHandleTemplateList[0].Id != "" {
+								actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle (id,task_handle_template,task,role,handler,created_time,updated_time) values(?,?,?,?,?,?,?)",
+									Param: []interface{}{guid.CreateGuid(), taskHandleTemplateList[0].Id, taskId, request.Role, now, now}})
+							} else {
+								actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle (id,task,role,created_time,updated_time) values(?,?,?,?,?,?)",
+									Param: []interface{}{guid.CreateGuid(), taskId, request.Role, now, now}})
+							}
 						}
 						continue
 					}

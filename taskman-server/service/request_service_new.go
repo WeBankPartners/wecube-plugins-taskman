@@ -1376,6 +1376,7 @@ func getTaskProgress(role, userToken, language string, taskTemplateList []*model
 			}
 			// 如果是角色管理员审批,用户提交匹配不上,需要查询接口拿到
 			if taskTemplate.HandleMode == string(models.TaskTemplateHandleModeAdmin) {
+				requestProgress.TaskHandleList = []*models.TaskHandleNode{}
 				result, _ := GetRoleService().GetRoleAdministrators(role, userToken, language)
 				if len(result) > 0 && result[0] != "" {
 					// 设置显示名

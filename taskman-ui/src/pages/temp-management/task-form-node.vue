@@ -501,7 +501,7 @@ export default {
         }
         if (infoFormColumn.children.length > 0) {
           this.tableColumns.splice(index, 0, infoFormColumn)
-          this.filterColumns.push(dataFormColumn)
+          this.filterColumns.push(infoFormColumn)
         }
         this.$emit('dataFormFilterChange')
       })

@@ -95,7 +95,12 @@ const isEmpty = val => {
 
 // 包含全部
 const evaluateContainsAll = (value, inputVal) => {
-  const conditionArr = value.split(',') || []
+  let conditionArr
+  if (Array.isArray(value)) {
+    conditionArr = value
+  } else {
+    conditionArr = value.split(',') || []
+  }
   if (Array.isArray(inputVal)) {
     return conditionArr.every(i => inputVal.includes(i))
   } else {
@@ -105,7 +110,12 @@ const evaluateContainsAll = (value, inputVal) => {
 
 // 包含任意
 const evaluateContainsAny = (value, inputVal) => {
-  const conditionArr = value.split(',') || []
+  let conditionArr
+  if (Array.isArray(value)) {
+    conditionArr = value
+  } else {
+    conditionArr = value.split(',') || []
+  }
   if (Array.isArray(inputVal)) {
     return conditionArr.some(i => inputVal.includes(i))
   } else {
@@ -115,7 +125,12 @@ const evaluateContainsAny = (value, inputVal) => {
 
 // 不包含
 const evaluateNotContains = (value, inputVal) => {
-  const conditionArr = value.split(',') || []
+  let conditionArr
+  if (Array.isArray(value)) {
+    conditionArr = value
+  } else {
+    conditionArr = value.split(',') || []
+  }
   if (Array.isArray(inputVal)) {
     return conditionArr.every(i => !inputVal.includes(i))
   } else {

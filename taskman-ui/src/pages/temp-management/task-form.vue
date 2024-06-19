@@ -781,7 +781,7 @@ export default {
                         finalData.items.forEach((item, itemIndex) => {
                           item.sort = itemIndex + 1
                         })
-                        saveRequestGroupCustomForm(finalData)
+                        this.isCheck !== 'Y' && saveRequestGroupCustomForm(finalData)
                       }
                       item.isEdit = 'no'
                       this.$set(item, 'isEditDisabled', true)

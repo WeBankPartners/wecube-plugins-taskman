@@ -477,11 +477,11 @@ export default {
         const index = this.tableColumns.findIndex(column => column.key === 'action')
         if (dataFormColumn.children.length > 0) {
           this.tableColumns.splice(index, 0, dataFormColumn)
-          this.filterColumns.push(dataFormColumn)
+          this.filterColumns.unshift(dataFormColumn)
         }
         if (infoFormColumn.children.length > 0) {
           this.tableColumns.splice(index, 0, infoFormColumn)
-          this.filterColumns.push(infoFormColumn)
+          this.filterColumns.unshift(infoFormColumn)
         }
         this.$emit('dataFormFilterChange')
       })

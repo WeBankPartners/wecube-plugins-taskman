@@ -133,7 +133,7 @@
 
 <script>
 import { getWeCmdbOptions } from '@/api/server'
-import { deepClone } from '../../util'
+import { deepClone, fixArrStrToJsonArray } from '../../util'
 export default {
   props: {
     finalElement: {
@@ -299,7 +299,7 @@ export default {
       const item = this.finalElement[0].attrs.find(i => i.name === name)
       // 模板自定义下拉类型
       if (item.elementType === 'select' && item.entity === '') {
-        this.$set(this.refOptionMap, item.name, JSON.parse(item.dataOptions || '[]'))
+        this.$set(this.refOptionMap, item.name, fixArrStrToJsonArray(item.dataOptions))
         return
       }
       // cmdb下发

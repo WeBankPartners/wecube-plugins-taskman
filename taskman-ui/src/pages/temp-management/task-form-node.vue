@@ -85,7 +85,7 @@
 
 <script>
 import LimitSelect from '@/pages/components/limit-select.vue'
-import { deepClone } from '@/pages/util'
+import { deepClone, fixArrStrToJsonArray } from '@/pages/util'
 import {
   getUserRoles,
   getHandlerRoles,
@@ -509,7 +509,7 @@ export default {
     async getRefOptions (item) {
       // 模板自定义下拉类型
       if (item.elementType === 'select' && item.entity === '') {
-        this.$set(this.filterOptions, item.name, JSON.parse(item.dataOptions || '[]'))
+        this.$set(this.filterOptions, item.name, fixArrStrToJsonArray(item.dataOptions))
         return
       }
       // cmdb下发

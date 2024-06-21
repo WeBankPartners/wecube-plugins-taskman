@@ -132,7 +132,7 @@
 <script>
 import LimitSelect from '@/pages/components/limit-select.vue'
 import { getRefOptions, getWeCmdbOptions, saveFormData, getExpressionData } from '@/api/server'
-import { debounce, deepClone } from '@/pages/util'
+import { debounce, deepClone, fixArrStrToJsonArray } from '@/pages/util'
 import { evaluateCondition } from '../evaluate'
 export default {
   components: {
@@ -352,7 +352,7 @@ export default {
       // 模板自定义下拉类型
       if (titleObj.elementType === 'select' && titleObj.entity === '') {
         if (!first) return
-        row[titleObj.name + 'Options'] = JSON.parse(titleObj.dataOptions || '[]')
+        row[titleObj.name + 'Options'] = fixArrStrToJsonArray(titleObj.dataOptions)
         this.$set(this.tableData, index, row)
         return
       }

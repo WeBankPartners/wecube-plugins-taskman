@@ -73,6 +73,7 @@
 import LimitSelect from '@/pages/components/limit-select.vue'
 import { getRefOptions, getWeCmdbOptions } from '@/api/server'
 import { evaluateCondition } from '../evaluate'
+import { fixArrStrToJsonArray } from '@/pages/util'
 export default {
   components: {
     LimitSelect
@@ -181,7 +182,7 @@ export default {
     async getRefOptions (titleObj) {
       // taskman模板管理配置的普通下拉类型(值用逗号拼接)
       if (titleObj.elementType === 'select' && titleObj.entity === '') {
-        this.$set(this.entityData, titleObj.name + 'Options', JSON.parse(titleObj.dataOptions || '[]'))
+        this.$set(this.entityData, titleObj.name + 'Options', fixArrStrToJsonArray(titleObj.dataOptions))
         return
       }
       // taskman模板管理配置的引用下拉类型

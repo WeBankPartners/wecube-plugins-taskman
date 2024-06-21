@@ -522,7 +522,7 @@ import {
 import ComponentLibraryModal from './components/component-library-modal.vue'
 import ComponentLibraryList from './components/component-library-list.vue'
 import HiddenCondition from './components/hidden-condition.vue'
-import { uniqueArr, deepClone, findFirstDuplicateIndex } from '@/pages/util'
+import { uniqueArr, deepClone, findFirstDuplicateIndex, fixArrStrToJsonArray } from '@/pages/util'
 export default {
   components: {
     ApprovalFormNode,
@@ -674,7 +674,7 @@ export default {
     },
     // 数据集回显
     getDataOptionsDisplay () {
-      const options = JSON.parse(this.editElement.dataOptions || '[]')
+      const options = fixArrStrToJsonArray(this.editElement.dataOptions)
       const labelArr = options.map(item => item.label)
       return labelArr.join(',')
     },
@@ -1314,7 +1314,7 @@ export default {
     },
     // #region 普通select数据集配置逻辑
     dataOptionsMgmt () {
-      let newDataOptions = JSON.parse(this.editElement.dataOptions || '[]')
+      let newDataOptions = fixArrStrToJsonArray(this.editElement.dataOptions)
       this.$refs.dataSourceConfigRef.loadPage(newDataOptions)
     },
     setDataOptions (options) {
@@ -1327,7 +1327,7 @@ export default {
     computedOption (element) {
       let res = []
       if (element.elementType === 'select') {
-        res = JSON.parse(element.dataOptions || '[]')
+        res = fixArrStrToJsonArray(element.dataOptions)
       } else if (element.elementType === 'wecmdbEntity') {
       }
       return res

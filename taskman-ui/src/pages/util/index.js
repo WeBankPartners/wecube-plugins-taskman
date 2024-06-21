@@ -96,3 +96,17 @@ export const findFirstDuplicateIndex = arr => {
   }
   return -1 // 如果没有重复元素，则返回-1
 }
+
+// 兼容模板下拉数据集格式(逗号隔开字符串和JSON数组)
+export const fixArrStrToJsonArray = val => {
+  let options = []
+  if (!val || (val && val.startsWith('['))) {
+    options = JSON.parse(val || '[]')
+  } else {
+    const arr = val.split(',')
+    options = arr.map(i => {
+      return { label: i, value: i }
+    })
+  }
+  return options
+}

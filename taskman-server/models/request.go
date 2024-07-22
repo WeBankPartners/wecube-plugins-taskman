@@ -142,7 +142,8 @@ type PlatformDataObj struct {
 	RoleAdministrator      string `json:"roleAdministrator" xorm:"-"`                            // 角色管理员
 	ExpireDay              int    `json:"expireDay" xorm:"expire_day"`                           // 过期时间
 	RequestRefId           string `json:"requestRefId" xorm:"request_ref_id"`                    // 请求关联ID
-	RequestRefType         int    `json:"requestRefType" xorm:"-"`                               // 请求关联ID
+	RequestRefType         int    `json:"requestRefType" xorm:"-"`                               // 请求关联类型
+	RefTemplateId          string `json:"refTemplateId" xorm:"-"`                                // 请求关联模版Id
 	RequestRefName         string `json:"requestRefName" xorm:"-"`                               // 请求关联名称
 }
 
@@ -318,10 +319,11 @@ type RequestForm struct {
 	AttachFiles         []*AttachFileTable        `json:"attachFiles"`         // 请求附件
 	FormData            []*RequestPreDataTableObj `json:"formData"`
 	RootEntityId        string                    `json:"rootEntityId"`
-	RevokeBtn           bool                      `json:"revokeBtn"` // 是否出撤回按钮
-	RefId               string                    `json:"refId"`     // 引用ID
-	RefType             int                       `json:"refType"`   // 引用ID类型
-	RefName             string                    `json:"refName"`   // 引用请求名称
+	RevokeBtn           bool                      `json:"revokeBtn"`     // 是否出撤回按钮
+	RefId               string                    `json:"refId"`         // 引用ID
+	RefType             int                       `json:"refType"`       // 引用ID类型
+	RefName             string                    `json:"refName"`       // 引用请求名称
+	RefTemplateId       string                    `json:"refTemplateId"` // 引用请求模版
 }
 
 type CustomForm struct {

@@ -715,6 +715,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 				requestTemp, _ := GetSimpleRequest(platformDataObj.RequestRefId)
 				platformDataObj.RequestRefName = requestTemp.Name
 				platformDataObj.RequestRefType = requestTemp.Type
+				platformDataObj.RefTemplateId = requestTemp.RequestTemplate
 			}
 		}
 		if len(actions) > 0 {
@@ -1521,6 +1522,7 @@ func getRequestForm(request *models.RequestTable, taskId, userToken, language st
 	if form.RefId != "" {
 		requestTemp, _ := GetSimpleRequest(form.RefId)
 		form.RefName = requestTemp.Name
+		form.RefTemplateId = requestTemp.RequestTemplate
 	}
 	return
 }

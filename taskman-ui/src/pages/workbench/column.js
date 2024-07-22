@@ -264,17 +264,27 @@ export default {
             return <span>{`${params.row.roleDisplay} / ${params.row.createdBy}`}</span>
           }
         },
+        // 关联单
         requestRefId: {
           title: this.$t('tw_ref'),
           width: 230,
           key: 'requestRefId',
           render: (h, params) => {
             const { requestRefName, requestRefId, requestRefType } = params.row
-            return (
-              <span>
-                {requestRefName ? `【${this.typeMap[requestRefType]}】${requestRefName}【${requestRefId}】` : '-'}
-              </span>
-            )
+            if (requestRefId) {
+              return (
+                <span
+                  style="cursor:pointer;color:#5cadff;"
+                  onClick={() => {
+                    this.handleViewRefDetail(params.row)
+                  }}
+                >
+                  {requestRefName ? `【${this.typeMap[requestRefType]}】${requestRefName}【${requestRefId}】` : '-'}
+                </span>
+              )
+            } else {
+              return <span>-</span>
+            }
           }
         },
         action: {

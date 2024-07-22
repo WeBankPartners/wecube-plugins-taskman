@@ -44,7 +44,7 @@
           </Input>
         </FormItem>
       </Form>
-      <Form ref="formInline" inline :label-width="100" class="table-form">
+      <Form ref="formInline" :inline="false" :label-width="100" class="table-form">
         <FormItem :label="$t('tw_allocation')">
           <Select v-model="activeApprovalNode.handleMode" @on-change="changeRoleType" style="width: 260px;">
             <Option v-for="item in roleTypeOptions" :value="item.value" :key="item.value">{{ item.label }}</Option>

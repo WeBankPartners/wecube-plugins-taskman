@@ -114,7 +114,9 @@
               <Col :span="12" class="info-item">
                 <div class="info-item-label">{{ $t('tw_ref') }}：</div>
                 <div class="info-item-value">
-                  {{ detail.refName ? `【${typeMap[detail.refType]}】${detail.refName}【${detail.refId}】` : '-' }}
+                  <span style="cursor:pointer;color:#5cadff;" @click="handleViewRefDetail">
+                    {{ detail.refName ? `【${typeMap[detail.refType]}】${detail.refName}【${detail.refId}】` : '-' }}
+                  </span>
                 </div>
               </Col>
             </Row>
@@ -378,6 +380,13 @@ export default {
         implement_custom: '#b886f8',
         confirm: '#19be6b'
       },
+      detailRouteMap: {
+        '1': 'detailPublish',
+        '2': 'detailRequest',
+        '3': 'detailProblem',
+        '4': 'detailEvent',
+        '5': 'detailChange'
+      },
       lang: window.localStorage.getItem('lang') || 'zh-CN'
     }
   },
@@ -426,6 +435,13 @@ export default {
       } else {
         this.$router.back()
       }
+    },
+    // 查看关联单
+    async handleViewRefDetail () {
+      window.sessionStorage.currentPath = '' // 先清空session缓存页面，不然打开新标签页面会回退到缓存的页面
+      const subPath = this.detailRouteMap[this.actionName]
+      const path = `${window.location.origin}/#/taskman/workbench/${subPath}?requestId=${this.detail.refId}&requestTemplate=${this.detail.refTemplateId}`
+      window.open(path, '_blank')
     },
     // 获取详情数据
     async getRequestInfoNew () {

@@ -451,6 +451,13 @@ export default {
         }
       })
     },
+    // 查看关联单
+    async handleViewRefDetail (row) {
+      window.sessionStorage.currentPath = '' // 先清空session缓存页面，不然打开新标签页面会回退到缓存的页面
+      const subPath = this.detailRouteMap[this.actionName]
+      const path = `${window.location.origin}/#/taskman/workbench/${subPath}?requestId=${row.requestRefId}&requestTemplate=${row.refTemplateId}`
+      window.open(path, '_blank')
+    },
     // 表格操作-处理(任务、审批、定版、请求确认)
     async handleEdit (row) {
       const path = this.detailRouteMap[this.actionName]

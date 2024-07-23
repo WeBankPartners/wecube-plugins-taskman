@@ -269,16 +269,18 @@ export default {
       const { statusCode, data } = await getLibraryFormTypeList()
       if (statusCode === 'OK') {
         const arr = data || []
-        this.formTypeList = arr.map(i => {
-          return {
-            label: i === 'requestInfo' ? this.$t('tw_information_form') : i,
-            value: i
-          }
-        })
-        // 将信息表单置于数组第一个
-        const index = this.formTypeList.findIndex(i => i.value === 'requestInfo')
-        const item = this.formTypeList.splice(index, 1)[0]
-        this.formTypeList.unshift(item)
+        if (Array.isArray(arr) && arr.length > 0) {
+          this.formTypeList = arr.map(i => {
+            return {
+              label: i === 'requestInfo' ? this.$t('tw_information_form') : i,
+              value: i
+            }
+          })
+          // 将信息表单置于数组第一个
+          const index = this.formTypeList.findIndex(i => i.value === 'requestInfo')
+          const item = this.formTypeList.splice(index, 1)[0]
+          this.formTypeList.unshift(item)
+        }
       }
     },
     // 获取创建人下拉列表

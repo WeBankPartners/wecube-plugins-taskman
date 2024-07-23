@@ -39,6 +39,7 @@ type FormItemTemplateTable struct {
 	ControlSwitch     string           `json:"controlSwitch" xorm:"control_switch"`         // 控制审批/任务开关
 	FormItemLibrary   *string          `json:"formItemLibrary" xorm:"form_item_library"`    // 表单项组件库
 	HiddenCondition   string           `json:"hiddenCondition" xorm:"hidden_condition"`     // 隐藏条件
+	Formula           string           `json:"formula" xorm:"formula"`                      // 表单项计算公式
 	SelectList        []*EntityDataObj `json:"selectList" xorm:"-"`
 	Active            bool             `json:"active" xorm:"-"` // 是否选中状态
 }
@@ -80,6 +81,7 @@ type FormItemTemplateDto struct {
 	ControlSwitch     string                   `json:"controlSwitch"`     // 控制审批/任务开关
 	HiddenCondition   []*QueryRequestFilterObj `json:"hiddenCondition"`   // 隐藏条件
 	FormItemLibrary   *string                  `json:"formItemLibrary"`   // 表单项组件库
+	Formula           string                   `json:"formula"`           // 表达项计算公式
 	SelectList        []*EntityDataObj         `json:"selectList"`
 	Active            bool                     `json:"active"` // 是否选中状态
 }
@@ -160,6 +162,7 @@ func ConvertFormItemTemplateDto2Model(dto *FormItemTemplateDto) *FormItemTemplat
 		ControlSwitch:     dto.ControlSwitch,
 		FormItemLibrary:   dto.FormItemLibrary,
 		HiddenCondition:   hiddenCondition,
+		Formula:           dto.Formula,
 		SelectList:        dto.SelectList,
 		Active:            dto.Active,
 	}
@@ -202,6 +205,7 @@ func ConvertFormItemTemplateModel2Dto(model *FormItemTemplateTable, itemGroup Fo
 		FormItemLibrary:   model.FormItemLibrary,
 		SelectList:        model.SelectList,
 		Active:            model.Active,
+		Formula:           model.Formula,
 	}
 	dto.ItemGroupType = itemGroup.ItemGroupType
 	dto.ItemGroupRule = itemGroup.ItemGroupRule

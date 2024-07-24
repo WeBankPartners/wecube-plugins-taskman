@@ -587,8 +587,8 @@ func SaveTaskFormNew(task *models.TaskTable, operator string, param *models.Task
 						}
 						valueString = strings.Join(tmpV, ",")
 					} else {
-						err = fmt.Errorf("row:%s key:%s value:%v is not array,format to []interface{} fail", valueObj.Id, k, v)
-						return
+						log.Logger.Info(fmt.Sprintf("row:%s key:%s value:%v is not array,format to []interface{} fail", valueObj.Id, k, v))
+						valueString = ""
 					}
 				}
 				// 从数据池里尝试查找有没有已存在的数据(同一个itemGroup，同一个数据行下的同一属性)

@@ -6,8 +6,8 @@ import ViewUI from 'view-design'
 import 'view-design/dist/styles/iview.css'
 import './style/index.scss'
 import VueI18n from 'vue-i18n'
+import { i18n } from './locale/i18n/index.js'
 import locale from 'view-design/dist/locale/en-US'
-import './locale/i18n'
 import { ValidationProvider } from 'vee-validate'
 import './vee-validate-local-config'
 import { getCookie } from '@/pages/util/cookie'
@@ -34,5 +34,6 @@ router.beforeEach((to, from, next) => {
 
 new Vue({
   router,
-  render: h => h(App)
+  render: h => h(App),
+  i18n
 }).$mount('#app')

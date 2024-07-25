@@ -7,18 +7,18 @@ import en from 'view-design/dist/locale/en-US'
 import ZH from './zh-CN.json'
 import EN from './en-US.json'
 
-Vue.use(VueI18n)
+// Vue.use(VueI18n)
 
-const messages = {
-  'zh-CN': Object.assign(ZH, zh),
-  'en-US': Object.assign(EN, en)
-}
+// const messages = {
+//   'zh-CN': Object.assign(ZH, zh),
+//   'en-US': Object.assign(EN, en)
+// }
 
-export const i18n = new VueI18n({
-  locale:
-    localStorage.getItem('lang') || (navigator.language || navigator.userLanguage === 'zh-CN' ? 'zh-CN' : 'en-US'),
-  messages
-})
+// export const i18n = new VueI18n({
+//   locale:
+//     localStorage.getItem('lang') || (navigator.language || navigator.userLanguage === 'zh-CN' ? 'zh-CN' : 'en-US'),
+//   messages
+// })
 
 // Vue.locale('zh-CN', Object.assign(zh, ZH))
 // Vue.locale('en-US', Object.assign(en, EN))

@@ -24,6 +24,7 @@ import workbenchChangeCreate from '@/pages/workbench/change/create'
 import workbenchChangeDetail from '@/pages/workbench/change/detail'
 import workbenchChangeList from '@/pages/workbench/change/list'
 import workbenchRequestAudit from '@/pages/workbench/request-audit.vue'
+import workbenchVue  from '@/pages/workbench.vue'
 
 const router = [
   {
@@ -69,7 +70,7 @@ const router = [
   {
     path: '/taskman/workbench',
     name: 'taskman/workbench',
-    component: () => import('@/pages/workbench.vue'),
+    component: workbenchVue,
     redirect: '/taskman/workbench/dashboard',
     children: [
       // 个人工作台

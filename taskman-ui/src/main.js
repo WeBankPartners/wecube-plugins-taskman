@@ -16,8 +16,6 @@ Vue.component('ValidationProvider', ValidationProvider)
 Vue.config.productionTip = false
 Vue.prototype.$bus = new Vue()
 
-console.error('enter main.js')
-
 Vue.use(ViewUI, {
   transfer: true,
   size: 'default',

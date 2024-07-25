@@ -19,6 +19,7 @@
     "vee-validate": "^3.4.12",
     "view-design": "4.3.2",
     "vue": "2.6.6",
+    "vue-i18n": "^8.28.2",
     "vue-router": "3.0.1",
     "vuedraggable": "^2.24.3",
     "webpack": "4.29.6"

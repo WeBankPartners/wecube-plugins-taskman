@@ -51,9 +51,6 @@ module.exports = {
   },
   productionSourceMap: process.env.PLUGIN !== 'plugin',
   configureWebpack: config => {
-    config.mode = 'development';
-    config.optimization.minimize = false;
-    config.devtool = 'source-map';
     if (process.env.PLUGIN === 'plugin') {
       config.optimization.splitChunks = {}
       return

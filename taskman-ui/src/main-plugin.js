@@ -7,7 +7,7 @@ import './style/index.scss'
 import zhCN from '@/locale/i18n/zh-CN.json'
 import enUS from '@/locale/i18n/en-US.json'
 import { ValidationProvider } from 'vee-validate'
-import './vee-validate-local-config'
+// import './vee-validate-local-config'
 
 import Dashboard from '@/pages/workbench/index.vue'
 

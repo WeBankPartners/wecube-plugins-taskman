@@ -1,11 +1,11 @@
-import template from '@/pages/template'
-import templateGroup from '@/pages/template-group'
-import templateManagementIndex from '@/pages/temp-management/index'
-import request from '@/pages/request'
-import requestManagementIndex from '@/pages/request-management/index'
-import task from '@/pages/task'
-import taskManagementIndex from '@/pages/task-mgmt/index'
-import requestCheck from '@/pages/request-management/request-check'
+import template from '@/pages/template.vue'
+import templateGroup from '@/pages/template-group.vue'
+import templateManagementIndex from '@/pages/temp-management/index.vue'
+import request from '@/pages/request.vue'
+import requestManagementIndex from '@/pages/request-management/index.vue'
+import task from '@/pages/task.vue'
+import taskManagementIndex from '@/pages/task-mgmt/index.vue'
+import requestCheck from '@/pages/request-management/request-check.vue'
 const router = [
   {
     path: '/taskman/template-mgmt',

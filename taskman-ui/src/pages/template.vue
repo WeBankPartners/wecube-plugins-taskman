@@ -125,12 +125,12 @@ import {
   templateConfirmCount
 } from '@/api/server'
 import { debounce } from '@/pages/util'
-import ScrollTag from '@/pages/components/scroll-tag.vue'
+// import ScrollTag from '@/pages/components/scroll-tag.vue'
 export default {
   name: '',
-  components: {
-    ScrollTag
-  },
+  // components: {
+  //   ScrollTag
+  // },
   data () {
     return {
       MODALHEIGHT: 500,
@@ -260,17 +260,17 @@ export default {
             })
           }
         },
-        {
-          title: this.$t('useRoles'),
-          minWidth: 120,
-          key: 'mgmtRoles',
-          render: (h, params) => {
-            const list = params.row.useRoles.map(item => {
-              return item.displayName
-            })
-            return <ScrollTag list={list} />
-          }
-        },
+        // {
+        //   title: this.$t('useRoles'),
+        //   minWidth: 120,
+        //   key: 'mgmtRoles',
+        //   render: (h, params) => {
+        //     const list = params.row.useRoles.map(item => {
+        //       return item.displayName
+        //     })
+        //     return <ScrollTag list={list} />
+        //   }
+        // },
         {
           title: this.$t('updatedBy'),
           sortable: 'updatedBy',

@@ -7,6 +7,8 @@ import './style/index.scss'
 import zhCN from '@/locale/i18n/zh-CN.json'
 import enUS from '@/locale/i18n/en-US.json'
 import { ValidationProvider } from 'vee-validate'
+
+console.error('enter main-plugin.js')
 // import './vee-validate-local-config'
 
 // import Dashboard from '@/pages/workbench/index.vue'

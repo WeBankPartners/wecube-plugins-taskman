@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import VueI18n from 'vue-i18n'
+// import VueI18n from 'vue-i18n'
 
 import zh from 'view-design/dist/locale/zh-CN'
 import en from 'view-design/dist/locale/en-US'

@@ -9,17 +9,17 @@ import enUS from '@/locale/i18n/en-US.json'
 import { ValidationProvider } from 'vee-validate'
 // import './vee-validate-local-config'
 
-import Dashboard from '@/pages/workbench/index.vue'
+// import Dashboard from '@/pages/workbench/index.vue'
 
 window.component('ValidationProvider', ValidationProvider)
-window.addHomepageComponent &&
-  window.addHomepageComponent({
-    code: 'TASK_WORKBENCH',
-    name: () => {
-      return window.vm.$t('tw_workbench')
-    },
-    component: Dashboard
-  })
+// window.addHomepageComponent &&
+//   window.addHomepageComponent({
+//     code: 'TASK_WORKBENCH',
+//     name: () => {
+//       return window.vm.$t('tw_workbench')
+//     },
+//     component: Dashboard
+//   })
 
 window.locale('zh-CN', zhCN)
 window.locale('en-US', enUS)

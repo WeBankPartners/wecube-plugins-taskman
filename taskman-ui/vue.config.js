@@ -37,6 +37,9 @@ module.exports = {
     }
 
     config.when(process.env.PLUGIN === 'plugin', config => {
+      config.mode = 'development';
+      config.optimization.minimize = false;
+      config.devtool = 'source-map';
       config
         .entry('app')
         .clear()

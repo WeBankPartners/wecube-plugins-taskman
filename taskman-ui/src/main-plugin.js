@@ -1,4 +1,4 @@
-import 'regenerator-runtime/runtime'
+// import 'regenerator-runtime/runtime'
 import router from './router-plugin'
 import routerP from './router-plugin-p'
 import 'view-design/dist/styles/iview.css'

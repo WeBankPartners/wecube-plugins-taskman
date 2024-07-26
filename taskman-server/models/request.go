@@ -319,11 +319,14 @@ type RequestForm struct {
 	AttachFiles         []*AttachFileTable        `json:"attachFiles"`         // 请求附件
 	FormData            []*RequestPreDataTableObj `json:"formData"`
 	RootEntityId        string                    `json:"rootEntityId"`
-	RevokeBtn           bool                      `json:"revokeBtn"`     // 是否出撤回按钮
-	RefId               string                    `json:"refId"`         // 引用ID
-	RefType             int                       `json:"refType"`       // 引用ID类型
-	RefName             string                    `json:"refName"`       // 引用请求名称
-	RefTemplateId       string                    `json:"refTemplateId"` // 引用请求模版
+	RevokeBtn           bool                      `json:"revokeBtn"`        // 是否出撤回按钮
+	RefId               string                    `json:"refId"`            // 引用ID
+	RefType             int                       `json:"refType"`          // 引用ID类型
+	RefName             string                    `json:"refName"`          // 引用请求名称
+	RefTemplateId       string                    `json:"refTemplateId"`    // 引用请求模版
+	ParentId            string                    `json:"parentId"`         // 历史请求Id
+	ParentName          string                    `json:"parentName"`       // 历史请求名称
+	ParentTemplateId    string                    `json:"parentTemplateId"` // 历史模板ID
 }
 
 type CustomForm struct {

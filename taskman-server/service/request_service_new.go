@@ -1518,11 +1518,17 @@ func getRequestForm(request *models.RequestTable, taskId, userToken, language st
 	}
 	form.RevokeBtn = calcShowRequestRevokeButton(request.Id, request.Status)
 	form.RefId = request.RefId
+	form.ParentId = request.Parent
 	form.RefType = request.RefType
 	if form.RefId != "" {
 		requestTemp, _ := GetSimpleRequest(form.RefId)
 		form.RefName = requestTemp.Name
 		form.RefTemplateId = requestTemp.RequestTemplate
+	}
+	if form.ParentId != "" {
+		requestTemp, _ := GetSimpleRequest(form.ParentId)
+		form.ParentName = requestTemp.Name
+		form.ParentTemplateId = requestTemp.RequestTemplate
 	}
 	return
 }

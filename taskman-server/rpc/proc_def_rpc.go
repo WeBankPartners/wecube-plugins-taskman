@@ -30,7 +30,7 @@ const (
 	pathQueryProcessDefinitionsInstanceTaskNodeContext = "/platform/v1/process/instances/%s/tasknodes/%s/context"
 
 	// pathQueryModel 查询model
-	pathQueryModel = "/platform/v1/models?withAttr=no"
+	pathQueryModel = "/platform/v1/models?withAttr=yes"
 	// pathQueryEntities 查询entity
 	pathQueryEntities = "/platform/v1/data-model/dme/all-entities"
 	// pathQueryEntityModel

@@ -452,6 +452,7 @@
   "tw_home": "首页",
   "tw_ref_id": "关联单ID",
   "tw_ref": "关联单",
+  "tw_historyRef": "历史单",
   "role_invalidDate": "权限到期",
   "role_invalidDatePlaceholder": "不选为永久有效",
   "role_invalidDateValidate": "权限到期时间不能早于当前时间",

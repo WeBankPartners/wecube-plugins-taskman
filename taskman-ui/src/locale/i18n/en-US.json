@@ -454,6 +454,7 @@
   "tw_home": "Home",
   "tw_ref_id": "Association ID",
   "tw_ref": "Association",
+  "tw_historyRef": "History List",
   "role_invalidDate": "Role Expiration Time",
   "role_invalidDatePlaceholder": "Not set to permanent",
   "role_invalidDateValidate": "The permission expiration time cannot be earlier than the current time",

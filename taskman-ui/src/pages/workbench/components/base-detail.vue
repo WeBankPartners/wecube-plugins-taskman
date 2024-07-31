@@ -111,11 +111,21 @@
               </Col>
             </Row>
             <Row style="margin-top:10px;" :gutter="20">
+              <!--关联单-->
               <Col :span="12" class="info-item">
                 <div class="info-item-label">{{ $t('tw_ref') }}：</div>
                 <div class="info-item-value">
-                  <span style="cursor:pointer;color:#5cadff;" @click="handleViewRefDetail">
+                  <span style="cursor:pointer;color:#5cadff;" @click="handleViewRefDetail('ref')">
                     {{ detail.refName ? `【${typeMap[detail.refType]}】${detail.refName}【${detail.refId}】` : '-' }}
+                  </span>
+                </div>
+              </Col>
+              <!--历史单-->
+              <Col :span="12" class="info-item">
+                <div class="info-item-label">{{ $t('tw_historyRef') }}：</div>
+                <div class="info-item-value">
+                  <span style="cursor:pointer;color:#5cadff;" @click="handleViewRefDetail('history')">
+                    {{ detail.parentName ? `${detail.parentName}【${detail.parentId}】` : '-' }}
                   </span>
                 </div>
               </Col>
@@ -437,10 +447,15 @@ export default {
       }
     },
     // 查看关联单
-    async handleViewRefDetail () {
+    async handleViewRefDetail (type) {
       window.sessionStorage.currentPath = '' // 先清空session缓存页面，不然打开新标签页面会回退到缓存的页面
       const subPath = this.detailRouteMap[this.actionName]
-      const path = `${window.location.origin}/#/taskman/workbench/${subPath}?requestId=${this.detail.refId}&requestTemplate=${this.detail.refTemplateId}`
+      let path = ''
+      if (type === 'ref') {
+        path = `${window.location.origin}/#/taskman/workbench/${subPath}?requestId=${this.detail.refId}&requestTemplate=${this.detail.refTemplateId}`
+      } else if (type === 'history') {
+        path = `${window.location.origin}/#/taskman/workbench/${subPath}?requestId=${this.detail.parentId}&requestTemplate=${this.detail.parentTemplateId}`
+      }
       window.open(path, '_blank')
     },
     // 获取详情数据

@@ -3,10 +3,11 @@ import router from './router-plugin'
 import routerP from './router-plugin-p'
 import 'view-design/dist/styles/iview.css'
 import './style/index.scss'
-import './locale/i18n'
+// import './locale/i18n'
 import zhCN from '@/locale/i18n/zh-CN.json'
 import enUS from '@/locale/i18n/en-US.json'
 import { ValidationProvider } from 'vee-validate'
+
 import './vee-validate-local-config'
 
 import Dashboard from '@/pages/workbench/index.vue'

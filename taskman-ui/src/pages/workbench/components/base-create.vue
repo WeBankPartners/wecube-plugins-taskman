@@ -471,14 +471,14 @@ export default {
     },
     // 获取关联单下拉列表
     remoteRefData: debounce(async function (query) {
-      const cur = dayjs().format('YYYY-MM-DD')
-      const pre = dayjs()
-        .subtract(3, 'month')
-        .format('YYYY-MM-DD')
+      // const cur = dayjs().format('YYYY-MM-DD')
+      // const pre = dayjs()
+      //   .subtract(3, 'month')
+      //   .format('YYYY-MM-DD')
       const params = {
         action: this.form.refType, // 所有
-        reportTimeStart: pre + ' 00:00:00',
-        reportTimeEnd: cur + ' 23:59:59',
+        // reportTimeStart: pre + ' 00:00:00',
+        // reportTimeEnd: cur + ' 23:59:59',
         query: query || '',
         startIndex: 0,
         pageSize: 50

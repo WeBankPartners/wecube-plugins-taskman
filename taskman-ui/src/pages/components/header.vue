@@ -32,9 +32,9 @@
                 </a>
               </DropdownItem>
               <DropdownItem name="userMgmt">
-                <a @click="userMgmt" style="width: 100%; display: block;">
+                <a @click="userMgmt" style="width: 100%; display: block">
                   {{ $t('tw_user_mgmt') }}
-                  <Badge :count="pendingCount" @click="userMgmt" style="top:-2px"></Badge>
+                  <Badge :count="pendingCount" @click="userMgmt" style="top: -2px"></Badge>
                 </a>
               </DropdownItem>
               <DropdownItem name="logout" to="/login">
@@ -172,6 +172,7 @@ export default {
       Vue.config.lang = lan
       this.currentLanguage = this.language[lan]
       localStorage.setItem('lang', lan)
+      window.location.reload()
     },
     getLocalLang () {
       let currentLangKey = localStorage.getItem('lang') || navigator.language

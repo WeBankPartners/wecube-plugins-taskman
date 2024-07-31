@@ -33,12 +33,10 @@
     </div>
     <div class="wrapper">
       <div class="template">
-        <Tabs v-model="activeName" @on-click="filterData" style="margin-bottom:10px;">
-          <!--已发布-->
+        <!-- <Tabs v-model="activeName" @on-click="filterData" style="margin-bottom:10px;">
           <TabPane :label="$t('tw_template_publish_tab')" name="confirm"></TabPane>
-          <!--我的草稿-->
-          <!-- <TabPane v-if="draftCardList.length" :label="$t('tw_template_draft_tab')" name="created"></TabPane> -->
-        </Tabs>
+          <TabPane v-if="draftCardList.length" :label="$t('tw_template_draft_tab')" name="created"></TabPane>
+        </Tabs> -->
         <Card :bordered="false" dis-hover :padding="0" style="height:400px;">
           <template v-if="cardList.length">
             <Card v-for="(i, index) in cardList" :key="index" style="width:100%;margin-bottom:20px;">

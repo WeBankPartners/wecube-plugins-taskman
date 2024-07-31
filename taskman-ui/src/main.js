@@ -7,7 +7,8 @@ import 'view-design/dist/styles/iview.css'
 import './style/index.scss'
 import VueI18n from 'vue-i18n'
 import { i18n } from './locale/i18n/index.js'
-import locale from 'view-design/dist/locale/en-US'
+import viewDesignEn from 'view-design/dist/locale/en-US'
+import viewDesignZh from 'view-design/dist/locale/zh-CN'
 import { ValidationProvider } from 'vee-validate'
 import './vee-validate-local-config'
 import { getCookie } from '@/pages/util/cookie'
@@ -20,7 +21,7 @@ Vue.use(ViewUI, {
   transfer: true,
   size: 'default',
   VueI18n,
-  locale
+  locale: i18n.locale === 'en-US' ? viewDesignEn : viewDesignZh
 })
 
 router.beforeEach((to, from, next) => {

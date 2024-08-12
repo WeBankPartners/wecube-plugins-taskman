@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="template-group-list">
     <div>
       <Row>
         <Col span="4">
@@ -19,7 +19,7 @@
         </Col>
         <Col span="4">
           <Button @click="onSearch" type="primary">{{ $t('search') }}</Button>
-          <Button @click="addTempGroup" type="success">{{ $t('add') }}</Button>
+          <Button @click="addTempGroup" style="margin-left:8px;" type="success">{{ $t('add') }}</Button>
         </Col>
       </Row>
     </div>

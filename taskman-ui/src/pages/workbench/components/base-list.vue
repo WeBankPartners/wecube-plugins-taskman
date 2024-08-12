@@ -74,16 +74,40 @@ export default {
         pageSize: 10
       },
       searchOptions: [],
-      tableColumns: []
+      tableColumns: [],
+      cacheFlag: false
     }
   },
   mounted () {
-    this.tableColumns = deepClone(this.submitAllColumn)
-    this.searchOptions = this.submitSearch
-    this.handleReset()
-    this.getList()
+    // 读取列表搜索参数
+    if (this.$route.query.needCache === 'yes') {
+      const storage = window.sessionStorage.getItem('search_workbench_history') || ''
+      if (storage) {
+        const { searchParams, searchOptions } = JSON.parse(storage)
+        this.form = searchParams
+        this.searchOptions = searchOptions
+        this.cacheFlag = true
+      }
+    }
+    this.initData()
+  },
+  beforeDestroy() {
+    // 缓存列表搜索条件
+    const storage = {
+      searchParams: this.form,
+      searchOptions: this.searchOptions
+    }
+    window.sessionStorage.setItem('search_workbench_history', JSON.stringify(storage))
   },
   methods: {
+    initData () {
+      this.tableColumns = deepClone(this.submitAllColumn)
+      if (!this.cacheFlag) {
+        this.searchOptions = this.submitSearch
+        this.handleReset()
+      }
+      this.getList()
+    },
     // 切换类型
     handleChangeTab (val) {
       if (val === 'commit') {

@@ -440,10 +440,19 @@ export default {
         this.$router.push({
           path: `/taskman/workbench?tabName=${this.jumpFrom}&actionName=${this.actionName}&${
             this.jumpFrom === 'submit' ? 'rollback' : 'type'
-          }=${this.type}`
+          }=${this.type}&needCache=yes`
         })
       } else {
-        this.$router.back()
+        const pathMap = {
+          1: 'publishHistory',
+          2: 'requestHistory',
+          3: 'problemHistory',
+          4: 'eventHistory',
+          5: 'changeHistory'
+        }
+        this.$router.push({
+          path: `/taskman/workbench/${pathMap[this.actionName]}?&needCache=yes`
+        })
       }
     },
     // 查看关联单

@@ -68,7 +68,7 @@
         </Col>
         <Col span="4">
           <Button @click="onSearch" type="primary">{{ $t('search') }}</Button>
-          <Button @click="handleReset" type="default">{{ $t('reset') }}</Button>
+          <Button @click="handleReset" style="margin-left:8px;" type="default">{{ $t('reset') }}</Button>
         </Col>
         <div style="display:flex;float:right;">
           <Button @click="addTemplate" type="success">{{ $t('add') }}</Button>
@@ -526,20 +526,50 @@ export default {
     }
   },
   mounted () {
-    this.status = this.$route.query.status || 'confirm'
-    const accessToken = getCookie('accessToken')
-    this.headers = {
-      Authorization: 'Bearer ' + accessToken
+    // 读取列表搜索参数
+    if (this.$route.query.needCache === 'yes') {
+      const storage = window.sessionStorage.getItem('search_template') || ''
+      if (storage) {
+        const { searchParams } = JSON.parse(storage)
+        const { name, status, mgmtRoles, type, tags } = searchParams || {}
+        this.name = name
+        this.status = status
+        this.mgmtRoles = mgmtRoles
+        this.type = type
+        this.tags = tags
+        this.getInitRole()
+      }
     }
-    const lang = localStorage.getItem('lang') || 'zh-CN'
-    if (lang === 'zh-CN') {
-      this.headers['Accept-Language'] = 'zh-CN,zh;q=0.9,en;q=0.8'
-    } else {
-      this.headers['Accept-Language'] = 'en-US,en;q=0.9,zh;q=0.8'
+    this.initData()
+  },
+  beforeDestroy() {
+    // 缓存列表搜索条件
+    const storage = {
+      searchParams: {
+        name: this.name,
+        status: this.status,
+        mgmtRoles: this.mgmtRoles,
+        type: this.type,
+        tags: this.tags,
+      }
     }
-    this.getTemplateList()
+    window.sessionStorage.setItem('search_template', JSON.stringify(storage))
   },
   methods: {
+    initData () {
+      this.status = this.$route.query.status || 'confirm'
+      const accessToken = getCookie('accessToken')
+      this.headers = {
+        Authorization: 'Bearer ' + accessToken
+      }
+      const lang = localStorage.getItem('lang') || 'zh-CN'
+      if (lang === 'zh-CN') {
+        this.headers['Accept-Language'] = 'zh-CN,zh;q=0.9,en;q=0.8'
+      } else {
+        this.headers['Accept-Language'] = 'en-US,en;q=0.9,zh;q=0.8'
+      }
+      this.getTemplateList()
+    },
     handleReset () {
       this.name = ''
       this.mgmtRoles = []

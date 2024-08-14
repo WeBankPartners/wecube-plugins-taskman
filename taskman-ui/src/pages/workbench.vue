@@ -15,11 +15,7 @@
 </template>
 
 <script>
-import WorkbenchMenu from '@/pages/components/workbench-menu.vue'
 export default {
-  components: {
-    WorkbenchMenu
-  },
   data () {
     return {
       expand: true,

@@ -57,11 +57,13 @@
         <Search ref="search" :options="searchOptions" v-model="form" @search="handleQuery"></Search>
         <!--表格分页-->
         <Table
+          ref="maxHeight"
           :border="false"
           size="small"
           :loading="loading"
           :columns="tableColumn"
           :data="tableData"
+          :max-height="maxHeight"
           @on-sort-change="sortTable"
         >
         </Table>
@@ -182,7 +184,8 @@ export default {
           </div>
         )
       },
-      cacheFlag: false // 当前页面搜索条件读取缓存标识
+      cacheFlag: false, // 当前页面搜索条件读取缓存标识
+      maxHeight: 500
     }
   },
   computed: {
@@ -225,6 +228,7 @@ export default {
       this.initAction = this.$route.query.actionName || '1'
       this.homePageInstance = document.querySelector('.platform-homepage')
       this.initFetchData(this.initTab, this.initAction)
+      this.maxHeight = document.documentElement.clientHeight - this.$refs.maxHeight.$el.getBoundingClientRect().top - 100
     },
     handleQueryDateRange (val) {
       this.queryTime = val

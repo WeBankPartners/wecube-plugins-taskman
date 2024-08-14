@@ -12,10 +12,12 @@
     </Tabs>
     <Search :options="searchOptions" v-model="form" @search="handleQuery"></Search>
     <Table
+      ref="maxHeight"
       size="small"
       :columns="tableColumns"
       :data="tableData"
       :loading="loading"
+      :max-height="maxHeight"
       @on-sort-change="sortTable"
     ></Table>
     <Page
@@ -75,7 +77,8 @@ export default {
       },
       searchOptions: [],
       tableColumns: [],
-      cacheFlag: false
+      cacheFlag: false,
+      maxHeight: 500
     }
   },
   mounted () {
@@ -107,6 +110,7 @@ export default {
         this.handleReset()
       }
       this.getList()
+      this.maxHeight = document.documentElement.clientHeight - this.$refs.maxHeight.$el.getBoundingClientRect().top - 100
     },
     // 切换类型
     handleChangeTab (val) {

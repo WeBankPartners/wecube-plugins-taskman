@@ -88,12 +88,14 @@
       </Row>
     </div>
     <Table
+      ref="maxHeight"
       style="margin:12px 0;"
       @on-sort-change="sortTable"
       size="small"
       :loading="loading"
       :columns="tableColumns"
       :data="tableData"
+      :max-height="maxHeight"
     ></Table>
     <Page
       style="text-align:right;"
@@ -129,7 +131,7 @@ export default {
   name: '',
   data () {
     return {
-      MODALHEIGHT: 500,
+      maxHeight: 500,
       name: '',
       status: 'confirm',
       mgmtRoles: [],
@@ -565,6 +567,7 @@ export default {
         this.headers['Accept-Language'] = 'en-US,en;q=0.9,zh;q=0.8'
       }
       this.getTemplateList()
+      this.maxHeight = document.documentElement.clientHeight - this.$refs.maxHeight.$el.getBoundingClientRect().top - 100
     },
     handleReset () {
       this.name = ''

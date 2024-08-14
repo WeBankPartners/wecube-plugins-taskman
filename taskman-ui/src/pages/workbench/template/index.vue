@@ -31,13 +31,13 @@
         </FormItem>
       </Form>
     </div>
-    <div class="wrapper">
+    <div ref="maxHeight" class="wrapper" :style="{maxHeight: maxHeight + 'px', overflowY: 'auto'}">
       <div class="template">
         <!-- <Tabs v-model="activeName" @on-click="filterData" style="margin-bottom:10px;">
           <TabPane :label="$t('tw_template_publish_tab')" name="confirm"></TabPane>
           <TabPane v-if="draftCardList.length" :label="$t('tw_template_draft_tab')" name="created"></TabPane>
         </Tabs> -->
-        <Card :bordered="false" dis-hover :padding="0" style="height:400px;">
+        <Card :bordered="false" dis-hover :padding="0" style="min-height:400px;">
           <template v-if="cardList.length">
             <Card v-for="(i, index) in cardList" :key="index" style="width:100%;margin-bottom:20px;">
               <div class="w-header" slot="title">
@@ -248,7 +248,8 @@ export default {
         '3': 'createProblem',
         '4': 'createEvent',
         '5': 'createChange'
-      }
+      },
+      maxHeight: 500
     }
   },
   watch: {
@@ -268,6 +269,7 @@ export default {
     this.type = this.$route.query.type || ''
     this.getTemplateData()
     this.getCollectTemplate()
+    this.maxHeight = document.documentElement.clientHeight - this.$refs.maxHeight.getBoundingClientRect().top - 10
   },
   methods: {
     // 获取模板数据

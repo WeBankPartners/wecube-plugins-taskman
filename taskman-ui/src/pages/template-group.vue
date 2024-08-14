@@ -24,6 +24,7 @@
       </Row>
     </div>
     <Table
+      ref="maxHeight"
       style="margin: 24px 0;"
       border
       size="small"
@@ -179,7 +180,7 @@ export default {
     }
   },
   mounted () {
-    this.MODALHEIGHT = document.body.scrollHeight - 200
+    this.MODALHEIGHT = document.documentElement.clientHeight - this.$refs.maxHeight.$el.getBoundingClientRect().top - 100
     this.getTempGroupList()
   },
   methods: {

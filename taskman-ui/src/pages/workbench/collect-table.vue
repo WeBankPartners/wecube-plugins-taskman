@@ -1,7 +1,7 @@
 <template>
   <div class="workbench-collect-table">
     <!--搜索条件-->
-    <BaseSearch :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
+    <Search :options="searchOptions" v-model="form" @search="handleQuery"></Search>
     <!--表格分页-->
     <Table
       size="small"
@@ -24,14 +24,12 @@
 </template>
 
 <script>
-import BaseSearch from '@/pages/components/base-search.vue'
-import ScrollTag from '@/pages/components/scroll-tag.vue'
+import Search from '@/pages/components/base-search.vue'
 import { collectTemplateList, uncollectTemplate, getTemplateFilter } from '@/api/server'
 import { deepClone } from '@/pages/util/index'
 export default {
   components: {
-    BaseSearch,
-    ScrollTag
+    Search
   },
   props: {
     actionName: {
@@ -194,7 +192,7 @@ export default {
           minWidth: 160,
           key: 'approves',
           render: (h, params) => {
-            return <ScrollTag list={params.row.approves} />
+            return <BaseScrollTag list={params.row.approves} />
           }
         },
         {
@@ -202,7 +200,7 @@ export default {
           minWidth: 160,
           key: 'tasks',
           render: (h, params) => {
-            return <ScrollTag list={params.row.tasks} />
+            return <BaseScrollTag list={params.row.tasks} />
           }
         },
         {

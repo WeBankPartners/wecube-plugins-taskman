@@ -15,7 +15,7 @@
     <div class="content">
       <Form :model="form" label-position="right" :label-width="120" style="width:100%;">
         <!--基础信息-->
-        <HeaderTitle :title="$t('tw_request_title')">
+        <BaseHeaderTitle :title="$t('tw_request_title')">
           <div style="padding-left:16px;">
             <Row :gutter="20">
               <Col :span="12" class="info-item">
@@ -131,9 +131,9 @@
               </Col>
             </Row>
           </div>
-        </HeaderTitle>
+        </BaseHeaderTitle>
         <!--表单详情-->
-        <HeaderTitle :title="$t('tw_form_detail')">
+        <BaseHeaderTitle :title="$t('tw_form_detail')">
           <div class="request-form">
             <template v-if="detail.customForm && detail.customForm.value">
               <Divider style="margin: 0 0 30px 0" orientation="left">
@@ -165,9 +165,9 @@
             <EntityTable v-if="form.data.length" :data="form.data" :requestId="requestId" formDisable></EntityTable>
             <div v-else class="no-data">{{ $t('tw_no_formConfig') }}</div>
           </div>
-        </HeaderTitle>
+        </BaseHeaderTitle>
         <!--处理历史-->
-        <HeaderTitle :title="$t('tw_handle_history')">
+        <BaseHeaderTitle :title="$t('tw_handle_history')">
           <Collapse v-model="activeStep" simple style="margin-top:30px;">
             <Panel
               v-for="(data, index) in historyData"
@@ -279,7 +279,7 @@
               </template>
             </Panel>
           </Collapse>
-        </HeaderTitle>
+        </BaseHeaderTitle>
         <!--当前处理-->
         <CurrentHandle
           v-if="isHandle && Object.keys(handleData).length > 0"
@@ -313,7 +313,6 @@
 </template>
 
 <script>
-import HeaderTitle from './header-title.vue'
 import HeaderTag from './header-tag.vue'
 import StaticFlow from './flow/static-flow.vue'
 import DynamicFlow from './flow/dynamic-flow.vue'
@@ -326,7 +325,6 @@ import CurrentHandle from './base-handle.vue'
 import { getPublishInfo, recallRequest, getRequestHistory } from '@/api/server'
 export default {
   components: {
-    HeaderTitle,
     HeaderTag,
     StaticFlow,
     DynamicFlow,

@@ -4,7 +4,12 @@
       <transition name="fade" mode="out-in">
         <router-view></router-view>
       </transition>
-      <WorkbenchMenu></WorkbenchMenu>
+      <BaseMenu :menuList="menuList">
+        <template slot="header">
+          <img @click="handleGoHome" style="width:23px;height:23px;margin-right:10px;" src="@/images/menu_desk.png" />
+          <span @click="handleGoHome">{{ $t('tw_workbench') }}</span>
+        </template>
+      </BaseMenu>
     </div>
   </div>
 </template>
@@ -17,7 +22,54 @@ export default {
   },
   data () {
     return {
-      expand: true
+      expand: true,
+      menuList: [
+        {
+          title: this.$t('tw_publish'),
+          icon: 'md-person-add',
+          name: '1',
+          children: [
+            { title: this.$t('tw_new'), path: '/taskman/workbench/template?type=1', name: '1-1' },
+            { title: this.$t('tw_history'), path: '/taskman/workbench/publishHistory', name: '1-2' }
+          ]
+        },
+        {
+          title: this.$t('tw_request'),
+          icon: 'ios-send',
+          name: '2',
+          children: [
+            { title: this.$t('tw_new'), path: '/taskman/workbench/template?type=2', name: '2-1' },
+            { title: this.$t('tw_history'), path: '/taskman/workbench/requestHistory', name: '2-2' }
+          ]
+        },
+        {
+          title: this.$t('tw_question'),
+          icon: 'md-help-circle',
+          name: '3',
+          children: [
+            { title: this.$t('tw_new'), path: '/taskman/workbench/template?type=3', name: '3-1' },
+            { title: this.$t('tw_history'), path: '/taskman/workbench/problemHistory', name: '3-2' }
+          ]
+        },
+        {
+          title: this.$t('tw_event'),
+          icon: 'md-pulse',
+          name: '4',
+          children: [
+            { title: this.$t('tw_new'), path: '/taskman/workbench/template?type=4', name: '4-1' },
+            { title: this.$t('tw_history'), path: '/taskman/workbench/eventHistory', name: '4-2' }
+          ]
+        },
+        {
+          title: this.$t('fork'),
+          icon: 'md-git-merge',
+          name: '5',
+          children: [
+            { title: this.$t('tw_new'), path: '/taskman/workbench/template?type=5', name: '5-1' },
+            { title: this.$t('tw_history'), path: '/taskman/workbench/changeHistory', name: '5-2' }
+          ]
+        }
+      ]
     }
   },
   computed: {
@@ -35,6 +87,13 @@ export default {
     } else {
       this.$bus.$on('expand-menu', val => {
         this.expand = val
+      })
+    }
+  },
+  methods: {
+    handleGoHome () {
+      this.$router.push({
+        path: '/taskman/workbench'
       })
     }
   }

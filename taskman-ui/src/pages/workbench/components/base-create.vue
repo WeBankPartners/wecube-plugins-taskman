@@ -22,7 +22,7 @@
     <div class="content">
       <Form :model="form" label-position="right" :label-width="120" style="width:100%;">
         <!--基础信息-->
-        <HeaderTitle :title="$t('tw_request_title')">
+        <BaseHeaderTitle :title="$t('tw_request_title')">
           <!--请求名-->
           <FormItem :label="$t('request_name')" required>
             <Input
@@ -90,9 +90,9 @@
           <FormItem :label="$t('tw_attach')">
             <UploadFile :id="requestId" :files="attachFiles" type="request"></UploadFile>
           </FormItem>
-        </HeaderTitle>
+        </BaseHeaderTitle>
         <!--表单详情-->
-        <HeaderTitle :title="$t('tw_form_detail')">
+        <BaseHeaderTitle :title="$t('tw_form_detail')">
           <div class="request-form">
             <template v-if="Object.keys(form.customForm.value).length > 0">
               <Divider style="margin: 0 0 30px 0" orientation="left">
@@ -124,9 +124,9 @@
             <EntityTable ref="entityTable" :data="requestData" :requestId="requestId" isAdd autoAddRow></EntityTable>
             <div v-if="noRequestForm" class="no-data">{{ $t('tw_no_formConfig') }}</div>
           </div>
-        </HeaderTitle>
+        </BaseHeaderTitle>
         <!--审批流程-->
-        <HeaderTitle v-if="approvalList.length > 0" :title="$t('tw_approval_step')">
+        <BaseHeaderTitle v-if="approvalList.length > 0" :title="$t('tw_approval_step')">
           <div class="step-wrap">
             <div v-for="(i, index) in approvalList" :key="index" class="step-item">
               <div class="step-item-left">
@@ -220,9 +220,9 @@
               </div>
             </div>
           </div>
-        </HeaderTitle>
+        </BaseHeaderTitle>
         <!--任务流程-->
-        <HeaderTitle v-if="taskList.length > 0" :title="$t('tw_task_step')">
+        <BaseHeaderTitle v-if="taskList.length > 0" :title="$t('tw_task_step')">
           <div class="step-wrap">
             <div v-for="(i, index) in taskList" :key="index" class="step-item">
               <div class="step-item-left">
@@ -319,7 +319,7 @@
               </div>
             </div>
           </div>
-        </HeaderTitle>
+        </BaseHeaderTitle>
       </Form>
     </div>
     <!--编排流程图-->
@@ -337,7 +337,6 @@
 </template>
 
 <script>
-import HeaderTitle from './header-title.vue'
 import HeaderTag from './header-tag.vue'
 import StaticFlow from './flow/static-flow.vue'
 import DynamicFlow from './flow/dynamic-flow.vue'
@@ -364,7 +363,6 @@ import {
 import dayjs from 'dayjs'
 export default {
   components: {
-    HeaderTitle,
     HeaderTag,
     StaticFlow,
     DynamicFlow,

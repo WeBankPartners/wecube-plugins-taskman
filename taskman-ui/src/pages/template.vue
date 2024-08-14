@@ -125,12 +125,8 @@ import {
   templateConfirmCount
 } from '@/api/server'
 import { debounce } from '@/pages/util'
-import ScrollTag from '@/pages/components/scroll-tag.vue'
 export default {
   name: '',
-  components: {
-    ScrollTag
-  },
   data () {
     return {
       MODALHEIGHT: 500,
@@ -268,7 +264,7 @@ export default {
             const list = params.row.useRoles.map(item => {
               return item.displayName
             })
-            return <ScrollTag list={list} />
+            return <BaseScrollTag list={list} />
           }
         },
         {

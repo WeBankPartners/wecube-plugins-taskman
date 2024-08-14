@@ -105,11 +105,7 @@ import {
   getAllUser
 } from '@/api/server'
 import { debounce } from '@/pages/util'
-import ScrollTag from '@/pages/components/scroll-tag.vue'
 export default {
-  components: {
-    ScrollTag
-  },
   props: {
     value: {
       type: Boolean,
@@ -184,7 +180,7 @@ export default {
           minWidth: 250,
           render: (h, params) => {
             const list = (params.row.formItems && params.row.formItems.split('、')) || []
-            return <ScrollTag list={list} />
+            return <BaseScrollTag list={list} />
           }
         },
         {

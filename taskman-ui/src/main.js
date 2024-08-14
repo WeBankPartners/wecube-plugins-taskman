@@ -13,6 +13,10 @@ import { ValidationProvider } from 'vee-validate'
 import './vee-validate-local-config'
 import { getCookie } from '@/pages/util/cookie'
 Vue.component('ValidationProvider', ValidationProvider)
+// 引用wecube公共组件
+import commonUI from 'wecube-common-ui'
+import 'wecube-common-ui/lib/wecube-common-ui.css'
+Vue.use(commonUI)
 
 Vue.config.productionTip = false
 Vue.prototype.$bus = new Vue()

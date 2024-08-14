@@ -54,7 +54,7 @@
       <CollectTable v-if="tabName === 'collect'" ref="collect" :actionName="actionName"></CollectTable>
       <template v-else>
         <!--搜索条件-->
-        <BaseSearch ref="search" :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
+        <Search ref="search" :options="searchOptions" v-model="form" @search="handleQuery"></Search>
         <!--表格分页-->
         <Table
           :border="false"
@@ -83,7 +83,7 @@
 <script>
 import HotLink from './components/hot-link.vue'
 import DataCard from './components/data-card.vue'
-import BaseSearch from '../components/base-search.vue'
+import Search from '../components/base-search.vue'
 import CollectTable from './collect-table.vue'
 import { getPlatformList, recallRequest, pendingHandle, deleteRequest, reRequest } from '@/api/server'
 import { deepClone } from '@/pages/util/index'
@@ -94,7 +94,7 @@ export default {
   components: {
     HotLink,
     DataCard,
-    BaseSearch,
+    Search,
     CollectTable
   },
   mixins: [column, search],

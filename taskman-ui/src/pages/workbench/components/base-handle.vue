@@ -2,7 +2,7 @@
 <template>
   <div class="workbench-current-handle">
     <!--定版-->
-    <HeaderTitle v-if="detail.status === 'Pending'" :title="$t('tw_cur_handle')">
+    <BaseHeaderTitle v-if="detail.status === 'Pending'" :title="$t('tw_cur_handle')">
       <div class="sub-title" slot="sub-title">
         <Tag class="tag" :color="handleTypeColor[handleData.type]">{{ $t('tw_request_pending') }}</Tag>
       </div>
@@ -40,9 +40,9 @@
           </div>
         </div>
       </div>
-    </HeaderTitle>
+    </BaseHeaderTitle>
     <!--审批和任务-->
-    <HeaderTitle v-else-if="['InApproval', 'InProgress'].includes(detail.status)" :title="$t('tw_cur_handle')">
+    <BaseHeaderTitle v-else-if="['InApproval', 'InProgress'].includes(detail.status)" :title="$t('tw_cur_handle')">
       <div class="sub-title" slot="sub-title">
         <Tag>{{ approvalTypeName[handleData.handleMode] || '' }}</Tag>
         <Tag style="margin-left:5px;" :color="handleTypeColor[handleData.type]">{{
@@ -139,9 +139,9 @@
           </div>
         </div>
       </div>
-    </HeaderTitle>
+    </BaseHeaderTitle>
     <!--确认-->
-    <HeaderTitle v-else-if="detail.status === 'Confirm'" :title="$t('tw_cur_handle')">
+    <BaseHeaderTitle v-else-if="detail.status === 'Confirm'" :title="$t('tw_cur_handle')">
       <div class="sub-title" slot="sub-title">
         <Tag class="tag" :color="handleTypeColor[handleData.type]">{{ $t('tw_request_confirm') }}</Tag>
       </div>
@@ -179,12 +179,11 @@
           <Button @click="confirmRequest" type="primary">{{ $t('tw_commit') }}</Button>
         </div>
       </div>
-    </HeaderTitle>
+    </BaseHeaderTitle>
   </div>
 </template>
 
 <script>
-import HeaderTitle from './header-title.vue'
 import EntityTable from './entity-table.vue'
 import DataBind from './data-bind.vue'
 import UploadFile from './upload.vue'
@@ -193,7 +192,6 @@ import { commitTaskData, geTaskTagList, confirmRequest } from '@/api/server'
 import { requiredCheck } from '../util'
 export default {
   components: {
-    HeaderTitle,
     EntityTable,
     DataBind,
     UploadFile

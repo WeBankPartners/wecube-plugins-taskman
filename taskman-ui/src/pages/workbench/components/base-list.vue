@@ -10,7 +10,7 @@
       <!--本人撤回-->
       <TabPane :label="$t('tw_recall_tab')" name="revoke"></TabPane>
     </Tabs>
-    <BaseSearch :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
+    <Search :options="searchOptions" v-model="form" @search="handleQuery"></Search>
     <Table
       size="small"
       :columns="tableColumns"
@@ -32,14 +32,14 @@
 </template>
 
 <script>
-import BaseSearch from '@/pages/components/base-search.vue'
+import Search from '@/pages/components/base-search.vue'
 import { getPublishList, reRequest, recallRequest, deleteRequest } from '@/api/server'
 import column from '../column'
 import search from '../search'
 import { deepClone } from '@/pages/util/index'
 export default {
   components: {
-    BaseSearch
+    Search
   },
   mixins: [column, search],
   props: {

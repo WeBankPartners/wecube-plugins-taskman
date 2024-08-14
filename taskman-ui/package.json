@@ -23,7 +23,7 @@
     "vue-router": "3.0.1",
     "vuedraggable": "^2.24.3",
     "webpack": "4.29.6",
-    "wecube-common-ui": "^1.0.6"
+    "wecube-common-ui": "^1.0.7"
   },
   "devDependencies": {
     "@babel/core": "^7.4.0",

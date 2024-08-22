@@ -583,13 +583,7 @@ export default {
         minWidth: 150,
         key: 'rollbackDesc',
         render: (h, params) => {
-          return (
-            <Tooltip max-width="300" content={params.row.rollbackDesc}>
-              <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
-                {params.row.rollbackDesc || '-'}
-              </span>
-            </Tooltip>
-          )
+          return <BaseEllipsis content={params.row.rollbackDesc}></BaseEllipsis>
         }
       },
       this.baseColumn.templateName,
@@ -621,13 +615,7 @@ export default {
         minWidth: 150,
         key: 'rollbackDesc',
         render: (h, params) => {
-          return (
-            <Tooltip max-width="300" content={params.row.rollbackDesc}>
-              <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
-                {params.row.rollbackDesc || '-'}
-              </span>
-            </Tooltip>
-          )
+          return <BaseEllipsis content={params.row.rollbackDesc}></BaseEllipsis>
         }
       },
       this.baseColumn.templateName,

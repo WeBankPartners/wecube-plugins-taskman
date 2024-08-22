@@ -239,13 +239,7 @@ export default {
           sortable: 'custom',
           key: 'description',
           render: (h, params) => {
-            return (
-              <Tooltip max-width="300" content={params.row.description}>
-                <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
-                  {params.row.description || '-'}
-                </span>
-              </Tooltip>
-            )
+            return <BaseEllipsis content={params.row.description}></BaseEllipsis>
           }
         },
         {
@@ -506,13 +500,7 @@ export default {
             minWidth: 150,
             key: 'rollbackDesc',
             render: (h, params) => {
-              return (
-                <Tooltip max-width="300" content={params.row.rollbackDesc}>
-                  <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
-                    {params.row.rollbackDesc}
-                  </span>
-                </Tooltip>
-              )
+              return <BaseEllipsis content={params.row.rollbackDesc}></BaseEllipsis>
             }
           })
         } else {

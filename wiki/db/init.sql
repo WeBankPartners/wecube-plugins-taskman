@@ -613,3 +613,6 @@ ALTER TABLE form_item_template ADD CONSTRAINT  `fore_form_item_library` FOREIGN 
 alter table task_handle add column form_data text DEFAULT NULL COMMENT '并行审批表单数据';
 alter table request add column preview_cache mediumtext default null comment '试算数据缓存';
 #@v1.1.1-end@;
+#@v1.1.2-begin@;
+alter table form_item_template add column formula varchar(255) default null comment '表达式计算';
+#@v1.1.2-end@;

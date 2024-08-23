@@ -121,7 +121,7 @@
                       >
                         <draggable
                           class="dragArea"
-                          style="min-height: 40px;"
+                          style="min-height:40px;display:flex;flex-wrap:wrap;"
                           :list="item.attrs"
                           :sort="$parent.isCheck !== 'Y'"
                           group="people"
@@ -1417,6 +1417,7 @@ fieldset[disabled] .ivu-input {
     align-items: center;
     justify-content: space-around;
     margin: 8px 0;
+    padding: 0 10px;
   }
   .dash-line {
     display: inline-block;

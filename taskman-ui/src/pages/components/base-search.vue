@@ -333,11 +333,11 @@ export default {
     height: 30px !important;
     line-height: 30px !important;
     font-size: 12px !important;
-    color: #000;
+    // color: #000;
   }
   .ivu-radio-wrapper-checked.ivu-radio-border {
-    border-color: #2d8cf0;
-    color: #2d8cf0;
+    background-color: #2d8cf0;
+    color: #fff;
   }
   .ivu-select-multiple .ivu-tag {
     max-width: 90px;

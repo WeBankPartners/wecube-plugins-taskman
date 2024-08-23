@@ -127,7 +127,7 @@
                       >
                         <draggable
                           class="dragArea"
-                          style="min-height: 40px;"
+                          style="min-height:40px;display:flex;flex-wrap:wrap;"
                           :list="item.attrs"
                           :sort="$parent.isCheck !== 'Y'"
                           group="people"
@@ -499,7 +499,7 @@
     <div class="footer">
       <div class="content" :style="isShowFormConfig ? '' : 'margin-top:48px'">
         <Button
-          :disabled="isCheck !== 'Y' && isTopButtonDisable"
+          :disabled="isCheck !== 'Y' && isTopButtonDisable && !(procDefId !== '' && approvalNodes.length === 0)"
           @click="gotoForward"
           ghost
           type="primary"
@@ -516,7 +516,7 @@
         >
         <Button
           v-if="isCheck !== 'Y'"
-          :disabled="isTopButtonDisable"
+          :disabled="isTopButtonDisable && !(procDefId !== '' && approvalNodes.length === 0)"
           @click="beforeSubmitTemplate"
           type="primary"
           class="btn-footer-margin"
@@ -1529,6 +1529,7 @@ fieldset[disabled] .ivu-input {
     align-items: center;
     justify-content: space-around;
     margin: 8px 0;
+    padding: 0 10px;
   }
   .dash-line {
     display: inline-block;

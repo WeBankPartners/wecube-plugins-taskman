@@ -25,7 +25,7 @@
             <div :key="itemIndex" style="border: 2px dashed #A2EF4D; margin: 8px 0; padding: 8px;min-height: 48px;">
               <draggable
                 class="dragArea"
-                style="min-height: 40px;"
+                style="min-height:40px;display:flex;flex-wrap:wrap;"
                 :list="item.attrs"
                 :sort="$parent.isCheck !== 'Y'"
                 group="people"
@@ -753,6 +753,7 @@ export default {
   align-items: center;
   justify-content: space-around;
   margin: 8px 0;
+  padding: 0 10px;
 }
 .title {
   font-size: 14px;

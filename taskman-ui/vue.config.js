@@ -1,4 +1,5 @@
 const CompressionPlugin = require('compression-webpack-plugin')
+const postcssWrap = require('postcss-wrap')
 const path = require('path')
 const baseUrl = 'http://106.52.160.142:18080/'
 module.exports = {
@@ -73,6 +74,17 @@ module.exports = {
     'style-resources-loader': {
       preProcessor: 'less',
       patterns: [path.resolve(__dirname, './src/assets/css/common.less')] // 引入全局样式变量
+    }
+  },
+  css: {
+    loaderOptions: {
+      postcss: {
+        plugins: process.env.PLUGIN === 'plugin' ? [
+          postcssWrap({
+            selector: '.taskman-wrap' // 将所有class用.app包装起来
+          })
+        ] : []
+      }
     }
   }
 }

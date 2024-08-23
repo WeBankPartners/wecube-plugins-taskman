@@ -75,21 +75,21 @@ module.exports = {
       preProcessor: 'less',
       patterns: [path.resolve(__dirname, './src/assets/css/common.less')] // 引入全局样式变量
     }
+  },
+  css: {
+    loaderOptions: {
+      postcss: {
+        plugins: process.env.PLUGIN === 'plugin' ? [
+          postcssWrap({
+            selector: ''
+          })
+          // (css, file) => {
+          //   if (file && file.opts.from.includes('wecube-common-ui')) {
+          //     throw new Error('Skipping node_modules');
+          //   }
+          // }
+        ] : []
+      }
+    }
   }
-  // css: {
-  //   loaderOptions: {
-  //     postcss: {
-  //       plugins: process.env.PLUGIN === 'plugin' ? [
-  //         postcssWrap({
-  //           selector: '.taskman-wrap'
-  //         }),
-  //         (css, file) => {
-  //           if (file && file.opts.from.includes('wecube-common-ui')) {
-  //             throw new Error('Skipping node_modules');
-  //           }
-  //         }
-  //       ] : []
-  //     }
-  //   }
-  // }
 }

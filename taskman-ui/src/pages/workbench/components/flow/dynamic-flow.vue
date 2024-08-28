@@ -169,7 +169,8 @@ export default {
   },
   methods: {
     jumpToFlowDetail() {
-      if (process.env.PLUGIN === 'plugin') {
+      console.log('111111111111111111222222222222222', process.env)
+      if (process.env.VUE_APP_PLUGIN === 'plugin') {
         window.sessionStorage.currentPath = '' // 先清空session缓存页面，不然打开新标签页面会回退到缓存的页面
         const path = `${window.location.origin}/#/implementation/workflow-execution/view-execution?id=${this.flowId}&from=noraml`
         window.open(path, '_blank')

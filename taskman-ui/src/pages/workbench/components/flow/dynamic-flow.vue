@@ -3,7 +3,7 @@
     <div style="margin-bottom: 8px;">
       <Alert type="warning" show-icon>{{ $t('tw_flow_tips') }}</Alert>
       <!-- <span class="custom-title">{{ $t('workflow_name') }}</span> -->
-      <span class="custom-display">{{ flowData.procInstName }} {{ flowData.operator }}</span>
+      <span class="custom-display" @click="jumpToFlowDetail">{{ flowData.procInstName }} {{ flowData.operator }}</span>
     </div>
     <div id="graphcontain">
       <div class="graph-container" id="flow" style="height: 96%"></div>
@@ -168,6 +168,13 @@ export default {
     clearInterval(this.timer)
   },
   methods: {
+    jumpToFlowDetail() {
+      if (process.env.PLUGIN === 'plugin') {
+        window.sessionStorage.currentPath = '' // 先清空session缓存页面，不然打开新标签页面会回退到缓存的页面
+        const path = `${window.location.origin}/#/implementation/workflow-execution/view-execution?id=${this.flowId}&from=noraml`
+        window.open(path, '_blank')
+      }
+    },
     orchestrationSelectHandler () {
       this.stop()
       this.isEnqueryPage = true

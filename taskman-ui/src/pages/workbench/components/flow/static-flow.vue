@@ -3,7 +3,7 @@
     <div style="margin-bottom: 8px;">
       <Alert type="warning" show-icon>{{ $t('tw_flow_tips') }}</Alert>
       <!-- <span class="custom-title">{{ $t('workflow_name') }}</span> -->
-      <span class="custom-display">
+      <span class="custom-display" @click="jumpToFlowDetail">
         {{ flowData.procDefName }}
         <span v-if="flowData.procDefVersion">{{ `【${flowData.procDefVersion}】` }}</span>
       </span>
@@ -22,6 +22,10 @@ import * as d3Graphviz from 'd3-graphviz'
 export default {
   props: {
     requestTemplate: {
+      type: String,
+      default: ''
+    },
+    flowId: {
       type: String,
       default: ''
     }
@@ -43,6 +47,14 @@ export default {
     }
   },
   methods: {
+    // 打开编排模板详情页
+    jumpToFlowDetail() {
+      if (process.env.VUE_APP_PLUGIN === 'plugin') {
+        window.sessionStorage.currentPath = '' // 先清空session缓存页面，不然打开新标签页面会回退到缓存的页面
+        const path = `${window.location.origin}/#/collaboration/workflow-mgmt?flowId=${this.flowId}&editFlow=false&flowListTab=deployed`
+        window.open(path, '_blank')
+      }
+    },
     orchestrationSelectHandler () {
       this.currentFlowNodeId = ''
       this.currentModelNodeRefs = []
@@ -171,6 +183,7 @@ export default {
   border: 1px solid #069cec;
   border-radius: 4px;
   color: #069cec;
+  cursor: pointer;
 }
 #graphcontain {
   position: relative;

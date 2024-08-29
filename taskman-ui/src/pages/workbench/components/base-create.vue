@@ -330,7 +330,7 @@
       </div>
       <!--使用v-show会导致流程图加载不出来-->
       <div v-if="flowVisible" class="flow-expand">
-        <StaticFlow :requestTemplate="requestTemplate"></StaticFlow>
+        <StaticFlow :requestTemplate="requestTemplate" :flowId="detail.procId"></StaticFlow>
       </div>
     </template>
   </div>

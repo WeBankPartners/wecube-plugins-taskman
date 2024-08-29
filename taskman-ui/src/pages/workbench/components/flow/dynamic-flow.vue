@@ -168,8 +168,8 @@ export default {
     clearInterval(this.timer)
   },
   methods: {
+    // 打开编排执行详情页
     jumpToFlowDetail() {
-      console.log('111111111111111111222222222222222', process.env)
       if (process.env.VUE_APP_PLUGIN === 'plugin') {
         window.sessionStorage.currentPath = '' // 先清空session缓存页面，不然打开新标签页面会回退到缓存的页面
         const path = `${window.location.origin}/#/implementation/workflow-execution/view-execution?id=${this.flowId}&from=noraml`
@@ -454,6 +454,7 @@ export default {
   border: 1px solid #069cec;
   border-radius: 4px;
   color: #069cec;
+  cursor: pointer;
 }
 
 .header-icon {

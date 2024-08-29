@@ -47,20 +47,20 @@ http {
     location = /favicon.ico {
       root /root/app;
     }
-    location ^~ /manual {
+    location ^~ /manual/ {
       index index.html;
       alias /root/wecube-docs/;
     }
-    location ^~ /css {
+    location ^~ /css/ {
       alias /root/app/css/;
     }
-    location ^~ /fonts {
+    location ^~ /fonts/ {
       alias /root/app/fonts/;
     }
-    location ^~ /img {
+    location ^~ /img/ {
       alias /root/app/img/;
     }
-    location ^~ /js {
+    location ^~ /js/ {
       alias /root/app/js/;
     }
     location / {

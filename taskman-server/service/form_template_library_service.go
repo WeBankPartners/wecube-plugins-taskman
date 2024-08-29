@@ -1,7 +1,10 @@
 package service
 
 import (
+	"context"
+	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"sort"
@@ -134,6 +137,52 @@ func (s *FormTemplateLibraryService) QueryFormTemplateLibrary(param models.Query
 				FormItems:   strings.Join(items, "、"),
 				Items:       models.ConvertFormItemTemplateLibraryModel2Dto(formItemTemplateLibraryList),
 			})
+		}
+	}
+	return
+}
+
+func ExportFormTemplateLibrary(ctx context.Context) (result []*models.FormTemplateLibraryTableData, err error) {
+	var formTemplateLibraryData []*models.FormTemplateLibraryTableData
+	baseSql := "SELECT * FROM form_template_library WHERE del_flag=0"
+	err = dao.X.SQL(baseSql).Find(&formTemplateLibraryData)
+	if err != nil {
+		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
+		return
+	}
+
+	if len(formTemplateLibraryData) == 0 {
+		err = fmt.Errorf("query form template library empty")
+		return
+	}
+
+	result = formTemplateLibraryData
+
+	// query formItemTemplateLibrary
+	var formTemplateLibraryIds []string
+	for _, formTempalteLib := range formTemplateLibraryData {
+		formTemplateLibraryIds = append(formTemplateLibraryIds, formTempalteLib.Id)
+	}
+
+	var formItemTemplateLibraryData []*models.FormItemTemplateLibraryTable
+	filterSql, filterParam := dao.CreateListParams(formTemplateLibraryIds, "")
+	baseSql = fmt.Sprintf("SELECT * FROM form_item_template_library WHERE form_template_library IN (%s)", filterSql)
+	err = dao.X.SQL(baseSql, filterParam...).Find(&formItemTemplateLibraryData)
+	if err != nil {
+		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
+		return
+	}
+
+	formTemplateLibraryIdMapItemInfo := make(map[string][]*models.FormItemTemplateLibraryTable)
+	for _, itemInfo := range formItemTemplateLibraryData {
+		formTemplateLibraryIdMapItemInfo[itemInfo.FormTemplateLibrary] = append(
+			formTemplateLibraryIdMapItemInfo[itemInfo.FormTemplateLibrary], itemInfo)
+	}
+
+	for _, formTemplateLib := range formTemplateLibraryData {
+		formTemplateLib.Items = []*models.FormItemTemplateLibraryTable{}
+		if _, isExisted := formTemplateLibraryIdMapItemInfo[formTemplateLib.Id]; isExisted {
+			formTemplateLib.Items = formTemplateLibraryIdMapItemInfo[formTemplateLib.Id]
 		}
 	}
 	return

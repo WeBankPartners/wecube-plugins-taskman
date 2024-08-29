@@ -1,11 +1,16 @@
 package form
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
+	"net/http"
 	"strings"
+	"time"
 
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/try"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
@@ -97,4 +102,34 @@ func QueryAllFormTemplateLibraryFormType(c *gin.Context) {
 		return
 	}
 	middleware.ReturnData(c, formTypes)
+}
+
+// 导出组件库
+func ExportFormTemplateLibrary(c *gin.Context) {
+	defer try.ExceptionStack(func(e interface{}, err interface{}) {
+		retErr := fmt.Errorf("%v", err)
+		middleware.ReturnError(c, exterror.Catch(exterror.New().ServerHandleError, retErr))
+		log.Logger.Error(e.(string))
+	})
+
+	var err error
+	retData, err := service.ExportFormTemplateLibrary(c)
+	if err != nil {
+		middleware.ReturnError(c, err)
+	} else {
+		fileName := "empty"
+		if len(retData) > 0 {
+			fileName = fmt.Sprintf("%s et al.%d", retData[0].Id, len(retData))
+		}
+		fileName = fmt.Sprintf("%s-%s.json", fileName, time.Now().Format("20060102150405"))
+
+		retDataBytes, tmpErr := json.Marshal(retData)
+		if tmpErr != nil {
+			err = fmt.Errorf("marshal exportFormTemplateLibrary failed: %s", tmpErr.Error())
+			middleware.ReturnError(c, err)
+			return
+		}
+		c.Header("Content-Disposition", fmt.Sprintf("attachment;filename=%s", fileName))
+		c.Data(http.StatusOK, "application/octet-stream", retDataBytes)
+	}
 }

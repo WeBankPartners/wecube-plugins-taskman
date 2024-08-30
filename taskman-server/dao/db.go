@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"database/sql"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -312,5 +313,64 @@ func CreateListParams(inputList []string, prefix string) (specSql string, paramL
 		}
 		specSql = strings.Join(specList, ",")
 	}
+	return
+}
+
+func CombineDBSql(input ...interface{}) string {
+	var buf strings.Builder
+	fmt.Fprint(&buf, input...)
+	return buf.String()
+}
+
+func NewNullString(s string) sql.NullString {
+	if len(s) == 0 {
+		return sql.NullString{}
+	}
+	return sql.NullString{
+		String: s,
+		Valid:  true,
+	}
+}
+
+func GetInsertTableExecAction(tableName string, data interface{}, transNullStr map[string]string) (action *ExecAction, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("%v", r)
+		}
+	}()
+
+	execParams := []interface{}{}
+	columnStr := ""
+	valueStr := ""
+	t := reflect.TypeOf(data)
+	v := reflect.ValueOf(data)
+	tagName := "xorm"
+	for i := 0; i < t.NumField(); i++ {
+		fType := t.Field(i)
+		fTag := fType.Tag.Get(tagName)
+		if fTag == "-" {
+			continue
+		}
+
+		if i > 0 {
+			columnStr += ","
+			valueStr += ","
+		}
+		// columnStr += t.Field(i).Tag.Get("xorm")
+		columnStr += "`" + t.Field(i).Tag.Get("xorm") + "`"
+		valueStr += "?"
+
+		if len(transNullStr) > 0 {
+			if _, ok := transNullStr[t.Field(i).Tag.Get("xorm")]; ok {
+				execParams = append(execParams, NewNullString(v.FieldByName(t.Field(i).Name).String()))
+			} else {
+				execParams = append(execParams, v.FieldByName(t.Field(i).Name).Interface())
+			}
+		} else {
+			execParams = append(execParams, v.FieldByName(t.Field(i).Name).Interface())
+		}
+	}
+	execSqlCmd := CombineDBSql("INSERT INTO ", tableName, "(", columnStr, ") VALUE (", valueStr, ")")
+	action = &ExecAction{Sql: execSqlCmd, Param: execParams}
 	return
 }

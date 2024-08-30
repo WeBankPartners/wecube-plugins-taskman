@@ -133,3 +133,31 @@ func ExportFormTemplateLibrary(c *gin.Context) {
 		c.Data(http.StatusOK, "application/octet-stream", retDataBytes)
 	}
 }
+
+// 导入组件库
+func ImportFormTemplateLibrary(c *gin.Context) {
+	defer try.ExceptionStack(func(e interface{}, err interface{}) {
+		retErr := fmt.Errorf("%v", err)
+		middleware.ReturnError(c, exterror.Catch(exterror.New().ServerHandleError, retErr))
+		log.Logger.Error(e.(string))
+	})
+
+	_, fileBytes, err := middleware.ReadFormFile(c, "file")
+	if err != nil {
+		middleware.ReturnError(c, err)
+		return
+	}
+
+	var formTemplateLibraryData []*models.FormTemplateLibraryTableData
+	if err = json.Unmarshal(fileBytes, &formTemplateLibraryData); err != nil {
+		middleware.ReturnError(c, fmt.Errorf("json unmarshal form template library data failed: %s", err.Error()))
+		return
+	}
+
+	err = service.ImportFormTemplateLibrary(c, formTemplateLibraryData)
+	if err != nil {
+		middleware.ReturnError(c, err)
+	} else {
+		middleware.ReturnSuccess(c)
+	}
+}

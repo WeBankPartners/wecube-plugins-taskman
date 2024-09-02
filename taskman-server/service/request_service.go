@@ -1910,10 +1910,10 @@ func CopyRequest(requestId, createdBy string) (result models.RequestTable, err e
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	result.Id = newRequestId()
 	requestInsertAction := dao.ExecAction{Sql: "insert into request(id,name,request_template,reporter,emergency,report_role,status," +
-		"cache,expire_time,expect_time,handler,created_by,created_time,updated_by,updated_time,parent,type,role,ref_id,ref_type,custom_form_cache) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+		"cache,expire_time,expect_time,handler,created_by,created_time,updated_by,updated_time,parent,type,role,ref_id,ref_type,custom_form_cache,description,task_approval_cache) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
 	requestInsertAction.Param = []interface{}{result.Id, parentRequest.Name, parentRequest.RequestTemplate, createdBy, parentRequest.Emergency,
 		parentRequest.ReportRole, "Draft", parentRequest.Cache, "", parentRequest.ExpectTime, parentRequest.Handler, createdBy, nowTime, createdBy,
-		nowTime, parentRequest.Id, parentRequest.Type, parentRequest.Role, parentRequest.RefId, parentRequest.RefType, parentRequest.CustomFormCache}
+		nowTime, parentRequest.Id, parentRequest.Type, parentRequest.Role, parentRequest.RefId, parentRequest.RefType, parentRequest.CustomFormCache, parentRequest.Description, parentRequest.TaskApprovalCache}
 	actions = append(actions, &requestInsertAction)
 	// copy attach file
 	var attachFileRows []*models.AttachFileTable

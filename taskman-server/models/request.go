@@ -313,6 +313,7 @@ type RequestForm struct {
 	ExpectTime          string                    `json:"expectTime" `         // 期望时间
 	OperatorObj         string                    `json:"operatorObj"`         // 发布操作对象
 	ProcInstanceId      string                    `json:"procInstanceId"`      // 编排实例ID
+	ProcDefId           string                    `json:"procDefId"`           // 编排Id
 	ExpireDay           int                       `json:"expireDay"`           // 模板过期时间
 	AssociationWorkflow bool                      `json:"associationWorkflow"` // 是否关联编排
 	CustomForm          CustomForm                `json:"customForm"`          // 自定义表单
@@ -338,6 +339,9 @@ type FilterItem struct {
 	TemplateList        []*KeyValuePair `json:"templateList"`        // 模板列表
 	RequestTemplateList []*KeyValuePair `json:"requestTemplateList"` // 请求模板列表
 	ReleaseTemplateList []*KeyValuePair `json:"releaseTemplateList"` // 发布模板列表
+	ProblemTemplateList []*KeyValuePair `json:"problemTemplateList"` // 问题模板列表
+	EventTemplateList   []*KeyValuePair `json:"eventTemplateList"`   // 事件模板列表
+	ChangeTemplateList  []*KeyValuePair `json:"changeTemplateList"`  // 变更模板列表
 	OperatorObjTypeList []string        `json:"operatorObjTypeList"` // 操作对象类型列表
 	ProcDefNameList     []string        `json:"procDefNameList"`     // 使用编排
 	CreatedByList       []string        `json:"createdByList"`       // 创建人列表

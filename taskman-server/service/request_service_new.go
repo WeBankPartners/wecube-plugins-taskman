@@ -1474,6 +1474,7 @@ func getRequestForm(request *models.RequestTable, taskId, userToken, language st
 	form.Description = request.Description
 	form.Status = request.Status
 	form.ProcInstanceId = request.ProcInstanceId
+	form.ProcDefId = template.ProcDefId
 	form.ExpireDay = template.ExpireDay
 	if template.Status != "confirm" {
 		version = "beta"
@@ -1569,6 +1570,9 @@ func GetFilterItem(param models.FilterRequestParam) (data *models.FilterItem, er
 	data = &models.FilterItem{
 		RequestTemplateList: make([]*models.KeyValuePair, 0),
 		ReleaseTemplateList: make([]*models.KeyValuePair, 0),
+		ProblemTemplateList: make([]*models.KeyValuePair, 0),
+		EventTemplateList:   make([]*models.KeyValuePair, 0),
+		ChangeTemplateList:  make([]*models.KeyValuePair, 0),
 	}
 	var templateMap = make(map[string]bool, 0)
 	var pairList []*models.KeyValuePair
@@ -1605,10 +1609,17 @@ func GetFilterItem(param models.FilterRequestParam) (data *models.FilterItem, er
 			templateMap[m.TemplateId+m.TemplateName+m.Version] = true
 		}
 		pairList = append(pairList, m)
-		if item.TemplateType == 0 {
-			data.RequestTemplateList = append(data.RequestTemplateList, m)
-		} else {
+		switch item.TemplateType {
+		case int(models.SceneTypeRelease):
 			data.ReleaseTemplateList = append(data.ReleaseTemplateList, m)
+		case int(models.SceneTypeRequest):
+			data.RequestTemplateList = append(data.RequestTemplateList, m)
+		case int(models.SceneTypeProblem):
+			data.ProblemTemplateList = append(data.ProblemTemplateList, m)
+		case int(models.SceneTypeEvent):
+			data.EventTemplateList = append(data.EventTemplateList, m)
+		case int(models.SceneTypeChange):
+			data.ChangeTemplateList = append(data.ChangeTemplateList, m)
 		}
 	}
 	data.TemplateList = pairList
@@ -1620,6 +1631,15 @@ func GetFilterItem(param models.FilterRequestParam) (data *models.FilterItem, er
 	}
 	if len(data.ReleaseTemplateList) > 0 {
 		sort.Sort(models.KeyValueSort(data.ReleaseTemplateList))
+	}
+	if len(data.ProblemTemplateList) > 0 {
+		sort.Sort(models.KeyValueSort(data.ProblemTemplateList))
+	}
+	if len(data.EventTemplateList) > 0 {
+		sort.Sort(models.KeyValueSort(data.EventTemplateList))
+	}
+	if len(data.ChangeTemplateList) > 0 {
+		sort.Sort(models.KeyValueSort(data.ChangeTemplateList))
 	}
 	data.OperatorObjTypeList = convertMap2Array(operatorObjTypeMap)
 	if len(data.OperatorObjTypeList) > 0 {

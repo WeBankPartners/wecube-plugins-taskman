@@ -67,7 +67,6 @@
     "postcss-import": "^11.0.0",
     "postcss-loader": "^2.0.8",
     "postcss-url": "^7.2.1",
-    "postcss-wrap": "^0.0.4",
     "rimraf": "^2.6.0",
     "sass": "^1.26.5",
     "sass-loader": "^8.0.2",

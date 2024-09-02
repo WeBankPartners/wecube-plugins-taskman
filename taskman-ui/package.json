@@ -29,7 +29,7 @@
     "@babel/core": "^7.4.0",
     "@vue/cli-plugin-babel": "^3.4.0",
     "@vue/cli-service": "^3.4.0",
-    "autoprefixer": "^10.4.20",
+    "autoprefixer": "^7.1.2",
     "babel-eslint": "^8.2.1",
     "babel-helper-vue-jsx-merge-props": "^2.0.3",
     "babel-loader": "^8.0.5",

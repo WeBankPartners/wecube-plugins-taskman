@@ -1,6 +1,6 @@
 <!--工作台-->
 <template>
-  <div class="workbench">
+  <div class="taskman-workbench taskman-wrap">
     <div class="create-time" :style="{ top: `${homePageInstance ? -50 : -36}px` }">
       <span>{{ $t('tw_createdTime') }}</span>
       <DatePicker
@@ -677,7 +677,7 @@ export default {
 }
 </style>
 <style lang="scss">
-.workbench {
+.taskman-workbench {
   .badge {
     position: absolute;
     display: inline-block;

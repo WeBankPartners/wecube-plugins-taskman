@@ -638,7 +638,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.workbench {
+.taskman-workbench {
   position: relative;
   .create-time {
     display: flex;

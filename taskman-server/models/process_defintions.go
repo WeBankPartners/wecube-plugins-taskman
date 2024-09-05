@@ -228,17 +228,18 @@ type ProcDefNode struct {
 }
 
 type DefinitionsData struct {
-	ProcDefId      string       `json:"procDefId"`
-	ProcDefKey     string       `json:"procDefKey"`
-	ProcDefName    string       `json:"procDefName"`
-	ProcDefVersion string       `json:"procDefVersion"`
-	Status         string       `json:"status"`
-	ProcDefData    string       `json:"procDefData"`
-	RootEntity     string       `json:"rootEntity"`
-	CreatedTime    string       `json:"createdTime"`
-	ExcludeMode    string       `json:"excludeMode"`
-	Tags           string       `json:"tags"`
-	FlowNodes      []*FlowNodes `json:"flowNodes"`
+	ProcDefId      string             `json:"procDefId"`
+	ProcDefKey     string             `json:"procDefKey"`
+	ProcDefName    string             `json:"procDefName"`
+	ProcDefVersion string             `json:"procDefVersion"`
+	Status         string             `json:"status"`
+	ProcDefData    string             `json:"procDefData"`
+	RootEntity     string             `json:"rootEntity"`
+	CreatedTime    string             `json:"createdTime"`
+	ExcludeMode    string             `json:"excludeMode"`
+	Tags           string             `json:"tags"`
+	FlowNodes      []*FlowNodes       `json:"flowNodes"`
+	NodeLinks      []*ProcDefNodeLink `json:"nodeLinks"`
 }
 type TaskNodeInstances struct {
 	Id                string        `json:"id"`

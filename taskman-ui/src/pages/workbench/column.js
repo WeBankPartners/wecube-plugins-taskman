@@ -374,6 +374,7 @@ export default {
                       <Button
                         type="success"
                         size="small"
+                        disabled={params.row.status === 'Completed'}
                         onClick={() => {
                           this.handleRepub(params.row)
                         }}

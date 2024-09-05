@@ -272,6 +272,17 @@ type ProcessInstance struct {
 	EntityTypeID      string               `json:"entityTypeId"`
 	EntityDataID      string               `json:"entityDataId"`
 	TaskNodeInstances []*TaskNodeInstances `json:"taskNodeInstances"`
+	NodeLinks         []*ProcDefNodeLink   `json:"nodeLinks"`
+}
+
+type ProcDefNodeLink struct {
+	Id        string `json:"id"`        // 唯一标识(source__target)
+	ProcDefId string `json:"procDefId"` // 编排id
+	LinkId    string `json:"LinkId"`    // 前端线id
+	Source    string `json:"source"`    // 源节点
+	Target    string `json:"target"`    // 目标节点
+	Name      string `json:"name"`      // 连接名称
+	UiStyle   string `json:"uiStyle"`   // 前端样式
 }
 
 type EntityNodeBindQueryObj struct {

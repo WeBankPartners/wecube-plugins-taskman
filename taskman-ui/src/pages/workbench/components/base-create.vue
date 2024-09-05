@@ -121,6 +121,7 @@
                 }}</Option>
               </Select>
             </FormItem>
+            <!--数据表单-->
             <EntityTable ref="entityTable" :data="requestData" :requestId="requestId" isAdd autoAddRow></EntityTable>
             <div v-if="noRequestForm" class="no-data">{{ $t('tw_no_formConfig') }}</div>
           </div>
@@ -670,6 +671,13 @@ export default {
             })
           })
         }
+        this.requestData.forEach(i => {
+          i.title.forEach(t => {
+            t.inputType = 'diffVariable'
+            t.autofillable = 'yes'
+            t.autoFillType = 'forced'
+          })
+        })
         if (this.requestData.length === 0) {
           this.noRequestForm = true
         } else {

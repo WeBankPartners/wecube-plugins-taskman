@@ -49,9 +49,9 @@
     <div v-else class="no-data">{{ $t('tw_unbind_workflow') }}</div>
     <div v-if="showBtn" style="text-align: center;margin-top:12px">
       <!--暂存-->
-      <Button @click="saveRequest('save')" :disabled="formDisable">{{ $t('tw_save_draft') }}</Button>
+      <Button @click="saveRequest('save')" :disabled="formDisable" style="margin-right:10px;">{{ $t('tw_save_draft') }}</Button>
       <!--确认定版-->
-      <Button @click="startRequest" :disabled="formDisable" v-if="isHandle" type="primary">{{
+      <Button @click="startRequest" :disabled="formDisable" v-if="isHandle" type="primary" style="margin-right:10px;">{{
         $t('tw_confirm')
       }}</Button>
       <!--回退-->
@@ -63,7 +63,7 @@
     <Drawer
       :title="$t('detail')"
       v-model="viewVisible"
-      width="600"
+      width="800"
       :mask-closable="true"
       @on-close="viewVisible = false"
     >

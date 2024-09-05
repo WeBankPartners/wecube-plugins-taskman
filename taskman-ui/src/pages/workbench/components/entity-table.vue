@@ -42,51 +42,65 @@
                         : []
                     "
                   >
-                    <!--输入框-->
-                    <Input
-                      v-if="i.elementType === 'input'"
-                      v-model.trim="value[i.name]"
-                      :disabled="i.isEdit === 'no' || formDisable"
-                      style="width: calc(100% - 20px)"
-                    ></Input>
-                    <Input
-                      v-else-if="i.elementType === 'textarea'"
-                      v-model.trim="value[i.name]"
-                      type="textarea"
-                      :disabled="i.isEdit === 'no' || formDisable"
-                      style="width: calc(100% - 20px)"
-                    ></Input>
-                    <LimitSelect
-                      v-if="i.elementType === 'select' || i.elementType === 'wecmdbEntity'"
-                      v-model="value[i.name]"
-                      :displayName="i.elementType === 'wecmdbEntity' ? 'displayName' : i.entity ? 'key_name' : 'label'"
-                      :displayValue="i.elementType === 'wecmdbEntity' ? 'id' : i.entity ? 'guid' : 'value'"
-                      :options="value[i.name + 'Options']"
-                      :disabled="i.isEdit === 'no' || formDisable"
-                      :multiple="i.multiple === 'Y' || i.multiple === 'yes'"
-                      style="width: calc(100% - 20px)"
-                      @open-change="handleRefOpenChange(i, value, index)"
-                    >
-                    </LimitSelect>
-                    <!--自定义分析类型-->
-                    <Input
-                      v-else-if="i.elementType === 'calculate'"
-                      :value="value[i.name]"
-                      type="textarea"
-                      :disabled="true"
-                      style="width: calc(100% - 20px)"
-                    ></Input>
-                    <!--日期时间类型-->
-                    <DatePicker
-                      v-else-if="i.elementType === 'datePicker'"
-                      :value="value[i.name]"
-                      @on-change="$event => handleTimeChange($event, value, i.name)"
-                      format="yyyy-MM-dd HH:mm:ss"
-                      :disabled="i.isEdit === 'no' || formDisable"
-                      type="datetime"
-                      style="width: calc(100% - 20px)"
-                    >
-                    </DatePicker>
+                    <template v-if="['diffVariable', 'password', 'object'].includes(i.inputType)">
+                      <div style="display:flex;align-items:center;margin-top:5px;">
+                        <Icon
+                          size="18"
+                          type="ios-apps-outline"
+                          color="#2d8cf0"
+                          style="font-weight:bold;cursor:pointer;"
+                          @click="handleOpenCmdbDetail(i, value)"
+                        />
+                        {{ value[i.name] || '1111111111111111' }}
+                      </div>
+                    </template>
+                    <template v-else>
+                      <!--输入框-->
+                      <Input
+                        v-if="i.elementType === 'input'"
+                        v-model.trim="value[i.name]"
+                        :disabled="formDisabled(i)"
+                        style="width: calc(100% - 20px)"
+                      ></Input>
+                      <Input
+                        v-else-if="i.elementType === 'textarea'"
+                        v-model.trim="value[i.name]"
+                        type="textarea"
+                        :disabled="formDisabled(i)"
+                        style="width: calc(100% - 20px)"
+                      ></Input>
+                      <LimitSelect
+                        v-if="i.elementType === 'select' || i.elementType === 'wecmdbEntity'"
+                        v-model="value[i.name]"
+                        :displayName="i.elementType === 'wecmdbEntity' ? 'displayName' : i.entity ? 'key_name' : 'label'"
+                        :displayValue="i.elementType === 'wecmdbEntity' ? 'id' : i.entity ? 'guid' : 'value'"
+                        :options="value[i.name + 'Options']"
+                        :disabled="formDisabled(i)"
+                        :multiple="i.multiple === 'Y' || i.multiple === 'yes'"
+                        style="width: calc(100% - 20px)"
+                        @open-change="handleRefOpenChange(i, value, index)"
+                      >
+                      </LimitSelect>
+                      <!--自定义分析类型-->
+                      <Input
+                        v-else-if="i.elementType === 'calculate'"
+                        :value="value[i.name]"
+                        type="textarea"
+                        :disabled="true"
+                        style="width: calc(100% - 20px)"
+                      ></Input>
+                      <!--日期时间类型-->
+                      <DatePicker
+                        v-else-if="i.elementType === 'datePicker'"
+                        :value="value[i.name]"
+                        @on-change="$event => handleTimeChange($event, value, i.name)"
+                        format="yyyy-MM-dd HH:mm:ss"
+                        :disabled="formDisabled(i)"
+                        type="datetime"
+                        style="width: calc(100% - 20px)"
+                      >
+                      </DatePicker>
+                    </template>
                   </FormItem>
                 </Col>
               </template>
@@ -126,6 +140,36 @@
         </template>
       </Select>
     </div>
+    <!--cmdb数据预览-->
+    <BaseDrawer
+      :title="cmdbInfo.title"
+      :visible.sync="cmdbInfo.visible"
+      realWidth="800"
+      :scrollable="true"
+    >
+      <template slot="content">
+        <div v-if="cmdbInfo.attr.inputType === 'diffVariable'">
+          <div style="text-align: justify;word-break: break-word;overflow-y:auto;max-height:500px">
+            <div style="text-align: left;">
+              <Alert type="warning">如出现页面值未显示，请点击刷新按钮</Alert>
+            </div>
+            <div>{{ '111111111111111111111111111111' }}</div>
+          </div>
+        </div>
+        <div v-else-if="cmdbInfo.attr.inputType === 'object'">
+          <json-viewer :value="{ a: 1, b: { c: 2 }}" :expand-depth="5"></json-viewer>
+        </div>
+        <div v-else-if="cmdbInfo.attr.inputType === 'password'">
+          <div style="text-align: justify;word-break: break-word;">
+            {{ '111111111111111111111111111111' }}
+          </div>
+        </div>
+      </template>
+      <template slot="footer">
+        <Button type="primary" @click="handleRefreshCmdbData">{{ '刷新' }}</Button>
+        <Button type="default" @click="cmdbInfo.visible = false" style="margin-left:10px;">{{ '关闭' }}</Button>
+      </template>
+    </BaseDrawer>
   </div>
 </template>
 
@@ -134,9 +178,11 @@ import LimitSelect from '@/pages/components/limit-select.vue'
 import { getRefOptions, getWeCmdbOptions, saveFormData, getExpressionData } from '@/api/server'
 import { debounce, deepClone, fixArrStrToJsonArray } from '@/pages/util'
 import { evaluateCondition } from '../evaluate'
+import JsonViewer from 'vue-json-viewer'
 export default {
   components: {
-    LimitSelect
+    LimitSelect,
+    JsonViewer
   },
   props: {
     data: {
@@ -173,7 +219,13 @@ export default {
       tableData: [],
       addRowSource: '',
       addRowSourceOptions: [],
-      worklfowDataIdsObj: {} // 编排类表单默认下发数据dataId集合
+      worklfowDataIdsObj: {}, // 编排类表单默认下发数据dataId集合
+      cmdbInfo: {
+        title: '',
+        visible: false,
+        attr: {},
+        value: ''
+      }
     }
   },
   computed: {
@@ -192,6 +244,11 @@ export default {
           }
         }
         return { background: color }
+      }
+    },
+    formDisabled () {
+      return function (attr) {
+        return attr.isEdit === 'no' || (attr.autofillable === 'yes' && attr.autoFillType === 'forced')
       }
     }
   },
@@ -576,6 +633,53 @@ export default {
       //   value[name] = e
       // }
       value[name] = e
+    },
+    handleOpenCmdbDetail(attr, value) {
+      this.cmdbInfo.title = attr.title
+      this.cmdbInfo.visible = true
+      this.cmdbInfo.attr = attr
+      if (attr.inputType === 'diffVariable') {
+        value[attr.name] = this.formatCmdbData(value[attr.name])
+      }
+    },
+    // async handleRefreshCmdbData () {
+    //   const { data } = await queryCiData({
+    //     id: this.ciTypeId,
+    //     queryObject: {
+    //       dialect: { queryMode: 'new' },
+    //       filters: [{ name: 'guid', operator: 'eq', value: this.cmdbInfo.attr.name }],
+    //       paging: false
+    //     }
+    //   })
+    //   const res = await this.formatCmdbData(data.contents[0], this.cmdbInfo.attr.name)
+    //   this.$nextTick(() => {
+    //     this.tableDetailInfo.info = res
+    //     this.tableDetailInfo.isShow = true
+    //   })
+    // },
+    formatCmdbData (row, key) {
+      const vari = row[key].split('\u0001=\u0001')
+      const keys = vari[0].split(',\u0001')
+      const values = vari[1].split(',\u0001')
+      let res = []
+      for (let i = 0; i < keys.length; i++) {
+        res.push({
+          key: (keys[i] || '').replace('\u0001', ''),
+          value: (values[i] || '').replace('\u0001', '')
+        })
+      }
+      res = res.sort((first, second) => {
+        const firstKey = first.key.toLocaleUpperCase()
+        const secondKey = second.key.toLocaleUpperCase()
+        if (firstKey < secondKey) {
+          return -1
+        } else if (firstKey > secondKey) {
+          return 1
+        } else {
+          return 0
+        }
+      })
+      return res
     }
   }
 }

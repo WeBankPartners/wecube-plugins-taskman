@@ -17,7 +17,7 @@
         {{ `${item.itemGroupName}` }}<span class="count">{{ item.value.length }}</span>
       </div>
     </div>
-    <div v-if="tableData && tableData.length > 0" class="form-table">
+    <div class="form-table">
       <div v-for="(value, index) in tableData" :key="index" class="table-item">
         <div class="number">{{ index + 1 }}</div>
         <div class="form">

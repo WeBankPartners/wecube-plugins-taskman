@@ -433,6 +433,7 @@ export default {
   watch: {
     'form.rootEntityId' (val) {
       if (val) {
+        this.requestData = []
         this.getEntityData()
       } else {
         this.noRequestForm = false

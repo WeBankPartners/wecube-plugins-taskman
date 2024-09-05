@@ -308,7 +308,7 @@ export default {
                       value: item.templateId
                     }
                   })
-                // 获取请求模板
+              // 获取请求模板
               } else if (this.actionName === '2') {
                 this.baseSearch[key].list =
                   data.requestTemplateList &&
@@ -318,7 +318,37 @@ export default {
                       value: item.templateId
                     }
                   })
-                // 获取全部模板
+              // 获取问题模板
+              } else if (this.actionName === '3') {
+                this.baseSearch[key].list =
+                  data.problemTemplateList &&
+                  data.problemTemplateList.map(item => {
+                    return {
+                      label: `${item.templateName}【${item.version}】`,
+                      value: item.templateId
+                    }
+                  })
+              // 获取事件模板
+              } else if (this.actionName === '4') {
+              this.baseSearch[key].list =
+                data.eventTemplateList &&
+                data.eventTemplateList.map(item => {
+                  return {
+                    label: `${item.templateName}【${item.version}】`,
+                    value: item.templateId
+                  }
+                })
+              // 获取变更模板
+              } else if (this.actionName === '5') {
+              this.baseSearch[key].list =
+                data.changeTemplateList &&
+                data.changeTemplateList.map(item => {
+                  return {
+                    label: `${item.templateName}【${item.version}】`,
+                    value: item.templateId
+                  }
+                })
+              // 获取全部模板
               } else {
                 this.baseSearch[key].list =
                   data.templateList &&

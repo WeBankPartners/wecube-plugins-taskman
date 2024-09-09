@@ -81,7 +81,10 @@ module.exports = {
       postcss: {
         plugins: process.env.PLUGIN === 'plugin' ? [
           postcssWrap({
-            selector: '.taskman-wrap'
+            selector: '.taskman-wrap',
+            decls: {
+              'div': 'taskman-wrap'
+            }
           })
           // (css, file) => {
           //   if (file && file.opts.from.includes('wecube-common-ui')) {

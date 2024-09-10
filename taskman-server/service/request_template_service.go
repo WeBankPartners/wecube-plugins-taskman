@@ -66,6 +66,54 @@ func (s *RequestTemplateService) GetDtoByRequestTemplate(requestTemplate *models
 	return
 }
 
+func (s *RequestTemplateService) GetAllRequestTemplate(commonParam models.CommonParam) (result []*models.RequestTemplateSimpleQueryObj, err error) {
+	var roleMap = make(map[string]*models.SimpleLocalRoleDto)
+	var rowData []*models.RequestTemplateTable
+	if roleMap, err = rpc.QueryAllRoles("Y", commonParam.Token, commonParam.Language); err != nil {
+		return
+	}
+	if err = dao.X.SQL("select id,name,description,status,proc_def_name,tags,expire_day,created_by,created_time,updated_by,updated_time," +
+		"del_flag,type from request_template order by updated_time desc").Find(&rowData); err != nil {
+		return
+	}
+
+	var requestTemplateRows []*models.RequestTemplateRoleTable
+	err = dao.X.SQL("select * from request_template_role").Find(&requestTemplateRows)
+	if err != nil {
+		return
+	}
+	var mgmtRoleMap = make(map[string][]*models.RoleTable)
+	var useRoleMap = make(map[string][]*models.RoleTable)
+	for _, v := range requestTemplateRows {
+		var tmpRoles *models.RoleTable
+		if roleDto, ok := roleMap[v.Role]; ok {
+			tmpRoles = &models.RoleTable{Id: roleDto.Name, DisplayName: roleDto.DisplayName}
+		}
+		if len(mgmtRoleMap[v.RequestTemplate]) == 0 {
+			mgmtRoleMap[v.RequestTemplate] = make([]*models.RoleTable, 0)
+		}
+		if len(useRoleMap[v.RequestTemplate]) == 0 {
+			useRoleMap[v.RequestTemplate] = make([]*models.RoleTable, 0)
+		}
+		if v.RoleType == "MGMT" {
+			mgmtRoleMap[v.RequestTemplate] = append(mgmtRoleMap[v.RequestTemplate], tmpRoles)
+		} else {
+			useRoleMap[v.RequestTemplate] = append(useRoleMap[v.RequestTemplate], tmpRoles)
+		}
+	}
+	for _, v := range rowData {
+		tmpObj := models.RequestTemplateSimpleQueryObj{RequestTemplateTable: *v, MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}
+		if _, b := mgmtRoleMap[v.Id]; b {
+			tmpObj.MGMTRoles = mgmtRoleMap[v.Id]
+		}
+		if _, b := useRoleMap[v.Id]; b {
+			tmpObj.USERoles = useRoleMap[v.Id]
+		}
+		result = append(result, &tmpObj)
+	}
+	return
+}
+
 func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequestParam, commonParam models.CommonParam) (pageInfo models.PageInfo, result []*models.RequestTemplateQueryObj, err error) {
 	var roleMap = make(map[string]*models.SimpleLocalRoleDto)
 	extFilterSql := ""

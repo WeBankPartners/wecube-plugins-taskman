@@ -39,6 +39,17 @@ func QueryRequestTemplate(c *gin.Context) {
 	middleware.ReturnPageData(c, pageInfo, rowData)
 }
 
+func GetAllRequestTemplate(c *gin.Context) {
+	var result []*models.RequestTemplateSimpleQueryObj
+	var err error
+	if result, err = service.GetRequestTemplateService().GetAllRequestTemplate(models.CommonParam{Token: c.GetHeader("Authorization"),
+		Language: c.GetHeader(middleware.AcceptLanguageHeader)}); err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, result)
+}
+
 func CreateRequestTemplate(c *gin.Context) {
 	var param models.RequestTemplateUpdateParam
 	var err error

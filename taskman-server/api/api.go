@@ -45,6 +45,7 @@ func init() {
 		&handlerFuncObj{Url: "/role/administrator/list", Method: "GET", HandlerFunc: role.GetRoleAdministrators},
 		&handlerFuncObj{Url: "/user/roles", Method: "GET", HandlerFunc: role.GetUserRoles},
 		&handlerFuncObj{Url: "/request-template/query", Method: "POST", HandlerFunc: template.QueryRequestTemplate},
+		&handlerFuncObj{Url: "/request-template/all", Method: "GET", HandlerFunc: template.GetAllRequestTemplate},
 		&handlerFuncObj{Url: "/request-template", Method: "POST", HandlerFunc: template.CreateRequestTemplate},
 		&handlerFuncObj{Url: "/request-template", Method: "PUT", HandlerFunc: template.UpdateRequestTemplate},
 		&handlerFuncObj{Url: "/request-template", Method: "DELETE", HandlerFunc: template.DeleteRequestTemplate},

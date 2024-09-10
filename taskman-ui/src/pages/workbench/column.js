@@ -369,12 +369,11 @@ export default {
                     </Tooltip>
                   )}
                 {// 重新发起
-                  ['Termination', 'Completed', 'Faulted'].includes(params.row.status) && this.tabName === 'submit' && (
+                  ['Termination', 'Faulted'].includes(params.row.status) && this.tabName === 'submit' && (
                     <Tooltip content={this.$t('tw_action_relaunch')} placement="top">
                       <Button
                         type="success"
                         size="small"
-                        disabled={params.row.status === 'Completed'}
                         onClick={() => {
                           this.handleRepub(params.row)
                         }}

@@ -25,6 +25,10 @@ type QueryRequestParam struct {
 	ResultColumns []string                 `json:"resultColumns"`
 }
 
+type GetRequestTemplateRolesParam struct {
+	RequestTemplateIds []string `json:"requestTemplateIds"`
+}
+
 type TransFiltersParam struct {
 	IsStruct   bool
 	StructObj  interface{}

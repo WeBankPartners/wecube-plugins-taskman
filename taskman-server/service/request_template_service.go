@@ -1998,3 +1998,11 @@ func (s *RequestTemplateService) QueryRequestTemplateListByRequestTemplateGroup(
 	err = dao.X.SQL("select id  from request_template where `group` =?", templateGroup).Find(&list)
 	return
 }
+
+func (s *RequestTemplateService) GetRequestTemplateRoles(requestTemplateIds []string) (roles []string, err error) {
+	if len(requestTemplateIds) == 0 {
+		return
+	}
+	err = dao.X.SQL("select role  from request_template_role where request_template in (" + getSQL(requestTemplateIds) + ")").Find(&roles)
+	return
+}

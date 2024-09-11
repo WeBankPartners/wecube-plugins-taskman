@@ -50,6 +50,22 @@ func GetAllRequestTemplate(c *gin.Context) {
 	middleware.ReturnData(c, result)
 }
 
+func GetRequestTemplateRoles(c *gin.Context) {
+	var param models.GetRequestTemplateRolesParam
+	var err error
+	var result []string
+	if err = c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+
+	if result, err = service.GetRequestTemplateService().GetRequestTemplateRoles(param.RequestTemplateIds); err != nil {
+		middleware.ReturnError(c, err)
+		return
+	}
+	middleware.ReturnData(c, result)
+}
+
 func CreateRequestTemplate(c *gin.Context) {
 	var param models.RequestTemplateUpdateParam
 	var err error

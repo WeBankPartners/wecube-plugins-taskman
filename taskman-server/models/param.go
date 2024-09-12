@@ -184,3 +184,7 @@ type RequestAssociationParam struct {
 	ReportStartTime string `json:"reportTimeStart"` // 请求提交开始时间
 	ReportEndTime   string `json:"reportTimeEnd"`   // 请求提交结束时间
 }
+
+type BatchExportRequestTemplateParam struct {
+	RequestTemplateIds []string `json:"requestTemplateIds"`
+}

@@ -450,6 +450,27 @@ func ExportRequestTemplate(c *gin.Context) {
 	c.Data(http.StatusOK, "application/octet-stream", b)
 }
 
+func BatchExportRequestTemplate(c *gin.Context) {
+	var err error
+	var param models.BatchExportRequestTemplateParam
+	var requestTemplateExport models.RequestTemplateExport
+	var result []models.RequestTemplateExport
+	if err = c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	for _, requestTemplateId := range param.RequestTemplateIds {
+		if requestTemplateExport, err = service.GetRequestTemplateService().RequestTemplateExport(requestTemplateId); err != nil {
+			middleware.ReturnError(c, err)
+			return
+		}
+		if requestTemplateExport.RequestTemplate.Id != "" {
+			result = append(result, requestTemplateExport)
+		}
+	}
+	middleware.ReturnData(c, result)
+}
+
 func ImportRequestTemplate(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {

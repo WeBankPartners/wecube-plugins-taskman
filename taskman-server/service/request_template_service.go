@@ -73,7 +73,7 @@ func (s *RequestTemplateService) GetAllRequestTemplate(commonParam models.Common
 		return
 	}
 	if err = dao.X.SQL("select id,name,description,status,proc_def_name,tags,expire_day,created_by,created_time,updated_by,updated_time," +
-		"del_flag,type from request_template order by updated_time desc").Find(&rowData); err != nil {
+		"del_flag,type from request_template where status = 'confirm' order by updated_time desc").Find(&rowData); err != nil {
 		return
 	}
 

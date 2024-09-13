@@ -86,6 +86,7 @@ func init() {
 		&handlerFuncObj{Url: "/form-template-library/query", Method: "POST", HandlerFunc: form.QueryFormTemplateLibrary},
 		&handlerFuncObj{Url: "/form-template-library/form-type", Method: "GET", HandlerFunc: form.QueryAllFormTemplateLibraryFormType},
 		&handlerFuncObj{Url: "/form-template-library/export", Method: "POST", HandlerFunc: form.ExportFormTemplateLibrary},
+		&handlerFuncObj{Url: "/form-template-library/export-data", Method: "GET", HandlerFunc: form.ExportFormTemplateLibraryData},
 		&handlerFuncObj{Url: "/form-template-library/import", Method: "POST", HandlerFunc: form.ImportFormTemplateLibrary},
 
 		&handlerFuncObj{Url: "/task-template/:requestTemplate", Method: "POST", HandlerFunc: task.CreateTaskTemplate},

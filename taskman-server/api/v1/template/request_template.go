@@ -471,6 +471,43 @@ func BatchExportRequestTemplate(c *gin.Context) {
 	middleware.ReturnData(c, result)
 }
 
+func ImportRequestTemplateBatch(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Http read upload file fail:" + err.Error(), Data: nil})
+		return
+	}
+	f, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "File open error:" + err.Error(), Data: nil})
+		return
+	}
+	var paramObj []models.RequestTemplateExport
+	b, err := io.ReadAll(f)
+	defer f.Close()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Read content fail error:" + err.Error(), Data: nil})
+		return
+	}
+	err = json.Unmarshal(b, &paramObj)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Json unmarshal fail error:" + err.Error(), Data: nil})
+		return
+	}
+	for _, obj := range paramObj {
+		templateName, backToken, importErr := service.GetRequestTemplateService().RequestTemplateImport(obj, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), "", middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
+		if importErr != nil {
+			middleware.ReturnServerHandleError(c, importErr)
+			return
+		}
+		if backToken != "" {
+			c.JSON(http.StatusOK, models.ResponseJson{StatusCode: "CONFIRM", Data: models.ImportData{Token: backToken, TemplateName: templateName}})
+			return
+		}
+	}
+	middleware.ReturnSuccess(c)
+}
+
 func ImportRequestTemplate(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {

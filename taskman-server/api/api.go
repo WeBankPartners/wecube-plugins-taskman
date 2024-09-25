@@ -64,6 +64,7 @@ func init() {
 		&handlerFuncObj{Url: "/request-template/export/:requestTemplateId", Method: "GET", HandlerFunc: template.ExportRequestTemplate},
 		&handlerFuncObj{Url: "/request-template/export/batch", Method: "POST", HandlerFunc: template.BatchExportRequestTemplate},
 		&handlerFuncObj{Url: "/request-template/import", Method: "POST", HandlerFunc: template.ImportRequestTemplate},
+		&handlerFuncObj{Url: "/request-template/import-batch", Method: "POST", HandlerFunc: template.ImportRequestTemplateBatch},
 		&handlerFuncObj{Url: "/request-template/import-confirm/:confirmToken", Method: "POST", HandlerFunc: template.ConfirmImportRequestTemplate},
 		&handlerFuncObj{Url: "/request-template/disable/:id", Method: "POST", HandlerFunc: template.DisableRequestTemplate},
 		&handlerFuncObj{Url: "/request-template/enable/:id", Method: "POST", HandlerFunc: template.EnableRequestTemplate},

@@ -66,14 +66,14 @@ func (s *RequestTemplateService) GetDtoByRequestTemplate(requestTemplate *models
 	return
 }
 
-func (s *RequestTemplateService) GetAllRequestTemplate(commonParam models.CommonParam) (result []*models.RequestTemplateSimpleQueryObj, err error) {
+func (s *RequestTemplateService) GetAllLatestReleaseRequestTemplate(commonParam models.CommonParam) (result []*models.RequestTemplateSimpleQueryObj, err error) {
 	var roleMap = make(map[string]*models.SimpleLocalRoleDto)
 	var rowData []*models.RequestTemplateTable
 	if roleMap, err = rpc.QueryAllRoles("Y", commonParam.Token, commonParam.Language); err != nil {
 		return
 	}
 	if err = dao.X.SQL("select id,name,version,description,status,proc_def_name,tags,expire_day,created_by,created_time,updated_by,updated_time," +
-		"del_flag,type from request_template where status = 'confirm' order by updated_time desc").Find(&rowData); err != nil {
+		"del_flag,type from request_template where status = 'confirm'  and (record_id is null or record_id='') order by updated_time desc").Find(&rowData); err != nil {
 		return
 	}
 
@@ -1445,7 +1445,7 @@ func (s *RequestTemplateService) RequestTemplateExport(requestTemplateId string)
 	return
 }
 
-func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTemplateExport, userToken, language, confirmToken, operator string, userRoles []string) (templateName, backToken string, err error) {
+func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTemplateExport, userToken, language, confirmToken, operator string, userRoles []string) (requestTemplateId, templateName, backToken string, err error) {
 	var actions []*dao.ExecAction
 	var inputVersion = s.getTemplateVersion(models.ConvertRequestTemplateDto2Model(input.RequestTemplate))
 	var templateList []*models.RequestTemplateTable
@@ -1457,9 +1457,8 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 	if confirmToken == "" {
 		// 1.判断名称是否重复
 		templateName = input.RequestTemplate.Name
-		templateList, err = s.getTemplateListByName(input.RequestTemplate.Name)
-		if err != nil {
-			return templateName, backToken, err
+		if templateList, err = s.getTemplateListByName(input.RequestTemplate.Name); err != nil {
+			return
 		}
 		if len(templateList) > 0 {
 			// 有名称重复数据,判断导入版本是否高于所有模板版本
@@ -1686,6 +1685,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 		tmpAction.Param = []interface{}{v.Id, v.FormTemplate, v.Name, v.Description, v.ItemGroup, v.ItemGroupName, v.DefaultValue, v.Sort, v.PackageName, v.Entity, v.AttrDefId, v.AttrDefName, v.AttrDefDataType, v.ElementType, v.Title, v.Width, v.RefPackageName, v.RefEntity, v.DataOptions, v.Required, v.Regular, v.IsEdit, v.IsView, v.IsOutput, v.InDisplayName, v.IsRefInside, v.Multiple, v.DefaultClear, v.RefId, v.RoutineExpression, v.ControlSwitch, v.HiddenCondition, v.Formula}
 		actions = append(actions, &tmpAction)
 	}
+	requestTemplateId = input.RequestTemplate.Id
 	err = dao.Transaction(actions)
 	return
 }
@@ -2004,5 +2004,24 @@ func (s *RequestTemplateService) GetRequestTemplateRoles(requestTemplateIds []st
 		return
 	}
 	err = dao.X.SQL("select role  from request_template_role where request_template in (" + getSQL(requestTemplateIds) + ")").Find(&roles)
+	return
+}
+
+func (s *RequestTemplateService) GetTaskHandleTemplateRolesByRequestTemplateIds(requestTemplateIds []string) (roles []string, err error) {
+	var originRoles []string
+	roles = []string{}
+	if len(requestTemplateIds) == 0 {
+		return
+	}
+	err = dao.X.SQL("select role from task_handle_template where task_template in (select id from task_template where request_template in(" + getSQL(requestTemplateIds) + ")").Find(&originRoles)
+	if err != nil {
+		return
+	}
+	for _, role := range originRoles {
+		if strings.TrimSpace(role) == "" {
+			continue
+		}
+		roles = append(roles, role)
+	}
 	return
 }

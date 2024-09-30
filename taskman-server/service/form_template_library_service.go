@@ -230,11 +230,11 @@ func ImportFormTemplateLibrary(c *gin.Context, formTemplateLibraryData []*models
 			actions = append(actions, action)
 		} else {
 			// update
-			updateColumnStr := "`name`=?,`form_type`=?,`updated_time`=?,`created_by`=?,`del_flag`=?,`custom_flag`=?"
+			updateColumnStr := "`name`=?,`form_type`=?,`updated_time`=?,`created_by`=?,`del_flag`=?"
 			action := &dao.ExecAction{
 				Sql: dao.CombineDBSql("UPDATE ", tableNameFormTemplateLibrary, " SET ", updateColumnStr, " WHERE id=?"),
 				Param: []interface{}{formTemplateLibInfo.Name, formTemplateLibInfo.FormType, now, user,
-					formTemplateLibInfo.DelFlag, formTemplateLibInfo.CustomFlag, formTemplateLibInfo.Id},
+					formTemplateLibInfo.DelFlag, formTemplateLibInfo.Id},
 			}
 			actions = append(actions, action)
 		}

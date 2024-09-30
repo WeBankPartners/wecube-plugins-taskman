@@ -358,7 +358,7 @@ export default {
       }
       // cmdb模型数据项下拉类型
       if (titleObj.elementType === 'wecmdbEntity') {
-        if (!first) return
+        // if (!first) return
         const [packageName, ciType] = (titleObj.dataOptions && titleObj.dataOptions.split(':')) || []
         if (!packageName || !ciType) return
         const { status, data } = await getWeCmdbOptions(packageName, ciType, {})

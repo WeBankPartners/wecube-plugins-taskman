@@ -528,7 +528,7 @@ export default {
     }
     this.initData()
   },
-  beforeDestroy() {
+  beforeDestroy () {
     // 缓存列表搜索条件
     const storage = {
       searchParams: {
@@ -536,7 +536,7 @@ export default {
         status: this.status,
         mgmtRoles: this.mgmtRoles,
         type: this.type,
-        tags: this.tags,
+        tags: this.tags
       }
     }
     window.sessionStorage.setItem('search_template', JSON.stringify(storage))

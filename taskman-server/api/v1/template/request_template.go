@@ -503,7 +503,7 @@ func ImportRequestTemplateBatch(c *gin.Context) {
 		return
 	}
 	for _, obj := range paramObj {
-		requestTemplateId, templateName, backToken, importErr := service.GetRequestTemplateService().RequestTemplateImport(obj, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), "", middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
+		_, templateName, backToken, importErr := service.GetRequestTemplateService().RequestTemplateImport(obj, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), "", middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
 		if importErr != nil {
 			middleware.ReturnServerHandleError(c, importErr)
 			return
@@ -511,14 +511,6 @@ func ImportRequestTemplateBatch(c *gin.Context) {
 		if backToken != "" {
 			c.JSON(http.StatusOK, models.ResponseJson{StatusCode: "CONFIRM", Data: models.ImportData{Token: backToken, TemplateName: templateName}})
 			return
-		}
-		// 发布请求
-		if requestTemplateId != "" {
-			err = service.GetRequestTemplateService().ConfirmRequestTemplate(requestTemplateId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
-			if err != nil {
-				middleware.ReturnServerHandleError(c, fmt.Errorf("requestTempate %s release fail,%s", templateName, err.Error()))
-				return
-			}
 		}
 	}
 	middleware.ReturnSuccess(c)

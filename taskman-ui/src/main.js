@@ -10,11 +10,11 @@ import viewDesignEn from 'view-design/dist/locale/en-US'
 import viewDesignZh from 'view-design/dist/locale/zh-CN'
 import { ValidationProvider } from 'vee-validate'
 import './vee-validate-local-config'
+import commonUI from 'wecube-common-ui'
+import 'wecube-common-ui/lib/wecube-common-ui.css'
 import { getCookie } from '@/pages/util/cookie'
 Vue.component('ValidationProvider', ValidationProvider)
 // 引用wecube公共组件
-import commonUI from 'wecube-common-ui'
-import 'wecube-common-ui/lib/wecube-common-ui.css'
 Vue.use(commonUI)
 
 Vue.config.productionTip = false

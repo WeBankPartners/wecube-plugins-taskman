@@ -6,11 +6,9 @@
       @on-visible-change="visibleChange"
       :title="modalConfig.title"
     >
-      <ValidationObserver ref="observer">
         <Form :label-width="100">
           <template v-for="item in modalConfig.itemConfigs">
-            <ValidationProvider :rules="item.rules" :name="item.value" v-slot="{ errors }" :key="item.value">
-              <FormItem v-if="['text', 'password'].includes(item.type)" :label="$t(item.label)" :error="errors[0]">
+              <FormItem v-if="['text', 'password'].includes(item.type)" :label="$t(item.label)">
                 <Input
                   v-model="modalConfig.values[item.value]"
                   style="width:90%"
@@ -20,7 +18,7 @@
                 </Input>
                 <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
               </FormItem>
-              <FormItem v-if="['textarea'].includes(item.type)" :label="$t(item.label)" :error="errors[0]">
+              <FormItem v-if="['textarea'].includes(item.type)" :label="$t(item.label)">
                 <Input
                   v-model="modalConfig.values[item.value]"
                   style="width:90%"
@@ -31,7 +29,7 @@
                 </Input>
                 <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
               </FormItem>
-              <FormItem v-if="['number'].includes(item.type)" :label="$t(item.label)" :error="errors[0]">
+              <FormItem v-if="['number'].includes(item.type)" :label="$t(item.label)">
                 <InputNumber
                   :max="item.max || 1000"
                   :min="item.min || 1"
@@ -39,7 +37,7 @@
                 ></InputNumber>
                 <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
               </FormItem>
-              <FormItem v-if="['select'].includes(item.type)" :label="$t(item.label)" :error="errors[0]">
+              <FormItem v-if="['select'].includes(item.type)" :label="$t(item.label)">
                 <Select
                   v-model="modalConfig.values[item.value]"
                   clearable
@@ -59,10 +57,9 @@
                 </Select>
                 <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
               </FormItem>
-            </ValidationProvider>
           </template>
           <!-- <ValidationProvider rules="required" name="Subject" v-slot="{ errors }">
-            <FormItem :error="errors[0]" label="Subject">
+            <FormItem label="Subject">
               <Select v-model="subject" clearable placeholder="Select Subject">
                 <Option label="None" value></Option>
                 <Option label="Subject 1" value="s1"></Option>
@@ -71,7 +68,6 @@
             </FormItem>
           </ValidationProvider> -->
         </Form>
-      </ValidationObserver>
       <div slot="footer">
         <Button @click="cancel">{{ $t('cancel') }}</Button>
         <Button @click="ok" type="primary">{{ $t('save') }}</Button>

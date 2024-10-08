@@ -516,6 +516,7 @@ export default {
     }
     .step-item-content {
       flex: 1;
+      overflow: hidden;
       .title {
         span {
           color: #808695;

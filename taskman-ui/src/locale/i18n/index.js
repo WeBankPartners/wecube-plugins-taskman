@@ -30,4 +30,3 @@ export const i18n = new VueI18n({
 
 // Vue.locale('zh-CN', Object.assign(zh, ZH))
 // Vue.locale('en-US', Object.assign(en, EN))
-

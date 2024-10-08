@@ -47,7 +47,7 @@
       </template>
     </Tabs>
     <div v-else class="no-data">{{ $t('tw_unbind_workflow') }}</div>
-    <div v-if="showBtn" style="text-align: center;margin-top:12px">
+    <div v-if="showBtn" class="btn-group">
       <!--暂存-->
       <Button @click="saveRequest('save')" :disabled="formDisable">{{ $t('tw_save_draft') }}</Button>
       <!--确认定版-->
@@ -510,6 +510,16 @@ export default {
   height: 60px;
   line-height: 30px;
   color: #515a6e;
+}
+.btn-group {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+  button {
+    &:not(:first-child) {
+      margin-left: 10px;
+    }
+  }
 }
 </style>
 <style lang="scss">

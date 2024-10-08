@@ -1134,8 +1134,7 @@ func UpdateRequestStatus(requestId, status, operator, userToken, language, descr
 	var err error
 	var request models.RequestTable
 	var requestTemplate *models.RequestTemplateTable
-	var cacheData models.RequestCacheData
-	var entityDepMap map[string][]string
+	var bindCache string
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	request, err = GetSimpleRequest(requestId)
 	if err != nil {
@@ -1149,25 +1148,18 @@ func UpdateRequestStatus(requestId, status, operator, userToken, language, descr
 		return fmt.Errorf("requestId:%s is invalid", requestId)
 	}
 	if status == "Pending" {
-		/*if requestTemplate.ProcDefId != "" {
+		if requestTemplate.ProcDefId != "" {
 			bindData, bindErr := GetRequestPreBindData(request, requestTemplate, userToken, language)
 			if bindErr != nil {
 				return fmt.Errorf("try to build bind data fail,%s ", bindErr.Error())
 			}
 			bindCacheBytes, _ := json.Marshal(bindData)
 			bindCache = string(bindCacheBytes)
-		}*/
-		entityDepMap, _, err = AppendUselessEntity(requestTemplate.Id, userToken, language, &cacheData, request.Id)
-		if err != nil {
-			err = fmt.Errorf("try to append useless entity fail,%s ", err.Error())
-			return err
 		}
-		fillBindingWithRequestData(request.Id, userToken, language, &cacheData, entityDepMap)
-		cacheBytes, _ := json.Marshal(cacheData)
 		// 设置bindCache,模版没配置定版,审批自动通过到任务场景用到
-		request.BindCache = string(cacheBytes)
+		request.BindCache = bindCache
 		// 请求定版, 根据模板配置开启是否确认定版
-		err = GetRequestService().CreateRequestCheck(request, operator, string(cacheBytes), userToken, language)
+		err = GetRequestService().CreateRequestCheck(request, operator, bindCache, userToken, language)
 	} else if status == "Draft" {
 		// 只有定版人才能处理
 		var checkTask *models.TaskTable

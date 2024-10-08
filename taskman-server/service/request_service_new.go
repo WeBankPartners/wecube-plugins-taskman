@@ -1841,6 +1841,8 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 		}
 		fillBindingWithRequestData(request.Id, userToken, language, &cacheData, entityDepMap)
 		cacheBytes, _ := json.Marshal(cacheData)
+		// 重新设置Request BindCache
+		request.BindCache = string(cacheBytes)
 		// 更新请求表 bind_cache
 		actions = append(actions, &dao.ExecAction{Sql: "update request set bind_cache=? where id=?",
 			Param: []interface{}{string(cacheBytes), request.Id}})

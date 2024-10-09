@@ -1741,10 +1741,6 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 		err = fmt.Errorf("requestTemplate is empty")
 		return
 	}
-	if requestTemplate.ProcDefId != "" {
-		// 关联编排
-		request.AssociationWorkflow = true
-	}
 	submitTaskTemplateList, err = GetTaskTemplateService().QueryTaskTemplateListByRequestTemplateAndType(requestTemplate.Id, string(models.TaskTypeSubmit))
 	if err != nil {
 		return

@@ -94,7 +94,7 @@ export default {
     }
     this.initData()
   },
-  beforeDestroy() {
+  beforeDestroy () {
     // 缓存列表搜索条件
     const storage = {
       searchParams: this.form,

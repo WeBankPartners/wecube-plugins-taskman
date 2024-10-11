@@ -322,11 +322,17 @@ func GetRequestCache(c *gin.Context) {
 func StartRequest(c *gin.Context) {
 	requestId := c.Param("requestId")
 	var param models.RequestCacheData
-	if err := c.ShouldBindJSON(&param); err != nil {
+	var request models.RequestTable
+	var err error
+	if err = c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	instanceId, err := service.StartRequest(requestId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), param)
+	if request, err = service.GetSimpleRequest(requestId); err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	instanceId, err := service.StartRequest(request, middleware.GetRequestUser(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -596,20 +602,4 @@ func Association(c *gin.Context) {
 		return
 	}
 	middleware.ReturnPageData(c, pageInfo, rowsData)
-}
-
-// GetWorkflowRequest 查询编排关联请求
-func GetWorkflowRequest(c *gin.Context) {
-	var result []*models.RequestTable
-	var err error
-	procInstanceId := c.Query("procInstanceId")
-	if strings.TrimSpace(procInstanceId) == "" {
-		middleware.ReturnSuccess(c)
-		return
-	}
-	if result, err = service.GetRequestService().GetWorkflowRequest(procInstanceId); err != nil {
-		middleware.ReturnError(c, err)
-		return
-	}
-	middleware.ReturnData(c, result)
 }

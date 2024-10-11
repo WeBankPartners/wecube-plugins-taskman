@@ -234,6 +234,7 @@ type RequestProcessData struct {
 	RootEntityOid string                           `json:"rootEntityOid"`
 	Entities      []*RequestCacheEntityValue       `json:"entities"`
 	Bindings      []*RequestProcessTaskNodeBindObj `json:"bindings"`
+	*SimpleRequestDto
 }
 
 type RequestProcessTaskNodeBindObj struct {
@@ -449,8 +450,12 @@ type PluginRequestCreateOutput struct {
 }
 
 type SimpleRequestDto struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
+	Id              string `json:"id" xorm:"id"`
+	Name            string `json:"name" xorm:"name"`
+	RequestTemplate string `json:"requestTemplate" xorm:"request_template"`
+	CreatedBy       string `json:"createdBy" xorm:"created_by"`
+	CreatedTime     string `json:"createdTime" xorm:"created_time"`
+	Type            int    `json:"type" xorm:"type"`
 }
 
 type PluginRequestCreateOutputObj struct {

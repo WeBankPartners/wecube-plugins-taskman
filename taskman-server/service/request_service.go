@@ -1015,22 +1015,30 @@ func CheckRequest(request models.RequestTable, task *models.TaskTable, operator,
 	return GetRequestService().AutoExecTaskHandle(request, userToken, language)
 }
 
-func StartRequest(requestId, operator, userToken, language string, cacheData models.RequestCacheData) (result *models.StartInstanceResultData, err error) {
+func StartRequest(request models.RequestTable, operator, userToken, language string, cacheData models.RequestCacheData) (result *models.StartInstanceResultData, err error) {
 	var requestTemplateTable []*models.RequestTemplateTable
-	dao.X.SQL("select * from request_template where id in (select request_template from request where id=?)", requestId).Find(&requestTemplateTable)
+	dao.X.SQL("select * from request_template where id in (select request_template from request where id=?)", request.Id).Find(&requestTemplateTable)
 	if len(requestTemplateTable) == 0 {
-		return result, fmt.Errorf("can not find requestTemplate with request:%s ", requestId)
+		return result, fmt.Errorf("can not find requestTemplate with request:%s ", request.Id)
 	}
 	cacheData.ProcDefId = requestTemplateTable[0].ProcDefId
 	cacheData.ProcDefKey = requestTemplateTable[0].ProcDefKey
-	entityDepMap, preData, tmpErr := AppendUselessEntity(requestTemplateTable[0].Id, userToken, language, &cacheData, requestId)
+	entityDepMap, preData, tmpErr := AppendUselessEntity(requestTemplateTable[0].Id, userToken, language, &cacheData, request.Id)
 	if tmpErr != nil {
 		return result, fmt.Errorf("try to append useless entity fail,%s ", tmpErr.Error())
 	}
-	fillBindingWithRequestData(requestId, userToken, language, &cacheData, entityDepMap)
+	fillBindingWithRequestData(request.Id, userToken, language, &cacheData, entityDepMap)
 	cacheBytes, _ := json.Marshal(cacheData)
 	log.Logger.Info("cacheByte", log.String("cacheBytes", string(cacheBytes)))
 	startParam := BuildRequestProcessData(cacheData, preData)
+	startParam.SimpleRequestDto = &models.SimpleRequestDto{
+		Id:              request.Id,
+		Name:            request.Name,
+		RequestTemplate: request.RequestTemplate,
+		CreatedBy:       request.CreatedBy,
+		CreatedTime:     request.CreatedTime,
+		Type:            request.Type,
+	}
 	result, err = GetProcDefService().StartProcDefInstances(startParam, userToken, language)
 	if err != nil {
 		return
@@ -1042,7 +1050,7 @@ func StartRequest(requestId, operator, userToken, language string, cacheData mod
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	expireTime := calcExpireTime(nowTime, requestTemplateTable[0].ExpireDay)
 	procInstId := fmt.Sprintf("%v", result.Id)
-	_, err = dao.X.Exec("update request set handler=?,proc_instance_id=?,proc_instance_key=?,confirm_time=?,expire_time=?,status=?,bind_cache=?,updated_by=?,updated_time=? where id=?", operator, procInstId, result.ProcInstKey, nowTime, expireTime, result.Status, string(cacheBytes), operator, nowTime, requestId)
+	_, err = dao.X.Exec("update request set handler=?,proc_instance_id=?,proc_instance_key=?,confirm_time=?,expire_time=?,status=?,bind_cache=?,updated_by=?,updated_time=? where id=?", operator, procInstId, result.ProcInstKey, nowTime, expireTime, result.Status, string(cacheBytes), operator, nowTime, request.Id)
 	return
 }
 
@@ -1073,6 +1081,14 @@ func StartRequestNew(request models.RequestTable, userToken, language string, ca
 	}
 	fillBindingWithRequestData(request.Id, userToken, language, &cacheData, entityDepMap)
 	startParam := BuildRequestProcessData(cacheData, preData)
+	startParam.SimpleRequestDto = &models.SimpleRequestDto{
+		Id:              request.Id,
+		Name:            request.Name,
+		RequestTemplate: request.RequestTemplate,
+		CreatedBy:       request.CreatedBy,
+		CreatedTime:     request.CreatedTime,
+		Type:            request.Type,
+	}
 	log.Logger.Debug("start proc instance", log.JsonObj("startParam", startParam))
 	result, err = GetProcDefService().StartProcDefInstances(startParam, userToken, language)
 	if err != nil {

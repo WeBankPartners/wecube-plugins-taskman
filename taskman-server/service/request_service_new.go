@@ -2260,6 +2260,10 @@ func (s *RequestService) Association(param models.RequestAssociationParam) (page
 	return
 }
 
+func (s *RequestService) GetWorkflowRequest(procInstanceId string) (result []*models.RequestTable, err error) {
+	return s.requestDao.QueryRequestByProcInstanceId(procInstanceId)
+}
+
 // calcShowRequestRevokeButton 计算是否出请求撤回按钮
 func calcShowRequestRevokeButton(requestId, requestStatus string) bool {
 	var taskList []*models.TaskTable

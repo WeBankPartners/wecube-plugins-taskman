@@ -597,3 +597,19 @@ func Association(c *gin.Context) {
 	}
 	middleware.ReturnPageData(c, pageInfo, rowsData)
 }
+
+// GetWorkflowRequest 查询编排关联请求
+func GetWorkflowRequest(c *gin.Context) {
+	var result []*models.RequestTable
+	var err error
+	procInstanceId := c.Query("procInstanceId")
+	if strings.TrimSpace(procInstanceId) == "" {
+		middleware.ReturnSuccess(c)
+		return
+	}
+	if result, err = service.GetRequestService().GetWorkflowRequest(procInstanceId); err != nil {
+		middleware.ReturnError(c, err)
+		return
+	}
+	middleware.ReturnData(c, result)
+}

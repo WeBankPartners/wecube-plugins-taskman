@@ -122,6 +122,7 @@ func init() {
 		&handlerFuncObj{Url: "/request-status/:requestId/:status", Method: "POST", HandlerFunc: request.UpdateRequestStatus},
 		&handlerFuncObj{Url: "/request-data/reference/query/:formItemTemplateId/:requestId/:attrName", Method: "POST", HandlerFunc: request.GetReferenceData},
 		&handlerFuncObj{Url: "/request-data/entity/expression/query/:formItemTemplateId/:rootDataId", Method: "GET", HandlerFunc: request.GetExpressionItemData},
+		&handlerFuncObj{Url: "/workflow/request", Method: "GET", HandlerFunc: request.GetWorkflowRequest},
 
 		&handlerFuncObj{Url: "/user/platform/count", Method: "POST", HandlerFunc: request.CountPlatform},
 		&handlerFuncObj{Url: "/user/platform/filter-item", Method: "POST", HandlerFunc: request.FilterItem},

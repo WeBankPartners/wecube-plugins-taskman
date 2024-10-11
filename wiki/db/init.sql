@@ -616,3 +616,6 @@ alter table request add column preview_cache mediumtext default null comment '�
 #@v1.1.2-begin@;
 alter table form_item_template add column formula varchar(255) default null comment '表达式计算';
 #@v1.1.2-end@;
+#@v1.2.4-begin@;
+alter table request  add index request_proc_instance_id(proc_instance_id);
+#@v1.2.4-end@;

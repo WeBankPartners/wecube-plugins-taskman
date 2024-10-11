@@ -214,7 +214,7 @@ export default {
     }
     this.initData()
   },
-  beforeDestroy() {
+  beforeDestroy () {
     // 缓存列表搜索条件
     const storage = {
       searchParams: this.form,
@@ -223,7 +223,7 @@ export default {
     window.sessionStorage.setItem('search_workbench', JSON.stringify(storage))
   },
   methods: {
-    initData() {
+    initData () {
       this.initTab = this.$route.query.tabName || 'myPending'
       this.initAction = this.$route.query.actionName || '1'
       this.homePageInstance = document.querySelector('.platform-homepage')

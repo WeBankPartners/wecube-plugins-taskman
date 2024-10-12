@@ -459,11 +459,14 @@ type SimpleRequestDto struct {
 }
 
 type PluginRequestCreateOutputObj struct {
-	CallbackParameter string `json:"callbackParameter"`
-	RequestId         string `json:"requestId"`
-	ErrorCode         string `json:"errorCode"`
-	ErrorMessage      string `json:"errorMessage"`
-	ErrorDetail       string `json:"errorDetail,omitempty"`
+	CallbackParameter   string `json:"callbackParameter"`
+	RequestId           string `json:"requestId"`
+	RequestName         string `json:"requestName"`
+	RequestTemplate     string `json:"requestTemplate"`
+	RequestTemplateType int    `json:"requestTemplateType"`
+	ErrorCode           string `json:"errorCode"`
+	ErrorMessage        string `json:"errorMessage"`
+	ErrorDetail         string `json:"errorDetail,omitempty"`
 }
 
 type TaskProgressNodeSort []*TaskProgressNode

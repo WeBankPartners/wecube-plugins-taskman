@@ -42,7 +42,7 @@ func CreateRequest(c *gin.Context) {
 		return
 	}
 	param.CreatedBy = middleware.GetRequestUser(c)
-	err := handleCreateRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	_, err := handleCreateRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -51,7 +51,7 @@ func CreateRequest(c *gin.Context) {
 	middleware.ReturnData(c, param)
 }
 
-func handleCreateRequest(param *models.RequestTable, roles []string, userToken, language string) (err error) {
+func handleCreateRequest(param *models.RequestTable, roles []string, userToken, language string) (newRequest *models.RequestTable, err error) {
 	template, getTemplateErr := service.GetRequestTemplateService().GetRequestTemplate(param.RequestTemplate)
 	if getTemplateErr != nil {
 		err = getTemplateErr
@@ -76,6 +76,7 @@ func handleCreateRequest(param *models.RequestTable, roles []string, userToken, 
 	if template.ProcDefId != "" {
 		param.AssociationWorkflow = true
 	}
+	newRequest = param
 	err = service.CreateRequest(param, roles, userToken, language)
 	return
 }
@@ -258,10 +259,11 @@ func PluginCreateRequest(c *gin.Context) {
 }
 
 func handlePluginRequestCreate(input *models.PluginRequestCreateParamObj, callRequestId, token, language string) (result *models.PluginRequestCreateOutputObj, err error) {
+	var newRequest *models.RequestTable
 	result = &models.PluginRequestCreateOutputObj{CallbackParameter: input.CallbackParameter}
 	requestObj := models.RequestTable{RequestTemplate: input.RequestTemplate, Role: input.ReportRole, CreatedBy: input.ReportUser}
 	// 创建请求
-	if err = handleCreateRequest(&requestObj, []string{input.ReportRole}, token, language); err != nil {
+	if newRequest, err = handleCreateRequest(&requestObj, []string{input.ReportRole}, token, language); err != nil {
 		return
 	}
 	if requestObj.Id == "" {
@@ -269,6 +271,11 @@ func handlePluginRequestCreate(input *models.PluginRequestCreateParamObj, callRe
 		return
 	}
 	result.RequestId = requestObj.Id
+	if newRequest != nil {
+		result.RequestName = newRequest.Name
+		result.RequestTemplate = newRequest.RequestTemplate
+		result.RequestTemplateType = newRequest.Type
+	}
 	// 预览根数据表单
 	previewData, previewErr := service.GetRequestPreData(requestObj.Id, input.RootDataId, token, language)
 	if previewErr != nil {

@@ -715,6 +715,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 				requestTemp, _ := GetSimpleRequest(platformDataObj.RequestRefId)
 				platformDataObj.RequestRefName = requestTemp.Name
 				platformDataObj.RequestRefType = requestTemp.Type
+				platformDataObj.RefTemplateId = requestTemp.RequestTemplate
 			}
 		}
 		if len(actions) > 0 {
@@ -1376,6 +1377,7 @@ func getTaskProgress(role, userToken, language string, taskTemplateList []*model
 			}
 			// 如果是角色管理员审批,用户提交匹配不上,需要查询接口拿到
 			if taskTemplate.HandleMode == string(models.TaskTemplateHandleModeAdmin) {
+				requestProgress.TaskHandleList = []*models.TaskHandleNode{}
 				result, _ := GetRoleService().GetRoleAdministrators(role, userToken, language)
 				if len(result) > 0 && result[0] != "" {
 					// 设置显示名
@@ -1472,6 +1474,7 @@ func getRequestForm(request *models.RequestTable, taskId, userToken, language st
 	form.Description = request.Description
 	form.Status = request.Status
 	form.ProcInstanceId = request.ProcInstanceId
+	form.ProcDefId = template.ProcDefId
 	form.ExpireDay = template.ExpireDay
 	if template.Status != "confirm" {
 		version = "beta"
@@ -1516,10 +1519,17 @@ func getRequestForm(request *models.RequestTable, taskId, userToken, language st
 	}
 	form.RevokeBtn = calcShowRequestRevokeButton(request.Id, request.Status)
 	form.RefId = request.RefId
+	form.ParentId = request.Parent
 	form.RefType = request.RefType
 	if form.RefId != "" {
 		requestTemp, _ := GetSimpleRequest(form.RefId)
 		form.RefName = requestTemp.Name
+		form.RefTemplateId = requestTemp.RequestTemplate
+	}
+	if form.ParentId != "" {
+		requestTemp, _ := GetSimpleRequest(form.ParentId)
+		form.ParentName = requestTemp.Name
+		form.ParentTemplateId = requestTemp.RequestTemplate
 	}
 	return
 }
@@ -1560,6 +1570,9 @@ func GetFilterItem(param models.FilterRequestParam) (data *models.FilterItem, er
 	data = &models.FilterItem{
 		RequestTemplateList: make([]*models.KeyValuePair, 0),
 		ReleaseTemplateList: make([]*models.KeyValuePair, 0),
+		ProblemTemplateList: make([]*models.KeyValuePair, 0),
+		EventTemplateList:   make([]*models.KeyValuePair, 0),
+		ChangeTemplateList:  make([]*models.KeyValuePair, 0),
 	}
 	var templateMap = make(map[string]bool, 0)
 	var pairList []*models.KeyValuePair
@@ -1596,10 +1609,17 @@ func GetFilterItem(param models.FilterRequestParam) (data *models.FilterItem, er
 			templateMap[m.TemplateId+m.TemplateName+m.Version] = true
 		}
 		pairList = append(pairList, m)
-		if item.TemplateType == 0 {
-			data.RequestTemplateList = append(data.RequestTemplateList, m)
-		} else {
+		switch item.TemplateType {
+		case int(models.SceneTypeRelease):
 			data.ReleaseTemplateList = append(data.ReleaseTemplateList, m)
+		case int(models.SceneTypeRequest):
+			data.RequestTemplateList = append(data.RequestTemplateList, m)
+		case int(models.SceneTypeProblem):
+			data.ProblemTemplateList = append(data.ProblemTemplateList, m)
+		case int(models.SceneTypeEvent):
+			data.EventTemplateList = append(data.EventTemplateList, m)
+		case int(models.SceneTypeChange):
+			data.ChangeTemplateList = append(data.ChangeTemplateList, m)
 		}
 	}
 	data.TemplateList = pairList
@@ -1611,6 +1631,15 @@ func GetFilterItem(param models.FilterRequestParam) (data *models.FilterItem, er
 	}
 	if len(data.ReleaseTemplateList) > 0 {
 		sort.Sort(models.KeyValueSort(data.ReleaseTemplateList))
+	}
+	if len(data.ProblemTemplateList) > 0 {
+		sort.Sort(models.KeyValueSort(data.ProblemTemplateList))
+	}
+	if len(data.EventTemplateList) > 0 {
+		sort.Sort(models.KeyValueSort(data.EventTemplateList))
+	}
+	if len(data.ChangeTemplateList) > 0 {
+		sort.Sort(models.KeyValueSort(data.ChangeTemplateList))
 	}
 	data.OperatorObjTypeList = convertMap2Array(operatorObjTypeMap)
 	if len(data.OperatorObjTypeList) > 0 {
@@ -1694,7 +1723,7 @@ func convertInterfaceArray2Map(arr []interface{}) map[interface{}]bool {
 }
 
 // CreateRequestCheck 创建确认定版
-func (s *RequestService) CreateRequestCheck(request models.RequestTable, operator, bindCache, userToken, language string) (err error) {
+func (s *RequestService) CreateRequestCheck(request models.RequestTable, operator, cache, bindCache, userToken, language string) (err error) {
 	now := time.Now().Format(models.DateTimeFormat)
 	var actions []*dao.ExecAction
 	var approvalActions []*dao.ExecAction
@@ -1711,10 +1740,6 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 	if requestTemplate == nil {
 		err = fmt.Errorf("requestTemplate is empty")
 		return
-	}
-	if requestTemplate.ProcDefId != "" {
-		// 关联编排
-		request.AssociationWorkflow = true
 	}
 	submitTaskTemplateList, err = GetTaskTemplateService().QueryTaskTemplateListByRequestTemplateAndType(requestTemplate.Id, string(models.TaskTypeSubmit))
 	if err != nil {
@@ -1788,7 +1813,36 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 		err = dao.Transaction(actions)
 		return
 	}
-
+	if requestTemplate.ProcDefId != "" {
+		request.AssociationWorkflow = true
+		// 组装请求定版编排数据
+		var cacheData models.RequestCacheData
+		var entityDepMap map[string][]string
+		var cacheObj models.RequestPreDataDto
+		var requestCacheData models.RequestCacheData
+		if err = json.Unmarshal([]byte(bindCache), &requestCacheData); err != nil {
+			err = fmt.Errorf("try to json unmarshal request bind_cache data fail,%s ", err.Error())
+			return
+		}
+		if err = json.Unmarshal([]byte(cache), &cacheObj); err != nil {
+			err = fmt.Errorf("try to json unmarshal request cache data fail,%s ", err.Error())
+			return
+		}
+		cacheData.TaskNodeBindInfos = requestCacheData.TaskNodeBindInfos
+		cacheData.RootEntityValue = models.RequestCacheEntityValue{Oid: cacheObj.RootEntityId}
+		entityDepMap, _, err = AppendUselessEntity(requestTemplate.Id, userToken, language, &cacheData, request.Id)
+		if err != nil {
+			err = fmt.Errorf("try to append useless entity fail,%s ", err.Error())
+			return
+		}
+		fillBindingWithRequestData(request.Id, userToken, language, &cacheData, entityDepMap)
+		cacheBytes, _ := json.Marshal(cacheData)
+		// 重新设置Request BindCache
+		request.BindCache = string(cacheBytes)
+		// 更新请求表 bind_cache
+		actions = append(actions, &dao.ExecAction{Sql: "update request set bind_cache=? where id=?",
+			Param: []interface{}{string(cacheBytes), request.Id}})
+	}
 	// 没有配置定版,请求继续往后面走
 	approvalActions, err = s.CreateRequestApproval(request, "", userToken, language, taskSort, true)
 	if err != nil {

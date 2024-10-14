@@ -593,37 +593,6 @@ func UpdateRequestFormItemNew(requestId, operator, now string, param *models.Req
 	return
 }
 
-func UpdateSingleRequestForm(requestId, operator, now string, param *models.RequestPreDataTableObj) []*dao.ExecAction {
-	var actions []*dao.ExecAction
-	var newFormId string
-	actions = append(actions, &dao.ExecAction{Sql: "delete from form_item where form in (select id from form where request = ? and form_template=?)", Param: []interface{}{requestId, param.FormTemplateId}})
-	actions = append(actions, &dao.ExecAction{Sql: "delete from form where request = ? and form_template=?", Param: []interface{}{requestId, param.FormTemplateId}})
-	tmpFormIdList := guid.CreateGuidList(len(param.Value))
-	for valueIndex, valueObj := range param.Value {
-		// 每行记录新增一个表单
-		newFormId = tmpFormIdList[valueIndex]
-		actions = append(actions, &dao.ExecAction{Sql: "insert into form(id,request,form_template,data_id,created_by,created_time,updated_by," +
-			"updated_time) values (?,?,?,?,?,?,?,?)", Param: []interface{}{newFormId, requestId, param.FormTemplateId, valueObj.Id, operator, now, operator, now}})
-		tmpGuidList := guid.CreateGuidList(len(param.Title))
-		for i, title := range param.Title {
-			if strings.EqualFold(title.Multiple, models.Yes) || strings.EqualFold(title.Multiple, models.Y) {
-				if tmpV, b := valueObj.EntityData[title.Name]; b {
-					var tmpStringV []string
-					for _, interfaceV := range tmpV.([]interface{}) {
-						tmpStringV = append(tmpStringV, fmt.Sprintf("%s", interfaceV))
-					}
-					actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time) values (?,?,?,?,?,?,?)",
-						Param: []interface{}{tmpGuidList[i], newFormId, title.Id, title.Name, strings.Join(tmpStringV, ","), requestId, now}})
-				}
-			} else {
-				actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time) values (?,?,?,?,?,?,?)",
-					Param: []interface{}{tmpGuidList[i], newFormId, title.Id, title.Name, valueObj.EntityData[title.Name], requestId, now}})
-			}
-		}
-	}
-	return actions
-}
-
 func UpdateSingleRequestFormNew(requestId, operator, now string, param *models.RequestPreDataTableObj) (actions []*dao.ExecAction, err error) {
 	updateParam := models.RequestPreDataDto{Data: []*models.RequestPreDataTableObj{param}}
 	actions, err = UpdateRequestFormItemNew(requestId, operator, now, &updateParam)
@@ -1190,7 +1159,7 @@ func UpdateRequestStatus(requestId, status, operator, userToken, language, descr
 		// 设置bindCache,模版没配置定版,审批自动通过到任务场景用到
 		request.BindCache = bindCache
 		// 请求定版, 根据模板配置开启是否确认定版
-		err = GetRequestService().CreateRequestCheck(request, operator, bindCache, userToken, language)
+		err = GetRequestService().CreateRequestCheck(request, operator, request.Cache, bindCache, userToken, language)
 	} else if status == "Draft" {
 		// 只有定版人才能处理
 		var checkTask *models.TaskTable
@@ -1941,10 +1910,10 @@ func CopyRequest(requestId, createdBy string) (result models.RequestTable, err e
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	result.Id = newRequestId()
 	requestInsertAction := dao.ExecAction{Sql: "insert into request(id,name,request_template,reporter,emergency,report_role,status," +
-		"cache,expire_time,expect_time,handler,created_by,created_time,updated_by,updated_time,parent,type,role,ref_id,ref_type) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+		"cache,expire_time,expect_time,handler,created_by,created_time,updated_by,updated_time,parent,type,role,ref_id,ref_type,custom_form_cache,description,task_approval_cache) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
 	requestInsertAction.Param = []interface{}{result.Id, parentRequest.Name, parentRequest.RequestTemplate, createdBy, parentRequest.Emergency,
 		parentRequest.ReportRole, "Draft", parentRequest.Cache, "", parentRequest.ExpectTime, parentRequest.Handler, createdBy, nowTime, createdBy,
-		nowTime, parentRequest.Id, parentRequest.Type, parentRequest.Role, parentRequest.RefId, parentRequest.RefType}
+		nowTime, parentRequest.Id, parentRequest.Type, parentRequest.Role, parentRequest.RefId, parentRequest.RefType, parentRequest.CustomFormCache, parentRequest.Description, parentRequest.TaskApprovalCache}
 	actions = append(actions, &requestInsertAction)
 	// copy attach file
 	var attachFileRows []*models.AttachFileTable

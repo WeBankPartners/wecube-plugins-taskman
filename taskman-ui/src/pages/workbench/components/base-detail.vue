@@ -15,7 +15,7 @@
     <div class="content">
       <Form :model="form" label-position="right" :label-width="120" style="width:100%;">
         <!--基础信息-->
-        <HeaderTitle :title="$t('tw_request_title')">
+        <BaseHeaderTitle :title="$t('tw_request_title')">
           <div style="padding-left:16px;">
             <Row :gutter="20">
               <Col :span="12" class="info-item">
@@ -111,17 +111,29 @@
               </Col>
             </Row>
             <Row style="margin-top:10px;" :gutter="20">
+              <!--关联单-->
               <Col :span="12" class="info-item">
                 <div class="info-item-label">{{ $t('tw_ref') }}：</div>
                 <div class="info-item-value">
-                  {{ detail.refName ? `【${typeMap[detail.refType]}】${detail.refName}【${detail.refId}】` : '-' }}
+                  <span style="cursor:pointer;color:#5cadff;" @click="handleViewRefDetail('ref')">
+                    {{ detail.refName ? `【${typeMap[detail.refType]}】${detail.refName}【${detail.refId}】` : '-' }}
+                  </span>
+                </div>
+              </Col>
+              <!--历史单-->
+              <Col :span="12" class="info-item">
+                <div class="info-item-label">{{ $t('tw_historyRef') }}：</div>
+                <div class="info-item-value">
+                  <span style="cursor:pointer;color:#5cadff;" @click="handleViewRefDetail('history')">
+                    {{ detail.parentName ? `${detail.parentName}【${detail.parentId}】` : '-' }}
+                  </span>
                 </div>
               </Col>
             </Row>
           </div>
-        </HeaderTitle>
+        </BaseHeaderTitle>
         <!--表单详情-->
-        <HeaderTitle :title="$t('tw_form_detail')">
+        <BaseHeaderTitle :title="$t('tw_form_detail')">
           <div class="request-form">
             <template v-if="detail.customForm && detail.customForm.value">
               <Divider style="margin: 0 0 30px 0" orientation="left">
@@ -153,9 +165,9 @@
             <EntityTable v-if="form.data.length" :data="form.data" :requestId="requestId" formDisable></EntityTable>
             <div v-else class="no-data">{{ $t('tw_no_formConfig') }}</div>
           </div>
-        </HeaderTitle>
+        </BaseHeaderTitle>
         <!--处理历史-->
-        <HeaderTitle :title="$t('tw_handle_history')">
+        <BaseHeaderTitle :title="$t('tw_handle_history')">
           <Collapse v-model="activeStep" simple style="margin-top:30px;">
             <Panel
               v-for="(data, index) in historyData"
@@ -267,7 +279,7 @@
               </template>
             </Panel>
           </Collapse>
-        </HeaderTitle>
+        </BaseHeaderTitle>
         <!--当前处理-->
         <CurrentHandle
           v-if="isHandle && Object.keys(handleData).length > 0"
@@ -293,7 +305,7 @@
         <Icon v-else type="ios-arrow-dropleft-circle" :size="28" />
       </div>
       <div v-if="flowVisible" class="flow-expand">
-        <StaticFlow v-if="!detail.procInstanceId" :requestTemplate="requestTemplate"></StaticFlow>
+        <StaticFlow v-if="!detail.procInstanceId" :requestTemplate="requestTemplate" :flowId="detail.procId"></StaticFlow>
         <DynamicFlow v-else :flowId="detail.procInstanceId"></DynamicFlow>
       </div>
     </template>
@@ -301,7 +313,6 @@
 </template>
 
 <script>
-import HeaderTitle from './header-title.vue'
 import HeaderTag from './header-tag.vue'
 import StaticFlow from './flow/static-flow.vue'
 import DynamicFlow from './flow/dynamic-flow.vue'
@@ -314,7 +325,6 @@ import CurrentHandle from './base-handle.vue'
 import { getPublishInfo, recallRequest, getRequestHistory } from '@/api/server'
 export default {
   components: {
-    HeaderTitle,
     HeaderTag,
     StaticFlow,
     DynamicFlow,
@@ -378,6 +388,13 @@ export default {
         implement_custom: '#b886f8',
         confirm: '#19be6b'
       },
+      detailRouteMap: {
+        '1': 'detailPublish',
+        '2': 'detailRequest',
+        '3': 'detailProblem',
+        '4': 'detailEvent',
+        '5': 'detailChange'
+      },
       lang: window.localStorage.getItem('lang') || 'zh-CN'
     }
   },
@@ -421,11 +438,32 @@ export default {
         this.$router.push({
           path: `/taskman/workbench?tabName=${this.jumpFrom}&actionName=${this.actionName}&${
             this.jumpFrom === 'submit' ? 'rollback' : 'type'
-          }=${this.type}`
+          }=${this.type}&needCache=yes`
         })
       } else {
-        this.$router.back()
+        const pathMap = {
+          1: 'publishHistory',
+          2: 'requestHistory',
+          3: 'problemHistory',
+          4: 'eventHistory',
+          5: 'changeHistory'
+        }
+        this.$router.push({
+          path: `/taskman/workbench/${pathMap[this.actionName]}?&needCache=yes`
+        })
       }
+    },
+    // 查看关联单
+    async handleViewRefDetail (type) {
+      window.sessionStorage.currentPath = '' // 先清空session缓存页面，不然打开新标签页面会回退到缓存的页面
+      const subPath = this.detailRouteMap[this.actionName]
+      let path = ''
+      if (type === 'ref') {
+        path = `${window.location.origin}/#/taskman/workbench/${subPath}?requestId=${this.detail.refId}&requestTemplate=${this.detail.refTemplateId}`
+      } else if (type === 'history') {
+        path = `${window.location.origin}/#/taskman/workbench/${subPath}?requestId=${this.detail.parentId}&requestTemplate=${this.detail.parentTemplateId}`
+      }
+      window.open(path, '_blank')
     },
     // 获取详情数据
     async getRequestInfoNew () {

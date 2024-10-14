@@ -142,7 +142,8 @@ type PlatformDataObj struct {
 	RoleAdministrator      string `json:"roleAdministrator" xorm:"-"`                            // 角色管理员
 	ExpireDay              int    `json:"expireDay" xorm:"expire_day"`                           // 过期时间
 	RequestRefId           string `json:"requestRefId" xorm:"request_ref_id"`                    // 请求关联ID
-	RequestRefType         int    `json:"requestRefType" xorm:"-"`                               // 请求关联ID
+	RequestRefType         int    `json:"requestRefType" xorm:"-"`                               // 请求关联类型
+	RefTemplateId          string `json:"refTemplateId" xorm:"-"`                                // 请求关联模版Id
 	RequestRefName         string `json:"requestRefName" xorm:"-"`                               // 请求关联名称
 }
 
@@ -312,16 +313,21 @@ type RequestForm struct {
 	ExpectTime          string                    `json:"expectTime" `         // 期望时间
 	OperatorObj         string                    `json:"operatorObj"`         // 发布操作对象
 	ProcInstanceId      string                    `json:"procInstanceId"`      // 编排实例ID
+	ProcDefId           string                    `json:"procDefId"`           // 编排Id
 	ExpireDay           int                       `json:"expireDay"`           // 模板过期时间
 	AssociationWorkflow bool                      `json:"associationWorkflow"` // 是否关联编排
 	CustomForm          CustomForm                `json:"customForm"`          // 自定义表单
 	AttachFiles         []*AttachFileTable        `json:"attachFiles"`         // 请求附件
 	FormData            []*RequestPreDataTableObj `json:"formData"`
 	RootEntityId        string                    `json:"rootEntityId"`
-	RevokeBtn           bool                      `json:"revokeBtn"` // 是否出撤回按钮
-	RefId               string                    `json:"refId"`     // 引用ID
-	RefType             int                       `json:"refType"`   // 引用ID类型
-	RefName             string                    `json:"refName"`   // 引用请求名称
+	RevokeBtn           bool                      `json:"revokeBtn"`        // 是否出撤回按钮
+	RefId               string                    `json:"refId"`            // 引用ID
+	RefType             int                       `json:"refType"`          // 引用ID类型
+	RefName             string                    `json:"refName"`          // 引用请求名称
+	RefTemplateId       string                    `json:"refTemplateId"`    // 引用请求模版
+	ParentId            string                    `json:"parentId"`         // 历史请求Id
+	ParentName          string                    `json:"parentName"`       // 历史请求名称
+	ParentTemplateId    string                    `json:"parentTemplateId"` // 历史模板ID
 }
 
 type CustomForm struct {
@@ -333,6 +339,9 @@ type FilterItem struct {
 	TemplateList        []*KeyValuePair `json:"templateList"`        // 模板列表
 	RequestTemplateList []*KeyValuePair `json:"requestTemplateList"` // 请求模板列表
 	ReleaseTemplateList []*KeyValuePair `json:"releaseTemplateList"` // 发布模板列表
+	ProblemTemplateList []*KeyValuePair `json:"problemTemplateList"` // 问题模板列表
+	EventTemplateList   []*KeyValuePair `json:"eventTemplateList"`   // 事件模板列表
+	ChangeTemplateList  []*KeyValuePair `json:"changeTemplateList"`  // 变更模板列表
 	OperatorObjTypeList []string        `json:"operatorObjTypeList"` // 操作对象类型列表
 	ProcDefNameList     []string        `json:"procDefNameList"`     // 使用编排
 	CreatedByList       []string        `json:"createdByList"`       // 创建人列表

@@ -3,14 +3,14 @@
     <div style="margin-bottom: 8px;">
       <Alert type="warning" show-icon>{{ $t('tw_flow_tips') }}</Alert>
       <!-- <span class="custom-title">{{ $t('workflow_name') }}</span> -->
-      <span class="custom-display">{{ flowData.procInstName }} {{ flowData.operator }}</span>
+      <span class="custom-display" @click="jumpToFlowDetail">{{ flowData.procInstName }} {{ flowData.operator }}</span>
     </div>
     <div id="graphcontain">
       <div class="graph-container" id="flow" style="height: 96%"></div>
       <Button class="reset-button" size="small" @click="ResetFlow">ResetZoom</Button>
     </div>
 
-    <Modal
+    <!-- <Modal
       :title="$t('select_an_operation')"
       v-model="workflowActionModalVisible"
       :footer-hide="true"
@@ -26,25 +26,28 @@
           >{{ $t('show_log') }}</Button
         >
       </div>
-    </Modal>
+    </Modal> -->
 
-    <Modal v-model="showNodeDetail" :fullscreen="nodeDetailFullscreen" width="1000" :styles="{ top: '50px' }">
-      <p slot="header">
-        <span>{{ nodeTitle }}</span>
-        <Icon v-if="!nodeDetailFullscreen" @click="zoomModal" class="header-icon" type="ios-expand" />
-        <Icon v-else @click="nodeDetailFullscreen = false" class="header-icon" type="ios-contract" />
-      </p>
-      <div v-if="!isTargetNodeDetail" :style="[{ overflow: 'auto' }, fullscreenModalContentStyle]">
-        <h5>Data:</h5>
-        <pre style="margin: 0 6px 6px" v-html="nodeDetailResponseHeader"></pre>
-        <h5>requestObjects:</h5>
-        <Table :columns="nodeDetailColumns" :max-height="tableMaxHeight" tooltip="true" :data="nodeDetailIO"> </Table>
-      </div>
-      <div v-else :style="[{ overflow: 'auto', margin: '0 6px 6px' }, fullscreenModalContentStyle]">
-        <!-- v-html="nodeDetail" -->
-        <json-viewer :value="nodeDetail" :expand-depth="5"></json-viewer>
-      </div>
-    </Modal>
+    <!--节点操作弹窗(查看)-->
+    <BaseDrawer
+      :title="$t('select_an_operation')"
+      :visible.sync="workflowActionModalVisible"
+      realWidth="70%"
+      :scrollable="true"
+      class="json-viewer"
+    >
+      <template slot="content">
+        <BaseHeaderTitle title="节点信息">
+          <template v-if="nodeDetailResponseHeader && Object.keys(nodeDetailResponseHeader).length > 0">
+            <json-viewer :value="nodeDetailResponseHeader" :expand-depth="5"></json-viewer>
+          </template>
+          <div v-else class="no-data">{{ $t('noData') }}</div>
+        </BaseHeaderTitle>
+        <BaseHeaderTitle title="API调用">
+          <Table :columns="nodeDetailColumns" tooltip="true" :data="nodeDetailIO"> </Table>
+        </BaseHeaderTitle>
+      </template>
+    </BaseDrawer>
   </div>
 </template>
 <script>
@@ -53,7 +56,11 @@ import * as d3 from 'd3-selection'
 // eslint-disable-next-line no-unused-vars
 import * as d3Graphviz from 'd3-graphviz'
 import { addEvent, removeEvent } from './event.js'
+import JsonViewer from 'vue-json-viewer'
 export default {
+  components: {
+    JsonViewer
+  },
   props: {
     flowId: {
       type: String,
@@ -63,10 +70,6 @@ export default {
   data () {
     return {
       currentModelNodeRefs: [],
-      showNodeDetail: false,
-      isTargetNodeDetail: false,
-      nodeDetailFullscreen: false,
-      fullscreenModalContentStyle: { 'max-height': '400px' },
       tableMaxHeight: 250,
       nodeTitle: null,
       nodeDetail: null,
@@ -92,14 +95,19 @@ export default {
             return (
               <div style="white-space: nowrap; overflow: auto;">
                 {jsonData.map((data, index) => (
-                  <div key={index}>
+                  <div key={index} style="margin-left:5px;">
                     {'{'}
                     {Object.entries(data).map(([key, value]) => (
-                      <div>
-                        {key}: {value}
+                      <div style="margin-left:5px;">
+                        <Icon
+                          type="md-search"
+                          onClick={() => this.handleClick(key, value)}
+                          style="cursor:pointer;color:#2d8cf0"
+                        />
+                        {key}: <span style="color:#42b983;">{value}</span>
                       </div>
                     ))}
-                    {'},'}
+                    {'}'}
                   </div>
                 ))}
               </div>
@@ -110,17 +118,25 @@ export default {
           title: 'outputs',
           key: 'outputs',
           render: (h, params) => {
-            const strOutput = JSON.stringify(params.row.outputs)
-              .split(',')
-              .join(',<br/>')
-            return h(
-              'div',
-              {
-                domProps: {
-                  innerHTML: `<pre>${strOutput}</pre>`
-                }
-              },
-              []
+            const strOutput = params.row.outputs
+            const noData = strOutput.every(i => i && Object.keys(i).length === 0)
+            if (noData) {
+              return <span>-</span>
+            }
+            return (
+              <div style="white-space: nowrap; overflow: auto;">
+                {strOutput.map((data, index) => (
+                  <div key={index} style="margin-left:5px;">
+                    {'{'}
+                    {Object.entries(data).map(([key, value]) => (
+                      <div style="margin-left:5px;">
+                        {key}: <span style="color:#42b983;">{value}</span>
+                      </div>
+                    ))}
+                    {'}'}
+                  </div>
+                ))}
+              </div>
             )
           }
         }
@@ -152,9 +168,6 @@ export default {
     }
   },
   watch: {
-    nodeDetailFullscreen: function (tag) {
-      tag ? (this.fullscreenModalContentStyle = {}) : (this.fullscreenModalContentStyle['max-height'] = '400px')
-    },
     flowId: {
       handler (val) {
         if (val) {
@@ -168,6 +181,22 @@ export default {
     clearInterval(this.timer)
   },
   methods: {
+    // 打开编排执行详情页
+    jumpToFlowDetail() {
+      if (process.env.VUE_APP_PLUGIN === 'plugin') {
+        window.sessionStorage.currentPath = '' // 先清空session缓存页面，不然打开新标签页面会回退到缓存的页面
+        const path = `${window.location.origin}/#/implementation/workflow-execution/view-execution?id=${this.flowId}&from=noraml`
+        window.open(path, '_blank')
+      }
+    },
+    // 子编排调用API列表支持跳转预览子编排详情
+    viewSubProcExecutionDetail(id) {
+      if (process.env.VUE_APP_PLUGIN === 'plugin') {
+        window.sessionStorage.currentPath = '' // 先清空session缓存页面，不然打开新标签页面会回退到缓存的页面
+        const path = `${window.location.origin}/#/implementation/workflow-execution/view-execution?id=${id}&from=sub`
+        window.open(path, '_blank')
+      }
+    },
     orchestrationSelectHandler () {
       this.stop()
       this.isEnqueryPage = true
@@ -192,6 +221,7 @@ export default {
       }
     },
     renderFlowGraph (excution) {
+      // 节点颜色
       const statusColor = {
         Completed: '#5DB400',
         deployed: '#7F8A96',
@@ -199,79 +229,122 @@ export default {
         Faulted: '#FF6262',
         Risky: '#BF22E0',
         Timeouted: '#F7B500',
-        NotStarted: '#7F8A96'
+        NotStarted: '#7F8A96',
+        wait: '#7F8A96'
       }
-      let nodes =
-        this.flowData &&
-        this.flowData.flowNodes &&
-        this.flowData.flowNodes
+      const nodes = this.flowData
+        && this.flowData.flowNodes
+        && this.flowData.flowNodes
           .filter(i => i.status !== 'predeploy')
-          .map((_, index) => {
-            if (_.nodeType === 'startEvent' || _.nodeType === 'endEvent') {
-              const defaultLabel = _.nodeType === 'startEvent' ? 'start' : 'end'
-              return `${_.nodeId} [label="${_.nodeName || defaultLabel}", fontsize="10", class="flow",style="${
-                excution ? 'filled' : 'none'
-              }" color="${excution ? statusColor[_.status] : '#7F8A96'}" shape="circle", id="${_.nodeId}"]`
-            } else {
-              // const className = _.status === 'Faulted' || _.status === 'Timeouted' ? 'retry' : 'normal'
-              const className = 'retry'
-              const isModelClick = this.currentModelNodeRefs.indexOf(_.orderedNo) > -1
-              return `${_.nodeId} [fixedsize=false label="${(_.orderedNo ? _.orderedNo + ' ' : '') +
-                _.nodeName}" class="flow ${className}" style="${excution || isModelClick ? 'filled' : 'none'}" color="${
-                excution
-                  ? statusColor[_.status]
-                  : isModelClick
-                    ? '#ff9900'
-                    : _.nodeId === this.currentFlowNodeId
-                      ? '#5DB400'
-                      : '#7F8A96'
-              }"  shape="box" id="${_.nodeId}" ]`
+          .map(_ => {
+            const shapeMap = {
+              start: 'circle', // 开始
+              end: 'doublecircle', // 结束
+              abnormal: 'doublecircle', // 异常
+              decision: 'diamond', // 判断开始
+              decisionMerge: 'diamond', // 判断结束
+              fork: 'Mdiamond', // 并行开始
+              merge: 'Mdiamond', // 并行结束
+              human: 'tab', // 人工
+              automatic: 'rect', // 自动
+              data: 'cylinder', // 数据
+              subProc: 'component', // 子编排
+              date: 'Mcircle', // 固定时间
+              timeInterval: 'Mcircle' // 时间间隔
             }
+            if (['start', 'end', 'abnormal', 'date', 'timeInterval'].includes(_.nodeType)) {
+              const className = 'retry'
+              const defaultLabel = _.nodeType
+              return `${_.nodeId} [label="${
+                _.nodeName || defaultLabel
+              }", width="0.8", class="flow ${className}", fixedsize=true, style="${
+                excution ? 'filled' : 'none'
+              }" fillcolor="${excution ? statusColor[_.status] || '#7F8A96' : '#7F8A96'}" shape="${
+                shapeMap[_.nodeType]
+              }", id="${_.nodeId}"]`
+            }
+            // const className = _.status === 'Faulted' || _.status === 'Timeouted' ? 'retry' : 'normal'
+            let className = 'retry'
+            if (['decision'].includes(_.nodeType) && _.status === 'Faulted') {
+              className = ''
+            }
+            const isModelClick = this.currentModelNodeRefs.indexOf(_.orderedNo) > -1
+            return `${_.nodeId} [fixedsize=false label="${
+              (_.orderedNo ? _.orderedNo + ' ' : '') + _.nodeName
+            }" class="flow ${className}" style="${excution || isModelClick ? 'filled' : 'none'}" fillcolor="${
+              excution
+                ? statusColor[_.status] || '#7F8A96'
+                : isModelClick
+                  ? '#ff9900'
+                  : _.nodeId === this.currentFlowNodeId
+                    ? '#5DB400'
+                    : '#7F8A96'
+            }"  shape="${shapeMap[_.nodeType]}" id="${_.nodeId}" ]`
           })
-      let genEdge = () => {
-        let pathAry = []
-        this.flowData &&
-          this.flowData.flowNodes &&
-          this.flowData.flowNodes.forEach(_ => {
+      const genEdge = () => {
+        const lineName = {}
+        this.flowData.nodeLinks
+          && this.flowData.nodeLinks.forEach(link => {
+            lineName[link.source + link.target] = link.name
+          })
+        const pathAry = []
+        this.flowData
+          && this.flowData.flowNodes
+          && this.flowData.flowNodes.forEach(_ => {
             if (_.succeedingNodeIds.length > 0) {
               let current = []
               current = _.succeedingNodeIds.map(to => {
+                const toNodeItem = this.flowData.flowNodes.find(i => i.nodeId === to) || {}
+                const edgeColor = statusColor[toNodeItem.status] || '#505a68'
+                // 修复判断分支多连线不能区分颜色问题
+                if (_.nodeType === 'decision') {
+                  return (
+                    '"'
+                    + _.nodeId
+                    + '"'
+                    + ' -> '
+                    + `${'"' + to + '"'} [label="${lineName[_.nodeId + to]}" color="${edgeColor}" ]`
+                  )
+                }
                 return (
-                  '"' +
-                  _.nodeId +
-                  '"' +
-                  ' -> ' +
-                  `${'"' + to + '"'} [color="${excution ? statusColor[_.status] : 'black'}"]`
+                  '"'
+                  + _.nodeId
+                  + '"'
+                  + ' -> '
+                  + `${'"' + to + '"'} [label="${lineName[_.nodeId + to]}" color="${
+                    excution ? statusColor[_.status] : 'black'
+                  }"]`
                 )
               })
               pathAry.push(current)
             }
           })
-        return pathAry
-          .flat()
-          .toString()
+        return pathAry.flat().toString()
           .replace(/,/g, ';')
       }
-      let nodesToString = Array.isArray(nodes) ? nodes.toString().replace(/,/g, ';') + ';' : ''
-      let nodesString =
-        'digraph G {' +
-        'bgcolor="transparent";' +
-        'Node [fontname=Arial, height=".3", fontsize=12];' +
-        'Edge [fontname=Arial, color="#7f8fa6", fontsize=10];' +
-        nodesToString +
-        genEdge() +
-        '}'
-
+      const nodesToString = Array.isArray(nodes) ? nodes.toString().replace(/,/g, ';') + ';' : ''
+      const nodesString = 'digraph G {'
+        + 'bgcolor="transparent";'
+        + 'splines="polyline"'
+        + 'Node [fontname=Arial, width=1.8, height=0.45, color="#505a68", fontsize=12]'
+        + 'Edge [fontname=Arial, color="#505a68", fontsize=10];'
+        + nodesToString
+        + genEdge()
+        + '}'
       this.flowGraph.graphviz
         .transition()
         .renderDot(nodesString)
         .on('end', () => {
           if (this.isEnqueryPage) {
             removeEvent('.retry', 'click', this.retryHandler)
+            removeEvent('.normal', 'click', this.normalHandler)
             addEvent('.retry', 'click', this.retryHandler)
+            addEvent('.normal', 'click', this.normalHandler)
             d3.selectAll('.retry').attr('cursor', 'pointer')
-          } else {
+          }
+          else {
             removeEvent('.retry', 'click', this.retryHandler)
+            removeEvent('.normal', 'click', this.normalHandler)
           }
         })
       this.bindFlowEvent()
@@ -299,7 +372,8 @@ export default {
         ) {
           this.flowData = {
             ...data,
-            flowNodes: data.taskNodeInstances
+            flowNodes: data.taskNodeInstances,
+            nodeLinks: data.nodeLinks
           }
           removeEvent('.retry', 'click', this.retryHandler)
           this.initFlowGraph(true)
@@ -322,6 +396,7 @@ export default {
     },
     retryHandler (e) {
       this.currentFailedNodeID = e.target.parentNode.getAttribute('id')
+      this.flowGraphMouseenterHandler(this.currentFailedNodeID)
       this.workflowActionModalVisible = true
     },
     async workFlowActionHandler (type) {
@@ -355,31 +430,50 @@ export default {
         this.nodeTitle = (found.orderedNo ? found.orderedNo + '、' : '') + found.nodeName
         const { statusCode, data } = await getNodeContextByNodeId(found.procInstId, found.id)
         if (statusCode === 'OK') {
-          this.workflowActionModalVisible = false
           this.nodeDetailResponseHeader = JSON.parse(JSON.stringify(data))
           this.pluginInfo = this.nodeDetailResponseHeader.pluginInfo
           delete this.nodeDetailResponseHeader.requestObjects
-          this.nodeDetailResponseHeader = JSON.stringify(this.replaceParams(this.nodeDetailResponseHeader))
-            .split(',')
-            .join(',<br/>')
-          this.nodeDetailResponseHeader = this.nodeDetailResponseHeader.replace(
-            'errorMessage',
-            "<span style='color:red'>errorMessage</span>"
-          )
-          // const reg = new RegExp(data.errorMessage, 'g')
-          this.nodeDetailResponseHeader = this.nodeDetailResponseHeader.replace(
-            data.errorMessage,
-            "<span style='color:red'>" + data.errorMessage + '</span>'
-          )
           this.nodeDetailIO = data.requestObjects.map(ro => {
             ro['inputs'] = this.replaceParams(ro['inputs'])
             ro['outputs'] = this.replaceParams(ro['outputs'])
             return ro
           })
+          // 日志input output表格添加子编排查看按钮
+          if (this.nodeDetailResponseHeader && this.nodeDetailResponseHeader.nodeType === 'subProc') {
+            const hasFlag = this.nodeDetailColumns.some(i => i.key === 'procDefId')
+            if (!hasFlag) {
+              this.nodeDetailColumns.push({
+                title: '子编排',
+                key: 'procDefId',
+                width: 200,
+                render: (h, params) => {
+                  let procDefName = ''
+                  let procInsId = ''
+                  let version = ''
+                  if (Array.isArray(params.row.outputs) && params.row.outputs.length > 0) {
+                    procDefName = params.row.outputs[0].procDefName || '-'
+                    procInsId = params.row.outputs[0].procInsId || ''
+                    version = params.row.outputs[0].version || ''
+                  }
+                  return (
+                    <span
+                      style="cursor:pointer;color:#5cadff;"
+                      onClick={() => {
+                        this.viewSubProcExecutionDetail(procInsId)
+                      }}
+                    >
+                      {procDefName}
+                      <Tag style="margin-left:2px">{version}</Tag>
+                    </span>
+                  )
+                }
+              })
+            }
+          }
+          else {
+            this.nodeDetailColumns = this.nodeDetailColumns.filter(i => i.key !== 'procDefId')
+          }
         }
-        this.nodeDetailFullscreen = false
-        this.isTargetNodeDetail = false
-        this.showNodeDetail = true
         this.tableMaxHeight = 250
       }, 0)
     },
@@ -416,10 +510,6 @@ export default {
         .height(graphEl.offsetHeight - 10)
         .width(graphEl.offsetWidth - 10)
       this.renderFlowGraph(excution)
-    },
-    zoomModal () {
-      this.tableMaxHeight = document.body.scrollHeight - 410
-      this.nodeDetailFullscreen = true
     }
   }
 }
@@ -446,6 +536,7 @@ export default {
   border: 1px solid #069cec;
   border-radius: 4px;
   color: #069cec;
+  cursor: pointer;
 }
 
 .header-icon {

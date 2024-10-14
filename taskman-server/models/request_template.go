@@ -28,7 +28,7 @@ type RequestTemplateTable struct {
 	ExpireDay       int    `json:"expireDay" xorm:"expire_day"`
 	Handler         string `json:"handler" xorm:"handler"`
 	DelFlag         int    `json:"delFlag" xorm:"del_flag"`
-	Type            int    `json:"type" xorm:"type"`                         // 请求类型, 0表示请求,1表示发布,2为变更,3为事件,4为问题
+	Type            int    `json:"type" xorm:"type"`                         // 请求类型 1.发布 2.请求 3.问题 4.事件 5.变更
 	OperatorObjType string `json:"operatorObjType" xorm:"operator_obj_type"` // 操作对象类型
 	ParentId        string `json:"parentId" xorm:"parent_id"`                // 父类ID
 	ApproveBy       string `json:"approveBy" xorm:"approve_by"`              // 模板发布审批人
@@ -110,6 +110,16 @@ type RequestTemplateHandlerDto struct {
 
 type RequestTemplateQueryObj struct {
 	RequestTemplateDto
+	MGMTRoles      []*RoleTable `json:"mgmtRoles"`
+	USERoles       []*RoleTable `json:"useRoles"`
+	OperateOptions []string     `json:"operateOptions"`
+	ModifyType     bool         `json:"modifyType"`    // 是否能够修改模板类型
+	Administrator  string       `json:"administrator"` // 角色管理员
+	CancelEdit     bool         `json:"cancelEdit"`    // 废弃版本是否可以编辑,有禁用不能编辑
+}
+
+type RequestTemplateSimpleQueryObj struct {
+	RequestTemplateTable
 	MGMTRoles      []*RoleTable `json:"mgmtRoles"`
 	USERoles       []*RoleTable `json:"useRoles"`
 	OperateOptions []string     `json:"operateOptions"`

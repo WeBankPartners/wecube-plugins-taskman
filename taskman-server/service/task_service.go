@@ -26,14 +26,12 @@ type TaskService struct {
 func GetTaskFormStruct(procInstId, nodeDefId string) (result models.TaskMetaResult, err error) {
 	result = models.TaskMetaResult{Status: "OK", Message: "Success"}
 	var items []*models.FormItemTemplateTable
-	//err = dao.X.SQL("select * from form_item_template where form_template in (select form_template from task_template where node_def_id=? and request_template in (select request_template from request where proc_instance_id=?))", nodeDefId, procInstId).Find(&items)
 	err = dao.X.SQL("select * from form_item_template where form_template in (select id from form_template where task_template in (select id from task_template where node_def_id=?) and request_template in (select request_template from request where proc_instance_id=?))", nodeDefId, procInstId).Find(&items)
 	if err != nil {
 		return
 	}
 	if len(items) == 0 {
 		result.Data = models.TaskMetaResultData{}
-		//err = fmt.Errorf("Can not find task item template with procInstId:%s nodeDefId:%s ", procInstId, nodeDefId)
 		return
 	}
 	queryRows, queryErr := dao.X.QueryString("select id,task_template from form_template where id=?", items[0].FormTemplate)
@@ -589,8 +587,8 @@ func SaveTaskFormNew(task *models.TaskTable, operator string, param *models.Task
 						}
 						valueString = strings.Join(tmpV, ",")
 					} else {
-						err = fmt.Errorf("row:%s key:%s value:%v is not array,format to []interface{} fail", valueObj.Id, k, v)
-						return
+						log.Logger.Info(fmt.Sprintf("row:%s key:%s value:%v is not array,format to []interface{} fail", valueObj.Id, k, v))
+						valueString = ""
 					}
 				}
 				// 从数据池里尝试查找有没有已存在的数据(同一个itemGroup，同一个数据行下的同一属性)

@@ -66,6 +66,54 @@ func (s *RequestTemplateService) GetDtoByRequestTemplate(requestTemplate *models
 	return
 }
 
+func (s *RequestTemplateService) GetAllLatestReleaseRequestTemplate(commonParam models.CommonParam) (result []*models.RequestTemplateSimpleQueryObj, err error) {
+	var roleMap = make(map[string]*models.SimpleLocalRoleDto)
+	var rowData []*models.RequestTemplateTable
+	if roleMap, err = rpc.QueryAllRoles("Y", commonParam.Token, commonParam.Language); err != nil {
+		return
+	}
+	if err = dao.X.SQL("select id,name,version,description,status,proc_def_name,tags,expire_day,created_by,created_time,updated_by,updated_time," +
+		"del_flag,type from request_template where status = 'confirm'  and (record_id is null or record_id='') order by updated_time desc").Find(&rowData); err != nil {
+		return
+	}
+
+	var requestTemplateRows []*models.RequestTemplateRoleTable
+	err = dao.X.SQL("select * from request_template_role").Find(&requestTemplateRows)
+	if err != nil {
+		return
+	}
+	var mgmtRoleMap = make(map[string][]*models.RoleTable)
+	var useRoleMap = make(map[string][]*models.RoleTable)
+	for _, v := range requestTemplateRows {
+		var tmpRoles *models.RoleTable
+		if roleDto, ok := roleMap[v.Role]; ok {
+			tmpRoles = &models.RoleTable{Id: roleDto.Name, DisplayName: roleDto.DisplayName}
+		}
+		if len(mgmtRoleMap[v.RequestTemplate]) == 0 {
+			mgmtRoleMap[v.RequestTemplate] = make([]*models.RoleTable, 0)
+		}
+		if len(useRoleMap[v.RequestTemplate]) == 0 {
+			useRoleMap[v.RequestTemplate] = make([]*models.RoleTable, 0)
+		}
+		if v.RoleType == "MGMT" {
+			mgmtRoleMap[v.RequestTemplate] = append(mgmtRoleMap[v.RequestTemplate], tmpRoles)
+		} else {
+			useRoleMap[v.RequestTemplate] = append(useRoleMap[v.RequestTemplate], tmpRoles)
+		}
+	}
+	for _, v := range rowData {
+		tmpObj := models.RequestTemplateSimpleQueryObj{RequestTemplateTable: *v, MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}
+		if _, b := mgmtRoleMap[v.Id]; b {
+			tmpObj.MGMTRoles = mgmtRoleMap[v.Id]
+		}
+		if _, b := useRoleMap[v.Id]; b {
+			tmpObj.USERoles = useRoleMap[v.Id]
+		}
+		result = append(result, &tmpObj)
+	}
+	return
+}
+
 func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequestParam, commonParam models.CommonParam) (pageInfo models.PageInfo, result []*models.RequestTemplateQueryObj, err error) {
 	var roleMap = make(map[string]*models.SimpleLocalRoleDto)
 	extFilterSql := ""
@@ -974,7 +1022,7 @@ func (s *RequestTemplateService) CopyConfirmRequestTemplate(requestTemplateId, o
 	newRequestTemplateId := guid.CreateGuid()
 	var requestName = requestTemplate.Name + "(1)"
 	// 查询 当前requestName是否存在
-	if list, err = s.requestTemplateDao.QueryListByName(requestName); err != nil {
+	if list, err = s.requestTemplateDao.QueryListByNameNotContainsCancel(requestName); err != nil {
 		return
 	}
 	if len(list) > 0 {
@@ -1397,7 +1445,7 @@ func (s *RequestTemplateService) RequestTemplateExport(requestTemplateId string)
 	return
 }
 
-func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTemplateExport, userToken, language, confirmToken, operator string, userRoles []string) (templateName, backToken string, err error) {
+func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTemplateExport, userToken, language, confirmToken, operator string, userRoles []string) (requestTemplateId, templateName, backToken string, err error) {
 	var actions []*dao.ExecAction
 	var inputVersion = s.getTemplateVersion(models.ConvertRequestTemplateDto2Model(input.RequestTemplate))
 	var templateList []*models.RequestTemplateTable
@@ -1409,9 +1457,8 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 	if confirmToken == "" {
 		// 1.判断名称是否重复
 		templateName = input.RequestTemplate.Name
-		templateList, err = s.getTemplateListByName(input.RequestTemplate.Name)
-		if err != nil {
-			return templateName, backToken, err
+		if templateList, err = s.getTemplateListByName(input.RequestTemplate.Name); err != nil {
+			return
 		}
 		if len(templateList) > 0 {
 			// 有名称重复数据,判断导入版本是否高于所有模板版本
@@ -1634,10 +1681,11 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 		}
 	}
 	for _, v := range input.FormItemTemplate {
-		tmpAction := dao.ExecAction{Sql: "insert into form_item_template(id,form_template,name,description,item_group,item_group_name,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,in_display_name,is_ref_inside,multiple,default_clear,ref_id,routine_expression,control_switch,hidden_condition) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-		tmpAction.Param = []interface{}{v.Id, v.FormTemplate, v.Name, v.Description, v.ItemGroup, v.ItemGroupName, v.DefaultValue, v.Sort, v.PackageName, v.Entity, v.AttrDefId, v.AttrDefName, v.AttrDefDataType, v.ElementType, v.Title, v.Width, v.RefPackageName, v.RefEntity, v.DataOptions, v.Required, v.Regular, v.IsEdit, v.IsView, v.IsOutput, v.InDisplayName, v.IsRefInside, v.Multiple, v.DefaultClear, v.RefId, v.RoutineExpression, v.ControlSwitch, v.HiddenCondition}
+		tmpAction := dao.ExecAction{Sql: "insert into form_item_template(id,form_template,name,description,item_group,item_group_name,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,in_display_name,is_ref_inside,multiple,default_clear,ref_id,routine_expression,control_switch,hidden_condition,formula) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+		tmpAction.Param = []interface{}{v.Id, v.FormTemplate, v.Name, v.Description, v.ItemGroup, v.ItemGroupName, v.DefaultValue, v.Sort, v.PackageName, v.Entity, v.AttrDefId, v.AttrDefName, v.AttrDefDataType, v.ElementType, v.Title, v.Width, v.RefPackageName, v.RefEntity, v.DataOptions, v.Required, v.Regular, v.IsEdit, v.IsView, v.IsOutput, v.InDisplayName, v.IsRefInside, v.Multiple, v.DefaultClear, v.RefId, v.RoutineExpression, v.ControlSwitch, v.HiddenCondition, v.Formula}
 		actions = append(actions, &tmpAction)
 	}
+	requestTemplateId = input.RequestTemplate.Id
 	err = dao.Transaction(actions)
 	return
 }
@@ -1849,7 +1897,7 @@ func (s *RequestTemplateService) CheckPermission(requestTemplateId, user string)
 	}
 	// 请求模板的更新人不是当前用户,不允许操作
 	if requestTemplate.UpdatedBy != user {
-		err = exterror.New().DataPermissionDeny
+		err = exterror.New().TemplateUpdatePermissionDeny
 	}
 	return
 }
@@ -1904,8 +1952,8 @@ func (s *RequestTemplateService) GetConfirmCount(user, userToken, language strin
 	return
 }
 
-func (s *RequestTemplateService) QueryListByName(name string) (list []*models.RequestTemplateTable, err error) {
-	return s.requestTemplateDao.QueryListByName(name)
+func (s *RequestTemplateService) QueryListByNameNotContainsCancel(name string) (list []*models.RequestTemplateTable, err error) {
+	return s.requestTemplateDao.QueryListByNameNotContainsCancel(name)
 }
 
 func (s *RequestTemplateService) CreateWorkflowFormTemplate(session *xorm.Session, requestTemplateId, procDefId, userToken, language string) (err error) {
@@ -1948,5 +1996,32 @@ func (s *RequestTemplateService) CreateWorkflowFormTemplateSql(requestTemplateId
 
 func (s *RequestTemplateService) QueryRequestTemplateListByRequestTemplateGroup(templateGroup string) (list []*models.RequestTemplateTable, err error) {
 	err = dao.X.SQL("select id  from request_template where `group` =?", templateGroup).Find(&list)
+	return
+}
+
+func (s *RequestTemplateService) GetRequestTemplateRoles(requestTemplateIds []string) (roles []string, err error) {
+	if len(requestTemplateIds) == 0 {
+		return
+	}
+	err = dao.X.SQL("select role  from request_template_role where request_template in (" + getSQL(requestTemplateIds) + ")").Find(&roles)
+	return
+}
+
+func (s *RequestTemplateService) GetTaskHandleTemplateRolesByRequestTemplateIds(requestTemplateIds []string) (roles []string, err error) {
+	var originRoles []string
+	roles = []string{}
+	if len(requestTemplateIds) == 0 {
+		return
+	}
+	err = dao.X.SQL("select role from task_handle_template where task_template in (select id from task_template where request_template in(" + getSQL(requestTemplateIds) + ")").Find(&originRoles)
+	if err != nil {
+		return
+	}
+	for _, role := range originRoles {
+		if strings.TrimSpace(role) == "" {
+			continue
+		}
+		roles = append(roles, role)
+	}
 	return
 }

@@ -121,7 +121,7 @@
                       >
                         <draggable
                           class="dragArea"
-                          style="min-height: 40px;"
+                          style="min-height:40px;display:flex;flex-wrap:wrap;"
                           :list="item.attrs"
                           :sort="$parent.isCheck !== 'Y'"
                           group="people"
@@ -522,7 +522,7 @@ import {
 import ComponentLibraryModal from './components/component-library-modal.vue'
 import ComponentLibraryList from './components/component-library-list.vue'
 import HiddenCondition from './components/hidden-condition.vue'
-import { uniqueArr, deepClone, findFirstDuplicateIndex } from '@/pages/util'
+import { uniqueArr, deepClone, findFirstDuplicateIndex, fixArrStrToJsonArray } from '@/pages/util'
 export default {
   components: {
     ApprovalFormNode,
@@ -674,7 +674,7 @@ export default {
     },
     // 数据集回显
     getDataOptionsDisplay () {
-      const options = JSON.parse(this.editElement.dataOptions || '[]')
+      const options = fixArrStrToJsonArray(this.editElement.dataOptions)
       const labelArr = options.map(item => item.label)
       return labelArr.join(',')
     },
@@ -696,7 +696,7 @@ export default {
   methods: {
     // 数据表单过滤项有值，需要禁用审批表单对应表单项"可编辑"属性
     setIsEditDisabled () {
-      const { filterFormList } = this.$refs.approvalFormNodeRef
+      const { filterFormList } = this.$refs.approvalFormNodeRef || {}
       if (filterFormList && filterFormList.length > 0) {
         const dataFormList = filterFormList.filter(i => i.type === 2)
         const handleTemplates = this.$refs.approvalFormNodeRef.activeApprovalNode.handleTemplates
@@ -739,7 +739,7 @@ export default {
                         finalData.items.forEach((item, itemIndex) => {
                           item.sort = itemIndex + 1
                         })
-                        saveRequestGroupCustomForm(finalData)
+                        this.isCheck !== 'Y' && saveRequestGroupCustomForm(finalData)
                       }
                       item.isEdit = 'no'
                       this.$set(item, 'isEditDisabled', true)
@@ -1314,7 +1314,7 @@ export default {
     },
     // #region 普通select数据集配置逻辑
     dataOptionsMgmt () {
-      let newDataOptions = JSON.parse(this.editElement.dataOptions || '[]')
+      let newDataOptions = fixArrStrToJsonArray(this.editElement.dataOptions)
       this.$refs.dataSourceConfigRef.loadPage(newDataOptions)
     },
     setDataOptions (options) {
@@ -1327,7 +1327,7 @@ export default {
     computedOption (element) {
       let res = []
       if (element.elementType === 'select') {
-        res = JSON.parse(element.dataOptions || '[]')
+        res = fixArrStrToJsonArray(element.dataOptions)
       } else if (element.elementType === 'wecmdbEntity') {
       }
       return res
@@ -1417,6 +1417,7 @@ fieldset[disabled] .ivu-input {
     align-items: center;
     justify-content: space-around;
     margin: 8px 0;
+    padding: 0 10px;
   }
   .dash-line {
     display: inline-block;

@@ -25,7 +25,7 @@
             <div :key="itemIndex" style="border: 2px dashed #A2EF4D; margin: 8px 0; padding: 8px;min-height: 48px;">
               <draggable
                 class="dragArea"
-                style="min-height: 40px;"
+                style="min-height:40px;display:flex;flex-wrap:wrap;"
                 :list="item.attrs"
                 :sort="$parent.isCheck !== 'Y'"
                 group="people"
@@ -341,7 +341,7 @@ import DataSourceConfig from './data-source-config.vue'
 import ComponentLibraryModal from './components/component-library-modal.vue'
 import ComponentLibraryList from './components/component-library-list.vue'
 import HiddenCondition from './components/hidden-condition.vue'
-import { uniqueArr, deepClone, findFirstDuplicateIndex } from '@/pages/util'
+import { uniqueArr, deepClone, findFirstDuplicateIndex, fixArrStrToJsonArray } from '@/pages/util'
 export default {
   name: 'form-select',
   components: {
@@ -426,7 +426,7 @@ export default {
   computed: {
     // 数据集回显
     getDataOptionsDisplay () {
-      const options = JSON.parse(this.editElement.dataOptions || '[]')
+      const options = fixArrStrToJsonArray(this.editElement.dataOptions)
       const labelArr = options.map(item => item.label)
       return labelArr.join(',')
     },
@@ -696,7 +696,7 @@ export default {
     },
     // #region 普通select数据集配置逻辑
     dataOptionsMgmt () {
-      let newDataOptions = JSON.parse(this.editElement.dataOptions || '[]')
+      let newDataOptions = fixArrStrToJsonArray(this.editElement.dataOptions)
       this.$refs.dataSourceConfigRef.loadPage(newDataOptions)
     },
     setDataOptions (options) {
@@ -709,7 +709,7 @@ export default {
     computedOption (element) {
       let res = []
       if (element.elementType === 'select') {
-        res = JSON.parse(element.dataOptions || '[]')
+        res = fixArrStrToJsonArray(element.dataOptions)
       } else if (element.elementType === 'wecmdbEntity') {
       }
       return res
@@ -753,6 +753,7 @@ export default {
   align-items: center;
   justify-content: space-around;
   margin: 8px 0;
+  padding: 0 10px;
 }
 .title {
   font-size: 14px;

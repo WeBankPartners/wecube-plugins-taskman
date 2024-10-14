@@ -68,7 +68,7 @@
         </Col>
         <Col span="4">
           <Button @click="onSearch" type="primary">{{ $t('search') }}</Button>
-          <Button @click="handleReset" type="default">{{ $t('reset') }}</Button>
+          <Button @click="handleReset" style="margin-left:8px;" type="default">{{ $t('reset') }}</Button>
         </Col>
         <div style="display:flex;float:right;">
           <Button @click="addTemplate" type="success">{{ $t('add') }}</Button>
@@ -88,12 +88,14 @@
       </Row>
     </div>
     <Table
+      ref="maxHeight"
       style="margin:12px 0;"
       @on-sort-change="sortTable"
       size="small"
       :loading="loading"
       :columns="tableColumns"
       :data="tableData"
+      :max-height="maxHeight"
     ></Table>
     <Page
       style="text-align:right;"
@@ -105,12 +107,6 @@
       @on-page-size-change="changePageSize"
       show-total
     />
-    <Modal v-model="modalShow" width="300">
-      <p>{{ $t('confirm_disable') }}</p>
-      <template #footer>
-        <Button type="error" size="large" long @click="disableInit">{{ $t('confirm') }}</Button>
-      </template>
-    </Modal>
   </div>
 </template>
 
@@ -131,21 +127,16 @@ import {
   templateConfirmCount
 } from '@/api/server'
 import { debounce } from '@/pages/util'
-import ScrollTag from '@/pages/components/scroll-tag.vue'
 export default {
   name: '',
-  components: {
-    ScrollTag
-  },
   data () {
     return {
-      MODALHEIGHT: 500,
+      maxHeight: 500,
       name: '',
       status: 'confirm',
       mgmtRoles: [],
       type: [],
       tags: '',
-      modalShow: false,
       pagination: {
         pageSize: 10,
         currentPage: 1,
@@ -248,13 +239,7 @@ export default {
           sortable: 'custom',
           key: 'description',
           render: (h, params) => {
-            return (
-              <Tooltip max-width="300" content={params.row.description}>
-                <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
-                  {params.row.description || '-'}
-                </span>
-              </Tooltip>
-            )
+            return <BaseEllipsis content={params.row.description}></BaseEllipsis>
           }
         },
         {
@@ -275,7 +260,7 @@ export default {
             const list = params.row.useRoles.map(item => {
               return item.displayName
             })
-            return <ScrollTag list={list} />
+            return <BaseScrollTag list={list} />
           }
         },
         {
@@ -515,13 +500,7 @@ export default {
             minWidth: 150,
             key: 'rollbackDesc',
             render: (h, params) => {
-              return (
-                <Tooltip max-width="300" content={params.row.rollbackDesc}>
-                  <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
-                    {params.row.rollbackDesc}
-                  </span>
-                </Tooltip>
-              )
+              return <BaseEllipsis content={params.row.rollbackDesc}></BaseEllipsis>
             }
           })
         } else {
@@ -533,20 +512,51 @@ export default {
     }
   },
   mounted () {
-    this.status = this.$route.query.status || 'confirm'
-    const accessToken = getCookie('accessToken')
-    this.headers = {
-      Authorization: 'Bearer ' + accessToken
+    // 读取列表搜索参数
+    if (this.$route.query.needCache === 'yes') {
+      const storage = window.sessionStorage.getItem('search_template') || ''
+      if (storage) {
+        const { searchParams } = JSON.parse(storage)
+        const { name, status, mgmtRoles, type, tags } = searchParams || {}
+        this.name = name
+        this.status = status
+        this.mgmtRoles = mgmtRoles
+        this.type = type
+        this.tags = tags
+        this.getInitRole()
+      }
     }
-    const lang = localStorage.getItem('lang') || 'zh-CN'
-    if (lang === 'zh-CN') {
-      this.headers['Accept-Language'] = 'zh-CN,zh;q=0.9,en;q=0.8'
-    } else {
-      this.headers['Accept-Language'] = 'en-US,en;q=0.9,zh;q=0.8'
+    this.initData()
+  },
+  beforeDestroy () {
+    // 缓存列表搜索条件
+    const storage = {
+      searchParams: {
+        name: this.name,
+        status: this.status,
+        mgmtRoles: this.mgmtRoles,
+        type: this.type,
+        tags: this.tags
+      }
     }
-    this.getTemplateList()
+    window.sessionStorage.setItem('search_template', JSON.stringify(storage))
   },
   methods: {
+    initData () {
+      this.status = this.$route.query.status || 'confirm'
+      const accessToken = getCookie('accessToken')
+      this.headers = {
+        Authorization: 'Bearer ' + accessToken
+      }
+      const lang = localStorage.getItem('lang') || 'zh-CN'
+      if (lang === 'zh-CN') {
+        this.headers['Accept-Language'] = 'zh-CN,zh;q=0.9,en;q=0.8'
+      } else {
+        this.headers['Accept-Language'] = 'en-US,en;q=0.9,zh;q=0.8'
+      }
+      this.getTemplateList()
+      this.maxHeight = document.documentElement.clientHeight - this.$refs.maxHeight.$el.getBoundingClientRect().top - 100
+    },
     handleReset () {
       this.name = ''
       this.mgmtRoles = []
@@ -907,16 +917,21 @@ export default {
       this.getConfirmCount()
     },
     disableTemplate (row) {
-      this.modalShow = row.id
-    },
-    async disableInit () {
-      const res = await disableTemplate(this.modalShow)
-      this.modalShow = false
-      if (res.statusCode === 'OK') {
-        this.success()
-        this.status = 'disable'
-        this.onSearch()
-      }
+      this.$Modal.confirm({
+        title: this.$t('confirm_disable'),
+        'z-index': 1000000,
+        loading: false,
+        onOk: async () => {
+          this.$Modal.remove()
+          const res = await disableTemplate(row.id)
+          if (res.statusCode === 'OK') {
+            this.success()
+            this.status = 'disable'
+            this.onSearch()
+          }
+        },
+        onCancel: () => {}
+      })
     },
     async enableTemplate (row) {
       const res = await enableTemplate(row.id)

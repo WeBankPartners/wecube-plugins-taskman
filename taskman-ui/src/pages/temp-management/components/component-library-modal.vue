@@ -105,11 +105,7 @@ import {
   getAllUser
 } from '@/api/server'
 import { debounce } from '@/pages/util'
-import ScrollTag from '@/pages/components/scroll-tag.vue'
 export default {
-  components: {
-    ScrollTag
-  },
   props: {
     value: {
       type: Boolean,
@@ -184,7 +180,7 @@ export default {
           minWidth: 250,
           render: (h, params) => {
             const list = (params.row.formItems && params.row.formItems.split('、')) || []
-            return <ScrollTag list={list} />
+            return <BaseScrollTag list={list} />
           }
         },
         {
@@ -269,16 +265,18 @@ export default {
       const { statusCode, data } = await getLibraryFormTypeList()
       if (statusCode === 'OK') {
         const arr = data || []
-        this.formTypeList = arr.map(i => {
-          return {
-            label: i === 'requestInfo' ? this.$t('tw_information_form') : i,
-            value: i
-          }
-        })
-        // 将信息表单置于数组第一个
-        const index = this.formTypeList.findIndex(i => i.value === 'requestInfo')
-        const item = this.formTypeList.splice(index, 1)[0]
-        this.formTypeList.unshift(item)
+        if (Array.isArray(arr) && arr.length > 0) {
+          this.formTypeList = arr.map(i => {
+            return {
+              label: i === 'requestInfo' ? this.$t('tw_information_form') : i,
+              value: i
+            }
+          })
+          // 将信息表单置于数组第一个
+          const index = this.formTypeList.findIndex(i => i.value === 'requestInfo')
+          const item = this.formTypeList.splice(index, 1)[0]
+          this.formTypeList.unshift(item)
+        }
       }
     },
     // 获取创建人下拉列表

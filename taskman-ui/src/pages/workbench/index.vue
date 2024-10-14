@@ -1,6 +1,6 @@
 <!--工作台-->
 <template>
-  <div class="workbench">
+  <div class="taskman-workbench taskman-wrap">
     <div class="create-time" :style="{ top: `${homePageInstance ? -50 : -36}px` }">
       <span>{{ $t('tw_createdTime') }}</span>
       <DatePicker
@@ -22,7 +22,6 @@
       ref="dataCard"
       :initTab="initTab"
       :initAction="initAction"
-      @initFetch="initData"
       @fetchData="handleOverviewChange"
     ></DataCard>
     <div class="data-tabs">
@@ -55,14 +54,16 @@
       <CollectTable v-if="tabName === 'collect'" ref="collect" :actionName="actionName"></CollectTable>
       <template v-else>
         <!--搜索条件-->
-        <BaseSearch ref="search" :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
+        <Search ref="search" :options="searchOptions" v-model="form" @search="handleQuery"></Search>
         <!--表格分页-->
         <Table
+          ref="maxHeight"
           :border="false"
           size="small"
           :loading="loading"
           :columns="tableColumn"
           :data="tableData"
+          :max-height="maxHeight"
           @on-sort-change="sortTable"
         >
         </Table>
@@ -84,7 +85,7 @@
 <script>
 import HotLink from './components/hot-link.vue'
 import DataCard from './components/data-card.vue'
-import BaseSearch from '../components/base-search.vue'
+import Search from '../components/base-search.vue'
 import CollectTable from './collect-table.vue'
 import { getPlatformList, recallRequest, pendingHandle, deleteRequest, reRequest } from '@/api/server'
 import { deepClone } from '@/pages/util/index'
@@ -95,7 +96,7 @@ export default {
   components: {
     HotLink,
     DataCard,
-    BaseSearch,
+    Search,
     CollectTable
   },
   mixins: [column, search],
@@ -182,7 +183,9 @@ export default {
             )}
           </div>
         )
-      }
+      },
+      cacheFlag: false, // 当前页面搜索条件读取缓存标识
+      maxHeight: 500
     }
   },
   computed: {
@@ -199,17 +202,40 @@ export default {
     }
   },
   mounted () {
-    this.initTab = this.$route.query.tabName || 'myPending'
-    this.initAction = this.$route.query.actionName || '1'
-    this.homePageInstance = document.querySelector('.platform-homepage')
+    if (this.$route.query.needCache === 'yes') {
+      // 读取列表搜索参数
+      const storage = window.sessionStorage.getItem('search_workbench') || ''
+      if (storage) {
+        const { searchParams, searchOptions } = JSON.parse(storage)
+        this.form = searchParams
+        this.searchOptions = searchOptions
+        this.cacheFlag = true
+      }
+    }
+    this.initData()
+  },
+  beforeDestroy() {
+    // 缓存列表搜索条件
+    const storage = {
+      searchParams: this.form,
+      searchOptions: this.searchOptions
+    }
+    window.sessionStorage.setItem('search_workbench', JSON.stringify(storage))
   },
   methods: {
+    initData() {
+      this.initTab = this.$route.query.tabName || 'myPending'
+      this.initAction = this.$route.query.actionName || '1'
+      this.homePageInstance = document.querySelector('.platform-homepage')
+      this.initFetchData(this.initTab, this.initAction)
+      this.maxHeight = document.documentElement.clientHeight - this.$refs.maxHeight.$el.getBoundingClientRect().top - 100
+    },
     handleQueryDateRange (val) {
       this.queryTime = val
       this.handleQuery(true)
     },
     // 初始化加载数据(链接携带参数，跳转到指定标签)
-    initData (val, action) {
+    initFetchData (val, action) {
       this.tabName = val
       this.actionName = action
       const type = this.$route.query.type
@@ -221,7 +247,7 @@ export default {
           this.type = '3'
         }
         this.rollback = ''
-        this.getTypeConfig()
+        this.getTypeConfig(this.cacheFlag)
       } else if (val === 'submit') {
         if (['1', '2', '3'].includes(rollback)) {
           this.rollback = rollback
@@ -229,15 +255,21 @@ export default {
           this.rollback = '0'
         }
         this.type = ''
-        this.getRollbackConfig()
+        this.getRollbackConfig(this.cacheFlag)
         this.tableColumn = this.submitAllColumn
-        this.searchOptions = this.submitSearch
+        if (!this.cacheFlag) {
+          this.searchOptions = this.submitSearch
+        }
       } else if (val === 'draft') {
         this.tableColumn = this.draftColumn
-        this.searchOptions = this.draftSearch
+        if (!this.cacheFlag) {
+          this.searchOptions = this.draftSearch
+        }
       }
       if (val !== 'collect') {
-        this.handleReset()
+        if (!this.cacheFlag) {
+          this.handleReset()
+        }
         this.handleQuery(true)
       }
     },
@@ -269,20 +301,28 @@ export default {
       this.handleQuery()
     },
     // 待处理、已处理表格差异化配置
-    getTypeConfig () {
+    getTypeConfig (cacheFlag) {
       if (this.tabName === 'pending' || this.tabName === 'myPending') {
         this.tableColumn = this.pendingTaskColumn
         if (['1', '4'].includes(this.type)) {
-          this.searchOptions = this.pendingSearch
+          if (!cacheFlag) {
+            this.searchOptions = this.pendingSearch
+          }
         } else if (['2', '3'].includes(this.type)) {
-          this.searchOptions = this.pendingTaskSearch
+          if (!cacheFlag) {
+            this.searchOptions = this.pendingTaskSearch
+          }
         }
       } else if (this.tabName === 'hasProcessed') {
         this.tableColumn = this.hasProcessedTaskColumn
         if (['1', '4'].includes(this.type)) {
-          this.searchOptions = this.hasProcessedSearch
+          if (!cacheFlag) {
+            this.searchOptions = this.hasProcessedSearch
+          }
         } else if (['2', '3'].includes(this.type)) {
-          this.searchOptions = this.hasProcessedTaskSearch
+          if (!cacheFlag) {
+            this.searchOptions = this.hasProcessedTaskSearch
+          }
         }
       }
     },
@@ -293,14 +333,18 @@ export default {
       this.handleQuery()
     },
     // 我提交的表格差异化配置
-    getRollbackConfig () {
+    getRollbackConfig (cacheFlag) {
       if (this.tabName === 'submit') {
         if (this.rollback === '1' || this.rollback === '0') {
           this.tableColumn = this.submitAllColumn
-          this.searchOptions = this.submitSearch
+          if (!cacheFlag) {
+            this.searchOptions = this.submitSearch
+          }
         } else if (this.rollback === '2' || this.rollback === '3') {
           this.tableColumn = this.submitColumn
-          this.searchOptions = this.submitSearch
+          if (!cacheFlag) {
+            this.searchOptions = this.submitSearch
+          }
         }
       }
     },
@@ -451,6 +495,13 @@ export default {
         }
       })
     },
+    // 查看关联单
+    async handleViewRefDetail (row) {
+      window.sessionStorage.currentPath = '' // 先清空session缓存页面，不然打开新标签页面会回退到缓存的页面
+      const subPath = this.detailRouteMap[this.actionName]
+      const path = `${window.location.origin}/#/taskman/workbench/${subPath}?requestId=${row.requestRefId}&requestTemplate=${row.refTemplateId}`
+      window.open(path, '_blank')
+    },
     // 表格操作-处理(任务、审批、定版、请求确认)
     async handleEdit (row) {
       const path = this.detailRouteMap[this.actionName]
@@ -587,7 +638,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.workbench {
+.taskman-workbench {
   position: relative;
   .create-time {
     display: flex;
@@ -626,7 +677,7 @@ export default {
 }
 </style>
 <style lang="scss">
-.workbench {
+.taskman-workbench {
   .badge {
     position: absolute;
     display: inline-block;

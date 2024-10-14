@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="template-group-list">
     <div>
       <Row>
         <Col span="4">
@@ -19,11 +19,12 @@
         </Col>
         <Col span="4">
           <Button @click="onSearch" type="primary">{{ $t('search') }}</Button>
-          <Button @click="addTempGroup" type="success">{{ $t('add') }}</Button>
+          <Button @click="addTempGroup" style="margin-left:8px;" type="success">{{ $t('add') }}</Button>
         </Col>
       </Row>
     </div>
     <Table
+      ref="maxHeight"
       style="margin: 24px 0;"
       border
       size="small"
@@ -62,11 +63,11 @@ export default {
         isAdd: true,
         title: '',
         itemConfigs: [
-          { label: 'name', value: 'name', rules: 'required', type: 'text' },
+          { label: 'name', value: 'name', required: true, type: 'text' },
           {
             label: 'manageRole',
             value: 'manageRole',
-            rules: 'required',
+            required: true,
             options: 'roleOptions',
             labelKey: 'displayName',
             valueKey: 'id',
@@ -74,7 +75,7 @@ export default {
             type: 'select',
             placeholder: ''
           },
-          { label: 'description', value: 'description', rows: 2, type: 'textarea' }
+          { label: 'description', value: 'description', required: false, rows: 2, type: 'textarea' }
         ],
         values: {
           name: '',
@@ -179,7 +180,7 @@ export default {
     }
   },
   mounted () {
-    this.MODALHEIGHT = document.body.scrollHeight - 200
+    this.MODALHEIGHT = document.documentElement.clientHeight - this.$refs.maxHeight.$el.getBoundingClientRect().top - 100
     this.getTempGroupList()
   },
   methods: {

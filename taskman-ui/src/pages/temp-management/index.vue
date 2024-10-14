@@ -71,7 +71,8 @@ export default {
         this.$router.push({
           path: '/taskman/template-mgmt',
           query: {
-            status: this.parentStatus
+            status: this.parentStatus,
+            needCache: 'yes'
           }
         })
       } else {
@@ -85,7 +86,8 @@ export default {
             this.$router.push({
               path: '/taskman/template-mgmt',
               query: {
-                status: 'created'
+                status: 'created',
+                needCache: 'yes'
               }
             })
           },

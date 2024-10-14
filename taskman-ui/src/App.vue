@@ -2,7 +2,7 @@
   <div id="app">
     <div class="app-content-container">
       <BackTop :height="100" :bottom="100" />
-      <router-view :key="$route.path" />
+      <router-view />
     </div>
   </div>
 </template>

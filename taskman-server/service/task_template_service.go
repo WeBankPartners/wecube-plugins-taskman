@@ -120,8 +120,10 @@ func (s *TaskTemplateService) CreateTaskTemplate(param *models.TaskTemplateDto, 
 }
 
 func (s *TaskTemplateService) CheckHandleTemplates(param *models.TaskTemplateDto) error {
-	if param.HandleMode == string(models.TaskTemplateHandleModeAdmin) ||
-		param.HandleMode == string(models.TaskTemplateHandleModeAuto) {
+	if param.HandleMode == string(models.TaskTemplateHandleModeAdmin) {
+		return nil
+	}
+	if param.HandleMode == string(models.TaskTemplateHandleModeAuto) {
 		if len(param.HandleTemplates) > 0 {
 			return fmt.Errorf("param handleMode %s should not has handleTemplates", param.HandleMode)
 		}
@@ -315,7 +317,7 @@ func (s *TaskTemplateService) UpdateTaskTemplate(param *models.TaskTemplateDto, 
 	var deleteTaskHandleTemplateIds []string
 	var updateTaskHandleTemplates []*models.TaskHandleTemplateTable
 	var newTaskHandleTemplates []*models.TaskHandleTemplateTable
-	if param.HandleMode == string(models.TaskTemplateHandleModeAdmin) || param.HandleMode == string(models.TaskTemplateHandleModeAuto) {
+	if param.HandleMode == string(models.TaskTemplateHandleModeAuto) {
 		deleteTaskHandleTemplateAll = true
 	} else {
 		// 查询任务处理模板
@@ -785,4 +787,8 @@ func (s *TaskTemplateService) GetCheckRoleAndHandler(requestTemplateId string) (
 
 func (s *TaskTemplateService) GetTaskHandleTemplate(id string) (*models.TaskHandleTemplateTable, error) {
 	return s.taskHandleTemplateDao.Get(id)
+}
+
+func (s *TaskTemplateService) QueryTaskHandleTemplateByTaskTemplate(taskTemplate string) ([]*models.TaskHandleTemplateTable, error) {
+	return s.taskHandleTemplateDao.QueryByTaskTemplate(taskTemplate)
 }

@@ -15,7 +15,7 @@
       <!--变更-->
       <TabPane :label="$t('fork')" name="5"></TabPane>
     </Tabs>
-    <BaseSearch :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
+    <Search :options="searchOptions" v-model="form" @search="handleQuery"></Search>
     <Button size="small" @click="handleExport" type="success" :loading="exportFlag" class="export">{{
       $t('download')
     }}</Button>
@@ -41,7 +41,7 @@
 
 <script>
 import axios from 'axios'
-import BaseSearch from '@/pages/components/base-search.vue'
+import Search from '@/pages/components/base-search.vue'
 import { getPublishList } from '@/api/server'
 import { deepClone } from '@/pages/util/index'
 import { getCookie } from '@/pages/util/cookie'
@@ -49,7 +49,7 @@ import column from './column'
 import search from './search'
 export default {
   components: {
-    BaseSearch
+    Search
   },
   mixins: [column, search],
   data () {

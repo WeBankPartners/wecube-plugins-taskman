@@ -10,12 +10,14 @@
       <!--本人撤回-->
       <TabPane :label="$t('tw_recall_tab')" name="revoke"></TabPane>
     </Tabs>
-    <BaseSearch :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
+    <Search :options="searchOptions" v-model="form" @search="handleQuery"></Search>
     <Table
+      ref="maxHeight"
       size="small"
       :columns="tableColumns"
       :data="tableData"
       :loading="loading"
+      :max-height="maxHeight"
       @on-sort-change="sortTable"
     ></Table>
     <Page
@@ -32,14 +34,14 @@
 </template>
 
 <script>
-import BaseSearch from '@/pages/components/base-search.vue'
+import Search from '@/pages/components/base-search.vue'
 import { getPublishList, reRequest, recallRequest, deleteRequest } from '@/api/server'
 import column from '../column'
 import search from '../search'
 import { deepClone } from '@/pages/util/index'
 export default {
   components: {
-    BaseSearch
+    Search
   },
   mixins: [column, search],
   props: {
@@ -74,16 +76,42 @@ export default {
         pageSize: 10
       },
       searchOptions: [],
-      tableColumns: []
+      tableColumns: [],
+      cacheFlag: false,
+      maxHeight: 500
     }
   },
   mounted () {
-    this.tableColumns = deepClone(this.submitAllColumn)
-    this.searchOptions = this.submitSearch
-    this.handleReset()
-    this.getList()
+    // 读取列表搜索参数
+    if (this.$route.query.needCache === 'yes') {
+      const storage = window.sessionStorage.getItem('search_workbench_history') || ''
+      if (storage) {
+        const { searchParams, searchOptions } = JSON.parse(storage)
+        this.form = searchParams
+        this.searchOptions = searchOptions
+        this.cacheFlag = true
+      }
+    }
+    this.initData()
+  },
+  beforeDestroy() {
+    // 缓存列表搜索条件
+    const storage = {
+      searchParams: this.form,
+      searchOptions: this.searchOptions
+    }
+    window.sessionStorage.setItem('search_workbench_history', JSON.stringify(storage))
   },
   methods: {
+    initData () {
+      this.tableColumns = deepClone(this.submitAllColumn)
+      if (!this.cacheFlag) {
+        this.searchOptions = this.submitSearch
+        this.handleReset()
+      }
+      this.getList()
+      this.maxHeight = document.documentElement.clientHeight - this.$refs.maxHeight.$el.getBoundingClientRect().top - 100
+    },
     // 切换类型
     handleChangeTab (val) {
       if (val === 'commit') {
@@ -225,6 +253,13 @@ export default {
           taskId: row.taskId
         }
       })
+    },
+    // 查看关联单
+    async handleViewRefDetail (row) {
+      window.sessionStorage.currentPath = '' // 先清空session缓存页面，不然打开新标签页面会回退到缓存的页面
+      const subPath = this.detailRouteMap[this.actionName]
+      const path = `${window.location.origin}/#/taskman/workbench/${subPath}?requestId=${row.requestRefId}&requestTemplate=${row.refTemplateId}`
+      window.open(path, '_blank')
     },
     // 表格操作-重新发起
     async handleRepub (row) {

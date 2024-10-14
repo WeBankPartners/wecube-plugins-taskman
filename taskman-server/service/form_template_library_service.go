@@ -1,9 +1,15 @@
 package service
 
 import (
+	"context"
+	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"github.com/gin-gonic/gin"
+	"sort"
 	"strings"
 	"time"
 	"xorm.io/xorm"
@@ -62,8 +68,9 @@ func (s *FormTemplateLibraryService) AddFormTemplateLibrary(param models.FormTem
 		}
 		// 添加表单项组件库
 		if len(param.Items) > 0 {
-			for _, item := range param.Items {
-				item.Id = guid.CreateGuid()
+			ids := guid.CreateGuidList(len(param.Items))
+			for i, item := range param.Items {
+				item.Id = ids[i]
 				item.FormTemplateLibrary = formTemplateLibraryId
 				if _, err = s.formItemTemplateLibraryDao.Add(session, models.ConvertFormItemTemplateLibraryDto2Model(item)); err != nil {
 					return err
@@ -117,6 +124,7 @@ func (s *FormTemplateLibraryService) QueryFormTemplateLibrary(param models.Query
 			if formItemTemplateLibraryList, err = s.formItemTemplateLibraryDao.QueryByFormTemplateLibrary(formTemplateLibrary.Id); err != nil {
 				return
 			}
+			sort.Sort(models.FormItemTemplateLibraryTableSort(formItemTemplateLibraryList))
 			if len(formItemTemplateLibraryList) > 0 {
 				for _, item := range formItemTemplateLibraryList {
 					items = append(items, item.Title)
@@ -132,6 +140,131 @@ func (s *FormTemplateLibraryService) QueryFormTemplateLibrary(param models.Query
 				Items:       models.ConvertFormItemTemplateLibraryModel2Dto(formItemTemplateLibraryList),
 			})
 		}
+	}
+	return
+}
+
+func ExportFormTemplateLibrary(ctx context.Context) (result []*models.FormTemplateLibraryTableData, err error) {
+	var formTemplateLibraryData []*models.FormTemplateLibraryTableData
+	baseSql := "SELECT * FROM form_template_library WHERE del_flag=0"
+	err = dao.X.SQL(baseSql).Find(&formTemplateLibraryData)
+	if err != nil {
+		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
+		return
+	}
+
+	if len(formTemplateLibraryData) == 0 {
+		err = fmt.Errorf("query form template library empty")
+		return
+	}
+
+	result = formTemplateLibraryData
+
+	// query formItemTemplateLibrary
+	var formTemplateLibraryIds []string
+	for _, formTempalteLib := range formTemplateLibraryData {
+		formTemplateLibraryIds = append(formTemplateLibraryIds, formTempalteLib.Id)
+	}
+
+	var formItemTemplateLibraryData []*models.FormItemTemplateLibraryTableData
+	filterSql, filterParam := dao.CreateListParams(formTemplateLibraryIds, "")
+	baseSql = fmt.Sprintf("SELECT * FROM form_item_template_library WHERE form_template_library IN (%s)", filterSql)
+	err = dao.X.SQL(baseSql, filterParam...).Find(&formItemTemplateLibraryData)
+	if err != nil {
+		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
+		return
+	}
+
+	formTemplateLibraryIdMapItemInfo := make(map[string][]*models.FormItemTemplateLibraryTableData)
+	for _, itemInfo := range formItemTemplateLibraryData {
+		formTemplateLibraryIdMapItemInfo[itemInfo.FormTemplateLibrary] = append(
+			formTemplateLibraryIdMapItemInfo[itemInfo.FormTemplateLibrary], itemInfo)
+	}
+
+	for _, formTemplateLib := range formTemplateLibraryData {
+		formTemplateLib.Items = []*models.FormItemTemplateLibraryTableData{}
+		if _, isExisted := formTemplateLibraryIdMapItemInfo[formTemplateLib.Id]; isExisted {
+			formTemplateLib.Items = formTemplateLibraryIdMapItemInfo[formTemplateLib.Id]
+		}
+	}
+	return
+}
+
+func ImportFormTemplateLibrary(c *gin.Context, formTemplateLibraryData []*models.FormTemplateLibraryTableData) (err error) {
+	var actions []*dao.ExecAction
+	now := time.Now().Format(models.DateTimeFormat)
+	user := middleware.GetRequestUser(c)
+
+	if len(formTemplateLibraryData) == 0 {
+		return
+	}
+
+	tableNameFormTemplateLibrary := "form_template_library"
+	tableNameFormItemTemplateLibrary := "form_item_template_library"
+
+	for _, formTemplateLibInfo := range formTemplateLibraryData {
+		queryFormTemplateLibData := &models.FormTemplateLibraryTableData{}
+		var exists bool
+		querySql := fmt.Sprintf("SELECT * FROM form_template_library WHERE id = ?")
+		queryParam := []interface{}{formTemplateLibInfo.Id}
+		exists, err = dao.X.SQL(querySql, queryParam...).Get(queryFormTemplateLibData)
+		if err != nil {
+			err = exterror.Catch(exterror.New().DatabaseQueryError, err)
+			return
+		}
+
+		if !exists {
+			formTemplateLibData := &models.FormTemplateLibraryTableData{
+				Id:          formTemplateLibInfo.Id,
+				Name:        formTemplateLibInfo.Name,
+				FormType:    formTemplateLibInfo.FormType,
+				CreatedTime: now,
+				UpdatedTime: now,
+				CreatedBy:   user,
+			}
+			action, tmpErr := dao.GetInsertTableExecAction(tableNameFormTemplateLibrary, *formTemplateLibData, nil)
+			if tmpErr != nil {
+				err = fmt.Errorf("get insert sql for formTemplateLibData.Id: %s failed: %s", formTemplateLibData.Id, tmpErr.Error())
+				return
+			}
+			actions = append(actions, action)
+		} else {
+			// update
+			updateColumnStr := "`name`=?,`form_type`=?,`updated_time`=?,`created_by`=?,`del_flag`=?"
+			action := &dao.ExecAction{
+				Sql: dao.CombineDBSql("UPDATE ", tableNameFormTemplateLibrary, " SET ", updateColumnStr, " WHERE id=?"),
+				Param: []interface{}{formTemplateLibInfo.Name, formTemplateLibInfo.FormType, now, user,
+					formTemplateLibInfo.DelFlag, formTemplateLibInfo.Id},
+			}
+			actions = append(actions, action)
+		}
+
+		formTemplateLibId := formTemplateLibInfo.Id
+		// update formItemTemplateLibrary
+		// firstly delete original formItemTemplateLibrary and then create new formItemTemplateLibrary
+		action := &dao.ExecAction{
+			Sql:   dao.CombineDBSql("DELETE FROM ", tableNameFormItemTemplateLibrary, " WHERE form_template_library=?"),
+			Param: []interface{}{formTemplateLibId},
+		}
+		actions = append(actions, action)
+
+		var formItemTemplateLibList []*models.FormItemTemplateLibraryTableData
+		formItemTemplateLibList = formTemplateLibInfo.Items
+		for i := range formItemTemplateLibList {
+			formItemTemplateLibList[i].FormTemplateLibrary = formTemplateLibId
+			action, tmpErr := dao.GetInsertTableExecAction(tableNameFormItemTemplateLibrary, *formItemTemplateLibList[i], nil)
+			if tmpErr != nil {
+				err = fmt.Errorf("get insert sql of formItemTemplateLibrary for formTemplateLibData.Id: %s failed: %s", formTemplateLibInfo.Id, tmpErr.Error())
+				return
+			}
+			actions = append(actions, action)
+		}
+	}
+
+	err = dao.Transaction(actions)
+	if err != nil {
+		err = exterror.Catch(exterror.New().DatabaseExecuteError, err)
+		return
 	}
 	return
 }

@@ -276,7 +276,7 @@ type RequestPoolDataQueryRow struct {
 type RequestPoolDataQueryRows []*RequestPoolDataQueryRow
 
 func (r RequestPoolDataQueryRows) DataParse() []*RequestPoolForm {
-	forms := []*RequestPoolForm{}
+	var forms []*RequestPoolForm
 	formItemMap := make(map[string][]*RequestPoolDataQueryRow)
 	for _, v := range r {
 		if itemList, ok := formItemMap[v.FormId]; ok {

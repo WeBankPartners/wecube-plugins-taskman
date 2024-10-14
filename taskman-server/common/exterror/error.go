@@ -47,8 +47,9 @@ type ErrorTemplate struct {
 	// sever handle error
 	ServerHandleError CustomError `json:"server_handle_error"`
 	// 业务报错
-	ApiPermissionDeny  CustomError `json:"api_permission_deny"`
-	DataPermissionDeny CustomError `json:"data_permission_deny"`
+	ApiPermissionDeny            CustomError `json:"api_permission_deny"`
+	DataPermissionDeny           CustomError `json:"data_permission_deny"`
+	TemplateUpdatePermissionDeny CustomError `json:"request_template_permission_deny"`
 	// TemplateAlreadyCollect 模板已收藏
 	TemplateAlreadyCollect CustomError `json:"template_already_collect"`
 	// UploadFileTooLarge 上传文件太大

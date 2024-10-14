@@ -6,6 +6,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/gin-gonic/gin"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -81,4 +82,21 @@ func authCoreRequest(c *gin.Context) error {
 	}
 	c.Set("roles", roles)
 	return nil
+}
+
+func ReadFormFile(c *gin.Context, fileKey string) (fileName string, fileBytes []byte, err error) {
+	file, getFileErr := c.FormFile(fileKey)
+	if getFileErr != nil {
+		err = getFileErr
+		return
+	}
+	fileName = file.Filename
+	fileHandler, openFileErr := file.Open()
+	if openFileErr != nil {
+		err = openFileErr
+		return
+	}
+	fileBytes, err = io.ReadAll(fileHandler)
+	fileHandler.Close()
+	return
 }

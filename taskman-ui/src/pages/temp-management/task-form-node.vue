@@ -44,7 +44,7 @@
           </Input>
         </FormItem>
       </Form>
-      <Form ref="formInline" inline :label-width="100" class="table-form">
+      <Form ref="formInline" :inline="false" :label-width="100" class="table-form">
         <FormItem :label="$t('tw_allocation')">
           <Select v-model="activeApprovalNode.handleMode" @on-change="changeRoleType" style="width: 260px;">
             <Option v-for="item in roleTypeOptions" :value="item.value" :key="item.value">{{ item.label }}</Option>
@@ -52,15 +52,15 @@
           <span style="color: red">*</span>
         </FormItem>
         <FormItem
-          v-if="['custom', 'any', 'all'].includes(activeApprovalNode.handleMode)"
-          :label="$t('handler')"
+          v-if="['custom', 'any', 'all', 'admin'].includes(activeApprovalNode.handleMode)"
+          :label="activeApprovalNode.handleMode === 'admin' ? $t('tw_condition') : $t('handler')"
           style="width:100%"
         >
           <Table
             style="width:100%;"
             :border="true"
             size="small"
-            :columns="activeApprovalNode.handleMode === 'any' ? initColumns : tableColumns"
+            :columns="getColumns"
             :data="activeApprovalNode.handleTemplates"
           />
           <Button
@@ -85,7 +85,7 @@
 
 <script>
 import LimitSelect from '@/pages/components/limit-select.vue'
-import { deepClone } from '@/pages/util'
+import { deepClone, fixArrStrToJsonArray } from '@/pages/util'
 import {
   getUserRoles,
   getHandlerRoles,
@@ -96,7 +96,7 @@ import {
   getWeCmdbOptions
 } from '@/api/server'
 export default {
-  name: '',
+  props: ['isCheck', 'nodeType', 'forkOptions'],
   components: {
     LimitSelect
   },
@@ -159,7 +159,8 @@ export default {
       isSaveNodeDisable: true,
       needChangeStatus: false,
       filterFormList: [], // 信息表单和数据表单过滤项配置
-      tableColumns: [],
+      tableColumns: [], // 单人自定义、并行表格列(展示处理人和分配条件)
+      filterColumns: [], // 管理员表格列(只展示过滤条件)
       initColumns: [
         {
           title: this.$t('index'),
@@ -309,6 +310,17 @@ export default {
       filterOptions: {}
     }
   },
+  computed: {
+    getColumns () {
+      if (this.activeApprovalNode.handleMode === 'any') {
+        return this.initColumns
+      } else if (this.activeApprovalNode.handleMode === 'admin') {
+        return this.filterColumns
+      } else {
+        return this.tableColumns
+      }
+    }
+  },
   watch: {
     activeApprovalNode: {
       handler (val) {
@@ -325,6 +337,19 @@ export default {
             item.filterRule = {}
           }
         })
+        if (val.handleTemplates && val.handleTemplates.length === 0) {
+          val.handleTemplates = [
+            {
+              assign: 'template',
+              handlerType: 'template_suggest',
+              role: '',
+              handler: '',
+              handlerOptions: [],
+              assignRule: {},
+              filterRule: {}
+            }
+          ]
+        }
       },
       immediate: true,
       deep: true
@@ -355,7 +380,6 @@ export default {
       immediate: true
     }
   },
-  props: ['isCheck', 'nodeType', 'forkOptions'],
   methods: {
     loadPage (params) {
       this.needChangeStatus = true
@@ -388,6 +412,7 @@ export default {
       })
     },
     getFilterFormData () {
+      this.filterColumns = []
       this.filterFormList = []
       this.tableColumns = deepClone(this.initColumns)
       Promise.all([this.getRequestFormData(), this.getInfoFormData()]).then(([formData, infoData]) => {
@@ -472,9 +497,11 @@ export default {
         const index = this.tableColumns.findIndex(column => column.key === 'action')
         if (dataFormColumn.children.length > 0) {
           this.tableColumns.splice(index, 0, dataFormColumn)
+          this.filterColumns.unshift(dataFormColumn)
         }
         if (infoFormColumn.children.length > 0) {
           this.tableColumns.splice(index, 0, infoFormColumn)
+          this.filterColumns.unshift(infoFormColumn)
         }
         this.$emit('dataFormFilterChange')
       })
@@ -482,7 +509,7 @@ export default {
     async getRefOptions (item) {
       // 模板自定义下拉类型
       if (item.elementType === 'select' && item.entity === '') {
-        this.$set(this.filterOptions, item.name, JSON.parse(item.dataOptions || '[]'))
+        this.$set(this.filterOptions, item.name, fixArrStrToJsonArray(item.dataOptions))
         return
       }
       // cmdb下发
@@ -561,7 +588,7 @@ export default {
       // type 1自我更新 2转到目标节点 3父级页面调用保存
       this.activeApprovalNode.requestTemplate = this.requestTemplateId
       let tmpData = JSON.parse(JSON.stringify(this.activeApprovalNode))
-      if (['admin', 'auto'].includes(tmpData.handleMode)) {
+      if (['auto'].includes(tmpData.handleMode)) {
         delete tmpData.handleTemplates
       }
       const { statusCode } = await updateApprovalNode(tmpData)

@@ -68,7 +68,7 @@ func DeleteRequestTemplateGroup(c *gin.Context) {
 		return
 	}
 	if err = service.GetRequestTemplateGroupService().CheckRequestTemplateGroupRoles(id, middleware.GetRequestRoles(c)); err != nil {
-		middleware.ReturnDataPermissionError(c, err)
+		middleware.ReturnRequestTemplateUpdatePermissionError(c, err)
 		return
 	}
 	if list, err = service.GetRequestTemplateService().QueryRequestTemplateListByRequestTemplateGroup(id); err != nil {

@@ -127,7 +127,7 @@
                       >
                         <draggable
                           class="dragArea"
-                          style="min-height: 40px;"
+                          style="min-height:40px;display:flex;flex-wrap:wrap;"
                           :list="item.attrs"
                           :sort="$parent.isCheck !== 'Y'"
                           group="people"
@@ -499,7 +499,7 @@
     <div class="footer">
       <div class="content" :style="isShowFormConfig ? '' : 'margin-top:48px'">
         <Button
-          :disabled="isCheck !== 'Y' && isTopButtonDisable"
+          :disabled="isCheck !== 'Y' && isTopButtonDisable && !(procDefId !== '' && approvalNodes.length === 0)"
           @click="gotoForward"
           ghost
           type="primary"
@@ -516,7 +516,7 @@
         >
         <Button
           v-if="isCheck !== 'Y'"
-          :disabled="isTopButtonDisable"
+          :disabled="isTopButtonDisable && !(procDefId !== '' && approvalNodes.length === 0)"
           @click="beforeSubmitTemplate"
           type="primary"
           class="btn-footer-margin"
@@ -551,7 +551,7 @@ import {
 import ComponentLibraryModal from './components/component-library-modal.vue'
 import ComponentLibraryList from './components/component-library-list.vue'
 import HiddenCondition from './components/hidden-condition.vue'
-import { uniqueArr, deepClone, findFirstDuplicateIndex } from '@/pages/util'
+import { uniqueArr, deepClone, findFirstDuplicateIndex, fixArrStrToJsonArray } from '@/pages/util'
 export default {
   name: 'BasicInfo',
   components: {
@@ -569,7 +569,7 @@ export default {
     return {
       isParmasChanged: false, // 参数变化标志位，控制右侧panel显示逻辑
       MODALHEIGHT: 200,
-      isTopButtonDisable: false, // 下一步，上一步等的控制
+      isTopButtonDisable: true, // 下一步，上一步等的控制
       isShowFormConfig: false,
       procDefId: '',
       approvalNodes: [
@@ -706,7 +706,7 @@ export default {
     },
     // 数据集回显
     getDataOptionsDisplay () {
-      const options = JSON.parse(this.editElement.dataOptions || '[]')
+      const options = fixArrStrToJsonArray(this.editElement.dataOptions)
       const labelArr = options.map(item => item.label)
       return labelArr.join(',')
     },
@@ -738,7 +738,7 @@ export default {
   methods: {
     // 数据表单过滤项有值，需要禁用审批表单对应表单项"可编辑"属性
     setIsEditDisabled () {
-      const { filterFormList } = this.$refs.approvalFormNodeRef
+      const { filterFormList } = this.$refs.approvalFormNodeRef || {}
       if (filterFormList && filterFormList.length > 0) {
         const dataFormList = filterFormList.filter(i => i.type === 2)
         const handleTemplates = this.$refs.approvalFormNodeRef.activeApprovalNode.handleTemplates
@@ -781,7 +781,7 @@ export default {
                         finalData.items.forEach((item, itemIndex) => {
                           item.sort = itemIndex + 1
                         })
-                        saveRequestGroupCustomForm(finalData)
+                        this.isCheck !== 'Y' && saveRequestGroupCustomForm(finalData)
                       }
                       item.isEdit = 'no'
                       this.$set(item, 'isEditDisabled', true)
@@ -831,9 +831,9 @@ export default {
           this.getApprovalNode(data.taskTemplate.id)
         }
       } else {
-        const nodeStatus = this.$refs.taskFormNodeRef.panalStatus()
+        const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
         if (nodeStatus === 'canSave') {
-          this.$refs.taskFormNodeRef.saveNode(3)
+          this.$refs.approvalFormNodeRef.saveNode(3)
           this.saveGroup(3, this.activeEditingNode)
           const { statusCode, data } = await addApprovalNode(params)
           if (statusCode === 'OK') {
@@ -847,9 +847,9 @@ export default {
       // this.loadPage()
     },
     async removeNode (node) {
-      // const nodeStatus = this.$refs.taskFormNodeRef.panalStatus()
+      // const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
       // if (nodeStatus === 'canSave') {
-      //   this.$refs.taskFormNodeRef.saveNode(3)
+      //   this.$refs.approvalFormNodeRef.saveNode(3)
       //   this.saveGroup(3, node)
       //   this.$Modal.confirm({
       //     title: this.$t('confirm_delete'),
@@ -893,9 +893,9 @@ export default {
     },
     editNode (node, isNeedSaveFirst = true) {
       if (isNeedSaveFirst && this.isCheck !== 'Y') {
-        const nodeStatus = this.$refs.taskFormNodeRef.panalStatus()
+        const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
         if (nodeStatus === 'canSave') {
-          this.$refs.taskFormNodeRef.saveNode(3)
+          this.$refs.approvalFormNodeRef.saveNode(3)
           this.beforeEditNode(node)
         }
       } else {
@@ -905,7 +905,7 @@ export default {
           id: node.id,
           procDefId: this.procDefId
         }
-        this.$refs.taskFormNodeRef.loadPage(params)
+        this.$refs.approvalFormNodeRef.loadPage(params)
         this.getApprovalNodeGroups(node)
       }
     },
@@ -946,7 +946,7 @@ export default {
         procDefId: this.procDefId
       }
       this.activeEditingNode = this.nextNodeInfo
-      this.$refs.taskFormNodeRef.loadPage(params)
+      this.$refs.approvalFormNodeRef.loadPage(params)
     },
     beforeSelectItemGroup () {
       if (this.finalElement[0].itemGroupId === '') {
@@ -1345,9 +1345,9 @@ export default {
       if (this.procDefId !== '' && this.approvalNodes.length === 0) {
         this.$emit('gotoStep', this.requestTemplateId, 'backward')
       } else {
-        const nodeStatus = this.$refs.taskFormNodeRef.panalStatus()
+        const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
         if (nodeStatus === 'canSave') {
-          this.$refs.taskFormNodeRef.saveNode(3)
+          this.$refs.approvalFormNodeRef.saveNode(3)
           let finalData = JSON.parse(JSON.stringify(this.finalElement[0]))
           if (finalData.itemGroupId === '') {
             this.$emit('gotoStep', this.requestTemplateId, 'backward')
@@ -1369,9 +1369,9 @@ export default {
       if (this.procDefId !== '' && this.approvalNodes.length === 0) {
         this.submitTemplate()
       } else {
-        const nodeStatus = this.$refs.taskFormNodeRef.panalStatus()
+        const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
         if (nodeStatus === 'canSave') {
-          this.$refs.taskFormNodeRef.saveNode(4)
+          this.$refs.approvalFormNodeRef.saveNode(4)
           await this.saveGroup(10, {})
           this.submitTemplate()
         }
@@ -1427,7 +1427,7 @@ export default {
     },
     // #region 普通select数据集配置逻辑
     dataOptionsMgmt () {
-      let newDataOptions = JSON.parse(this.editElement.dataOptions || '[]')
+      let newDataOptions = fixArrStrToJsonArray(this.editElement.dataOptions)
       this.$refs.dataSourceConfigRef.loadPage(newDataOptions)
     },
     setDataOptions (options) {
@@ -1440,7 +1440,7 @@ export default {
     computedOption (element) {
       let res = []
       if (element.elementType === 'select') {
-        res = JSON.parse(element.dataOptions || '[]')
+        res = fixArrStrToJsonArray(element.dataOptions)
       } else if (element.elementType === 'wecmdbEntity') {
       }
       return res
@@ -1529,6 +1529,7 @@ fieldset[disabled] .ivu-input {
     align-items: center;
     justify-content: space-around;
     margin: 8px 0;
+    padding: 0 10px;
   }
   .dash-line {
     display: inline-block;

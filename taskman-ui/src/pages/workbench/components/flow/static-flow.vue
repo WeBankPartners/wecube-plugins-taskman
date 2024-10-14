@@ -3,7 +3,7 @@
     <div style="margin-bottom: 8px;">
       <Alert type="warning" show-icon>{{ $t('tw_flow_tips') }}</Alert>
       <!-- <span class="custom-title">{{ $t('workflow_name') }}</span> -->
-      <span class="custom-display">
+      <span class="custom-display" @click="jumpToFlowDetail">
         {{ flowData.procDefName }}
         <span v-if="flowData.procDefVersion">{{ `【${flowData.procDefVersion}】` }}</span>
       </span>
@@ -22,6 +22,10 @@ import * as d3Graphviz from 'd3-graphviz'
 export default {
   props: {
     requestTemplate: {
+      type: String,
+      default: ''
+    },
+    flowId: {
       type: String,
       default: ''
     }
@@ -43,6 +47,14 @@ export default {
     }
   },
   methods: {
+    // 打开编排模板详情页
+    jumpToFlowDetail() {
+      if (process.env.VUE_APP_PLUGIN === 'plugin') {
+        window.sessionStorage.currentPath = '' // 先清空session缓存页面，不然打开新标签页面会回退到缓存的页面
+        const path = `${window.location.origin}/#/collaboration/workflow-mgmt?flowId=${this.flowId}&editFlow=false&flowListTab=deployed`
+        window.open(path, '_blank')
+      }
+    },
     orchestrationSelectHandler () {
       this.currentFlowNodeId = ''
       this.currentModelNodeRefs = []
@@ -61,6 +73,7 @@ export default {
       }
     },
     renderFlowGraph (excution) {
+      // 节点颜色
       const statusColor = {
         Completed: '#5DB400',
         deployed: '#7F8A96',
@@ -68,70 +81,111 @@ export default {
         Faulted: '#FF6262',
         Risky: '#BF22E0',
         Timeouted: '#F7B500',
-        NotStarted: '#7F8A96'
+        NotStarted: '#7F8A96',
+        wait: '#7F8A96'
       }
-      let nodes =
-        this.flowData &&
-        this.flowData.flowNodes &&
-        this.flowData.flowNodes
+      const nodes = this.flowData
+        && this.flowData.flowNodes
+        && this.flowData.flowNodes
           .filter(i => i.status !== 'predeploy')
-          .map((_, index) => {
-            if (_.nodeType === 'startEvent' || _.nodeType === 'endEvent') {
-              const defaultLabel = _.nodeType === 'startEvent' ? 'start' : 'end'
-              return `${_.nodeId} [label="${_.nodeName || defaultLabel}", fontsize="10", class="flow",style="${
-                excution ? 'filled' : 'none'
-              }" color="${excution ? statusColor[_.status] : '#7F8A96'}" shape="circle", id="${_.nodeId}"]`
-            } else {
-              // const className = _.status === 'Faulted' || _.status === 'Timeouted' ? 'retry' : 'normal'
-              const className = 'retry'
-              const isModelClick = this.currentModelNodeRefs.indexOf(_.orderedNo) > -1
-              return `${_.nodeId} [fixedsize=false label="${(_.orderedNo ? _.orderedNo + ' ' : '') +
-                _.nodeName}" class="flow ${className}" style="${excution || isModelClick ? 'filled' : 'none'}" color="${
-                excution
-                  ? statusColor[_.status]
-                  : isModelClick
-                    ? '#ff9900'
-                    : _.nodeId === this.currentFlowNodeId
-                      ? '#5DB400'
-                      : '#7F8A96'
-              }"  shape="box" id="${_.nodeId}" ]`
+          .map(_ => {
+            const shapeMap = {
+              start: 'circle', // 开始
+              end: 'doublecircle', // 结束
+              abnormal: 'doublecircle', // 异常
+              decision: 'diamond', // 判断开始
+              decisionMerge: 'diamond', // 判断结束
+              fork: 'Mdiamond', // 并行开始
+              merge: 'Mdiamond', // 并行结束
+              human: 'tab', // 人工
+              automatic: 'rect', // 自动
+              data: 'cylinder', // 数据
+              subProc: 'component', // 子编排
+              date: 'Mcircle', // 固定时间
+              timeInterval: 'Mcircle' // 时间间隔
             }
+            if (['start', 'end', 'abnormal', 'date', 'timeInterval'].includes(_.nodeType)) {
+              const className = 'retry'
+              const defaultLabel = _.nodeType
+              return `${_.nodeId} [label="${
+                _.nodeName || defaultLabel
+              }", width="0.8", class="flow ${className}", fixedsize=true, style="${
+                excution ? 'filled' : 'none'
+              }" fillcolor="${excution ? statusColor[_.status] || '#7F8A96' : '#7F8A96'}" shape="${
+                shapeMap[_.nodeType]
+              }", id="${_.nodeId}"]`
+            }
+            // const className = _.status === 'Faulted' || _.status === 'Timeouted' ? 'retry' : 'normal'
+            let className = 'retry'
+            if (['decision'].includes(_.nodeType) && _.status === 'Faulted') {
+              className = ''
+            }
+            const isModelClick = this.currentModelNodeRefs.indexOf(_.orderedNo) > -1
+            return `${_.nodeId} [fixedsize=false label="${
+              (_.orderedNo ? _.orderedNo + ' ' : '') + _.nodeName
+            }" class="flow ${className}" style="${excution || isModelClick ? 'filled' : 'none'}" fillcolor="${
+              excution
+                ? statusColor[_.status] || '#7F8A96'
+                : isModelClick
+                  ? '#ff9900'
+                  : _.nodeId === this.currentFlowNodeId
+                    ? '#5DB400'
+                    : '#7F8A96'
+            }"  shape="${shapeMap[_.nodeType]}" id="${_.nodeId}" ]`
           })
-      let genEdge = () => {
-        let pathAry = []
-        this.flowData &&
-          this.flowData.flowNodes &&
-          this.flowData.flowNodes.forEach(_ => {
+      const genEdge = () => {
+        const lineName = {}
+        this.flowData.nodeLinks
+          && this.flowData.nodeLinks.forEach(link => {
+            lineName[link.source + link.target] = link.name
+          })
+        const pathAry = []
+        this.flowData
+          && this.flowData.flowNodes
+          && this.flowData.flowNodes.forEach(_ => {
             if (_.succeedingNodeIds.length > 0) {
               let current = []
               current = _.succeedingNodeIds.map(to => {
+                const toNodeItem = this.flowData.flowNodes.find(i => i.nodeId === to) || {}
+                const edgeColor = statusColor[toNodeItem.status] || '#505a68'
+                // 修复判断分支多连线不能区分颜色问题
+                if (_.nodeType === 'decision') {
+                  return (
+                    '"'
+                    + _.nodeId
+                    + '"'
+                    + ' -> '
+                    + `${'"' + to + '"'} [label="${lineName[_.nodeId + to]}" color="${edgeColor}" ]`
+                  )
+                }
                 return (
-                  '"' +
-                  _.nodeId +
-                  '"' +
-                  ' -> ' +
-                  `${'"' + to + '"'} [color="${excution ? statusColor[_.status] : 'black'}"]`
+                  '"'
+                  + _.nodeId
+                  + '"'
+                  + ' -> '
+                  + `${'"' + to + '"'} [label="${lineName[_.nodeId + to]}" color="${
+                    excution ? statusColor[_.status] : 'black'
+                  }"]`
                 )
               })
               pathAry.push(current)
             }
           })
-        return pathAry
-          .flat()
-          .toString()
+        return pathAry.flat().toString()
           .replace(/,/g, ';')
       }
-      let nodesToString = Array.isArray(nodes) ? nodes.toString().replace(/,/g, ';') + ';' : ''
-      let nodesString =
-        'digraph G {' +
-        'bgcolor="transparent";' +
-        'Node [fontname=Arial, height=".3", fontsize=12];' +
-        'Edge [fontname=Arial, color="#7f8fa6", fontsize=10];' +
-        nodesToString +
-        genEdge() +
-        '}'
-
-      this.flowGraph.graphviz.transition().renderDot(nodesString)
+      const nodesToString = Array.isArray(nodes) ? nodes.toString().replace(/,/g, ';') + ';' : ''
+      const nodesString = 'digraph G {'
+        + 'bgcolor="transparent";'
+        + 'splines="polyline"'
+        + 'Node [fontname=Arial, width=1.8, height=0.45, color="#505a68", fontsize=12]'
+        + 'Edge [fontname=Arial, color="#505a68", fontsize=10];'
+        + nodesToString
+        + genEdge()
+        + '}'
+      this.flowGraph.graphviz
+        .transition()
+        .renderDot(nodesString)
     },
     initFlowGraph (excution = false) {
       const graphEl = document.getElementById('flow')
@@ -171,6 +225,7 @@ export default {
   border: 1px solid #069cec;
   border-radius: 4px;
   color: #069cec;
+  cursor: pointer;
 }
 #graphcontain {
   position: relative;

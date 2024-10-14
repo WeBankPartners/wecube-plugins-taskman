@@ -163,5 +163,9 @@
   "form_item_code_repeat_error": {
     "code": 20100032,
     "message": "保存失败:表单%s中的表单项%s的编码%s与表单项%s的编码重复,请修改后重新保存"
+  },
+  "request_template_permission_deny": {
+    "code": 20100033,
+    "message": "操作失败:当前模版已被其他人修改,请返回列表,刷新页面,联系\"当前模版-更新人\",避免冲突修改"
   }
 }

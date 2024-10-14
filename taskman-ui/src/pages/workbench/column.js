@@ -264,17 +264,27 @@ export default {
             return <span>{`${params.row.roleDisplay} / ${params.row.createdBy}`}</span>
           }
         },
+        // 关联单
         requestRefId: {
           title: this.$t('tw_ref'),
           width: 230,
           key: 'requestRefId',
           render: (h, params) => {
             const { requestRefName, requestRefId, requestRefType } = params.row
-            return (
-              <span>
-                {requestRefName ? `【${this.typeMap[requestRefType]}】${requestRefName}【${requestRefId}】` : '-'}
-              </span>
-            )
+            if (requestRefId) {
+              return (
+                <span
+                  style="cursor:pointer;color:#5cadff;"
+                  onClick={() => {
+                    this.handleViewRefDetail(params.row)
+                  }}
+                >
+                  {requestRefName ? `【${this.typeMap[requestRefType]}】${requestRefName}【${requestRefId}】` : '-'}
+                </span>
+              )
+            } else {
+              return <span>-</span>
+            }
           }
         },
         action: {
@@ -359,7 +369,7 @@ export default {
                     </Tooltip>
                   )}
                 {// 重新发起
-                  ['Termination', 'Completed', 'Faulted'].includes(params.row.status) && this.tabName === 'submit' && (
+                  ['Termination', 'Faulted'].includes(params.row.status) && this.tabName === 'submit' && (
                     <Tooltip content={this.$t('tw_action_relaunch')} placement="top">
                       <Button
                         type="success"
@@ -573,13 +583,7 @@ export default {
         minWidth: 150,
         key: 'rollbackDesc',
         render: (h, params) => {
-          return (
-            <Tooltip max-width="300" content={params.row.rollbackDesc}>
-              <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
-                {params.row.rollbackDesc || '-'}
-              </span>
-            </Tooltip>
-          )
+          return <BaseEllipsis content={params.row.rollbackDesc}></BaseEllipsis>
         }
       },
       this.baseColumn.templateName,
@@ -611,13 +615,7 @@ export default {
         minWidth: 150,
         key: 'rollbackDesc',
         render: (h, params) => {
-          return (
-            <Tooltip max-width="300" content={params.row.rollbackDesc}>
-              <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
-                {params.row.rollbackDesc || '-'}
-              </span>
-            </Tooltip>
-          )
+          return <BaseEllipsis content={params.row.rollbackDesc}></BaseEllipsis>
         }
       },
       this.baseColumn.templateName,

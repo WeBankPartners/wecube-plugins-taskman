@@ -93,7 +93,13 @@ func ReturnDataPermissionError(c *gin.Context, err error) {
 		err = exterror.Catch(exterror.New().DataPermissionDeny, err)
 	}
 	ReturnError(c, err)
-	//ReturnError(c, "DATA_PERMISSION_ERROR", err.Error(), nil)
+}
+
+func ReturnRequestTemplateUpdatePermissionError(c *gin.Context, err error) {
+	if _, ok := err.(exterror.CustomError); !ok {
+		err = exterror.Catch(exterror.New().TemplateUpdatePermissionDeny, err)
+	}
+	ReturnError(c, err)
 }
 
 func ReturnDataPermissionDenyError(c *gin.Context) {

@@ -49,6 +49,7 @@
                   <Option :key="idx" :value="j.value">{{ j.label }}</Option>
                 </template>
               </Select>
+              <!--标签形式下拉框-->
               <Select
                 v-else-if="i.component === 'tag-select'"
                 v-model="value[i.key]"
@@ -61,7 +62,17 @@
               >
                 <template v-for="(j, idx) in i.list">
                   <Option :key="idx" :value="j.value" :label="j.label">
-                    <Tag :color="j.color">{{ j.label }}</Tag>
+                    <div
+                      :style="{
+                        backgroundColor: j.color,
+                        padding: '4px 15px',
+                        width: 'fit-content',
+                        color: '#fff',
+                        borderRadius: '4px'
+                      }"
+                    >
+                      {{ j.label }}
+                    </div>
                   </Option>
                 </template>
               </Select>
@@ -322,11 +333,11 @@ export default {
     height: 30px !important;
     line-height: 30px !important;
     font-size: 12px !important;
-    color: #000;
+    // color: #000;
   }
   .ivu-radio-wrapper-checked.ivu-radio-border {
-    border-color: #2d8cf0;
-    color: #2d8cf0;
+    background-color: #2d8cf0;
+    color: #fff;
   }
   .ivu-select-multiple .ivu-tag {
     max-width: 90px;

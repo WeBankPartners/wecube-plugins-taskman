@@ -311,9 +311,12 @@ func handlePluginRequestCreate(input *models.PluginRequestCreateParamObj, callRe
 	if err = service.SaveRequestCacheV2(requestObj.Id, "system", token, &saveParam); err != nil {
 		return
 	}
-	// 更新请求状态
-	if err = service.UpdateRequestStatus(requestObj.Id, "Pending", "system", token, language, requestObj.Description); err != nil {
-		return
+	// 请求默认创建为草稿态,根据判断是否提交请求
+	if input.IsDraftStatus != "true" {
+		// 更新请求状态
+		if err = service.UpdateRequestStatus(requestObj.Id, "Pending", "system", token, language, requestObj.Description); err != nil {
+			return
+		}
 	}
 	return
 }

@@ -436,6 +436,7 @@ type PluginRequestCreateParamObj struct {
 	RootDataId        string `json:"rootDataId"`
 	ReportRole        string `json:"reportRole"`
 	ReportUser        string `json:"reportUser"`
+	IsDraftStatus     string `json:"isDraftStatus"` // 是否为草稿态,true、false
 }
 
 type PluginRequestCreateResp struct {

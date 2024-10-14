@@ -176,6 +176,12 @@ export default {
           }
         },
         {
+          title: 'ID',
+          minWidth: 100,
+          sortable: 'custom',
+          key: 'id'
+        },
+        {
           title: this.$t('version'),
           minWidth: 60,
           sortable: 'custom',

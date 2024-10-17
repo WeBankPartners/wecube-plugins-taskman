@@ -108,7 +108,7 @@
                     ></DatePicker>
                   </FormItem>
                   <FormItem>
-                    <Button type="primary" :disabled="!pendingUser.length || !pengdingExpireTime" @click="okSelect">{{
+                    <Button type="primary" :disabled="!pendingUser.length" @click="okSelect">{{
                       $t('tw_add_user')
                     }}</Button>
                   </FormItem>

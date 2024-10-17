@@ -434,6 +434,7 @@ export default {
   watch: {
     'form.rootEntityId' (val) {
       if (val) {
+        this.requestData = [] // 清空数据，解决数据缓存下拉框不回显问题
         this.getEntityData()
       } else {
         this.noRequestForm = false

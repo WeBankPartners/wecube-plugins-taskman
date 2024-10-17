@@ -1159,7 +1159,7 @@ func UpdateRequestStatus(requestId, status, operator, userToken, language, descr
 		// 设置bindCache,模版没配置定版,审批自动通过到任务场景用到
 		request.BindCache = bindCache
 		// 请求定版, 根据模板配置开启是否确认定版
-		err = GetRequestService().CreateRequestCheck(request, operator, bindCache, userToken, language)
+		err = GetRequestService().CreateRequestCheck(request, operator, request.Cache, bindCache, userToken, language)
 	} else if status == "Draft" {
 		// 只有定版人才能处理
 		var checkTask *models.TaskTable

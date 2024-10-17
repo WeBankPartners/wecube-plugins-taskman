@@ -39,6 +39,40 @@ func QueryRequestTemplate(c *gin.Context) {
 	middleware.ReturnPageData(c, pageInfo, rowData)
 }
 
+func GetAllLatestReleaseRequestTemplate(c *gin.Context) {
+	var result []*models.RequestTemplateSimpleQueryObj
+	var err error
+	if result, err = service.GetRequestTemplateService().GetAllLatestReleaseRequestTemplate(models.CommonParam{Token: c.GetHeader("Authorization"),
+		Language: c.GetHeader(middleware.AcceptLanguageHeader)}); err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, result)
+}
+
+func GetRequestTemplateRoles(c *gin.Context) {
+	var param models.GetRequestTemplateRolesParam
+	var err error
+	var result, subRoles []string
+	if err = c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+
+	// 查询模版角色
+	if result, err = service.GetRequestTemplateService().GetRequestTemplateRoles(param.RequestTemplateIds); err != nil {
+		middleware.ReturnError(c, err)
+		return
+	}
+	// 查询任务模版配置的角色
+	if subRoles, err = service.GetRequestTemplateService().GetTaskHandleTemplateRolesByRequestTemplateIds(param.RequestTemplateIds); err != nil {
+		middleware.ReturnError(c, err)
+		return
+	}
+	result = append(result, subRoles...)
+	middleware.ReturnData(c, result)
+}
+
 func CreateRequestTemplate(c *gin.Context) {
 	var param models.RequestTemplateUpdateParam
 	var err error
@@ -423,6 +457,65 @@ func ExportRequestTemplate(c *gin.Context) {
 	c.Data(http.StatusOK, "application/octet-stream", b)
 }
 
+func BatchExportRequestTemplate(c *gin.Context) {
+	var err error
+	var param models.BatchExportRequestTemplateParam
+	var requestTemplateExport models.RequestTemplateExport
+	var result []models.RequestTemplateExport
+	if err = c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	for _, requestTemplateId := range param.RequestTemplateIds {
+		if requestTemplateExport, err = service.GetRequestTemplateService().RequestTemplateExport(requestTemplateId); err != nil {
+			middleware.ReturnError(c, err)
+			return
+		}
+		if requestTemplateExport.RequestTemplate.Id != "" {
+			result = append(result, requestTemplateExport)
+		}
+	}
+	middleware.ReturnData(c, result)
+}
+
+// ImportRequestTemplateBatch 批量导入完然后发布
+func ImportRequestTemplateBatch(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Http read upload file fail:" + err.Error(), Data: nil})
+		return
+	}
+	f, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "File open error:" + err.Error(), Data: nil})
+		return
+	}
+	var paramObj []models.RequestTemplateExport
+	b, err := io.ReadAll(f)
+	defer f.Close()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Read content fail error:" + err.Error(), Data: nil})
+		return
+	}
+	err = json.Unmarshal(b, &paramObj)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Json unmarshal fail error:" + err.Error(), Data: nil})
+		return
+	}
+	for _, obj := range paramObj {
+		_, templateName, backToken, importErr := service.GetRequestTemplateService().RequestTemplateImport(obj, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), "", middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
+		if importErr != nil {
+			middleware.ReturnServerHandleError(c, importErr)
+			return
+		}
+		if backToken != "" {
+			c.JSON(http.StatusOK, models.ResponseJson{StatusCode: "CONFIRM", Data: models.ImportData{Token: backToken, TemplateName: templateName}})
+			return
+		}
+	}
+	middleware.ReturnSuccess(c)
+}
+
 func ImportRequestTemplate(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {
@@ -446,7 +539,7 @@ func ImportRequestTemplate(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Json unmarshal fail error:" + err.Error(), Data: nil})
 		return
 	}
-	templateName, backToken, importErr := service.GetRequestTemplateService().RequestTemplateImport(paramObj, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), "", middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
+	_, templateName, backToken, importErr := service.GetRequestTemplateService().RequestTemplateImport(paramObj, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), "", middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
 	if importErr != nil {
 		middleware.ReturnServerHandleError(c, importErr)
 		return
@@ -460,7 +553,7 @@ func ImportRequestTemplate(c *gin.Context) {
 
 func ConfirmImportRequestTemplate(c *gin.Context) {
 	confirmToken := c.Param("confirmToken")
-	_, _, err := service.GetRequestTemplateService().RequestTemplateImport(models.RequestTemplateExport{}, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), confirmToken, middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
+	_, _, _, err := service.GetRequestTemplateService().RequestTemplateImport(models.RequestTemplateExport{}, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), confirmToken, middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

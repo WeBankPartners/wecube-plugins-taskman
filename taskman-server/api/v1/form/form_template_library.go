@@ -104,6 +104,21 @@ func QueryAllFormTemplateLibraryFormType(c *gin.Context) {
 	middleware.ReturnData(c, formTypes)
 }
 
+func ExportFormTemplateLibraryData(c *gin.Context) {
+	var result []*models.FormTemplateLibraryTableData
+	var err error
+	defer try.ExceptionStack(func(e interface{}, err interface{}) {
+		retErr := fmt.Errorf("%v", err)
+		middleware.ReturnError(c, exterror.Catch(exterror.New().ServerHandleError, retErr))
+		log.Logger.Error(e.(string))
+	})
+	if result, err = service.ExportFormTemplateLibrary(c); err != nil {
+		middleware.ReturnError(c, err)
+		return
+	}
+	middleware.ReturnData(c, result)
+}
+
 // 导出组件库
 func ExportFormTemplateLibrary(c *gin.Context) {
 	defer try.ExceptionStack(func(e interface{}, err interface{}) {

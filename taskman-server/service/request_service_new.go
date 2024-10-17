@@ -1723,7 +1723,7 @@ func convertInterfaceArray2Map(arr []interface{}) map[interface{}]bool {
 }
 
 // CreateRequestCheck 创建确认定版
-func (s *RequestService) CreateRequestCheck(request models.RequestTable, operator, bindCache, userToken, language string) (err error) {
+func (s *RequestService) CreateRequestCheck(request models.RequestTable, operator, cache, bindCache, userToken, language string) (err error) {
 	now := time.Now().Format(models.DateTimeFormat)
 	var actions []*dao.ExecAction
 	var approvalActions []*dao.ExecAction
@@ -1740,10 +1740,6 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 	if requestTemplate == nil {
 		err = fmt.Errorf("requestTemplate is empty")
 		return
-	}
-	if requestTemplate.ProcDefId != "" {
-		// 关联编排
-		request.AssociationWorkflow = true
 	}
 	submitTaskTemplateList, err = GetTaskTemplateService().QueryTaskTemplateListByRequestTemplateAndType(requestTemplate.Id, string(models.TaskTypeSubmit))
 	if err != nil {
@@ -1817,7 +1813,36 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 		err = dao.Transaction(actions)
 		return
 	}
-
+	if requestTemplate.ProcDefId != "" {
+		request.AssociationWorkflow = true
+		// 组装请求定版编排数据
+		var cacheData models.RequestCacheData
+		var entityDepMap map[string][]string
+		var cacheObj models.RequestPreDataDto
+		var requestCacheData models.RequestCacheData
+		if err = json.Unmarshal([]byte(bindCache), &requestCacheData); err != nil {
+			err = fmt.Errorf("try to json unmarshal request bind_cache data fail,%s ", err.Error())
+			return
+		}
+		if err = json.Unmarshal([]byte(cache), &cacheObj); err != nil {
+			err = fmt.Errorf("try to json unmarshal request cache data fail,%s ", err.Error())
+			return
+		}
+		cacheData.TaskNodeBindInfos = requestCacheData.TaskNodeBindInfos
+		cacheData.RootEntityValue = models.RequestCacheEntityValue{Oid: cacheObj.RootEntityId}
+		entityDepMap, _, err = AppendUselessEntity(requestTemplate.Id, userToken, language, &cacheData, request.Id)
+		if err != nil {
+			err = fmt.Errorf("try to append useless entity fail,%s ", err.Error())
+			return
+		}
+		fillBindingWithRequestData(request.Id, userToken, language, &cacheData, entityDepMap)
+		cacheBytes, _ := json.Marshal(cacheData)
+		// 重新设置Request BindCache
+		request.BindCache = string(cacheBytes)
+		// 更新请求表 bind_cache
+		actions = append(actions, &dao.ExecAction{Sql: "update request set bind_cache=? where id=?",
+			Param: []interface{}{string(cacheBytes), request.Id}})
+	}
 	// 没有配置定版,请求继续往后面走
 	approvalActions, err = s.CreateRequestApproval(request, "", userToken, language, taskSort, true)
 	if err != nil {

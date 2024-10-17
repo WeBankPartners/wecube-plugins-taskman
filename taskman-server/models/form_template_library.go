@@ -32,6 +32,5 @@ type FormTemplateLibraryTableData struct {
 	UpdatedTime string                              `json:"updatedTime" xorm:"updated_time"`
 	CreatedBy   string                              `json:"createdBy" xorm:"created_by"` // 创建人
 	DelFlag     int                                 `json:"delFlag" xorm:"del_flag"`
-	CustomFlag  int                                 `json:"customFlag" xorm:"custom_flag"`
 	Items       []*FormItemTemplateLibraryTableData `json:"items" xorm:"-"`
 }

@@ -3,7 +3,7 @@
 
     <!-- 1.依赖分析 - 描述运行本插件包需要的其他插件包 -->
     <packageDependencies>
-        <packageDependency name="platform" version="v4.0.0"/>
+        <packageDependency name="platform" version="v4.2.0"/>
         <packageDependency name="wecmdb" version="v2.0.4"/>
     </packageDependencies>
 

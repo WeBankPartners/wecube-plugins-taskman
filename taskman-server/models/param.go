@@ -25,6 +25,10 @@ type QueryRequestParam struct {
 	ResultColumns []string                 `json:"resultColumns"`
 }
 
+type GetRequestTemplateRolesParam struct {
+	RequestTemplateIds []string `json:"requestTemplateIds"`
+}
+
 type TransFiltersParam struct {
 	IsStruct   bool
 	StructObj  interface{}
@@ -179,4 +183,8 @@ type RequestAssociationParam struct {
 	PageSize        int    `json:"pageSize"`
 	ReportStartTime string `json:"reportTimeStart"` // 请求提交开始时间
 	ReportEndTime   string `json:"reportTimeEnd"`   // 请求提交结束时间
+}
+
+type BatchExportRequestTemplateParam struct {
+	RequestTemplateIds []string `json:"requestTemplateIds"`
 }

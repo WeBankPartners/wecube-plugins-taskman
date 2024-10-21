@@ -1,0 +1,322 @@
+<!--
+ * @Author: wanghao7717 792974788@qq.com
+ * @Date: 2024-10-21 16:15:54
+ * @LastEditors: wanghao7717 792974788@qq.com
+ * @LastEditTime: 2024-10-21 20:20:02
+ * @FilePath: \wecube-plugins-taskman\taskman-ui\src\pages\workbench\components\cmdb-form-item\index.vue
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+-->
+<!--
+ * @Author: wanghao7717 792974788@qq.com
+ * @Date: 2024-10-18 17:55:45
+ * @LastEditors: wanghao7717 792974788@qq.com
+ * @LastEditTime: 2024-10-21 18:16:55
+-->
+<template>
+  <div class="cmdb-entity-table">
+    <template v-if="column.component === 'WeCMDBCIPassword'">
+      <WeCMDBCIPassword :formData="column" :panalData="value" :disabled="false" />
+    </template>
+    <template v-else-if="column.component === 'Input' && column.inputType === 'multiText'">
+      <MultiConfig
+        :inputKey="column.inputKey"
+        :disabled="isGroupEditDisabled(column, value)"
+        :data="JSON.parse(JSON.stringify(value[column.inputKey]))"
+        type="text"
+        @input="(v) => {value[column.inputKey] = v}"
+      ></MultiConfig>
+    </template>
+    <template v-else-if="column.component === 'Input' && column.inputType === 'multiInt'">
+      <MultiConfig
+        :inputKey="column.inputKey"
+        :disabled="isGroupEditDisabled(column, value)"
+        :data="JSON.parse(JSON.stringify(value[column.inputKey]))"
+        type="number"
+        @input="(v) => {value[column.inputKey] = v.trim()}"
+      ></MultiConfig>
+    </template>
+    <template v-else-if="column.component === 'Input' && column.inputType === 'multiObject'">
+      <MultiConfig
+        :inputKey="column.inputKey"
+        :disabled="isGroupEditDisabled(column, value)"
+        :data="JSON.parse(JSON.stringify(value[column.inputKey]))"
+        type="json"
+        @input="(v) => {value[column.inputKey] = v}"
+      ></MultiConfig>
+    </template>
+    <template v-else-if="column.component === 'Input' && column.inputType === 'autofillRule'">
+      <Input
+        v-bind="getInputProps(column, value)"
+        @input="(v) => {setValueHandler(v.trim(), column, value)}"
+        style="width:80%"
+      ></Input>
+    </template>
+    <template v-else-if="column.component === 'Input' && column.inputType !== 'object'">
+      <Input
+        v-bind="getObjectInputProps(column, value)"
+        @input="(v) => {setValueHandler(v.trim(), column, value)}"
+        @on-search="(v) => {handleInputSearch(v, column, value)}"
+        style="width:80%"
+      ></Input>
+    </template>
+    <template v-else-if="column.component === 'Input' && column.inputType === 'object'">
+      <JSONConfig
+        :inputKey="column.inputKey"
+        :disabled="isGroupEditDisabled(column, value)"
+        :jsonData="JSON.parse(JSON.stringify(value[column.inputKey]) || '{}')"
+        @input="(v) => {setValueHandler(v, column, value)}"
+      ></JSONConfig>
+    </template>
+    <template v-else-if="column.component === 'WeCMDBSelect'">
+      <WeCMDBSelect
+        :value="column.isRefreshable
+          ? column.inputType === 'multiSelect'
+            ? []
+            : ''
+          : column.inputType === 'multiSelect'
+            ? Array.isArray(value[column.inputKey])
+              ? value[column.inputKey]
+              : ''
+            : formatValue(column, value[column.inputKey])"
+        :disabled="isGroupEditDisabled(column, value)"
+        :filterParams="column.referenceFilter
+          ? {
+            attrId: column.ciTypeAttrId,
+            params: value
+          }
+          : null"
+        :isMultiple="column.isMultiple"
+        :options="column.options"
+        :enumId="column.referenceId ? column.referenceId : null"
+        @input="(v) => {setValueHandler(v, column, value)}"
+        @change="(v) => {
+          if (column.onChange) {
+            this.$emit('getGroupList', v)
+          }
+        }"
+      ></WeCMDBSelect>
+    </template>
+    <template v-else-if="column.component === 'WeCMDBRefSelect'">
+      <WeCMDBRefSelect
+        :value="column.isRefreshable
+          ? ''
+          : column.inputType === 'multiRef'
+            ? Array.isArray(value[column.inputKey])
+              ? value[column.inputKey]
+              : []
+            : value[column.inputKey] || ''"
+        :disabled="isGroupEditDisabled(column, value)"
+        :filterParams="column.referenceFilter
+          ? {
+            attrId: column.ciTypeAttrId,
+            params: value
+          }
+          : null"
+        :ciTypeAttrId="column.ciTypeAttrId"
+        :ciType="column.ciType"
+        :editable="column.editable === 'yes'"
+        :originColumns="originColumns"
+        :type="column.type"
+        :guid="value.guid ? value.guid : '123'"
+        @input="(v) => {setValueHandler(v, column, value)}"
+        @change="(v) => {
+          if (column.onChange) {
+            this.$emit('getGroupList', v)
+          }
+        }"
+      ></WeCMDBRefSelect>
+    </template>
+  </div>
+</template>
+<script>
+import dayjs from 'dayjs'
+import { debounce } from '@/pages/util/index'
+import { queryCiData } from '@/api/server'
+import WeCMDBCIPassword from './ci-password.vue'
+import MultiConfig from './multi-config.vue'
+import JsonConfig from './json-config.vue'
+import WeCMDBSelect from './cmdb-select.vue'
+import WeCMDBRefSelect from './cmdb-ref-select/index'
+export default {
+  components: {
+    WeCMDBCIPassword,
+    MultiConfig,
+    JsonConfig,
+    WeCMDBSelect,
+    WeCMDBRefSelect
+  },
+  props: {
+    options: {
+      type: Array,
+      default: () => []
+    },
+    column: {
+      type: Object,
+      default: () => {}
+    },
+    value: {
+      type: Object,
+      default: () => {}
+    }
+  },
+  data () {
+    return {
+      inputSearch: {}
+    }
+  },
+  computed: {
+    isGroupEditDisabled () {
+      return function (attr, item) {
+        let attrGroupEditDisabled = false
+        if (attr.editGroupControl === 'yes') {
+          if (attr.editGroupValues.length > 0) {
+            let groups = JSON.parse(attr.editGroupValues)
+            for (let idx = 0; idx < groups.length; idx++) {
+              let group = groups[idx]
+              if (attrGroupEditDisabled) {
+                break
+              }
+              const findAttr = this.options.find(el => {
+                if (el.propertyName === group.key) {
+                  return true
+                }
+                return false
+              })
+              if (findAttr && group.value.length > 0) {
+                if (!item[findAttr.propertyName]) {
+                  // 控制字段未赋值，禁用当前字段
+                  attrGroupEditDisabled = true
+                } else if (Array.isArray(item[findAttr.propertyName])) {
+                  let attrValues = item[findAttr.propertyName]
+                  let intersect = attrValues.filter(v => {
+                    return group.value.indexOf(v) > -1
+                  })
+                  // 控制字段是数组且与设置的数据没有交集，禁用当前字段
+                  if (intersect.length === 0) {
+                    attrGroupEditDisabled = true
+                  }
+                } else {
+                  // 控制字段是单值且不在分组范围，应当禁用当前字段
+                  if (group.value.indexOf(item[findAttr.propertyName]) < 0) {
+                    attrGroupEditDisabled = true
+                  }
+                }
+              }
+            }
+          }
+        }
+        let attrEditDisabled = attr.editable === 'no' || (attr.autofillable === 'yes' && attr.autoFillType === 'forced')
+        return attrEditDisabled || attrGroupEditDisabled
+      }
+    },
+    getInputProps () {
+      return function (column, value) {
+        let dataTmp = JSON.stringify(value[column.inputKey])
+        return {
+          ...column,
+          data: dataTmp,
+          value: dataTmp
+        }
+      }
+    },
+    getObjectInputProps () {
+      return function (column, value) {
+        return {
+          ...column,
+          disabled: this.isGroupEditDisabled(column, value),
+          value: value[column.inputKey]
+        }
+      }
+    }
+  },
+  method: {
+    formatValue (column, value) {
+      // for edit 多选数据会在保存时转为','拼接
+      if (column.component === 'WeCMDBSelect' && column.isMultiple) {
+        if (value) {
+          return Array.isArray(value) ? value : value.split(',')
+        } else {
+          return null
+        }
+      } else {
+        return value
+      }
+    },
+    // 赋值操作
+    setValueHandler (v, col, row) {
+      let attrsWillReset = []
+      if (['select', 'ref', 'extRef', 'multiSelect', 'multiRef'].indexOf(col.inputType) > -1) {
+        this.options.forEach(_ => {
+          if (_.uiFormOrder > col.uiFormOrder && _.referenceFilter) {
+            if (['multiSelect', 'multiRef'].indexOf(_.inputType) >= 0) {
+              attrsWillReset.push({
+                propertyName: _.propertyName,
+                value: []
+              })
+            } else if (['select', 'ref', 'extRef'].indexOf(_.inputType) >= 0) {
+              attrsWillReset.push({
+                propertyName: _.propertyName,
+                value: ''
+              })
+            }
+          }
+        })
+      } else if (['datetime'].indexOf(col.inputType) >= 0) {
+        v = dayjs(v).format('YYYY-MM-DD HH:mm:ss')
+      } else if (['autofillRule'].includes(col.inputType)) {
+        if (v !== '') {
+          attrsWillReset.push({
+            propertyName: col.inputKey,
+            value: JSON.stringify(JSON.parse(v))
+          })
+        }
+      }
+      row[col.inputKey] = v
+      attrsWillReset.forEach(attr => {
+        row[attr.propertyName] = attr.value
+      })
+    },
+    handleInputSearch: debounce(async function (value, column, data) {
+      if (value.length > 0 && column.ciTypeId) {
+        // this.$set(this.inputSearch[column.inputKey], 'options', ['host01', 'host02', 'host11'].map(_ =>  _ + value))
+        const res = await queryCiData({
+          id: column.ciTypeId,
+          queryObject: {
+            filters: [{ name: column.inputKey, operator: 'contains', value: value }],
+            paging: true,
+            dialect: { queryMode: 'new' },
+            pageable: { pageSize: 20, startIndex: 0 },
+            resultColumns: [column.inputKey]
+          }
+        })
+        let keySet = new Set()
+        this.inputSearch[column.inputKey].options = []
+        res.data.contents.forEach(item => {
+          let val = item[column.inputKey] + ''
+          if (!keySet.has(val)) {
+            keySet.add(val)
+            const label = this.labelMatchValue(value, val)
+            this.inputSearch[column.inputKey].options.push({
+              label: label,
+              value: val
+            })
+          }
+        })
+        let oldVal = data[column.inputKey]
+        data[column.inputKey] = oldVal + ' '
+        data[column.inputKey] = oldVal
+      }
+    }, 800),
+    labelMatchValue (value, val) {
+      const patt = new RegExp(value, 'gmi')
+      let execRes = Array.from(new Set(val.match(patt)))
+      return val.replaceAll(execRes[0], `<span style="color:red">${execRes[0]}</span>`)
+    }
+  }
+}
+</script>
+<style lang="scss" scoped>
+.cmdb-entity-table {
+  width: 100%;
+}
+</style>

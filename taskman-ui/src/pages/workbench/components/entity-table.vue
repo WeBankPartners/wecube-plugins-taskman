@@ -425,11 +425,6 @@ export default {
         }
         return
       }
-      // if (titleObj.refEntity === '') {
-      //   row[titleObj.name + 'Options'] = titleObj.selectList
-      //   this.$set(this.tableData, index, row)
-      //   return
-      // }
       let cache = JSON.parse(JSON.stringify(row))
       cache[titleObj.name] = ''
       const keys = Object.keys(cache)
@@ -634,7 +629,7 @@ export default {
       // }
       value[name] = e
     },
-    handleOpenCmdbDetail(attr, value) {
+    handleOpenCmdbDetail (attr, value) {
       this.cmdbInfo.title = attr.title
       this.cmdbInfo.visible = true
       this.cmdbInfo.attr = attr
@@ -642,21 +637,21 @@ export default {
         value[attr.name] = this.formatCmdbData(value[attr.name])
       }
     },
-    // async handleRefreshCmdbData () {
-    //   const { data } = await queryCiData({
-    //     id: this.ciTypeId,
-    //     queryObject: {
-    //       dialect: { queryMode: 'new' },
-    //       filters: [{ name: 'guid', operator: 'eq', value: this.cmdbInfo.attr.name }],
-    //       paging: false
-    //     }
-    //   })
-    //   const res = await this.formatCmdbData(data.contents[0], this.cmdbInfo.attr.name)
-    //   this.$nextTick(() => {
-    //     this.tableDetailInfo.info = res
-    //     this.tableDetailInfo.isShow = true
-    //   })
-    // },
+    async handleRefreshCmdbData () {
+      // const { data } = await queryCiData({
+      //   id: this.ciTypeId,
+      //   queryObject: {
+      //     dialect: { queryMode: 'new' },
+      //     filters: [{ name: 'guid', operator: 'eq', value: this.cmdbInfo.attr.name }],
+      //     paging: false
+      //   }
+      // })
+      // const res = await this.formatCmdbData(data.contents[0], this.cmdbInfo.attr.name)
+      // this.$nextTick(() => {
+      //   this.tableDetailInfo.info = res
+      //   this.tableDetailInfo.isShow = true
+      // })
+    },
     formatCmdbData (row, key) {
       const vari = row[key].split('\u0001=\u0001')
       const keys = vari[0].split(',\u0001')

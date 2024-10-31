@@ -277,21 +277,16 @@ func handlePluginRequestCreate(input *models.PluginRequestCreateParamObj, callRe
 		result.RequestTemplateType = newRequest.Type
 	}
 	// 预览根数据表单
-	previewData, previewErr := service.GetRequestPreData(requestObj.Id, input.RootDataId, token, language)
+	previewData, platformPreviewData, previewErr := service.GetRequestPreData(requestObj.Id, input.RootDataId, token, language)
 	if previewErr != nil {
 		err = previewErr
 		return
 	}
 	// 保存请求表单数据
 	saveParam := models.RequestProDataV2Dto{Data: previewData, RootEntityId: input.RootDataId, Name: requestObj.Name, ExpectTime: requestObj.ExpectTime, Description: requestObj.Description, CustomForm: models.CustomForm{}, ApprovalList: []*models.TaskTemplateDto{}}
-	for _, dataRow := range previewData {
-		for _, v := range dataRow.Value {
-			if v.DataId == input.RootDataId {
-				saveParam.EntityName = v.DisplayName
-				break
-			}
-		}
-		if saveParam.EntityName != "" {
+	for _, dataRow := range platformPreviewData.EntityTreeNodes {
+		if dataRow.DataId == input.RootDataId {
+			saveParam.EntityName = dataRow.DisplayName
 			break
 		}
 	}

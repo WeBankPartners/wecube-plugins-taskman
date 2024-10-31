@@ -21,7 +21,7 @@ import (
 func GetRequestPreviewData(c *gin.Context) {
 	requestId := c.Query("requestId")
 	entityDataId := c.Query("rootEntityId")
-	result, err := service.GetRequestPreData(requestId, entityDataId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	result, _, err := service.GetRequestPreData(requestId, entityDataId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

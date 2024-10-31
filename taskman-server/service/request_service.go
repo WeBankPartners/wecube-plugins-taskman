@@ -672,20 +672,20 @@ func GetRequestRootForm(requestId string) (result models.RequestTemplateFormStru
 	return
 }
 
-func GetRequestPreData(requestId, entityDataId, userToken, language string) (result []*models.RequestPreDataTableObj, err error) {
+func GetRequestPreData(requestId, entityDataId, userToken, language string) (result []*models.RequestPreDataTableObj, previewData *models.EntityTreeData, err error) {
 	var requestTables []*models.RequestTable
 	err = dao.X.SQL("select cache from request where id=?", requestId).Find(&requestTables)
 	if err != nil {
 		return
 	}
 	if len(requestTables) == 0 {
-		return result, fmt.Errorf("can not find requestId:%s ", requestId)
+		return result, previewData, fmt.Errorf("can not find requestId:%s ", requestId)
 	}
 	if requestTables[0].Cache != "" {
 		var cacheObj models.RequestPreDataDto
 		err = json.Unmarshal([]byte(requestTables[0].Cache), &cacheObj)
 		if err != nil {
-			return result, fmt.Errorf("try to json unmarshal cache data fail,%s ", err.Error())
+			return result, previewData, fmt.Errorf("try to json unmarshal cache data fail,%s ", err.Error())
 		}
 		if cacheObj.RootEntityId == entityDataId {
 			result = cacheObj.Data
@@ -695,15 +695,15 @@ func GetRequestPreData(requestId, entityDataId, userToken, language string) (res
 	result = []*models.RequestPreDataTableObj{}
 	requestTemplateId, tmpErr := getRequestTemplateByRequest(requestId)
 	if tmpErr != nil {
-		return result, tmpErr
+		return result, previewData, tmpErr
 	}
 	result = getRequestPreDataByTemplateId(requestTemplateId)
 	if entityDataId == "" {
 		return
 	}
-	previewData, previewErr := ProcessDataPreview(requestTemplateId, entityDataId, userToken, language)
-	if previewErr != nil {
-		return result, previewErr
+	previewData, err = ProcessDataPreview(requestTemplateId, entityDataId, userToken, language)
+	if err != nil {
+		return result, previewData, err
 	}
 	if len(previewData.EntityTreeNodes) == 0 {
 		return

@@ -483,7 +483,7 @@ export default {
           rootEntityId,
           description,
           expectTime,
-          data: formData
+          data: formData || []
         })
         this.rootEntityOptions.push({
           guid: rootEntityId,

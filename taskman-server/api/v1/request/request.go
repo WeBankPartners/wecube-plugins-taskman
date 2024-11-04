@@ -21,7 +21,7 @@ import (
 func GetRequestPreviewData(c *gin.Context) {
 	requestId := c.Query("requestId")
 	entityDataId := c.Query("rootEntityId")
-	result, err := service.GetRequestPreData(requestId, entityDataId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	result, _, err := service.GetRequestPreData(requestId, entityDataId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -322,11 +322,17 @@ func GetRequestCache(c *gin.Context) {
 func StartRequest(c *gin.Context) {
 	requestId := c.Param("requestId")
 	var param models.RequestCacheData
-	if err := c.ShouldBindJSON(&param); err != nil {
+	var request models.RequestTable
+	var err error
+	if err = c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	instanceId, err := service.StartRequest(requestId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), param)
+	if request, err = service.GetSimpleRequest(requestId); err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	instanceId, err := service.StartRequest(request, middleware.GetRequestUser(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

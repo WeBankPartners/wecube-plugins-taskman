@@ -260,7 +260,7 @@ func PluginCreateRequest(c *gin.Context) {
 		}
 		if !exist {
 			// 用户和角色填写不匹配,返回错误
-			err = fmt.Errorf("role:%s and user:%s do not match", input.ReportUser, input.ReportRole)
+			err = fmt.Errorf("role:%s and user:%s do not match", input.ReportRole, input.ReportUser)
 			return
 		}
 		output, tmpErr := handlePluginRequestCreate(input, param.RequestId, requestToken, requestLanguage)

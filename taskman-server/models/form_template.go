@@ -3,7 +3,6 @@ package models
 import (
 	"encoding/json"
 	"github.com/WeBankPartners/go-common-lib/guid"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"strings"
 )
 
@@ -133,11 +132,8 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 			break
 		}
 	}
-	if attrByte, err2 := json.Marshal(remoteAttributes); err2 != nil {
-		log.Logger.Error("cmdb attr json Marshal err", log.Error(err2))
-	} else {
-		cmdbAttr = string(attrByte)
-	}
+	attrByte, _ := json.Marshal(remoteAttributes)
+	cmdbAttr = string(attrByte)
 
 	return &FormItemTemplateTable{
 		Id:              guid.CreateGuid(),

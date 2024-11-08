@@ -589,8 +589,7 @@ CREATE TABLE IF NOT EXISTS `form_item_template_library` (
   `width` int(11) DEFAULT 80,
   `ref_package_name` varchar(255) DEFAULT NULL,
   `ref_entity` varchar(255) DEFAULT NULL,
-  `data_options` text,
-  `required` varchar(16) NOT NULL DEFAULT 'no',
+  `data_options` textc  `required` varchar(16) NOT NULL DEFAULT 'no',
   `regular` varchar(255) DEFAULT NULL,
   `is_edit` varchar(16) NOT NULL DEFAULT 'yes',
   `is_view` varchar(16) NOT NULL DEFAULT 'yes',
@@ -616,3 +615,6 @@ alter table request add column preview_cache mediumtext default null comment '�
 #@v1.1.2-begin@;
 alter table form_item_template add column formula varchar(255) default null comment '表达式计算';
 #@v1.1.2-end@;
+#@v1.2.4.10-begin@;
+alter table form_item_template add column cmdb_attr mediumtext default null comment 'mdb属性';
+#@v1.2.4.10-end@;

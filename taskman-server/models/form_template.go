@@ -1,7 +1,9 @@
 package models
 
 import (
+	"encoding/json"
 	"github.com/WeBankPartners/go-common-lib/guid"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"strings"
 )
 
@@ -117,7 +119,7 @@ type TaskFormItemQueryObj struct {
 
 func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfigureDto, workflowEntityAttribute *ProcEntityAttributeObj, newItemGroupId string, remoteAttributes []*EntityAttributeObj) *FormItemTemplateTable {
 	var elementType = string(FormItemElementTypeInput)
-	var refPackage, refEntity string
+	var refPackage, refEntity, cmdbAttr string
 	if workflowEntityAttribute.DataType == "ref" {
 		elementType = string(FormItemElementTypeSelect)
 		refPackage = workflowEntityAttribute.EntityPackage
@@ -131,6 +133,12 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 			break
 		}
 	}
+	if attrByte, err2 := json.Marshal(remoteAttributes); err2 != nil {
+		log.Logger.Error("cmdb attr json Marshal err", log.Error(err2))
+	} else {
+		cmdbAttr = string(attrByte)
+	}
+
 	return &FormItemTemplateTable{
 		Id:              guid.CreateGuid(),
 		Name:            workflowEntityAttribute.Name,
@@ -163,6 +171,7 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 		SelectList:      nil,
 		Active:          false,
 		ControlSwitch:   "no",
+		CmdbAttr:        cmdbAttr,
 	}
 }
 

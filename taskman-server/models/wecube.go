@@ -110,16 +110,42 @@ type CoreUserDataObj struct {
 }
 
 type EntityAttributeObj struct {
-	CiTypeId              string `json:"ciTypeId"`
-	CiTypeAttrId          string `json:"ciTypeAttrId"`
-	PropertyName          string `json:"propertyName"`
-	DisplayName           string `json:"displayName"`
-	InputType             string `json:"inputType"`
-	Nullable              string `json:"nullable"`
-	Status                string `json:"status"`
-	SelectList            string `json:"selectList"`
-	Editable              string `json:"editable"`
-	RegularExpressionRule string `json:"regularExpressionRule"`
+	CiTypeAttrId            string `json:"ciTypeAttrId"`
+	CiTypeId                string `json:"ciTypeId"`
+	PropertyName            string `json:"propertyName"`
+	DisplayName             string `json:"displayName"`
+	Name                    string `json:"name"`
+	Description             string `json:"description"`
+	Status                  string `json:"status"`
+	InputType               string `json:"inputType"`
+	DataType                string `json:"propertyType"`
+	DataLength              int    `json:"length"`
+	RegularExpressionRule   string `json:"regularExpressionRule"`
+	RefCiType               string `json:"referenceId"`
+	RefName                 string `json:"referenceName"`
+	RefType                 string `json:"referenceType"`
+	RefFilter               string `json:"referenceFilter"`
+	RefUpdateStateValidate  string `json:"refUpdateStateValidate"`
+	RefConfirmStateValidate string `json:"refConfirmStateValidate"`
+	SelectList              string `json:"selectList"`
+	UiSearchOrder           int    `json:"uiSearchOrder"`
+	UiFormOrder             int    `json:"uiFormOrder"`
+	UniqueConstraint        string `json:"uniqueConstraint"`
+	UiNullable              string `json:"uiNullable"`
+	Nullable                string `json:"nullable"`
+	Editable                string `json:"editable"`
+	DisplayByDefault        string `json:"displayByDefault"`
+	PermissionUsage         string `json:"permissionUsage"`
+	ResetOnEdit             string `json:"resetOnEdit"`
+	Source                  string `json:"source"`
+	Customizable            string `json:"customizable"`
+	AutofillAble            string `json:"autofillable"`
+	AutofillRule            string `json:"autoFillRule"`
+	AutofillType            string `json:"autoFillType"`
+	EditGroupControl        string `json:"editGroupControl"`
+	EditGroupValues         string `json:"editGroupValues"`
+	ExtRefEntity            string `json:"extRefEntity"`
+	ConfirmNullable         string `json:"confirmNullable"`
 }
 
 type EntityAttributeQueryResponse struct {

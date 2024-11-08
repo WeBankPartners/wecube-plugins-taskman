@@ -41,7 +41,8 @@ type FormItemTemplateTable struct {
 	HiddenCondition   string           `json:"hiddenCondition" xorm:"hidden_condition"`     // 隐藏条件
 	Formula           string           `json:"formula" xorm:"formula"`                      // 表单项计算公式
 	SelectList        []*EntityDataObj `json:"selectList" xorm:"-"`
-	Active            bool             `json:"active" xorm:"-"` // 是否选中状态
+	Active            bool             `json:"active" xorm:"-"`           // 是否选中状态
+	CmdbAttr          string           `json:"cmdbAttr" xorm:"cmdb_attr"` // Cmdb属性
 }
 
 type FormItemTemplateDto struct {
@@ -83,7 +84,8 @@ type FormItemTemplateDto struct {
 	FormItemLibrary   *string                  `json:"formItemLibrary"`   // 表单项组件库
 	Formula           string                   `json:"formula"`           // 表达项计算公式
 	SelectList        []*EntityDataObj         `json:"selectList"`
-	Active            bool                     `json:"active"` // 是否选中状态
+	Active            bool                     `json:"active"`   // 是否选中状态
+	CmdbAttr          string                   `json:"cmdbAttr"` // Cmdb属性
 }
 
 func (FormItemTemplateTable) TableName() string {
@@ -165,6 +167,7 @@ func ConvertFormItemTemplateDto2Model(dto *FormItemTemplateDto) *FormItemTemplat
 		Formula:           dto.Formula,
 		SelectList:        dto.SelectList,
 		Active:            dto.Active,
+		CmdbAttr:          dto.CmdbAttr,
 	}
 }
 
@@ -206,6 +209,7 @@ func ConvertFormItemTemplateModel2Dto(model *FormItemTemplateTable, itemGroup Fo
 		SelectList:        model.SelectList,
 		Active:            model.Active,
 		Formula:           model.Formula,
+		CmdbAttr:          model.CmdbAttr,
 	}
 	dto.ItemGroupType = itemGroup.ItemGroupType
 	dto.ItemGroupRule = itemGroup.ItemGroupRule

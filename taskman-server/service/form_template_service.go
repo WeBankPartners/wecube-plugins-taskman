@@ -34,7 +34,7 @@ func (s *FormTemplateService) AddRequestFormTemplate(session *xorm.Session, form
 	}
 	// 添加模板项
 	for i, item := range formTemplateDto.Items {
-		item.Id = itemIds[i]
+		item.Id = "item_tpl_" + itemIds[i]
 		item.FormTemplate = newId
 		_, err = s.formItemTemplateDao.Add(session, models.ConvertFormItemTemplateDto2Model(item))
 		if err != nil {
@@ -55,7 +55,7 @@ func (s *FormTemplateService) UpdateFormTemplateByDto(session *xorm.Session, for
 	// 新增or更新表单项模板
 	for i, inputItem := range formTemplateDto.Items {
 		if inputItem.Id == "" {
-			inputItem.Id = newItemGuidList[i]
+			inputItem.Id = "item_tpl_" + newItemGuidList[i]
 			if inputItem.FormTemplate == "" {
 				inputItem.FormTemplate = formTemplateDto.Id
 			}

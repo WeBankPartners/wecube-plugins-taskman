@@ -272,7 +272,7 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroup(param models.FormT
 	for _, item := range param.Items {
 		// Id 为空新增
 		if item.Id == "" {
-			item.Id = guid.CreateGuid()
+			item.Id = "item_tpl_" + guid.CreateGuid()
 			item.FormTemplate = param.FormTemplateId
 			item.FormTemplate = param.FormTemplateId
 			insertItems = append(insertItems, models.ConvertFormItemTemplateDto2Model(item))
@@ -375,7 +375,7 @@ func (s *FormItemTemplateService) CopyDataFormTemplateItemGroup(requestTemplateI
 		if len(formItemTemplateList) > 0 {
 			for _, formItemTemplate := range formItemTemplateList {
 				formItemTemplate.RefId = formItemTemplate.Id
-				formItemTemplate.Id = guid.CreateGuid()
+				formItemTemplate.Id = "item_tpl_" + guid.CreateGuid()
 				formItemTemplate.FormTemplate = newItemGroupId
 				_, err = s.formItemTemplateDao.Add(session, formItemTemplate)
 				if err != nil {

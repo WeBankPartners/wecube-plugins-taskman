@@ -126,15 +126,14 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 	}
 	for _, remoteAttr := range remoteAttributes {
 		if remoteAttr.PropertyName == workflowEntityAttribute.Name {
+			attrByte, _ := json.Marshal(remoteAttr)
+			cmdbAttr = string(attrByte)
 			if strings.Contains(remoteAttr.InputType, "select") {
 				elementType = string(FormItemElementTypeSelect)
 			}
 			break
 		}
 	}
-	attrByte, _ := json.Marshal(remoteAttributes)
-	cmdbAttr = string(attrByte)
-
 	return &FormItemTemplateTable{
 		Id:              guid.CreateGuid(),
 		Name:            workflowEntityAttribute.Name,

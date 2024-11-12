@@ -6,6 +6,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
@@ -37,6 +38,20 @@ func QueryRequestTemplate(c *gin.Context) {
 		return
 	}
 	middleware.ReturnPageData(c, pageInfo, rowData)
+}
+
+func GetRequestTemplate(c *gin.Context) {
+	id := c.Param("id")
+	if strings.TrimSpace(id) == "" {
+		middleware.ReturnParamEmptyError(c, "id")
+		return
+	}
+	result, err := service.GetRequestTemplateService().GetRequestTemplateDetail(id, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, result)
 }
 
 func GetAllLatestReleaseRequestTemplate(c *gin.Context) {

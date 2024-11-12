@@ -114,6 +114,43 @@ func (s *RequestTemplateService) GetAllLatestReleaseRequestTemplate(commonParam 
 	return
 }
 
+func (s *RequestTemplateService) GetRequestTemplateDetail(id, token, language string) (result *models.RequestTemplateQueryObj, err error) {
+	result = &models.RequestTemplateQueryObj{MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}
+	var requestTemplate *models.RequestTemplateTable
+	var requestTemplateRoleList []*models.RequestTemplateRoleTable
+	if requestTemplate, err = s.requestTemplateDao.Get(id); err != nil {
+		return
+	}
+	if requestTemplate == nil {
+		err = fmt.Errorf("invalid templateId:%s", id)
+		return
+	}
+	result.RequestTemplateDto = *s.GetDtoByRequestTemplate(requestTemplate)
+	if requestTemplate.ProcDefId != "" {
+		if err = s.SyncProcDefId(requestTemplate.Id, requestTemplate.ProcDefId, requestTemplate.ProcDefName, requestTemplate.ProcDefKey, token, language); err != nil {
+			err = fmt.Errorf("try to sync proDefId fail,%s ", err.Error())
+			return
+		}
+	}
+	if requestTemplateRoleList, err = s.requestTemplateRoleDao.QueryByRequestTemplate(id); err != nil {
+		return
+	}
+	for _, requestTemplateRole := range requestTemplateRoleList {
+		if requestTemplateRole.RoleType == "USE" {
+			result.USERoles = append(result.USERoles, &models.RoleTable{
+				Id:          requestTemplateRole.Role,
+				DisplayName: requestTemplateRole.Role,
+			})
+		} else if requestTemplateRole.RoleType == "MGMT" {
+			result.MGMTRoles = append(result.MGMTRoles, &models.RoleTable{
+				Id:          requestTemplateRole.Role,
+				DisplayName: requestTemplateRole.Role,
+			})
+		}
+	}
+	return
+}
+
 func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequestParam, commonParam models.CommonParam) (pageInfo models.PageInfo, result []*models.RequestTemplateQueryObj, err error) {
 	var roleMap = make(map[string]*models.SimpleLocalRoleDto)
 	extFilterSql := ""

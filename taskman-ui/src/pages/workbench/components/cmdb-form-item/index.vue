@@ -1,16 +1,8 @@
 <!--
  * @Author: wanghao7717 792974788@qq.com
- * @Date: 2024-10-21 16:15:54
- * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-10-21 20:20:02
- * @FilePath: \wecube-plugins-taskman\taskman-ui\src\pages\workbench\components\cmdb-form-item\index.vue
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
--->
-<!--
- * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-18 17:55:45
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-10-21 18:16:55
+ * @LastEditTime: 2024-10-28 17:33:49
 -->
 <template>
   <div class="cmdb-entity-table">
@@ -58,6 +50,11 @@
         @on-search="(v) => {handleInputSearch(v, column, value)}"
         style="width:80%"
       ></Input>
+      <Button
+        v-if="column.autofillable === 'yes' && column.autoFillType === 'suggest'"
+        @click="v => setValueHandler('suggest#', column, value)"
+        icon="md-checkmark"
+      ></Button>
     </template>
     <template v-else-if="column.component === 'Input' && column.inputType === 'object'">
       <JSONConfig

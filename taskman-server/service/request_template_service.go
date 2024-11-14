@@ -1643,21 +1643,22 @@ func (s *RequestTemplateService) RequestTemplateImport(param models.RequestTempl
 			err = exterror.New().TemplateImportNotWorkflowRoleError.WithParam(manageRole)
 			return
 		}
-		// 重新设置模版属主角色
-		input.RequestTemplateRole = make([]*models.RequestTemplateRoleTable, 0)
-		input.RequestTemplateRole = append(input.RequestTemplateRole, &models.RequestTemplateRoleTable{
-			Id:              guid.CreateGuid(),
-			RequestTemplate: input.RequestTemplate.Id,
-			Role:            manageRole,
-			RoleType:        string(models.RolePermissionMGMT),
-		})
-		input.RequestTemplateRole = append(input.RequestTemplateRole, &models.RequestTemplateRoleTable{
-			Id:              guid.CreateGuid(),
-			RequestTemplate: input.RequestTemplate.Id,
-			Role:            manageRole,
-			RoleType:        string(models.RolePermissionUse),
-		})
-
+		// 覆盖原来角色
+		if param.CoverRole {
+			input.RequestTemplateRole = make([]*models.RequestTemplateRoleTable, 0)
+			input.RequestTemplateRole = append(input.RequestTemplateRole, &models.RequestTemplateRoleTable{
+				Id:              guid.CreateGuid(),
+				RequestTemplate: input.RequestTemplate.Id,
+				Role:            manageRole,
+				RoleType:        string(models.RolePermissionMGMT),
+			})
+			input.RequestTemplateRole = append(input.RequestTemplateRole, &models.RequestTemplateRoleTable{
+				Id:              guid.CreateGuid(),
+				RequestTemplate: input.RequestTemplate.Id,
+				Role:            manageRole,
+				RoleType:        string(models.RolePermissionUse),
+			})
+		}
 		nodeList, _ := GetProcDefService().GetProcessDefineTaskNodes(models.ConvertRequestTemplateDto2Model(input.RequestTemplate), param.UserToken, param.Language, "template")
 		for i, v := range input.TaskTemplate {
 			if v.NodeDefId == "" {

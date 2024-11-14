@@ -148,6 +148,7 @@ func (s *RequestTemplateService) GetRequestTemplateDetail(id, token, language st
 			})
 		}
 	}
+	result.ModifyType = s.getRequestTemplateModifyType(requestTemplate)
 	return
 }
 

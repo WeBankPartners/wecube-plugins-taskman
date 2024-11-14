@@ -1776,6 +1776,11 @@ func (s *RequestTemplateService) createNewImportTemplate(param models.NewImportT
 				RoleType:        string(models.RolePermissionUse),
 			})
 		}
+	} else {
+		// 角色里面关联模版Id需要替换下
+		for _, requestTemplateRole := range input.RequestTemplateRole {
+			requestTemplateRole.RequestTemplate = input.RequestTemplate.Id
+		}
 	}
 	// 修改 taskTemplate中formTemplate,RequestTemplate,以及taskTemplateRole修改
 	for _, taskTemplate := range input.TaskTemplate {

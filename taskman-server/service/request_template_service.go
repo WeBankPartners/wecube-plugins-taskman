@@ -1750,7 +1750,10 @@ func (s *RequestTemplateService) createNewImportTemplate(param models.NewImportT
 	now := time.Now().Format(models.DateTimeFormat)
 	input := param.Input
 	var historyTemplateId = input.RequestTemplate.Id
-	input.RequestTemplate.Id = guid.CreateGuid()
+	// 不覆盖的话,复用请求模版Id
+	if param.CoverRole {
+		input.RequestTemplate.Id = guid.CreateGuid()
+	}
 	input.RequestTemplate.RecordId = param.RecordId
 	input.RequestTemplate.CreatedBy = param.Operator
 	input.RequestTemplate.CreatedTime = now

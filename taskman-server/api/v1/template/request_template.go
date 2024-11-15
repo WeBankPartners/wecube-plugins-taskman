@@ -6,6 +6,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
@@ -37,6 +38,20 @@ func QueryRequestTemplate(c *gin.Context) {
 		return
 	}
 	middleware.ReturnPageData(c, pageInfo, rowData)
+}
+
+func GetRequestTemplate(c *gin.Context) {
+	id := c.Param("id")
+	if strings.TrimSpace(id) == "" {
+		middleware.ReturnParamEmptyError(c, "id")
+		return
+	}
+	result, err := service.GetRequestTemplateService().GetRequestTemplateDetail(id, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, result)
 }
 
 func GetAllLatestReleaseRequestTemplate(c *gin.Context) {
@@ -503,7 +518,16 @@ func ImportRequestTemplateBatch(c *gin.Context) {
 		return
 	}
 	for _, obj := range paramObj {
-		_, templateName, backToken, importErr := service.GetRequestTemplateService().RequestTemplateImport(obj, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), "", middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
+		exportParam := models.RequestTemplateExportParam{
+			Input:        obj,
+			UserToken:    c.GetHeader("Authorization"),
+			Language:     c.GetHeader(middleware.AcceptLanguageHeader),
+			ConfirmToken: "",
+			Operator:     middleware.GetRequestUser(c),
+			CoverRole:    false,
+			UserRoles:    middleware.GetRequestRoles(c),
+		}
+		_, templateName, backToken, importErr := service.GetRequestTemplateService().RequestTemplateImport(exportParam)
 		if importErr != nil {
 			middleware.ReturnServerHandleError(c, importErr)
 			return
@@ -539,7 +563,16 @@ func ImportRequestTemplate(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Json unmarshal fail error:" + err.Error(), Data: nil})
 		return
 	}
-	_, templateName, backToken, importErr := service.GetRequestTemplateService().RequestTemplateImport(paramObj, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), "", middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
+	exportParam := models.RequestTemplateExportParam{
+		Input:        paramObj,
+		UserToken:    c.GetHeader("Authorization"),
+		Language:     c.GetHeader(middleware.AcceptLanguageHeader),
+		ConfirmToken: "",
+		Operator:     middleware.GetRequestUser(c),
+		CoverRole:    true,
+		UserRoles:    middleware.GetRequestRoles(c),
+	}
+	_, templateName, backToken, importErr := service.GetRequestTemplateService().RequestTemplateImport(exportParam)
 	if importErr != nil {
 		middleware.ReturnServerHandleError(c, importErr)
 		return
@@ -553,7 +586,16 @@ func ImportRequestTemplate(c *gin.Context) {
 
 func ConfirmImportRequestTemplate(c *gin.Context) {
 	confirmToken := c.Param("confirmToken")
-	_, _, _, err := service.GetRequestTemplateService().RequestTemplateImport(models.RequestTemplateExport{}, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), confirmToken, middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
+	exportParam := models.RequestTemplateExportParam{
+		Input:        models.RequestTemplateExport{},
+		UserToken:    c.GetHeader("Authorization"),
+		Language:     c.GetHeader(middleware.AcceptLanguageHeader),
+		ConfirmToken: confirmToken,
+		Operator:     middleware.GetRequestUser(c),
+		CoverRole:    true,
+		UserRoles:    middleware.GetRequestRoles(c),
+	}
+	_, _, _, err := service.GetRequestTemplateService().RequestTemplateImport(exportParam)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

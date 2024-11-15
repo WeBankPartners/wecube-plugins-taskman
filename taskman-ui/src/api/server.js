@@ -58,6 +58,7 @@ export const confirmTemplate = requestTemplateId =>
 export const submitTemplate = data => req.post(`/taskman/api/v1/request-template/status/update`, data)
 
 export const getTemplateList = data => req.post('/taskman/api/v1/request-template/query', data)
+export const getTemplateDetail = requestTemplateId => req.get(`/taskman/api/v1/request-template/${requestTemplateId}`)
 export const deleteTemplate = data => req.delete('/taskman/api/v1/request-template', data)
 export const forkTemplate = requestTemplateId => req.post(`/taskman/api/v1/request-template/fork/${requestTemplateId}`)
 export const getRequestTemplateAttrs = requestTemplateId =>

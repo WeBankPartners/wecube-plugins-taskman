@@ -234,6 +234,7 @@ type RequestProcessData struct {
 	RootEntityOid string                           `json:"rootEntityOid"`
 	Entities      []*RequestCacheEntityValue       `json:"entities"`
 	Bindings      []*RequestProcessTaskNodeBindObj `json:"bindings"`
+	*SimpleRequestDto
 }
 
 type RequestProcessTaskNodeBindObj struct {
@@ -435,6 +436,7 @@ type PluginRequestCreateParamObj struct {
 	RootDataId        string `json:"rootDataId"`
 	ReportRole        string `json:"reportRole"`
 	ReportUser        string `json:"reportUser"`
+	IsDraftStatus     string `json:"isDraftStatus"` // 是否为草稿态,true、false
 }
 
 type PluginRequestCreateResp struct {
@@ -449,16 +451,23 @@ type PluginRequestCreateOutput struct {
 }
 
 type SimpleRequestDto struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
+	Id              string `json:"id" xorm:"id"`
+	Name            string `json:"name" xorm:"name"`
+	RequestTemplate string `json:"requestTemplate" xorm:"request_template"`
+	CreatedBy       string `json:"createdBy" xorm:"created_by"`
+	CreatedTime     string `json:"createdTime" xorm:"created_time"`
+	Type            int    `json:"type" xorm:"type"`
 }
 
 type PluginRequestCreateOutputObj struct {
-	CallbackParameter string `json:"callbackParameter"`
-	RequestId         string `json:"requestId"`
-	ErrorCode         string `json:"errorCode"`
-	ErrorMessage      string `json:"errorMessage"`
-	ErrorDetail       string `json:"errorDetail,omitempty"`
+	CallbackParameter   string `json:"callbackParameter"`
+	RequestId           string `json:"requestId"`
+	RequestName         string `json:"requestName"`
+	RequestTemplate     string `json:"requestTemplate"`
+	RequestTemplateType int    `json:"requestTemplateType"`
+	ErrorCode           string `json:"errorCode"`
+	ErrorMessage        string `json:"errorMessage"`
+	ErrorDetail         string `json:"errorDetail,omitempty"`
 }
 
 type TaskProgressNodeSort []*TaskProgressNode

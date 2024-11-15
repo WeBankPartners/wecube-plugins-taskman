@@ -42,7 +42,7 @@ func CreateRequest(c *gin.Context) {
 		return
 	}
 	param.CreatedBy = middleware.GetRequestUser(c)
-	err := handleCreateRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	_, err := handleCreateRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -51,7 +51,7 @@ func CreateRequest(c *gin.Context) {
 	middleware.ReturnData(c, param)
 }
 
-func handleCreateRequest(param *models.RequestTable, roles []string, userToken, language string) (err error) {
+func handleCreateRequest(param *models.RequestTable, roles []string, userToken, language string) (newRequest *models.RequestTable, err error) {
 	template, getTemplateErr := service.GetRequestTemplateService().GetRequestTemplate(param.RequestTemplate)
 	if getTemplateErr != nil {
 		err = getTemplateErr
@@ -76,6 +76,7 @@ func handleCreateRequest(param *models.RequestTable, roles []string, userToken, 
 	if template.ProcDefId != "" {
 		param.AssociationWorkflow = true
 	}
+	newRequest = param
 	err = service.CreateRequest(param, roles, userToken, language)
 	return
 }
@@ -227,6 +228,8 @@ func GetRequestHistory(c *gin.Context) {
 func PluginCreateRequest(c *gin.Context) {
 	response := models.PluginRequestCreateResp{ResultCode: "0", ResultMessage: "success", Results: models.PluginRequestCreateOutput{}}
 	var err error
+	var users []string
+	var exist bool
 	defer func() {
 		if err != nil {
 			log.Logger.Error("Plugin request create handle fail", log.Error(err))
@@ -247,6 +250,19 @@ func PluginCreateRequest(c *gin.Context) {
 	requestToken := c.GetHeader("Authorization")
 	requestLanguage := "en"
 	for _, input := range param.Inputs {
+		users, err = service.GetRoleService().QueryUserByRoles([]string{input.ReportRole},
+			c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+		exist = false
+		for _, user := range users {
+			if user == input.ReportUser {
+				exist = true
+			}
+		}
+		if !exist {
+			// 用户和角色填写不匹配,返回错误
+			err = fmt.Errorf("role:%s and user:%s do not match", input.ReportRole, input.ReportUser)
+			return
+		}
 		output, tmpErr := handlePluginRequestCreate(input, param.RequestId, requestToken, requestLanguage)
 		if tmpErr != nil {
 			output.ErrorCode = "1"
@@ -258,10 +274,11 @@ func PluginCreateRequest(c *gin.Context) {
 }
 
 func handlePluginRequestCreate(input *models.PluginRequestCreateParamObj, callRequestId, token, language string) (result *models.PluginRequestCreateOutputObj, err error) {
+	var newRequest *models.RequestTable
 	result = &models.PluginRequestCreateOutputObj{CallbackParameter: input.CallbackParameter}
 	requestObj := models.RequestTable{RequestTemplate: input.RequestTemplate, Role: input.ReportRole, CreatedBy: input.ReportUser}
 	// 创建请求
-	if err = handleCreateRequest(&requestObj, []string{input.ReportRole}, token, language); err != nil {
+	if newRequest, err = handleCreateRequest(&requestObj, []string{input.ReportRole}, token, language); err != nil {
 		return
 	}
 	if requestObj.Id == "" {
@@ -269,22 +286,22 @@ func handlePluginRequestCreate(input *models.PluginRequestCreateParamObj, callRe
 		return
 	}
 	result.RequestId = requestObj.Id
+	if newRequest != nil {
+		result.RequestName = newRequest.Name
+		result.RequestTemplate = newRequest.RequestTemplate
+		result.RequestTemplateType = newRequest.Type
+	}
 	// 预览根数据表单
-	previewData, previewErr := service.GetRequestPreData(requestObj.Id, input.RootDataId, token, language)
+	previewData, platformPreviewData, previewErr := service.GetRequestPreData(requestObj.Id, input.RootDataId, token, language)
 	if previewErr != nil {
 		err = previewErr
 		return
 	}
 	// 保存请求表单数据
 	saveParam := models.RequestProDataV2Dto{Data: previewData, RootEntityId: input.RootDataId, Name: requestObj.Name, ExpectTime: requestObj.ExpectTime, Description: requestObj.Description, CustomForm: models.CustomForm{}, ApprovalList: []*models.TaskTemplateDto{}}
-	for _, dataRow := range previewData {
-		for _, v := range dataRow.Value {
-			if v.DataId == input.RootDataId {
-				saveParam.EntityName = v.DisplayName
-				break
-			}
-		}
-		if saveParam.EntityName != "" {
+	for _, dataRow := range platformPreviewData.EntityTreeNodes {
+		if dataRow.DataId == input.RootDataId {
+			saveParam.EntityName = dataRow.DisplayName
 			break
 		}
 	}
@@ -304,9 +321,12 @@ func handlePluginRequestCreate(input *models.PluginRequestCreateParamObj, callRe
 	if err = service.SaveRequestCacheV2(requestObj.Id, "system", token, &saveParam); err != nil {
 		return
 	}
-	// 更新请求状态
-	if err = service.UpdateRequestStatus(requestObj.Id, "Pending", "system", token, language, requestObj.Description); err != nil {
-		return
+	// 请求默认创建为草稿态,根据判断是否提交请求
+	if input.IsDraftStatus != "true" {
+		// 更新请求状态
+		if err = service.UpdateRequestStatus(requestObj.Id, "Pending", "system", token, language, requestObj.Description); err != nil {
+			return
+		}
 	}
 	return
 }

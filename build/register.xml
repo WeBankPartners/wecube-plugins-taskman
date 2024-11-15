@@ -109,7 +109,8 @@
                     <parameter datatype="string" mappingType="constant" required="Y">rootDataId</parameter>
                     <parameter datatype="string" mappingType="constant" required="Y">reportRole</parameter>
                     <parameter datatype="string" mappingType="constant" required="Y">reportUser</parameter>
-                    <parameter datatype="string" mappingType="context" required="N">procInstId</parameter>
+                    <parameter datatype="string" mappingType="context"  required="Y">isDraftStatus</parameter>
+                    <parameter datatype="string" mappingType="context"  required="N">procInstId</parameter>
                 </inputParameters>
                 <outputParameters>
                     <parameter datatype="string" mappingType="context">errorCode</parameter>

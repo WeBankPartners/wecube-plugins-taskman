@@ -193,6 +193,18 @@ type RequestTemplateExport struct {
 	RequestTemplateGroup RequestTemplateGroupTable   `json:"requestTemplateGroup"`
 }
 
+type RequestTemplateExportParam struct {
+	Input                                       RequestTemplateExport
+	UserToken, Language, ConfirmToken, Operator string
+	CoverRole                                   bool // 是否覆盖导出角色
+	UserRoles                                   []string
+}
+
+type NewImportTemplateParam struct {
+	RequestTemplateExportParam
+	RecordId string
+}
+
 type RequestTemplateTmp struct {
 	ProcDefId         string `json:"procDefId" xorm:"proc_def_id"`
 	TemplateName      string `json:"templateName" xorm:"template_name"`

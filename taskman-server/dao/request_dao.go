@@ -1,6 +1,8 @@
 package dao
 
-import "xorm.io/xorm"
+import (
+	"xorm.io/xorm"
+)
 
 type RequestDao struct {
 	DB *xorm.Engine

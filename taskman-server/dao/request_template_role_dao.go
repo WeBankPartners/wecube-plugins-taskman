@@ -30,3 +30,9 @@ func (d *RequestTemplateRoleDao) QueryByRequestTemplateAndType(requestTemplateId
 	d.DB.Where("request_template = ? and role_type = ?", requestTemplateId, roleType).Find(&requestTemplateRoleList)
 	return
 }
+
+func (d *RequestTemplateRoleDao) QueryByRequestTemplate(requestTemplateId string) (requestTemplateRoleList []*models.RequestTemplateRoleTable, err error) {
+	requestTemplateRoleList = []*models.RequestTemplateRoleTable{}
+	d.DB.Where("request_template = ?", requestTemplateId).Find(&requestTemplateRoleList)
+	return
+}

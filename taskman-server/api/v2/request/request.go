@@ -228,6 +228,8 @@ func GetRequestHistory(c *gin.Context) {
 func PluginCreateRequest(c *gin.Context) {
 	response := models.PluginRequestCreateResp{ResultCode: "0", ResultMessage: "success", Results: models.PluginRequestCreateOutput{}}
 	var err error
+	var users []string
+	var exist bool
 	defer func() {
 		if err != nil {
 			log.Logger.Error("Plugin request create handle fail", log.Error(err))
@@ -248,6 +250,19 @@ func PluginCreateRequest(c *gin.Context) {
 	requestToken := c.GetHeader("Authorization")
 	requestLanguage := "en"
 	for _, input := range param.Inputs {
+		users, err = service.GetRoleService().QueryUserByRoles([]string{input.ReportRole},
+			c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+		exist = false
+		for _, user := range users {
+			if user == input.ReportUser {
+				exist = true
+			}
+		}
+		if !exist {
+			// 用户和角色填写不匹配,返回错误
+			err = fmt.Errorf("role:%s and user:%s do not match", input.ReportRole, input.ReportUser)
+			return
+		}
 		output, tmpErr := handlePluginRequestCreate(input, param.RequestId, requestToken, requestLanguage)
 		if tmpErr != nil {
 			output.ErrorCode = "1"

@@ -114,6 +114,44 @@ func (s *RequestTemplateService) GetAllLatestReleaseRequestTemplate(commonParam 
 	return
 }
 
+func (s *RequestTemplateService) GetRequestTemplateDetail(id, token, language string) (result *models.RequestTemplateQueryObj, err error) {
+	result = &models.RequestTemplateQueryObj{MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}
+	var requestTemplate *models.RequestTemplateTable
+	var requestTemplateRoleList []*models.RequestTemplateRoleTable
+	if requestTemplate, err = s.requestTemplateDao.Get(id); err != nil {
+		return
+	}
+	if requestTemplate == nil {
+		err = fmt.Errorf("invalid templateId:%s", id)
+		return
+	}
+	result.RequestTemplateDto = *s.GetDtoByRequestTemplate(requestTemplate)
+	if requestTemplate.ProcDefId != "" {
+		if err = s.SyncProcDefId(requestTemplate.Id, requestTemplate.ProcDefId, requestTemplate.ProcDefName, requestTemplate.ProcDefKey, token, language); err != nil {
+			err = fmt.Errorf("try to sync proDefId fail,%s ", err.Error())
+			return
+		}
+	}
+	if requestTemplateRoleList, err = s.requestTemplateRoleDao.QueryByRequestTemplate(id); err != nil {
+		return
+	}
+	for _, requestTemplateRole := range requestTemplateRoleList {
+		if requestTemplateRole.RoleType == "USE" {
+			result.USERoles = append(result.USERoles, &models.RoleTable{
+				Id:          requestTemplateRole.Role,
+				DisplayName: requestTemplateRole.Role,
+			})
+		} else if requestTemplateRole.RoleType == "MGMT" {
+			result.MGMTRoles = append(result.MGMTRoles, &models.RoleTable{
+				Id:          requestTemplateRole.Role,
+				DisplayName: requestTemplateRole.Role,
+			})
+		}
+	}
+	result.ModifyType = s.getRequestTemplateModifyType(requestTemplate)
+	return
+}
+
 func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequestParam, commonParam models.CommonParam) (pageInfo models.PageInfo, result []*models.RequestTemplateQueryObj, err error) {
 	var roleMap = make(map[string]*models.SimpleLocalRoleDto)
 	extFilterSql := ""
@@ -1445,8 +1483,9 @@ func (s *RequestTemplateService) RequestTemplateExport(requestTemplateId string)
 	return
 }
 
-func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTemplateExport, userToken, language, confirmToken, operator string, userRoles []string) (requestTemplateId, templateName, backToken string, err error) {
+func (s *RequestTemplateService) RequestTemplateImport(param models.RequestTemplateExportParam) (requestTemplateId, templateName, backToken string, err error) {
 	var actions []*dao.ExecAction
+	input := param.Input
 	var inputVersion = s.getTemplateVersion(models.ConvertRequestTemplateDto2Model(input.RequestTemplate))
 	var templateList []*models.RequestTemplateTable
 	var manageRole, maxVersionRecordId string
@@ -1454,7 +1493,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 	var maxVersion int
 	// 记录重复并且是草稿态的Id
 	var repeatTemplateIdList []string
-	if confirmToken == "" {
+	if param.ConfirmToken == "" {
 		// 1.判断名称是否重复
 		templateName = input.RequestTemplate.Name
 		if templateList, err = s.getTemplateListByName(input.RequestTemplate.Name); err != nil {
@@ -1485,16 +1524,23 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 			} else {
 				// 有重复数据,但是新导入模板版本最高,直接当成新建处理,需要记录最新发布版本Id
 				input.RequestTemplate.RecordId = maxVersionRecordId
-				input = s.createNewImportTemplate(input, operator, input.RequestTemplate.RecordId, userToken, language)
+				importTemplateParam := models.NewImportTemplateParam{
+					RequestTemplateExportParam: param,
+					RecordId:                   input.RequestTemplate.RecordId,
+				}
+				input = s.createNewImportTemplate(importTemplateParam)
 			}
 		} else {
 			// 无名称重复数据，新建模板id以及模板关联表id都新建
-			input = s.createNewImportTemplate(input, operator, "", userToken, language)
+			importTemplateParam := models.NewImportTemplateParam{
+				RequestTemplateExportParam: param,
+			}
+			input = s.createNewImportTemplate(importTemplateParam)
 		}
 	} else {
 		// 删除冲突模板数据
 		var tempTemplateIdMap = make(map[string]bool)
-		confirmTokenList := strings.Split(confirmToken, ",")
+		confirmTokenList := strings.Split(param.ConfirmToken, ",")
 		for _, ct := range confirmTokenList {
 			if inputCache, b := models.RequestTemplateImportMap[ct]; b {
 				input = inputCache
@@ -1512,7 +1558,11 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 			actions = append(actions, delActions...)
 		}
 		// 新建模板&模板相关表属性
-		input = s.createNewImportTemplate(input, operator, input.RequestTemplate.RecordId, userToken, language)
+		importTemplateParam := models.NewImportTemplateParam{
+			RequestTemplateExportParam: param,
+			RecordId:                   input.RequestTemplate.RecordId,
+		}
+		input = s.createNewImportTemplate(importTemplateParam)
 		// 查询 当前最新模版,记录recordId
 		templateName = input.RequestTemplate.Name
 		templateList, _ = s.getTemplateListByName(input.RequestTemplate.Name)
@@ -1540,7 +1590,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 	// 自选数据项表单
 	var nodesList []*models.DataModel
 	var entityMap = make(map[string]bool)
-	if nodesList, err = rpc.QueryAllModels(userToken, language); err != nil {
+	if nodesList, err = rpc.QueryAllModels(param.UserToken, param.Language); err != nil {
 		return
 	}
 	if len(nodesList) > 0 {
@@ -1563,7 +1613,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 	}
 
 	if input.RequestTemplate.ProcDefId != "" {
-		allProcessList, processErr := GetProcDefService().GetCoreProcessListAll(userToken, language)
+		allProcessList, processErr := GetProcDefService().GetCoreProcessListAll(param.UserToken, param.Language)
 		if processErr != nil {
 			err = fmt.Errorf("Get core process list fail,%s ", processErr.Error())
 			return
@@ -1583,7 +1633,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 			return
 		}
 		roleFlag := false
-		for _, role := range userRoles {
+		for _, role := range param.UserRoles {
 			if role == manageRole {
 				roleFlag = true
 				break
@@ -1593,22 +1643,23 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 			err = exterror.New().TemplateImportNotWorkflowRoleError.WithParam(manageRole)
 			return
 		}
-		// 重新设置模版属主角色
-		input.RequestTemplateRole = make([]*models.RequestTemplateRoleTable, 0)
-		input.RequestTemplateRole = append(input.RequestTemplateRole, &models.RequestTemplateRoleTable{
-			Id:              guid.CreateGuid(),
-			RequestTemplate: input.RequestTemplate.Id,
-			Role:            manageRole,
-			RoleType:        string(models.RolePermissionMGMT),
-		})
-		input.RequestTemplateRole = append(input.RequestTemplateRole, &models.RequestTemplateRoleTable{
-			Id:              guid.CreateGuid(),
-			RequestTemplate: input.RequestTemplate.Id,
-			Role:            manageRole,
-			RoleType:        string(models.RolePermissionUse),
-		})
-
-		nodeList, _ := GetProcDefService().GetProcessDefineTaskNodes(models.ConvertRequestTemplateDto2Model(input.RequestTemplate), userToken, language, "template")
+		// 覆盖原来角色
+		if param.CoverRole {
+			input.RequestTemplateRole = make([]*models.RequestTemplateRoleTable, 0)
+			input.RequestTemplateRole = append(input.RequestTemplateRole, &models.RequestTemplateRoleTable{
+				Id:              guid.CreateGuid(),
+				RequestTemplate: input.RequestTemplate.Id,
+				Role:            manageRole,
+				RoleType:        string(models.RolePermissionMGMT),
+			})
+			input.RequestTemplateRole = append(input.RequestTemplateRole, &models.RequestTemplateRoleTable{
+				Id:              guid.CreateGuid(),
+				RequestTemplate: input.RequestTemplate.Id,
+				Role:            manageRole,
+				RoleType:        string(models.RolePermissionUse),
+			})
+		}
+		nodeList, _ := GetProcDefService().GetProcessDefineTaskNodes(models.ConvertRequestTemplateDto2Model(input.RequestTemplate), param.UserToken, param.Language, "template")
 		for i, v := range input.TaskTemplate {
 			if v.NodeDefId == "" {
 				continue
@@ -1629,7 +1680,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	var roleTable []*models.RoleTable
-	if roleTable, err = GetRoleService().QueryRoleList(userToken, language); err != nil {
+	if roleTable, err = GetRoleService().QueryRoleList(param.UserToken, param.Language); err != nil {
 		return
 	}
 	roleMap := make(map[string]int)
@@ -1642,17 +1693,18 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 		if _, b := roleMap[input.RequestTemplateGroup.ManageRole]; !b {
 			input.RequestTemplateGroup.ManageRole = models.AdminRole
 		}
-		actions = append(actions, &dao.ExecAction{Sql: "insert into request_template_group(id,name,description,manage_role,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?)", Param: []interface{}{input.RequestTemplateGroup.Id, input.RequestTemplateGroup.Name, input.RequestTemplateGroup.Description, input.RequestTemplateGroup.ManageRole, operator, nowTime, operator, nowTime}})
+		actions = append(actions, &dao.ExecAction{Sql: "insert into request_template_group(id,name,description,manage_role,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?)", Param: []interface{}{input.RequestTemplateGroup.Id, input.RequestTemplateGroup.Name, input.RequestTemplateGroup.Description, input.RequestTemplateGroup.ManageRole, param.Operator, nowTime, param.Operator, nowTime}})
 	}
 	input.RequestTemplate.Status = "created"
 	input.RequestTemplate.ConfirmTime = ""
 	rtAction := dao.ExecAction{Sql: "insert into request_template(id,`group`,name,description,tags,record_id,`version`,confirm_time,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,expire_day,created_by,created_time,updated_by,updated_time,entity_attrs,handler,type,operator_obj_type,approve_by,check_switch,confirm_switch,back_desc,proc_def_version) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
 	rtAction.Param = []interface{}{input.RequestTemplate.Id, input.RequestTemplate.Group, input.RequestTemplate.Name, input.RequestTemplate.Description, input.RequestTemplate.Tags, input.RequestTemplate.RecordId, input.RequestTemplate.Version, input.RequestTemplate.ConfirmTime, input.RequestTemplate.Status, input.RequestTemplate.PackageName, input.RequestTemplate.EntityName,
-		input.RequestTemplate.ProcDefKey, input.RequestTemplate.ProcDefId, input.RequestTemplate.ProcDefName, input.RequestTemplate.ExpireDay, operator, nowTime, operator, nowTime, input.RequestTemplate.EntityAttrs, input.RequestTemplate.Handler, input.RequestTemplate.Type, input.RequestTemplate.OperatorObjType, input.RequestTemplate.ApproveBy, input.RequestTemplate.CheckSwitch, input.RequestTemplate.ConfirmSwitch, input.RequestTemplate.BackDesc, input.RequestTemplate.ProcDefVersion}
+		input.RequestTemplate.ProcDefKey, input.RequestTemplate.ProcDefId, input.RequestTemplate.ProcDefName, input.RequestTemplate.ExpireDay, param.Operator, nowTime, param.Operator, nowTime, input.RequestTemplate.EntityAttrs, input.RequestTemplate.Handler, input.RequestTemplate.Type, input.RequestTemplate.OperatorObjType, input.RequestTemplate.ApproveBy,
+		input.RequestTemplate.CheckSwitch, input.RequestTemplate.ConfirmSwitch, input.RequestTemplate.BackDesc, input.RequestTemplate.ProcDefVersion}
 	actions = append(actions, &rtAction)
 	for _, v := range input.TaskTemplate {
 		tmpAction := dao.ExecAction{Sql: "insert into task_template(id,name,description,request_template,node_id,node_def_id,node_name,expire_day,handler,created_by,created_time,updated_by,updated_time,sort,handle_mode,type) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-		tmpAction.Param = []interface{}{v.Id, v.Name, v.Description, v.RequestTemplate, v.NodeId, v.NodeDefId, v.NodeName, v.ExpireDay, v.Handler, operator, nowTime, operator, nowTime, v.Sort, v.HandleMode, v.Type}
+		tmpAction.Param = []interface{}{v.Id, v.Name, v.Description, v.RequestTemplate, v.NodeId, v.NodeDefId, v.NodeName, v.ExpireDay, v.Handler, param.Operator, nowTime, param.Operator, nowTime, v.Sort, v.HandleMode, v.Type}
 		actions = append(actions, &tmpAction)
 	}
 	rtRoleFetch := false
@@ -1690,38 +1742,51 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 	return
 }
 
-func (s *RequestTemplateService) createNewImportTemplate(input models.RequestTemplateExport, operator, recordId, userToken, language string) models.RequestTemplateExport {
+func (s *RequestTemplateService) createNewImportTemplate(param models.NewImportTemplateParam) models.RequestTemplateExport {
 	var newTaskTemplateIdMap = make(map[string]string)
 	var newFormTemplateIdMap = make(map[string]string)
 	var newFormItemTemplateIdMap = make(map[string]string)
-	var historyTemplateId = input.RequestTemplate.Id
 	var roleList []*models.SimpleLocalRoleDto
 	now := time.Now().Format(models.DateTimeFormat)
-	input.RequestTemplate.Id = guid.CreateGuid()
-	input.RequestTemplate.RecordId = recordId
-	input.RequestTemplate.CreatedBy = operator
+	input := param.Input
+	var historyTemplateId = input.RequestTemplate.Id
+	// 不覆盖的话,复用请求模版Id
+	if param.CoverRole {
+		input.RequestTemplate.Id = guid.CreateGuid()
+	}
+	input.RequestTemplate.RecordId = param.RecordId
+	input.RequestTemplate.CreatedBy = param.Operator
 	input.RequestTemplate.CreatedTime = now
-	input.RequestTemplate.UpdatedBy = operator
+	input.RequestTemplate.UpdatedBy = param.Operator
 	input.RequestTemplate.UpdatedTime = now
-	input.RequestTemplate.Handler = operator
+	input.RequestTemplate.Handler = param.Operator
 	input.RequestTemplate.BackDesc = ""
-	// 模版导入,模版使用角色和属主角色取当前操作人角色
-	roleList, _ = rpc.QueryUserRoles(operator, userToken, language)
-	if len(roleList) > 0 {
-		role := roleList[0].Name
-		input.RequestTemplateRole = make([]*models.RequestTemplateRoleTable, 0)
-		input.RequestTemplateRole = append(input.RequestTemplateRole, &models.RequestTemplateRoleTable{
-			Id:              guid.CreateGuid(),
-			RequestTemplate: input.RequestTemplate.Id,
-			Role:            role,
-			RoleType:        string(models.RolePermissionMGMT),
-		})
-		input.RequestTemplateRole = append(input.RequestTemplateRole, &models.RequestTemplateRoleTable{
-			Id:              guid.CreateGuid(),
-			RequestTemplate: input.RequestTemplate.Id,
-			Role:            role,
-			RoleType:        string(models.RolePermissionUse),
-		})
+	// 模版导入,模版使用角色和属主角色取当前操作人角色(底座迁移角色全量,取的导出角色)
+	if param.CoverRole {
+		roleList, _ = rpc.QueryUserRoles(param.Operator, param.UserToken, param.Language)
+		if len(roleList) > 0 {
+			role := roleList[0].Name
+			input.RequestTemplateRole = make([]*models.RequestTemplateRoleTable, 0)
+			input.RequestTemplateRole = append(input.RequestTemplateRole, &models.RequestTemplateRoleTable{
+				Id:              guid.CreateGuid(),
+				RequestTemplate: input.RequestTemplate.Id,
+				Role:            role,
+				RoleType:        string(models.RolePermissionMGMT),
+			})
+			input.RequestTemplateRole = append(input.RequestTemplateRole, &models.RequestTemplateRoleTable{
+				Id:              guid.CreateGuid(),
+				RequestTemplate: input.RequestTemplate.Id,
+				Role:            role,
+				RoleType:        string(models.RolePermissionUse),
+			})
+		}
+	} else {
+		// 角色里面关联模版Id需要替换下
+		if len(input.RequestTemplateRole) > 0 {
+			for _, requestTemplateRole := range input.RequestTemplateRole {
+				requestTemplateRole.RequestTemplate = input.RequestTemplate.Id
+			}
+		}
 	}
 	// 修改 taskTemplate中formTemplate,RequestTemplate,以及taskTemplateRole修改
 	for _, taskTemplate := range input.TaskTemplate {
@@ -1731,8 +1796,8 @@ func (s *RequestTemplateService) createNewImportTemplate(input models.RequestTem
 		if taskTemplate.RequestTemplate == historyTemplateId {
 			taskTemplate.RequestTemplate = input.RequestTemplate.Id
 		}
-		taskTemplate.CreatedBy = operator
-		taskTemplate.UpdatedBy = operator
+		taskTemplate.CreatedBy = param.Operator
+		taskTemplate.UpdatedBy = param.Operator
 		taskTemplate.CreatedTime = now
 		taskTemplate.UpdatedTime = now
 		taskTemplate.Handler = ""

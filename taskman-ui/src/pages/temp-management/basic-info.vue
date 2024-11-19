@@ -299,7 +299,7 @@ import {
   getProcess,
   createTemp,
   updateTemp,
-  getTemplateList
+  getTemplateDetail
 } from '@/api/server'
 export default {
   name: 'BasicInfo',
@@ -445,28 +445,16 @@ export default {
         this.getPendingHandlerRoles()
         return
       }
-      const params = {
-        filters: [
-          {
-            name: 'id',
-            operator: 'eq',
-            value: this.requestTemplateId
-          }
-        ],
-        paging: false
-      }
-      const { statusCode, data } = await getTemplateList(params)
+      const { statusCode, data } = await getTemplateDetail(this.requestTemplateId)
       if (statusCode === 'OK') {
-        if (data.contents.length === 1) {
-          const templateData = data.contents[0]
-          this.basicInfo = templateData
-          this.basicInfo.mgmtRoles = templateData.mgmtRoles[0].id
-          this.basicInfo.useRoles = templateData.useRoles.map(role => role.id)
-          this.showFlow = templateData.procDefId !== ''
-          this.getTags()
-          this.getHandlerRoles()
-          this.getPendingHandlerRoles()
-        }
+        const templateData = data
+        this.basicInfo = templateData
+        this.basicInfo.mgmtRoles = templateData.mgmtRoles[0].id
+        this.basicInfo.useRoles = templateData.useRoles.map(role => role.id)
+        this.showFlow = templateData.procDefId !== ''
+        this.getTags()
+        this.getHandlerRoles()
+        this.getPendingHandlerRoles()
       }
     },
     gotoNext () {

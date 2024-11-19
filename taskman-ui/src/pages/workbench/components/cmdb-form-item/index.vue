@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-18 17:55:45
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-10-28 17:33:49
+ * @LastEditTime: 2024-11-19 15:55:02
 -->
 <template>
   <div class="cmdb-entity-table">
@@ -154,6 +154,10 @@ export default {
     value: {
       type: Object,
       default: () => {}
+    },
+    disabled: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -203,7 +207,7 @@ export default {
           }
         }
         let attrEditDisabled = attr.editable === 'no' || (attr.autofillable === 'yes' && attr.autoFillType === 'forced')
-        return attrEditDisabled || attrGroupEditDisabled
+        return attrEditDisabled || attrGroupEditDisabled || this.disabled
       }
     },
     getInputProps () {

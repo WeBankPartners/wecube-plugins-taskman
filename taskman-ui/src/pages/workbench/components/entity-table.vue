@@ -42,17 +42,14 @@
                         : []
                     "
                   >
-                    <template v-if="['diffVariable', 'password', 'object'].includes(i.inputType)">
-                      <div style="display:flex;align-items:center;margin-top:5px;">
-                        <Icon
-                          size="18"
-                          type="ios-apps-outline"
-                          color="#2d8cf0"
-                          style="font-weight:bold;cursor:pointer;"
-                          @click="handleOpenCmdbDetail(i, value)"
-                        />
-                        {{ value[i.name] || '1111111111111111' }}
-                      </div>
+                    <!--cmdb属性类型-->
+                    <template v-if="i.cmdbAttr && Object.keys(i.cmdbAttr).length > 0">
+                      <CMDBFormItem
+                        :options="cmdbOptions"
+                        :column="getCMDBColumn(i.name)"
+                        :value="value"
+                        :disabled="formDisabled(i)"
+                      />
                     </template>
                     <template v-else>
                       <!--输入框-->
@@ -140,36 +137,6 @@
         </template>
       </Select>
     </div>
-    <!--cmdb数据预览-->
-    <BaseDrawer
-      :title="cmdbInfo.title"
-      :visible.sync="cmdbInfo.visible"
-      realWidth="800"
-      :scrollable="true"
-    >
-      <template slot="content">
-        <div v-if="cmdbInfo.attr.inputType === 'diffVariable'">
-          <div style="text-align: justify;word-break: break-word;overflow-y:auto;max-height:500px">
-            <div style="text-align: left;">
-              <Alert type="warning">如出现页面值未显示，请点击刷新按钮</Alert>
-            </div>
-            <div>{{ '111111111111111111111111111111' }}</div>
-          </div>
-        </div>
-        <div v-else-if="cmdbInfo.attr.inputType === 'object'">
-          <json-viewer :value="{ a: 1, b: { c: 2 }}" :expand-depth="5"></json-viewer>
-        </div>
-        <div v-else-if="cmdbInfo.attr.inputType === 'password'">
-          <div style="text-align: justify;word-break: break-word;">
-            {{ '111111111111111111111111111111' }}
-          </div>
-        </div>
-      </template>
-      <template slot="footer">
-        <Button type="primary" @click="handleRefreshCmdbData">{{ '刷新' }}</Button>
-        <Button type="default" @click="cmdbInfo.visible = false" style="margin-left:10px;">{{ '关闭' }}</Button>
-      </template>
-    </BaseDrawer>
   </div>
 </template>
 
@@ -178,11 +145,12 @@ import LimitSelect from '@/pages/components/limit-select.vue'
 import { getRefOptions, getWeCmdbOptions, saveFormData, getExpressionData } from '@/api/server'
 import { debounce, deepClone, fixArrStrToJsonArray } from '@/pages/util'
 import { evaluateCondition } from '../evaluate'
-import JsonViewer from 'vue-json-viewer'
+import CMDBFormItem from './cmdb-form-item/index.vue'
+import { components } from './cmdb-form-item/action.js'
 export default {
   components: {
     LimitSelect,
-    JsonViewer
+    CMDBFormItem
   },
   props: {
     data: {
@@ -220,12 +188,8 @@ export default {
       addRowSource: '',
       addRowSourceOptions: [],
       worklfowDataIdsObj: {}, // 编排类表单默认下发数据dataId集合
-      cmdbInfo: {
-        title: '',
-        visible: false,
-        attr: {},
-        value: ''
-      }
+      cmdbOptions: [] // cmdb属性集合
+
     }
   },
   computed: {
@@ -248,7 +212,12 @@ export default {
     },
     formDisabled () {
       return function (attr) {
-        return attr.isEdit === 'no' || (attr.autofillable === 'yes' && attr.autoFillType === 'forced')
+        return attr.isEdit === 'no' || (attr.cmdbAttr && attr.cmdbAttr.autofillable === 'yes' && attr.cmdbAttr.autoFillType === 'forced')
+      }
+    },
+    getCMDBColumn () {
+      return function (attr) {
+        return this.cmdbOptions.find(i => i.propertyName === attr) || {}
       }
     }
   },
@@ -357,6 +326,16 @@ export default {
         }
       })
       this.formOptions = data.title
+      // cmdb属性数据初始化
+      const cmdbOptions = []
+      this.formOptions.forEach(item => {
+        if (item.cmdbAttr) {
+          item.cmdbAttr = JSON.parse(item.cmdbAttr)
+          item.cmdbAttr.editable = item.isEdit
+          cmdbOptions.push(item.cmdbAttr)
+        }
+      })
+      this.cmdbOptions = this.getCMDBInitData(cmdbOptions)
 
       // table数据初始化
       this.tableData = data.value.map(v => {
@@ -404,6 +383,47 @@ export default {
           }
         })
       })
+    },
+    // 整理CMDB类型表单数据
+    getCMDBInitData (data) {
+      let columns = []
+      for (let index = 0; index < data.length; index++) {
+        let renderKey = data[index].propertyName
+        if (data[index].status !== 'decommissioned' && data[index].status !== 'notCreated') {
+          // if (['select', 'multiSelect'].includes(data[index].inputType) && data[index].selectList !== '') {
+          //   const res = await getEnumCategoriesById(data[index].selectList)
+          //   if (res.statusCode === 'OK') {
+          //     data[index].options = res.data.map(item => {
+          //       return {
+          //         label: item.code,
+          //         value: item.value,
+          //         codeDescription: item.codeDescription
+          //       }
+          //     })
+          //   }
+          // }
+          const columnItem = {
+            ...data[index],
+            title: data[index].name,
+            key: renderKey,
+            inputKey: data[index].propertyName,
+            inputType: data[index].inputType,
+            referenceId: data[index].referenceId,
+            disEditor: !data[index].isEditable,
+            disAdded: !data[index].isEditable,
+            placeholder: data[index].name,
+            component: 'Input',
+            referenceFilter: data[index].referenceFilter,
+            ciType: { id: data[index].referenceId, name: data[index].name },
+            type: 'text',
+            isMultiple: data[index].inputType === 'multiSelect',
+            ...components[data[index].inputType],
+            options: data[index].options
+          }
+          columns.push(columnItem)
+        }
+      }
+      return columns
     },
     async getRefOptions (titleObj, row, index, first) {
       // 模板自定义下拉类型
@@ -628,53 +648,6 @@ export default {
       //   value[name] = e
       // }
       value[name] = e
-    },
-    handleOpenCmdbDetail (attr, value) {
-      this.cmdbInfo.title = attr.title
-      this.cmdbInfo.visible = true
-      this.cmdbInfo.attr = attr
-      if (attr.inputType === 'diffVariable') {
-        value[attr.name] = this.formatCmdbData(value[attr.name])
-      }
-    },
-    async handleRefreshCmdbData () {
-      // const { data } = await queryCiData({
-      //   id: this.ciTypeId,
-      //   queryObject: {
-      //     dialect: { queryMode: 'new' },
-      //     filters: [{ name: 'guid', operator: 'eq', value: this.cmdbInfo.attr.name }],
-      //     paging: false
-      //   }
-      // })
-      // const res = await this.formatCmdbData(data.contents[0], this.cmdbInfo.attr.name)
-      // this.$nextTick(() => {
-      //   this.tableDetailInfo.info = res
-      //   this.tableDetailInfo.isShow = true
-      // })
-    },
-    formatCmdbData (row, key) {
-      const vari = row[key].split('\u0001=\u0001')
-      const keys = vari[0].split(',\u0001')
-      const values = vari[1].split(',\u0001')
-      let res = []
-      for (let i = 0; i < keys.length; i++) {
-        res.push({
-          key: (keys[i] || '').replace('\u0001', ''),
-          value: (values[i] || '').replace('\u0001', '')
-        })
-      }
-      res = res.sort((first, second) => {
-        const firstKey = first.key.toLocaleUpperCase()
-        const secondKey = second.key.toLocaleUpperCase()
-        if (firstKey < secondKey) {
-          return -1
-        } else if (firstKey > secondKey) {
-          return 1
-        } else {
-          return 0
-        }
-      })
-      return res
     }
   }
 }

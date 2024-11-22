@@ -2,12 +2,17 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-18 17:55:45
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-11-19 15:55:02
+ * @LastEditTime: 2024-11-22 16:24:32
 -->
 <template>
   <div class="cmdb-entity-table">
     <template v-if="column.component === 'WeCMDBCIPassword'">
-      <WeCMDBCIPassword :formData="column" :panalData="value" :disabled="false" />
+      <WeCMDBCIPassword
+        :formData="column"
+        :panalData="value"
+        :disabled="isGroupEditDisabled(column, value)"
+        @input="(v) => {value[column.inputKey] = v}"
+      />
     </template>
     <template v-else-if="column.component === 'Input' && column.inputType === 'multiText'">
       <MultiConfig
@@ -40,29 +45,30 @@
       <Input
         v-bind="getInputProps(column, value)"
         @input="(v) => {setValueHandler(v.trim(), column, value)}"
-        style="width:80%"
       ></Input>
     </template>
     <template v-else-if="column.component === 'Input' && column.inputType !== 'object'">
-      <Input
-        v-bind="getObjectInputProps(column, value)"
-        @input="(v) => {setValueHandler(v.trim(), column, value)}"
-        @on-search="(v) => {handleInputSearch(v, column, value)}"
-        style="width:80%"
-      ></Input>
-      <Button
-        v-if="column.autofillable === 'yes' && column.autoFillType === 'suggest'"
-        @click="v => setValueHandler('suggest#', column, value)"
-        icon="md-checkmark"
-      ></Button>
+      <div style="display:flex;">
+        <Input
+          v-bind="getObjectInputProps(column, value)"
+          @input="(v) => {setValueHandler(v.trim(), column, value)}"
+          @on-search="(v) => {handleInputSearch(v, column, value)}"
+        ></Input>
+        <Button
+          v-if="column.autofillable === 'yes' && column.autoFillType === 'suggest'"
+          @click="v => setValueHandler('suggest#', column, value)"
+          icon="md-checkmark"
+        ></Button>
+      </div>
     </template>
     <template v-else-if="column.component === 'Input' && column.inputType === 'object'">
-      <JSONConfig
+      <JsonConfig
+        :title="column.title"
         :inputKey="column.inputKey"
         :disabled="isGroupEditDisabled(column, value)"
         :jsonData="JSON.parse(JSON.stringify(value[column.inputKey]) || '{}')"
         @input="(v) => {setValueHandler(v, column, value)}"
-      ></JSONConfig>
+      ></JsonConfig>
     </template>
     <template v-else-if="column.component === 'WeCMDBSelect'">
       <WeCMDBSelect
@@ -108,13 +114,11 @@
             attrId: column.ciTypeAttrId,
             params: value
           }
-          : null"
+          : {
+            params: value
+          }"
         :ciTypeAttrId="column.ciTypeAttrId"
-        :ciType="column.ciType"
-        :editable="column.editable === 'yes'"
-        :originColumns="originColumns"
-        :type="column.type"
-        :guid="value.guid ? value.guid : '123'"
+        :column="column"
         @input="(v) => {setValueHandler(v, column, value)}"
         @change="(v) => {
           if (column.onChange) {
@@ -122,6 +126,21 @@
           }
         }"
       ></WeCMDBRefSelect>
+    </template>
+    <template v-else-if="column.component === 'DatePicker'">
+      <DatePicker
+        :value="value[column.inputKey]"
+        :disabled="isGroupEditDisabled(column, value)"
+        :editable="column.editable === 'yes'"
+        type="datetime"
+        @input="(v) => {setValueHandler(v, column, value)}"
+        @change="(v) => {
+          if (column.onChange) {
+            this.$emit('getGroupList', v)
+          }
+        }"
+      >
+      </DatePicker>
     </template>
   </div>
 </template>
@@ -228,21 +247,23 @@ export default {
           value: value[column.inputKey]
         }
       }
+    },
+    formatValue () {
+      return function (column, value) {
+        // for edit 多选数据会在保存时转为','拼接
+        if (column.component === 'WeCMDBSelect' && column.isMultiple) {
+          if (value) {
+            return Array.isArray(value) ? value : value.split(',')
+          } else {
+            return null
+          }
+        } else {
+          return value
+        }
+      }
     }
   },
-  method: {
-    formatValue (column, value) {
-      // for edit 多选数据会在保存时转为','拼接
-      if (column.component === 'WeCMDBSelect' && column.isMultiple) {
-        if (value) {
-          return Array.isArray(value) ? value : value.split(',')
-        } else {
-          return null
-        }
-      } else {
-        return value
-      }
-    },
+  methods: {
     // 赋值操作
     setValueHandler (v, col, row) {
       let attrsWillReset = []

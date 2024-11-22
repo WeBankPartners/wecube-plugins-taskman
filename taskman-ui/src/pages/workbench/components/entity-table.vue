@@ -43,12 +43,13 @@
                     "
                   >
                     <!--cmdb属性类型-->
-                    <template v-if="i.cmdbAttr && Object.keys(i.cmdbAttr).length > 0">
+                    <template v-if="i.cmdbAttr">
                       <CMDBFormItem
                         :options="cmdbOptions"
                         :column="getCMDBColumn(i.name)"
                         :value="value"
                         :disabled="formDisabled(i)"
+                        style="width: calc(100% - 20px)"
                       />
                     </template>
                     <template v-else>
@@ -318,24 +319,29 @@ export default {
       this.refKeys = []
       this.calculateKeys = []
       data.title.forEach(t => {
-        if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
+        // 非cmdb下发的引用类型
+        if ((t.elementType === 'select' || t.elementType === 'wecmdbEntity') && !t.cmdbAttr) {
           this.refKeys.push(t.name)
         }
         if (t.elementType === 'calculate') {
           this.calculateKeys.push(t.name)
         }
       })
+      // 表单属性初始化-----------------
       this.formOptions = data.title
-      // cmdb属性数据初始化
+
+      // cmdb属性初始化-----------------
       const cmdbOptions = []
-      this.formOptions.forEach(item => {
+      const formOptions = deepClone(this.formOptions)
+      formOptions.forEach(item => {
         if (item.cmdbAttr) {
           item.cmdbAttr = JSON.parse(item.cmdbAttr)
           item.cmdbAttr.editable = item.isEdit
-          cmdbOptions.push(item.cmdbAttr)
+          const cmdbObj = Object.assign({}, { ...item.cmdbAttr, titleObj: item })
+          cmdbOptions.push(cmdbObj)
         }
       })
-      this.cmdbOptions = this.getCMDBInitData(cmdbOptions)
+      this.getCMDBInitData(cmdbOptions)
 
       // table数据初始化
       this.tableData = data.value.map(v => {
@@ -384,24 +390,27 @@ export default {
         })
       })
     },
-    // 整理CMDB类型表单数据
-    getCMDBInitData (data) {
+    // cmdb表单属性整理--------------------
+    async getCMDBInitData (data) {
+      this.cmdbOptions = []
       let columns = []
       for (let index = 0; index < data.length; index++) {
         let renderKey = data[index].propertyName
-        if (data[index].status !== 'decommissioned' && data[index].status !== 'notCreated') {
-          // if (['select', 'multiSelect'].includes(data[index].inputType) && data[index].selectList !== '') {
-          //   const res = await getEnumCategoriesById(data[index].selectList)
-          //   if (res.statusCode === 'OK') {
-          //     data[index].options = res.data.map(item => {
-          //       return {
-          //         label: item.code,
-          //         value: item.value,
-          //         codeDescription: item.codeDescription
-          //       }
-          //     })
-          //   }
-          // }
+        if (!['decommissioned', 'notCreated'].includes(data[index].status)) {
+          if (['select', 'multiSelect'].includes(data[index].inputType) && data[index].selectList !== '') {
+            const { titleObj } = data[index] || { titleObj: {} }
+            const attrName = titleObj.entity + '__' + titleObj.name
+            const attr = titleObj.id
+            const res = await getRefOptions(this.requestId, attr, {}, attrName)
+            if (res.statusCode === 'OK') {
+              data[index].options = res.data.map(item => {
+                return {
+                  label: item.key_name,
+                  value: item.guid
+                }
+              })
+            }
+          }
           const columnItem = {
             ...data[index],
             title: data[index].name,
@@ -416,14 +425,16 @@ export default {
             referenceFilter: data[index].referenceFilter,
             ciType: { id: data[index].referenceId, name: data[index].name },
             type: 'text',
-            isMultiple: data[index].inputType === 'multiSelect',
+            isMultiple: ['multiSelect', 'multiRef'].includes(data[index].inputType),
             ...components[data[index].inputType],
-            options: data[index].options
+            options: data[index].options,
+            requestId: this.requestId,
+            refKeys: this.refKeys
           }
           columns.push(columnItem)
         }
       }
-      return columns
+      this.cmdbOptions = columns
     },
     async getRefOptions (titleObj, row, index, first) {
       // 模板自定义下拉类型

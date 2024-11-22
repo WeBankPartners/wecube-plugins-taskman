@@ -511,5 +511,17 @@
   "tw_unRelated_tips": "The user chose not to process and did not submit the form.",
   "tw_formDataNotSave_confirm": "Are you sure you want to discard form modifications?",
   "tw_formDataNotSave_tips": "Select the [No processing required] type for the operation, and the form modification will not be submitted. Are you sure to discard the modification? (Choose another type for the operation to submit the form normally)",
-  "tw_condition": "Form Conditions"
+  "tw_condition": "Form Conditions",
+  "tw_config": "Configuration",
+  "tw_close": "Close",
+  "tw_refresh": "Refresh",
+  "tw_password_edit": "Change Password",
+  "tw_enter_password": "Enter Password",
+  "tw_password": "Password",
+  "tw_new_password": "New Password",
+  "tw_new_password_input_placeholder": "Please input new password",
+  "tw_confirm_password": "Confirm Password",
+  "tw_please_input_new_password_again": "Please confirm new password again",
+  "tw_please_input_right_new_password": "Please input the correct new password",
+  "tw_json_edit": "JSON Edit"
 }

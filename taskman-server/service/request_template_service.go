@@ -1025,8 +1025,8 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 		if len(formItemTemplateList) > 0 {
 			for _, formItemTemplate := range formItemTemplateList {
 				actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into form_item_template(id,form_template,name,description,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,item_group,item_group_name,in_display_name,"+
-					"is_ref_inside,multiple,default_clear,ref_id,routine_expression,control_switch,form_item_library,hidden_condition) select '%s' as id,'%s' as form_template,name,description,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,"+
-					"item_group,item_group_name,in_display_name,is_ref_inside,multiple,default_clear,'%s' as ref_id,routine_expression,control_switch,form_item_library,hidden_condition from form_item_template where id='%s'", newFormItemTemplateIdMap[formItemTemplate.Id], newFormTemplateIdMap[formItemTemplate.FormTemplate], newFormItemTemplateIdMap[formItemTemplate.RefId], formItemTemplate.Id)})
+					"is_ref_inside,multiple,default_clear,ref_id,routine_expression,control_switch,form_item_library,hidden_condition,formula,cmdb_attr) select '%s' as id,'%s' as form_template,name,description,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,"+
+					"item_group,item_group_name,in_display_name,is_ref_inside,multiple,default_clear,'%s' as ref_id,routine_expression,control_switch,form_item_library,hidden_condition,formula,cmdb_attr from form_item_template where id='%s'", newFormItemTemplateIdMap[formItemTemplate.Id], newFormTemplateIdMap[formItemTemplate.FormTemplate], newFormItemTemplateIdMap[formItemTemplate.RefId], formItemTemplate.Id)})
 			}
 		}
 	}
@@ -1143,9 +1143,9 @@ func (s *RequestTemplateService) CopyConfirmRequestTemplate(requestTemplateId, o
 		if len(formItemTemplateList) > 0 {
 			for _, formItemTemplate := range formItemTemplateList {
 				actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into form_item_template(id,form_template,name,description,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,"+
-					"is_edit,is_view,is_output,item_group,item_group_name,in_display_name,is_ref_inside,multiple,default_clear,ref_id,routine_expression,control_switch,form_item_library,hidden_condition) select '%s' as id,'%s' as form_template,name,description,default_value,sort,package_name,entity,attr_def_id,"+
+					"is_edit,is_view,is_output,item_group,item_group_name,in_display_name,is_ref_inside,multiple,default_clear,ref_id,routine_expression,control_switch,form_item_library,hidden_condition,formula,cmdb_attr) select '%s' as id,'%s' as form_template,name,description,default_value,sort,package_name,entity,attr_def_id,"+
 					"attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,item_group,item_group_name,in_display_name,is_ref_inside,multiple,default_clear,'%s' as ref_id,routine_expression,control_switch,form_item_library,"+
-					"hidden_condition from form_item_template where id='%s'", newFormItemTemplateIdMap[formItemTemplate.Id], newFormTemplateIdMap[formItemTemplate.FormTemplate], newFormItemTemplateIdMap[formItemTemplate.RefId], formItemTemplate.Id)})
+					"hidden_condition,formula,cmdb_attr from form_item_template where id='%s'", newFormItemTemplateIdMap[formItemTemplate.Id], newFormTemplateIdMap[formItemTemplate.FormTemplate], newFormItemTemplateIdMap[formItemTemplate.RefId], formItemTemplate.Id)})
 			}
 		}
 	}
@@ -1733,8 +1733,8 @@ func (s *RequestTemplateService) RequestTemplateImport(param models.RequestTempl
 		}
 	}
 	for _, v := range input.FormItemTemplate {
-		tmpAction := dao.ExecAction{Sql: "insert into form_item_template(id,form_template,name,description,item_group,item_group_name,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,in_display_name,is_ref_inside,multiple,default_clear,ref_id,routine_expression,control_switch,hidden_condition,formula) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-		tmpAction.Param = []interface{}{v.Id, v.FormTemplate, v.Name, v.Description, v.ItemGroup, v.ItemGroupName, v.DefaultValue, v.Sort, v.PackageName, v.Entity, v.AttrDefId, v.AttrDefName, v.AttrDefDataType, v.ElementType, v.Title, v.Width, v.RefPackageName, v.RefEntity, v.DataOptions, v.Required, v.Regular, v.IsEdit, v.IsView, v.IsOutput, v.InDisplayName, v.IsRefInside, v.Multiple, v.DefaultClear, v.RefId, v.RoutineExpression, v.ControlSwitch, v.HiddenCondition, v.Formula}
+		tmpAction := dao.ExecAction{Sql: "insert into form_item_template(id,form_template,name,description,item_group,item_group_name,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,in_display_name,is_ref_inside,multiple,default_clear,ref_id,routine_expression,control_switch,hidden_condition,formula,cmdb_attr) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+		tmpAction.Param = []interface{}{v.Id, v.FormTemplate, v.Name, v.Description, v.ItemGroup, v.ItemGroupName, v.DefaultValue, v.Sort, v.PackageName, v.Entity, v.AttrDefId, v.AttrDefName, v.AttrDefDataType, v.ElementType, v.Title, v.Width, v.RefPackageName, v.RefEntity, v.DataOptions, v.Required, v.Regular, v.IsEdit, v.IsView, v.IsOutput, v.InDisplayName, v.IsRefInside, v.Multiple, v.DefaultClear, v.RefId, v.RoutineExpression, v.ControlSwitch, v.HiddenCondition, v.Formula, v.CmdbAttr}
 		actions = append(actions, &tmpAction)
 	}
 	requestTemplateId = input.RequestTemplate.Id

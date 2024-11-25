@@ -213,7 +213,7 @@ export default {
     },
     formDisabled () {
       return function (attr) {
-        return attr.isEdit === 'no' || (attr.cmdbAttr && attr.cmdbAttr.autofillable === 'yes' && attr.cmdbAttr.autoFillType === 'forced')
+        return attr.isEdit === 'no'
       }
     },
     getCMDBColumn () {
@@ -330,7 +330,7 @@ export default {
       // 表单属性初始化-----------------
       this.formOptions = data.title
 
-      // cmdb属性初始化-----------------
+      // cmdb表单属性初始化-----------------
       const cmdbOptions = []
       const formOptions = deepClone(this.formOptions)
       formOptions.forEach(item => {
@@ -341,7 +341,9 @@ export default {
           cmdbOptions.push(cmdbObj)
         }
       })
-      this.getCMDBInitData(cmdbOptions)
+      if (cmdbOptions && cmdbOptions.length > 0) {
+        this.getCMDBInitData(cmdbOptions)
+      }
 
       // table数据初始化
       this.tableData = data.value.map(v => {

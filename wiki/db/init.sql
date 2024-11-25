@@ -616,5 +616,6 @@ alter table request add column preview_cache mediumtext default null comment '�
 alter table form_item_template add column formula varchar(255) default null comment '表达式计算';
 #@v1.1.2-end@;
 #@v1.2.4.10-begin@;
-alter table form_item_template add column cmdb_attr mediumtext default null comment 'mdb属性';
+alter table form_item_template add column cmdb_attr mediumtext default null comment 'cmdb属性';
+alter table form_item_template_library add column cmdb_attr mediumtext default null comment 'cmdb属性';
 #@v1.2.4.10-end@;

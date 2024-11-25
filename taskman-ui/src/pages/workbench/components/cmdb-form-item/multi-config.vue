@@ -1,7 +1,7 @@
 <template>
   <div class="cmdb-multi-config">
-    <Button type="primary" @click="showConfig" :disabled="disabled">{{ $t('configuration') }}</Button>
-    <Modal v-model="showModal" :title="$t('configuration')" @on-ok="confirmData" @on-cancel="cancel">
+    <Button type="primary" @click="showConfig" :disabled="disabled">{{ $t('tw_config') }}</Button>
+    <Modal v-model="showModal" :title="$t('tw_config')" @on-ok="confirmData" @on-cancel="cancel">
       <template v-for="(item, itemIndex) in multiData">
         <div :key="itemIndex" style="margin:4px">
           <Input v-model="item.value" :type="type" v-if="type !== 'json'" style="width:360px"></Input>
@@ -10,7 +10,7 @@
         </div>
       </template>
     </Modal>
-    <Modal :z-index="2000" v-model="showJsonModal" :title="$t('json_edit')" @on-ok="confirmJsonData" width="700">
+    <Modal :z-index="2000" v-model="showJsonModal" :title="$t('tw_json_edit')" @on-ok="confirmJsonData" width="700">
       <Button type="primary" @click="addNewJson">新增一组</Button>
       <div style="max-height:500px; overflow:auto">
         <template v-for="(item, itemIndex) in originData">

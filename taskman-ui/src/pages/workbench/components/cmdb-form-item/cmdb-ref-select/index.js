@@ -2,23 +2,23 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-21 19:33:55
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-10-21 19:41:48
+ * @LastEditTime: 2024-11-22 16:40:35
  */
-import { queryCiData, getCiTypeAttributes, getEnumCodesByCategoryId, queryReferenceCiData } from '@/api/server'
-import { finalDataForRequest, components } from './component-util'
+import { getRefOptions, getWeCmdbOptions } from '@/api/server'
 import CustomMultipleSelect from './custom-select.vue'
+import JsonViewer from 'vue-json-viewer'
+import './index.scss'
 export default {
   name: 'WeCMDBRefSelect',
-  components: { CustomMultipleSelect },
+  components: { CustomMultipleSelect, JsonViewer },
   props: {
     value: {},
-    highlightRow: {},
-    ciType: {},
     ciTypeAttrId: '',
     disabled: { default: () => false },
     filterParams: {},
     guidFilters: { default: () => null },
-    guidFilterEnabled: { default: () => false }
+    guidFilterEnabled: { default: () => false },
+    column: { type: Object, default: () => ({}) }
   },
   watch: {
     value: {
@@ -26,59 +26,74 @@ export default {
         this.selected = val
       },
       immediate: true
+    },
+    column: {
+      handler (val) {
+        if (val && Object.keys(val).length > 0) {
+          this.getAllDataWithoutPaging()
+        }
+      },
+      immediate: true,
+      deep: true
     }
   },
   data () {
     return {
-      payload: {
-        filters: [],
-        pageable: {
-          pageSize: 10,
-          startIndex: 0
-        },
-        paging: true,
-        sorting: {}
-      },
-      pagination: {
-        pageSize: 10,
-        currentPage: 1,
-        total: 0
-      },
-      visibleSwap: false,
-      tableData: [],
       allTableDataWithoutPaging: [],
-      tableColumns: [],
       selected: [],
-      tableValue: [],
       selectDisabled: true,
       firstInput: true,
-      firstChange: true
+      firstChange: true,
+      showDetail: false,
+      detailData: []
     }
   },
-  mounted () {
-    this.getAllDataWithoutPaging()
-  },
   methods: {
-    isJSON (jsons) {
-      try {
-        if (typeof jsons === 'object' && jsons) {
-          return true
-        } else {
-          return false
-        }
-      } catch (e) {
-        return false
-      }
-    },
     async getAllDataWithoutPaging () {
-      const rows = this.filterParams ? JSON.parse(JSON.stringify(this.filterParams.params)) : {}
-      const finalData = finalDataForRequest(rows)
-      let noPagingRes = await queryReferenceCiData({
-        attrId: this.ciTypeAttrId,
-        queryObject: { filters: [], paging: false, dialect: { associatedData: finalData } }
+      const cache = this.filterParams ? JSON.parse(JSON.stringify(this.filterParams.params)) : {}
+      const keys = Object.keys(cache)
+      keys.forEach(key => {
+        if (Array.isArray(cache[key])) {
+          cache[key] = cache[key].map(c => {
+            return {
+              guid: c
+            }
+          })
+          cache[key] = JSON.stringify(cache[key])
+        }
+        // 删除掉值为空的数据
+        if (!cache[key] || (Array.isArray(cache[key]) && cache[key].length === 0)) {
+          delete cache[key]
+        }
+        // 数据表单【表单隐藏标识】放到了row里面，需要删除
+        if (key.indexOf('Hidden') > -1) {
+          delete cache[key]
+        }
+        // 将对象类型转为字符串
+        if (typeof cache[key] === 'object') {
+          cache[key] = JSON.stringify(cache[key])
+        }
       })
-      if (noPagingRes.statusCode === 'OK') {
-        let data = noPagingRes.data
+      this.column.refKeys.forEach(k => {
+        delete cache[k + 'Options']
+      })
+      delete cache._checked
+      delete cache._disabled
+      const { titleObj } = this.column || { titleObj: {} }
+      const attrName = titleObj.entity + '__' + titleObj.name
+      const attr = titleObj.id
+      const params = {
+        filters: [],
+        paging: false,
+        dialect: {
+          associatedData: {
+            ...cache
+          }
+        }
+      }
+      const res = await getRefOptions(this.column.requestId, attr, params, attrName)
+      if (res.statusCode === 'OK') {
+        let data = res.data
         if (this.guidFilterEnabled && this.guidFilters && Array.isArray(this.guidFilters)) {
           data = data.filter(el => {
             if (this.guidFilters.indexOf(el.guid) >= 0) {
@@ -91,140 +106,15 @@ export default {
         this.allTableDataWithoutPaging = data
       }
     },
-    handleSubmit (data) {
-      this.payload.filters = data
-      this.queryCiData()
-    },
-    pageChange (current) {
-      this.pagination.currentPage = current
-      this.queryCiData()
-      this.highlightRowHandler()
-    },
-    pageSizeChange (size) {
-      this.pagination.pageSize = size
-      this.queryCiData()
-      this.highlightRowHandler()
-    },
-    async queryCiData () {
-      this.payload.pageable.pageSize = this.pagination.pageSize
-      this.payload.pageable.startIndex = (this.pagination.currentPage - 1) * this.pagination.pageSize
-      const rows = this.filterParams ? JSON.parse(JSON.stringify(this.filterParams.params)) : {}
-      delete rows.isRowEditable
-      delete rows.weTableForm
-      delete rows.weTableRowId
-      delete rows.isNewAddedRow
-      delete rows.nextOperations
-      const query = {
-        id: this.ciType.id,
-        attrId: this.filterParams ? this.filterParams.attrId : null,
-        queryObject: this.filterParams ? { ...this.payload, dialect: { data: rows } } : this.payload
-      }
-      const { statusCode, data } = this.filterParams ? await queryReferenceCiData(query) : await queryCiData(query)
-      if (statusCode === 'OK') {
-        this.tableData = this.filterParams ? data.contents : data.contents.map(_ => _.data)
-        this.pagination.total = data.pageInfo.totalRows
-      }
-    },
-    async queryCiAttrs (id) {
-      const { statusCode, data } = await getCiTypeAttributes(id)
-      let columns = []
-      if (statusCode === 'OK') {
-        columns = data
-          .filter(_ => _.status !== 'decommissioned' && _.status !== 'notCreated' && _.displayByDefault === 'yes')
-          .map(_ => {
-            return {
-              ..._,
-              title: _.name,
-              key: _.propertyName,
-              inputKey: _.propertyName,
-              inputType: _.inputType,
-              referenceId: _.referenceId,
-              placeholder: _.description,
-              ciType: { id: _.referenceId, name: _.name },
-              isMultiple: _.inputType === 'multiSelect',
-              component: 'Input',
-              type: 'text',
-              ...components[_.inputType]
-            }
-          })
-        this.tableColumns = this.getSelectOptions(columns)
-      }
-    },
-    getSelectOptions (columns) {
-      columns.forEach(async _ => {
-        if (_.inputType === 'select' || _.inputType === 'multiSelect') {
-          if (_.referenceId) {
-            const { data } = await getEnumCodesByCategoryId(_.referenceId)
-            _['options'] = data
-              .filter(j => j.status === 'active')
-              .map(i => {
-                return {
-                  label: i.code,
-                  value: i.codeId
-                }
-              })
-          }
-        }
-      })
-      return columns
-    },
-    showRefModal (e) {
-      e.preventDefault()
-      e.stopPropagation()
-      this.visibleSwap = true
-      this.queryCiAttrs(this.ciType.id)
-      this.queryCiData()
-      this.$nextTick(() => {
-        this.highlightRowHandler()
-      })
-    },
-    highlightRowHandler () {
-      if (!this.highlightRow) {
-        /* to get iview original data to reset _ischecked flag */
-        let data = this.$refs.refTable.$refs.table.$refs.tbody.objData
-        for (let obj in data) {
-          data[obj]._isChecked = false
-        }
-        this.selected.forEach(_ => {
-          const index = this.tableData.findIndex(el => el.guid === _)
-          data[index]._isChecked = true
-        })
-      } else {
-        const index = this.tableData.findIndex(el => el.guid === this.selected)
-        const tr = document.querySelectorAll('.modalTable tr')
-        if (index > -1) {
-          tr[index + 1].classList.add('ivu-table-row-highlight')
-          // tr[index+1].click()
-        }
-      }
-    },
-    hideRefModal (status) {
-      if (status) return
-      this.visibleSwap = false
-    },
-    getTableValue (val) {
-      this.tableValue = val
-    },
-    modalOk () {
-      this.selected = !this.highlightRow
-        ? this.tableValue.map(_ => {
-          return _.guid
-        })
-        : this.tableValue.length > 0
-          ? this.tableValue[0].guid
-          : ''
-      this.$emit('input', this.selected)
-      this.visibleSwap = false
-    },
     handleInput (v) {
-      if (!this.highlightRow && this.firstInput) {
+      if (this.column.isMultiple && this.firstInput) {
         this.firstInput = false
         return
       }
       this.selected = v
     },
     selectChangeHandler (val) {
-      if (!this.highlightRow && this.firstChange) {
+      if (this.column.isMultiple && this.firstChange) {
         this.firstChange = false
         return
       }
@@ -238,11 +128,54 @@ export default {
       this.firstInput = false
       this.firstChange = false
       if (val) {
-        this.pagination.currentPage = 1
-        // this.queryCiData();
         this.getAllDataWithoutPaging()
       }
-    }
+    },
+    // ref勾选数据详情查看
+    async showRefModal (e) {
+      e.preventDefault()
+      e.stopPropagation()
+      this.detailData = []
+      this.showDetail = true
+      const { titleObj } = this.column || { titleObj: {} }
+      const { refEntity, refPackageName } = titleObj || { refEntity: '', refPackageName: '' }
+      if (!refPackageName || !refEntity) return
+      const { statusCode, data } = await getWeCmdbOptions(refPackageName, refEntity, {
+        filters: [
+          {
+            name: 'guid',
+            operator: 'in',
+            value: Array.isArray(this.selected) ? this.selected : [this.selected]
+          }
+        ]
+      })
+      if (statusCode === 'OK') {
+        const contents = data || []
+        if (this.column.isMultiple) {
+          contents.forEach(item => {
+            if (item.guid === this.selected) {
+              this.detailData.push({
+                title: item.key_name,
+                value: item
+              })
+            }
+          })
+        } else {
+          contents.forEach(item => {
+            if (this.selected.includes(item.guid)) {
+              this.detailData.push({
+                title: item.key_name,
+                value: item
+              })
+            }
+          })
+        }
+      }
+    },
+    closeModal () {
+      this.showDetail = false
+    },
+    refreshDiffVariable () {}
   },
   render (h) {
     let renderOptions = this.allTableDataWithoutPaging.map(_ => {
@@ -254,7 +187,7 @@ export default {
     })
     return (
       <div class="cmdb-ref-select">
-        {this.highlightRow && (
+        {!this.column.isMultiple && (
           <Select
             onInput={this.handleInput}
             value={this.selected}
@@ -273,7 +206,7 @@ export default {
           </Select>
         )}
         {// 引用多选下拉框组件封装
-          !this.highlightRow && (
+          this.column.isMultiple && (
             <CustomMultipleSelect
               options={this.allTableDataWithoutPaging}
               onShowRefModal={e => this.showRefModal(e)}
@@ -283,41 +216,28 @@ export default {
               v-model={this.selected}
             ></CustomMultipleSelect>
           )}
-        <Modal
-          title={this.ciType.name}
-          value={this.visibleSwap}
-          footer-hide={true}
-          mask-closable={false}
-          scrollable={true}
-          width={1300}
-          on-on-visible-change={status => this.hideRefModal(status)}
-        >
-          <div class="modalTable" style="padding:20px;">
-            {this.visibleSwap && (
-              <CMDBTable
-                tableData={this.tableData}
-                tableColumns={this.tableColumns}
-                tableHeight={650}
-                onGetSelectedRows={this.getTableValue}
-                onHandleSubmit={this.handleSubmit}
-                onPageChange={this.pageChange}
-                onPageSizeChange={this.pageSizeChange}
-                pagination={this.pagination}
-                showCheckbox={true}
-                highlightRow={this.highlightRow}
-                tableOuterActions={null}
-                tableInnerActions={null}
-                ascOptions={{}}
-                ref="refTable"
-              />
-            )}
+        <Modal value={this.showDetail} footer-hide={true} title={this.column.title} width={1100}>
+          <div style="overflow: auto;max-height:500px;overflow:auto">
+            <Collapse>
+              {this.detailData.map(column => {
+                return (
+                  <Panel name={column.title}>
+                    {column.title}
+                    <p slot="content">
+                      <JsonViewer value={column.value} expand-depth={1} class="ref-select-jsonviewer"></JsonViewer>
+                    </p>
+                  </Panel>
+                )
+              })}
+            </Collapse>
           </div>
-          <div style="text-align:right;margin-top:40px">
-            <span style="margin-right:20px">
-              <Button type="info" onClick={this.modalOk}>
-                OK
-              </Button>
-            </span>
+          <div style="margin-top:20px;height: 30px">
+            <Button style="float: right;margin-right: 20px" onClick={() => this.closeModal()}>
+              {this.$t('tw_close')}
+            </Button>
+            <Button style="float: right;margin-right: 20px" type="primary" onClick={() => this.refreshDiffVariable()}>
+              {this.$t('tw_refresh')}
+            </Button>
           </div>
         </Modal>
       </div>

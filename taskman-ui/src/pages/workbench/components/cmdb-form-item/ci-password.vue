@@ -1,6 +1,6 @@
 <template>
   <div class="cmdb-ci-password">
-    <div>
+    <div style="display:flex;align-items:center;">
       <Tooltip
         max-width="200"
         class="ci-password-cell-show-span"
@@ -14,23 +14,23 @@
         <Icon type="ios-build-outline" v-if="!disabled" @click="resetPassword" class="operation-icon-confirm" />
       </div>
     </div>
-    <Modal v-model="isShowEditModal" :title="useLocalValue ? $t('enter_password') : $t('password_edit')">
+    <Modal v-model="isShowEditModal" :title="useLocalValue ? $t('tw_enter_password') : $t('tw_password_edit')">
       <Form ref="form" :model="editFormData" :rules="rules" label-position="right" :label-width="120">
-        <FormItem :label="useLocalValue ? $t('password') : $t('new_password')" prop="newPassword">
+        <FormItem :label="useLocalValue ? $t('tw_password') : $t('tw_new_password')" prop="newPassword">
           <Input
             class="encrypt-password"
             password
-            :placeholder="$t('new_password_input_placeholder')"
+            :placeholder="$t('tw_new_password_input_placeholder')"
             ref="newPasswordInput"
             type="password"
             v-model="editFormData.newPassword"
           />
         </FormItem>
-        <FormItem :label="useLocalValue ? $t('confirm_password') : $t('confirm_password')" prop="comparedPassword">
+        <FormItem :label="$t('tw_confirm_password')" prop="comparedPassword">
           <Input
             class="encrypt-password"
             password
-            :placeholder="$t('please_input_new_password_again')"
+            :placeholder="$t('tw_please_input_new_password_again')"
             ref="comparedPasswordInput"
             type="password"
             v-model="editFormData.comparedPassword"
@@ -41,7 +41,7 @@
         <Button @click="confirm" :loading="modalLoading" type="primary">{{
           useLocalValue ? $t('confirm') : $t('save')
         }}</Button>
-        <Button @click="closeEditModal">{{ $t('close') }}</Button>
+        <Button @click="closeEditModal">{{ $t('tw_close') }}</Button>
       </div>
     </Modal>
   </div>
@@ -68,7 +68,7 @@ export default {
       rules: {
         comparedPassword: [
           {
-            message: this.$t('please_input_right_new_password'),
+            message: this.$t('tw_please_input_right_new_password'),
             validator: () => this.editFormData.newPassword === this.editFormData.comparedPassword
           }
         ]
@@ -99,7 +99,8 @@ export default {
         }
         this.editFormData.newPassword = CryptoJS.AES.encrypt(this.editFormData.newPassword, key, config).toString()
       }
-      this.panalData[this.formData.propertyName] = this.editFormData.newPassword
+      // this.panalData[this.formData.propertyName] = this.editFormData.newPassword
+      this.$emit('input', this.editFormData.newPassword)
       this.realPassword = this.editFormData.newPassword
       this.editFormData = {
         newPassword: '',
@@ -147,16 +148,17 @@ export default {
   border: 1px solid #57a3f3;
   color: #57a3f3;
   border-radius: 4px;
-  width: 24px;
+  width: 32px;
   line-height: 24px;
   cursor: pointer;
+  margin-left: 5px;
 }
 .password-wrapper {
   text-overflow: ellipsis;
   overflow: hidden;
-  width: 200px;
+  width: fit-content;
   white-space: nowrap;
-  line-height: 1.5;
+  margin-right: 20px;
 }
 </style>
 <style lang="scss">

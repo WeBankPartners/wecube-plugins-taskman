@@ -2,50 +2,70 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-14 15:05:46
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-10-16 19:50:41
+ * @LastEditTime: 2024-11-20 17:46:15
 -->
 <template>
   <div>
-    <Poptip v-model="visible" placement="bottom" class="custom-select" @on-popper-show="handleOpenChange">
-      <div ref="input" :class="{ 'custom-select-input': true, 'custom-select-disabled': disabled }">
+    <Poptip
+      v-model="visible"
+      transfer
+      popper-class="taskman-cmdb-custom-select-popper"
+      placement="bottom-start"
+      class="taskman-cmdb-custom-select"
+      @on-popper-show="handleOpenChange"
+    >
+      <!--模拟输入框显示效果-->
+      <div ref="input" :class="{ 'taskman-cmdb-custom-select-input': true, 'taskman-cmdb-custom-select-disabled': disabled }">
         <div class="ref" @click.stop="handleOpenRefModal($event)">@</div>
         <div class="tags">
-          <Tag
-            v-for="i in optionsData"
-            v-show="selected.includes(i.guid)"
-            closable
-            @on-close="handleRemoveItem(i)"
-            @click.native="visible = !visible"
-            :key="i.guid"
-            >{{ i.key_name }}</Tag
-          >
-          <!-- <Tag v-if="selected && selected.length > 1">+{{ selected.length - 1 }}</Tag> -->
+          <template v-if="getSelectedOptions && getSelectedOptions.length > 0">
+            <Tag
+              v-for="(i, index) in getSelectedOptions"
+              v-show="index === 0"
+              @click.native="visible = !visible"
+              closable
+              @on-close="handleRemoveItem($event, i)"
+              :key="i.guid"
+              >{{ i.key_name }}</Tag
+            >
+            <Tag v-if="selected && selected.length > 1" @click.native="visible = !visible">
+              + {{ selected.length - 1 }}</Tag
+            >
+          </template>
+          <template v-else>
+            <span style="color:#dcdee2;">{{ $t('tw_please_select') }}</span>
+          </template>
         </div>
         <div class="icon">
           <Icon v-if="visible" type="ios-arrow-up" />
           <Icon v-else type="ios-arrow-down" />
         </div>
       </div>
-      <div slot="content" class="custom-select-content" :style="{ width: width + 'px' }">
-        <!-- <div class="dropdown-select">
-          <span>选中结果:</span>
-          <Tag
-            v-for="i in optionsData"
-            v-show="selected.includes(i.guid)"
-            :key="i.guid"
-          >{{i.key_name}}</Tag>
-        </div> -->
+      <!--模拟下拉框显示效果-->
+      <div
+        slot="content"
+        class="taskman-cmdb-custom-select-content"
+        :style="{ minWidth: width + 'px', width: 'fit-content', maxWidth: '500px' }"
+      >
+        <div class="dropdown-selected">
+          <span class="dropdown-selected-title">选中结果:</span>
+          <Tag v-for="i in getSelectedOptions" :key="i.guid" closable @on-close="handleRemoveItem($event, i)">{{
+            i.key_name
+          }}</Tag>
+        </div>
         <Input v-model="keyword" @input="handleFilterOptions" placeholder="关键字搜索" style="width:100%;"></Input>
-        <div class="dropdown-wrap">
+        <div v-if="getFilterOptions.length > 0" class="dropdown-wrap">
           <div
-            v-for="i in optionsData.filter(i => i.isShow)"
+            v-for="i in getFilterOptions"
             :key="i.guid"
             :class="{ 'dropdown-wrap-item': true, 'dropdown-wrap-item-active': i.checked }"
             @click="handleSelectItem(i)"
           >
-            {{ i.key_name }}<Icon v-if="i.checked" type="ios-checkmark" size="24" color="#2d8cf0e6" />
+            <span>{{ i.key_name }}</span>
+            <Icon v-if="i.checked" type="ios-checkmark" size="24" color="#2d8cf0e6" />
           </div>
         </div>
+        <div v-else class="no-data">暂无数据</div>
       </div>
     </Poptip>
   </div>
@@ -65,6 +85,10 @@ export default {
     disabled: {
       type: Boolean,
       default: false
+    },
+    title: {
+      type: String,
+      default: ''
     }
   },
   data () {
@@ -77,10 +101,18 @@ export default {
       visible: false
     }
   },
+  computed: {
+    getFilterOptions () {
+      return this.optionsData.filter(i => i.isShow && !this.selected.includes(i.guid))
+    },
+    getSelectedOptions () {
+      return this.optionsData.filter(i => this.selected.includes(i.guid))
+    }
+  },
   watch: {
     options: {
       handler (val) {
-        if (val && val.length > 0) {
+        if (val && Array.isArray(val)) {
           this.optionsData = JSON.parse(JSON.stringify(val))
           this.optionsData.forEach(i => {
             this.$set(i, 'checked', false)
@@ -94,7 +126,9 @@ export default {
     },
     value: {
       handler (val) {
-        this.selected = JSON.parse(JSON.stringify(val))
+        if (val && Array.isArray(val)) {
+          this.selected = JSON.parse(JSON.stringify(val))
+        }
         this.initData()
       },
       immediate: true,
@@ -164,7 +198,8 @@ export default {
         }
       })
     },
-    handleRemoveItem (item) {
+    handleRemoveItem (e, item) {
+      e.stopPropagation()
       if (this.disabled) return
       const index = this.selected.findIndex(i => i === item.guid)
       this.selected.splice(index, 1)
@@ -174,6 +209,7 @@ export default {
     // 打开引用数据弹框回调
     handleOpenRefModal (e) {
       if (this.disabled) return
+      this.visible = false
       this.$emit('showRefModal', e)
     },
     // 下拉展开回调
@@ -184,7 +220,7 @@ export default {
 }
 </script>
 <style lang="scss">
-.custom-select {
+.taskman-cmdb-custom-select {
   width: 100%;
   &-input {
     width: 100%;
@@ -196,8 +232,11 @@ export default {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    border: 1px solid #dcdee2;
+    border-radius: 4px;
     .ref {
       width: 24px;
+      cursor: pointer;
     }
     .tags {
       width: 100%;
@@ -219,8 +258,16 @@ export default {
   }
   &-content {
     .dropdown {
-      &-select {
+      &-selected {
+        &-title {
+          font-weight: bold;
+          margin-right: 5px;
+        }
         margin-bottom: 5px;
+        width: 100;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
       }
       &-wrap {
         max-height: 400px;
@@ -238,11 +285,22 @@ export default {
           &:hover {
             background: #f3f3f3;
           }
+          span {
+            display: block;
+            max-width: 460px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
         }
         &-item-active {
           color: #2d8cf0e6;
         }
       }
+    }
+    .no-data {
+      font-size: 12px;
+      text-align: center;
+      margin-top: 10px;
     }
   }
   .ivu-poptip-rel {
@@ -264,5 +322,8 @@ export default {
     display: flex;
     align-items: center;
   }
+}
+.taskman-cmdb-custom-select-popper .ivu-poptip-body {
+  padding: 8px 16px !important;
 }
 </style>

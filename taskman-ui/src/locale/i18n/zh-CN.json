@@ -184,6 +184,7 @@
   "tw_no_data": "暂无数据",
   "tw_tag": "节点",
   "tw_data_type": "数据类型",
+  "tw_cmdb_data_type": "CMDB数据类型",
   "tw_data": "数据项",
   "tw_delete_bind_tips": "你删除了以下节点的操作数据项，删除不可恢复，确认要删除吗？",
   "tw_back_bind_placeholder": "请输入退回说明",
@@ -521,5 +522,6 @@
   "tw_confirm_password": "确认密码",
   "tw_please_input_new_password_again": "请再次输入新密码",
   "tw_please_input_right_new_password": "请输入与新密码相同的值",
-  "tw_json_edit": "JSON 编辑"
+  "tw_json_edit": "JSON 编辑",
+  "tw_password_empty": "未设置密码"
 }

@@ -2,17 +2,20 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-11-19 10:23:32
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-11-26 15:17:51
+ * @LastEditTime: 2024-11-26 17:59:28
 -->
 <template>
   <div class="taskman-cmdb-json-config">
+    <!--查看-->
     <Tooltip v-if="disabled" max-width="350" style="width: 100%" placement="bottom-start" :content="jsonDataString">
       <div class="inline">
         <span class="text">{{ jsonDataString || $t('tw_no_data') }}</span>
         <Icon type="md-eye" @click="showDetail = true" class="operation-icon-confirm" />
       </div>
     </Tooltip>
+    <!--编辑-->
     <Button v-else type="primary" :disabled="disabled" @click="showTreeConfig">{{ $t('tw_config') }}</Button>
+    <!--编辑弹框-->
     <Modal :z-index="2000" v-model="showEdit" :title="$t('tw_json_edit')" @on-ok="confirmJsonData" width="800">
       <Button type="primary" v-if="isArray" @click="addNewJson">新增一组</Button>
       <div style="max-height:500px; overflow:auto">
@@ -21,6 +24,7 @@
         </template>
       </div>
     </Modal>
+    <!--查看弹框-->
     <Modal :z-index="2000" v-model="showDetail" :title="title" @on-ok="showDetail = false" width="700">
       <div style="max-height:500px;overflow:auto">
         <JsonViewer :value="JSON.parse(jsonDataString || '{}')" :expand-depth="5" class="taskman-json-viewer"></JsonViewer>
@@ -75,7 +79,7 @@ export default {
         this.finalData = this.$refs['jsonTree' + 0][0].jsonJ
         this.last = this.finalData
       }
-      this.$emit('input', this.last, this.inputKey)
+      this.$emit('input', this.last)
       this.showEdit = false
     },
     addNewJson () {

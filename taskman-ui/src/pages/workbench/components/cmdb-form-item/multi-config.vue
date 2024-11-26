@@ -1,18 +1,21 @@
 <template>
   <div class="taskman-cmdb-multi-config">
+    <!--查看-->
     <Tooltip
       v-if="disabled"
       max-width="350"
       style="width: 100%"
       placement="bottom-start"
-      :content="type === 'json' ? JSON.stringify(originData) : JSON.stringify(multiData)"
+      :content="type === 'json' ? JSON.stringify(originData) : JSON.stringify(formaMultiData)"
     >
       <div class="inline">
-        <span class="text">{{ type === 'json' ? originData : multiData }}</span>
-        <Icon type="md-eye" @click="showDetail = true" class="operation-icon-confirm" />
+        <span class="text">{{ type === 'json' ? originData : formaMultiData }}</span>
+        <Icon v-if="type === 'json'" type="md-eye" @click="showDetail = true" class="operation-icon-confirm" />
       </div>
     </Tooltip>
+    <!--编辑-->
     <Button v-else type="primary" @click="showConfig" :disabled="disabled">{{ $t('tw_config') }}</Button>
+    <!--非json编辑框-->
     <Modal v-model="showModal" :title="$t('tw_config')" @on-ok="confirmData" @on-cancel="cancel">
       <template v-for="(item, itemIndex) in multiData">
         <div :key="itemIndex" style="margin:4px">
@@ -22,6 +25,7 @@
         </div>
       </template>
     </Modal>
+    <!--json编辑框-->
     <Modal :z-index="2000" v-model="showJsonModal" :title="$t('tw_json_edit')" @on-ok="confirmJsonData" width="800">
       <Button type="primary" @click="addNewJson">新增一组</Button>
       <div style="max-height:500px; overflow:auto">
@@ -30,6 +34,7 @@
         </template>
       </div>
     </Modal>
+    <!--详情弹框-->
     <Modal :z-index="2000" v-model="showDetail" :title="title" @on-ok="showDetail = false" width="700">
       <div style="max-height:500px;overflow:auto">
         <JsonViewer :value="type === 'json' ? originData : multiData" :expand-depth="5" class="taskman-json-viewer"></JsonViewer>
@@ -58,6 +63,17 @@ export default {
     }
   },
   props: ['title', 'inputKey', 'data', 'type', 'disabled'],
+  computed: {
+    formaMultiData () {
+      const res = this.multiData.map(item => {
+        if (this.type === 'number') {
+          return Number(item.value)
+        }
+        return item.value
+      })
+      return res
+    }
+  },
   mounted () {
     let tmp = this.data ? this.data : []
     if (this.type === 'json') {
@@ -131,7 +147,7 @@ export default {
       font-size: 13px;
       color:#515a6e;
       display: block;
-      max-width: 380px;
+      max-width: 400px;
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;

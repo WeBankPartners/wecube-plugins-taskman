@@ -187,6 +187,7 @@
   "tw_no_data": "No Data Available",
   "tw_tag": "Node",
   "tw_data_type": "Data Type",
+  "tw_cmdb_data_type": "CMDB Data Type",
   "tw_data": "Data Item",
   "tw_delete_bind_tips": "You have deleted operational data items for the following node. Deletion is irreversible. Are you sure you want to proceed?",
   "tw_back_bind_placeholder": "Please enter the reason for rejection.",
@@ -523,5 +524,6 @@
   "tw_confirm_password": "Confirm Password",
   "tw_please_input_new_password_again": "Please confirm new password again",
   "tw_please_input_right_new_password": "Please input the correct new password",
-  "tw_json_edit": "JSON Edit"
+  "tw_json_edit": "JSON Edit",
+  "tw_password_empty": "No password has been set"
 }

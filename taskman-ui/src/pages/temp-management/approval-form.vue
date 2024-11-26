@@ -277,6 +277,7 @@
                             placeholder=""
                           ></Input>
                         </FormItem>
+                        <!--表单类型-->
                         <FormItem :label="$t('tw_form_type')">
                           <Select
                             v-model="editElement.elementType"
@@ -290,6 +291,13 @@
                             <Option value="datePicker">DatePicker</Option>
                             <Option value="calculate">Calculate</Option>
                           </Select>
+                        </FormItem>
+                        <!--CMDB表单类型-->
+                        <FormItem v-if="editElement.cmdbAttr" :label="$t('tw_cmdb_data_type')">
+                          <Input
+                            v-model="JSON.parse(editElement.cmdbAttr).inputType"
+                            :disabled="true"
+                          />
                         </FormItem>
                         <!--数据集-->
                         <FormItem

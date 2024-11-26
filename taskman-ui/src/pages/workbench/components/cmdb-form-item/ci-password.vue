@@ -15,9 +15,10 @@
       </div>
     </div>
     <div v-else class="no-data-wrap">
-      <span class="text">{{ $t('tw_no_data') }}</span>
+      <span class="text">{{ $t('tw_password_empty') }}</span>
       <Icon type="ios-build-outline" v-if="!disabled" @click="resetPassword" class="operation-icon-confirm" />
     </div>
+    <!--密码编辑弹框-->
     <Modal v-model="isShowEditModal" :title="useLocalValue ? $t('tw_enter_password') : $t('tw_password_edit')">
       <Form ref="form" :model="editFormData" :rules="rules" label-position="right" :label-width="120">
         <FormItem :label="useLocalValue ? $t('tw_password') : $t('tw_new_password')" prop="newPassword">

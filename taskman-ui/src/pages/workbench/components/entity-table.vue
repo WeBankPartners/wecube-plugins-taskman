@@ -393,7 +393,7 @@ export default {
       })
     },
     // cmdb表单属性整理--------------------
-    async getCMDBInitData (data) {
+    getCMDBInitData (data) {
       this.cmdbOptions = []
       let columns = []
       for (let index = 0; index < data.length; index++) {
@@ -403,15 +403,18 @@ export default {
             const { titleObj } = data[index] || { titleObj: {} }
             const attrName = titleObj.entity + '__' + titleObj.name
             const attr = titleObj.id
-            const res = await getRefOptions(this.requestId, attr, {}, attrName)
-            if (res.statusCode === 'OK') {
-              data[index].options = res.data.map(item => {
-                return {
-                  label: item.key_name,
-                  value: item.guid
+            // 异步获取select和multiSelect下拉框的值
+            getRefOptions(this.requestId, attr, {}, attrName)
+              .then(res => {
+                if (res.statusCode === 'OK') {
+                  this.cmdbOptions[index].options = res.data.map(item => {
+                    return {
+                      label: item.key_name,
+                      value: item.guid
+                    }
+                  })
                 }
               })
-            }
           }
           const columnItem = {
             ...data[index],

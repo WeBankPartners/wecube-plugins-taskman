@@ -97,7 +97,7 @@ export default {
   },
   methods: {
     confirmJsonData () {
-      this.$emit('input', this.originData, this.inputKey)
+      this.$emit('input', this.originData)
       this.showJsonModal = false
       this.showModal = false
     },
@@ -127,7 +127,7 @@ export default {
       })
       this.showJsonModal = false
       this.showModal = false
-      this.$emit('input', res, this.inputKey)
+      this.$emit('input', res)
     },
     cancel () {}
   },

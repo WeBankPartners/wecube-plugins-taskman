@@ -14,13 +14,13 @@ export default {
           key: 'JSON',
           render: (h, { root, node, data }) => {
             return (
-              <span style="display: inline-block;width: 100%">
+              <span style="display:flex;justify-content:space-between;">
                 <span>{data.title}</span>
-                <span style="display: inline-block;float: right;margin-right: 32px">
+                <span>
                   <Button
                     onClick={() => this.append(data)}
                     type="primary"
-                    style="width:64px"
+                    style="width:50px"
                     size="small"
                     icon="ios-add"
                   ></Button>
@@ -104,11 +104,11 @@ export default {
       }
       if (data.children.length !== 0) {
         return (
-          <span style="display: 'inline-block';width: '100%'">
-            <span style="padding: 0 4px">
-              Key:<Input value={data.title} style="width:100px" onInput={v => formateNodeData(v, 'key')}></Input>
+          <span style="display:flex;align-items:center;justify-content:space-between;">
+            <span style="padding: 0">
+              Key:<Input value={data.title} style="width:100px;margin-left:10px;" onInput={v => formateNodeData(v, 'key')}></Input>
             </span>
-            <span style="display: inline-block;float: right;margin-right: 32px">
+            <div>
               <Button onClick={() => this.append(data)} type="default" size="small" icon="ios-add"></Button>
               <Button
                 onClick={() => this.remove(root, node, data)}
@@ -116,19 +116,21 @@ export default {
                 size="small"
                 icon="ios-remove"
               ></Button>
-            </span>
+            </div>
           </span>
         )
       } else {
         return (
-          <span style="display: 'inline-block';width: '100%'">
-            <span style="padding: 0 4px">
-              Key:<Input value={data.title} style="width:100px" onInput={v => formateNodeData(v, 'key')}></Input>
-            </span>
-            <span style="padding: 0 4px">
-              Value:<Input value={formatData(data)} style="width:100px" onInput={v => formateNodeData(v, 'value')}></Input>
-            </span>
-            <span style="display: inline-block;float: right;margin-right: 32px">
+          <span style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <span style="padding: 0">
+                Key:<Input value={data.title} style="width:100px;margin-left:10px;" onInput={v => formateNodeData(v, 'key')}></Input>
+              </span>
+              <span style="padding: 0">
+                Value:<Input value={formatData(data)} style="width:100px;margin-left:10px;" onInput={v => formateNodeData(v, 'value')}></Input>
+              </span>
+            </div>
+            <div>
               <Button onClick={() => this.append(data)} type="default" size="small" icon="ios-add"></Button>
               <Button
                 onClick={() => this.remove(root, node, data)}
@@ -136,7 +138,7 @@ export default {
                 size="small"
                 icon="ios-remove"
               ></Button>
-            </span>
+            </div>
           </span>
         )
       }

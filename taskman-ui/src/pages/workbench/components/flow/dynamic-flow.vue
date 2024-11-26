@@ -422,8 +422,6 @@ export default {
       }
     },
     flowGraphMouseenterHandler (id) {
-      console.log(id)
-      // Task_0f9a25l
       clearTimeout(this.flowDetailTimer)
       this.flowDetailTimer = setTimeout(async () => {
         const found = this.flowData.flowNodes.find(_ => _.nodeId === id)

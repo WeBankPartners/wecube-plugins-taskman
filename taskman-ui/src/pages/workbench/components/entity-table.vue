@@ -213,7 +213,7 @@ export default {
     },
     formDisabled () {
       return function (attr) {
-        return attr.isEdit === 'no'
+        return attr.isEdit === 'no' || this.formDisable
       }
     },
     getCMDBColumn () {

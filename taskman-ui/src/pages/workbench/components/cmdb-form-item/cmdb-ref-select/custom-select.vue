@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-14 15:05:46
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-11-20 17:46:15
+ * @LastEditTime: 2024-11-26 11:52:32
 -->
 <template>
   <div>
@@ -65,7 +65,7 @@
             <Icon v-if="i.checked" type="ios-checkmark" size="24" color="#2d8cf0e6" />
           </div>
         </div>
-        <div v-else class="no-data">暂无数据</div>
+        <div v-else class="no-data">{{ $t('tw_no_data') }}</div>
       </div>
     </Poptip>
   </div>

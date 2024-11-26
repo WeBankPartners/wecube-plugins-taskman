@@ -1,6 +1,6 @@
 <template>
   <div class="cmdb-ci-password">
-    <div style="display:flex;align-items:center;">
+    <div v-if="realPassword" style="display:flex;align-items:center;">
       <Tooltip
         max-width="200"
         class="ci-password-cell-show-span"
@@ -13,6 +13,10 @@
         <Icon :type="isShowPassword ? 'md-eye-off' : 'md-eye'" @click="showPassword" class="operation-icon-confirm" />
         <Icon type="ios-build-outline" v-if="!disabled" @click="resetPassword" class="operation-icon-confirm" />
       </div>
+    </div>
+    <div v-else class="no-data-wrap">
+      <span class="text">{{ $t('tw_no_data') }}</span>
+      <Icon type="ios-build-outline" v-if="!disabled" @click="resetPassword" class="operation-icon-confirm" />
     </div>
     <Modal v-model="isShowEditModal" :title="useLocalValue ? $t('tw_enter_password') : $t('tw_password_edit')">
       <Form ref="form" :model="editFormData" :rules="rules" label-position="right" :label-width="120">
@@ -48,7 +52,7 @@
 </template>
 
 <script>
-import { queryPassword, getEncryptKey } from '@/api/server'
+import { getEncryptKey } from '@/api/server'
 import CryptoJS from 'crypto-js'
 export default {
   name: '',
@@ -76,6 +80,9 @@ export default {
     }
   },
   props: ['formData', 'panalData', 'disabled'],
+  mounted () {
+    this.realPassword = this.panalData[this.formData.propertyName]
+  },
   methods: {
     resetPassword () {
       this.isShowEditModal = true
@@ -116,19 +123,20 @@ export default {
       }
     },
     async showPassword () {
-      if (this.useLocalValue || !this.panalData.guid) {
-        this.realPassword = this.panalData[this.formData.propertyName]
-      } else {
-        const { statusCode, data } = await queryPassword(
-          this.formData.ciTypeId,
-          this.panalData.guid,
-          this.formData.propertyName,
-          {}
-        )
-        if (statusCode === 'OK') {
-          this.realPassword = data
-        }
-      }
+      // if (this.useLocalValue || !this.panalData.guid) {
+      //   this.realPassword = this.panalData[this.formData.propertyName]
+      // } else {
+      //   const { statusCode, data } = await queryPassword(
+      //     this.formData.ciTypeId,
+      //     this.panalData.guid,
+      //     this.formData.propertyName,
+      //     {}
+      //   )
+      //   if (statusCode === 'OK') {
+      //     this.realPassword = data
+      //   }
+      // }
+      this.realPassword = this.panalData[this.formData.propertyName]
       this.isShowPassword = !this.isShowPassword
     },
     async getEncryptKey () {
@@ -137,8 +145,7 @@ export default {
         this.encryptKey = data
       }
     }
-  },
-  mounted () {}
+  }
 }
 </script>
 
@@ -158,7 +165,16 @@ export default {
   overflow: hidden;
   width: fit-content;
   white-space: nowrap;
-  margin-right: 20px;
+  margin-right: 5px;
+}
+.no-data-wrap {
+  height: 34px;
+  display: flex;
+  align-items: center;
+  .text {
+    font-size: 13px;
+    color: #515a6e;
+  }
 }
 </style>
 <style lang="scss">

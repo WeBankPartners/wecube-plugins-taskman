@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-18 17:55:45
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-11-22 16:24:32
+ * @LastEditTime: 2024-11-26 11:41:41
 -->
 <template>
   <div class="cmdb-entity-table">
@@ -16,6 +16,7 @@
     </template>
     <template v-else-if="column.component === 'Input' && column.inputType === 'multiText'">
       <MultiConfig
+        :title="column.title"
         :inputKey="column.inputKey"
         :disabled="isGroupEditDisabled(column, value)"
         :data="JSON.parse(JSON.stringify(value[column.inputKey]))"
@@ -25,6 +26,7 @@
     </template>
     <template v-else-if="column.component === 'Input' && column.inputType === 'multiInt'">
       <MultiConfig
+        :title="column.title"
         :inputKey="column.inputKey"
         :disabled="isGroupEditDisabled(column, value)"
         :data="JSON.parse(JSON.stringify(value[column.inputKey]))"
@@ -34,6 +36,7 @@
     </template>
     <template v-else-if="column.component === 'Input' && column.inputType === 'multiObject'">
       <MultiConfig
+        :title="column.title"
         :inputKey="column.inputKey"
         :disabled="isGroupEditDisabled(column, value)"
         :data="JSON.parse(JSON.stringify(value[column.inputKey]))"

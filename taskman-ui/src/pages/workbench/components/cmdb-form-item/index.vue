@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-18 17:55:45
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-11-26 20:22:04
+ * @LastEditTime: 2024-11-28 11:42:42
 -->
 <template>
   <div class="cmdb-entity-table">
@@ -55,7 +55,6 @@
         <Input
           v-bind="getObjectInputProps(column, value)"
           @input="(v) => {setValueHandler(v.trim(), column, value)}"
-          @on-search="(v) => {handleInputSearch(v, column, value)}"
         ></Input>
         <Button
           v-if="column.autofillable === 'yes' && column.autoFillType === 'suggest'"
@@ -149,8 +148,6 @@
 </template>
 <script>
 import dayjs from 'dayjs'
-import { debounce } from '@/pages/util/index'
-import { queryCiData } from '@/api/server'
 import WeCMDBCIPassword from './ci-password.vue'
 import MultiConfig from './multi-config.vue'
 import JsonConfig from './json-config.vue'
@@ -183,9 +180,7 @@ export default {
     }
   },
   data () {
-    return {
-      inputSearch: {}
-    }
+    return {}
   },
   computed: {
     isGroupEditDisabled () {
@@ -300,42 +295,6 @@ export default {
       attrsWillReset.forEach(attr => {
         row[attr.propertyName] = attr.value
       })
-    },
-    handleInputSearch: debounce(async function (value, column, data) {
-      if (value.length > 0 && column.ciTypeId) {
-        // this.$set(this.inputSearch[column.inputKey], 'options', ['host01', 'host02', 'host11'].map(_ =>  _ + value))
-        const res = await queryCiData({
-          id: column.ciTypeId,
-          queryObject: {
-            filters: [{ name: column.inputKey, operator: 'contains', value: value }],
-            paging: true,
-            dialect: { queryMode: 'new' },
-            pageable: { pageSize: 20, startIndex: 0 },
-            resultColumns: [column.inputKey]
-          }
-        })
-        let keySet = new Set()
-        this.inputSearch[column.inputKey].options = []
-        res.data.contents.forEach(item => {
-          let val = item[column.inputKey] + ''
-          if (!keySet.has(val)) {
-            keySet.add(val)
-            const label = this.labelMatchValue(value, val)
-            this.inputSearch[column.inputKey].options.push({
-              label: label,
-              value: val
-            })
-          }
-        })
-        let oldVal = data[column.inputKey]
-        data[column.inputKey] = oldVal + ' '
-        data[column.inputKey] = oldVal
-      }
-    }, 800),
-    labelMatchValue (value, val) {
-      const patt = new RegExp(value, 'gmi')
-      let execRes = Array.from(new Set(val.match(patt)))
-      return val.replaceAll(execRes[0], `<span style="color:red">${execRes[0]}</span>`)
     }
   }
 }

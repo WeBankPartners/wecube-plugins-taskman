@@ -140,7 +140,7 @@ export default {
       const { titleObj } = this.column || { titleObj: {} }
       const { refEntity, refPackageName } = titleObj || { refEntity: '', refPackageName: '' }
       if (!refPackageName || !refEntity) return
-      const { statusCode, data } = await getWeCmdbOptions(refPackageName, refEntity, {
+      const { status, data } = await getWeCmdbOptions(refPackageName, refEntity, {
         filters: [
           {
             name: 'guid',
@@ -149,7 +149,7 @@ export default {
           }
         ]
       })
-      if (statusCode === 'OK') {
+      if (status === 'OK') {
         const contents = data || []
         if (this.column.isMultiple) {
           contents.forEach(item => {

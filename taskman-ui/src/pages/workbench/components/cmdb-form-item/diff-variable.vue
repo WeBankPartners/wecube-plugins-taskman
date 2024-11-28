@@ -2,7 +2,7 @@
   <div class="taskman-cmdb-diff-variable">
     <div class="inline">
       <span class="text">{{ data || $t('tw_no_data') }}</span>
-      <Icon type="md-eye" @click="showDetail = true" class="operation-icon-confirm" />
+      <Icon v-if="data" type="md-eye" @click="showDetail = true" class="operation-icon-confirm" />
     </div>
     <!--详情弹框-->
     <Modal :z-index="2000" v-model="showDetail" :title="$t('tw_diff_variable')" @on-ok="showDetail = false" width="1100">

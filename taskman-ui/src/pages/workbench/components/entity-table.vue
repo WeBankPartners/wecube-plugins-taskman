@@ -42,7 +42,7 @@
                         : []
                     "
                   >
-                    <!--cmdb属性类型-->
+                    <!--cmdb表单类型-->
                     <template v-if="i.cmdbAttr">
                       <CMDBFormItem
                         :options="cmdbOptions"
@@ -52,6 +52,7 @@
                         style="width: calc(100% - 20px)"
                       />
                     </template>
+                    <!--taskman表单类型-->
                     <template v-else>
                       <!--输入框-->
                       <Input

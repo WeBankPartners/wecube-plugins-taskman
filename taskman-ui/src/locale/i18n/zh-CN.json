@@ -523,5 +523,6 @@
   "tw_please_input_new_password_again": "请再次输入新密码",
   "tw_please_input_right_new_password": "请输入与新密码相同的值",
   "tw_json_edit": "JSON 编辑",
-  "tw_password_empty": "未设置密码"
+  "tw_password_empty": "未设置密码",
+  "tw_diff_variable": "变量格式化"
 }

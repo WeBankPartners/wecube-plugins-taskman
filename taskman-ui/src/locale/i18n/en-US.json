@@ -525,5 +525,6 @@
   "tw_please_input_new_password_again": "Please confirm new password again",
   "tw_please_input_right_new_password": "Please input the correct new password",
   "tw_json_edit": "JSON Edit",
-  "tw_password_empty": "No password has been set"
+  "tw_password_empty": "No password has been set",
+  "tw_diff_variable": "Variable Format"
 }

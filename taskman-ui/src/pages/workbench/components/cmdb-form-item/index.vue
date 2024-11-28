@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-18 17:55:45
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-11-28 11:42:42
+ * @LastEditTime: 2024-11-28 19:37:36
 -->
 <template>
   <div class="cmdb-entity-table">
@@ -13,6 +13,9 @@
         :disabled="isGroupEditDisabled(column, value)"
         @input="(v) => {value[column.inputKey] = v}"
       />
+    </template>
+    <template v-else-if="column.component === 'WeCMDBDiffVariable'">
+      <Diffvariable :data="value[column.inputKey]" />
     </template>
     <template v-else-if="column.component === 'Input' && column.inputType === 'multiText'">
       <MultiConfig
@@ -68,7 +71,7 @@
         :title="column.title"
         :inputKey="column.inputKey"
         :disabled="isGroupEditDisabled(column, value)"
-        :jsonData="JSON.parse(value[column.inputKey] || '{}')"
+        :jsonData="typeof value[column.inputKey] === 'object' ? value[column.inputKey] : JSON.parse(value[column.inputKey] || '{}')"
         @input="(v) => {setValueHandler(v, column, value)}"
       ></JsonConfig>
     </template>
@@ -153,13 +156,15 @@ import MultiConfig from './multi-config.vue'
 import JsonConfig from './json-config.vue'
 import WeCMDBSelect from './cmdb-select.vue'
 import WeCMDBRefSelect from './cmdb-ref-select/index'
+import Diffvariable from './diff-variable.vue'
 export default {
   components: {
     WeCMDBCIPassword,
     MultiConfig,
     JsonConfig,
     WeCMDBSelect,
-    WeCMDBRefSelect
+    WeCMDBRefSelect,
+    Diffvariable
   },
   props: {
     options: {

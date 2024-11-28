@@ -190,7 +190,7 @@ export default {
       }
     },
     // 子编排调用API列表支持跳转预览子编排详情
-    viewSubProcExecutionDetail(id) {
+    viewSubProcExecutionDetail (id) {
       if (process.env.VUE_APP_PLUGIN === 'plugin') {
         window.sessionStorage.currentPath = '' // 先清空session缓存页面，不然打开新标签页面会回退到缓存的页面
         const path = `${window.location.origin}/#/implementation/workflow-execution/view-execution?id=${id}&from=sub`
@@ -232,9 +232,9 @@ export default {
         NotStarted: '#7F8A96',
         wait: '#7F8A96'
       }
-      const nodes = this.flowData
-        && this.flowData.flowNodes
-        && this.flowData.flowNodes
+      const nodes = this.flowData &&
+        this.flowData.flowNodes &&
+        this.flowData.flowNodes
           .filter(i => i.status !== 'predeploy')
           .map(_ => {
             const shapeMap = {
@@ -283,14 +283,14 @@ export default {
           })
       const genEdge = () => {
         const lineName = {}
-        this.flowData.nodeLinks
-          && this.flowData.nodeLinks.forEach(link => {
+        this.flowData.nodeLinks &&
+          this.flowData.nodeLinks.forEach(link => {
             lineName[link.source + link.target] = link.name
           })
         const pathAry = []
-        this.flowData
-          && this.flowData.flowNodes
-          && this.flowData.flowNodes.forEach(_ => {
+        this.flowData &&
+          this.flowData.flowNodes &&
+          this.flowData.flowNodes.forEach(_ => {
             if (_.succeedingNodeIds.length > 0) {
               let current = []
               current = _.succeedingNodeIds.map(to => {
@@ -299,19 +299,19 @@ export default {
                 // 修复判断分支多连线不能区分颜色问题
                 if (_.nodeType === 'decision') {
                   return (
-                    '"'
-                    + _.nodeId
-                    + '"'
-                    + ' -> '
-                    + `${'"' + to + '"'} [label="${lineName[_.nodeId + to]}" color="${edgeColor}" ]`
+                    '"' +
+                    _.nodeId +
+                    '"' +
+                    ' -> ' +
+                    `${'"' + to + '"'} [label="${lineName[_.nodeId + to]}" color="${edgeColor}" ]`
                   )
                 }
                 return (
-                  '"'
-                  + _.nodeId
-                  + '"'
-                  + ' -> '
-                  + `${'"' + to + '"'} [label="${lineName[_.nodeId + to]}" color="${
+                  '"' +
+                  _.nodeId +
+                  '"' +
+                  ' -> ' +
+                  `${'"' + to + '"'} [label="${lineName[_.nodeId + to]}" color="${
                     excution ? statusColor[_.status] : 'black'
                   }"]`
                 )
@@ -323,14 +323,14 @@ export default {
           .replace(/,/g, ';')
       }
       const nodesToString = Array.isArray(nodes) ? nodes.toString().replace(/,/g, ';') + ';' : ''
-      const nodesString = 'digraph G {'
-        + 'bgcolor="transparent";'
-        + 'splines="polyline"'
-        + 'Node [fontname=Arial, width=1.8, height=0.45, color="#505a68", fontsize=12]'
-        + 'Edge [fontname=Arial, color="#505a68", fontsize=10];'
-        + nodesToString
-        + genEdge()
-        + '}'
+      const nodesString = 'digraph G {' +
+        'bgcolor="transparent";' +
+        'splines="polyline"' +
+        'Node [fontname=Arial, width=1.8, height=0.45, color="#505a68", fontsize=12]' +
+        'Edge [fontname=Arial, color="#505a68", fontsize=10];' +
+        nodesToString +
+        genEdge() +
+        '}'
       this.flowGraph.graphviz
         .transition()
         .renderDot(nodesString)
@@ -341,8 +341,7 @@ export default {
             addEvent('.retry', 'click', this.retryHandler)
             addEvent('.normal', 'click', this.normalHandler)
             d3.selectAll('.retry').attr('cursor', 'pointer')
-          }
-          else {
+          } else {
             removeEvent('.retry', 'click', this.retryHandler)
             removeEvent('.normal', 'click', this.normalHandler)
           }
@@ -467,8 +466,7 @@ export default {
                 }
               })
             }
-          }
-          else {
+          } else {
             this.nodeDetailColumns = this.nodeDetailColumns.filter(i => i.key !== 'procDefId')
           }
         }

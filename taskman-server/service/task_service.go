@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -572,13 +573,20 @@ func SaveTaskFormNew(task *models.TaskTable, operator string, param *models.Task
 			}
 			// 判断数据行属性的变化
 			for k, v := range valueObj.EntityData {
+				var valueString string
 				// 判断属性合不合法，是不是属性该表单的属性
 				formItemTemplateId, nameLegalCheck := columnNameIdMap[k]
 				if !nameLegalCheck {
 					continue
 				}
-				// 整理属性值，特殊处理数组
-				valueString := fmt.Sprintf("%s", v)
+				// map需要特殊处理
+				if reflect.ValueOf(v).Kind() == reflect.Map {
+					byteArr, _ := json.Marshal(v.(map[string]interface{}))
+					valueString = string(byteArr)
+				} else {
+					// 整理属性值，特殊处理数组
+					valueString = fmt.Sprintf("%s", v)
+				}
 				if _, multipleFlag := isColumnMultiMap[k]; multipleFlag {
 					if vInterfaceList, assertOk := v.([]interface{}); assertOk {
 						var tmpV []string

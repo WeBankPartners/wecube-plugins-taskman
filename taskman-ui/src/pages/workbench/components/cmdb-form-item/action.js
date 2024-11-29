@@ -44,5 +44,8 @@ export const components = {
   },
   password: {
     component: 'WeCMDBCIPassword'
+  },
+  diffVariable: {
+    component: 'WeCMDBDiffVariable'
   }
 }

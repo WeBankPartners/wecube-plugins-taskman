@@ -42,7 +42,7 @@
                         : []
                     "
                   >
-                    <!--cmdb属性类型-->
+                    <!--cmdb表单类型-->
                     <template v-if="i.cmdbAttr">
                       <CMDBFormItem
                         :options="cmdbOptions"
@@ -52,6 +52,7 @@
                         style="width: calc(100% - 20px)"
                       />
                     </template>
+                    <!--taskman表单类型-->
                     <template v-else>
                       <!--输入框-->
                       <Input
@@ -319,18 +320,20 @@ export default {
       this.refKeys = []
       this.calculateKeys = []
       data.title.forEach(t => {
-        // 非cmdb下发的引用类型
+        // 非cmdb下发的下拉类型
         if ((t.elementType === 'select' || t.elementType === 'wecmdbEntity') && !t.cmdbAttr) {
           this.refKeys.push(t.name)
         }
+        // 自定义计算分析类型
         if (t.elementType === 'calculate') {
           this.calculateKeys.push(t.name)
         }
       })
-      // 表单属性初始化-----------------
+
+      // taskman表单属性初始化
       this.formOptions = data.title
 
-      // cmdb表单属性初始化-----------------
+      // cmdb表单属性初始化
       const cmdbOptions = []
       const formOptions = deepClone(this.formOptions)
       formOptions.forEach(item => {
@@ -392,7 +395,7 @@ export default {
         })
       })
     },
-    // cmdb表单属性整理--------------------
+    // cmdb表单属性初始化
     getCMDBInitData (data) {
       this.cmdbOptions = []
       let columns = []
@@ -403,7 +406,7 @@ export default {
             const { titleObj } = data[index] || { titleObj: {} }
             const attrName = titleObj.entity + '__' + titleObj.name
             const attr = titleObj.id
-            // 异步获取select和multiSelect下拉框的值
+            // 异步获取cmdb select和multiSelect下拉框的值
             getRefOptions(this.requestId, attr, {}, attrName)
               .then(res => {
                 if (res.statusCode === 'OK') {
@@ -441,6 +444,7 @@ export default {
       }
       this.cmdbOptions = columns
     },
+    // taskman下拉框选项值初始化
     async getRefOptions (titleObj, row, index, first) {
       // 模板自定义下拉类型
       if (titleObj.elementType === 'select' && titleObj.entity === '') {

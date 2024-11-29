@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-21 19:33:55
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-11-22 16:40:35
+ * @LastEditTime: 2024-11-28 18:27:07
  */
 import { getRefOptions, getWeCmdbOptions } from '@/api/server'
 import CustomMultipleSelect from './custom-select.vue'
@@ -140,7 +140,7 @@ export default {
       const { titleObj } = this.column || { titleObj: {} }
       const { refEntity, refPackageName } = titleObj || { refEntity: '', refPackageName: '' }
       if (!refPackageName || !refEntity) return
-      const { statusCode, data } = await getWeCmdbOptions(refPackageName, refEntity, {
+      const { status, data } = await getWeCmdbOptions(refPackageName, refEntity, {
         filters: [
           {
             name: 'guid',
@@ -149,11 +149,11 @@ export default {
           }
         ]
       })
-      if (statusCode === 'OK') {
+      if (status === 'OK') {
         const contents = data || []
         if (this.column.isMultiple) {
           contents.forEach(item => {
-            if (item.guid === this.selected) {
+            if (this.selected.includes(item.guid)) {
               this.detailData.push({
                 title: item.key_name,
                 value: item
@@ -162,7 +162,7 @@ export default {
           })
         } else {
           contents.forEach(item => {
-            if (this.selected.includes(item.guid)) {
+            if (item.guid === this.selected) {
               this.detailData.push({
                 title: item.key_name,
                 value: item
@@ -235,9 +235,9 @@ export default {
             <Button style="float: right;margin-right: 20px" onClick={() => this.closeModal()}>
               {this.$t('tw_close')}
             </Button>
-            <Button style="float: right;margin-right: 20px" type="primary" onClick={() => this.refreshDiffVariable()}>
+            {/* <Button style="float: right;margin-right: 20px" type="primary" onClick={() => this.refreshDiffVariable()}>
               {this.$t('tw_refresh')}
-            </Button>
+            </Button> */}
           </div>
         </Modal>
       </div>

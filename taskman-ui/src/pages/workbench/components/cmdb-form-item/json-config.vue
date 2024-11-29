@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-11-19 10:23:32
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-11-26 20:21:10
+ * @LastEditTime: 2024-11-28 18:37:34
 -->
 <template>
   <div class="taskman-cmdb-json-config">
@@ -79,7 +79,7 @@ export default {
         this.finalData = this.$refs['jsonTree' + 0][0].jsonJ
         this.last = this.finalData
       }
-      this.$emit('input', this.last ? JSON.stringify(this.last) : '')
+      this.$emit('input', this.last)
       this.showEdit = false
     },
     addNewJson () {

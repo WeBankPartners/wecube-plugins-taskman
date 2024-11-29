@@ -8,6 +8,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"io"
 	"net/http"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -538,16 +539,23 @@ func UpdateRequestFormItemNew(requestId, operator, now string, param *models.Req
 			}
 			// 判断数据行属性的变化
 			for k, v := range valueObj.EntityData {
+				var valueString string
 				// 判断属性合不合法，是不是属性该表单的属性
 				formItemTemplateId, nameLegalCheck := columnNameIdMap[k]
 				if !nameLegalCheck {
 					continue
 				}
-				// 整理属性值，特殊处理数组
-				valueString := fmt.Sprintf("%s", v)
+				// web传递map 需要支持
+				if reflect.ValueOf(v).Kind() == reflect.Map {
+					byteArr, _ := json.Marshal(v.(map[string]interface{}))
+					valueString = string(byteArr)
+				} else {
+					// 整理属性值，特殊处理数组
+					valueString = fmt.Sprintf("%s", v)
+				}
 				if _, multipleFlag := isColumnMultiMap[k]; multipleFlag {
 					if vInterfaceList, assertOk := v.([]interface{}); assertOk {
-						tmpV := []string{}
+						var tmpV []string
 						for _, interfaceV := range vInterfaceList {
 							tmpV = append(tmpV, fmt.Sprintf("%s", interfaceV))
 						}

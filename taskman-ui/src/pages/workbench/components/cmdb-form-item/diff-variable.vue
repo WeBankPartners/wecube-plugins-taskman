@@ -84,6 +84,7 @@ export default {
   .inline {
     display: flex;
     align-items: center;
+    height: 34px;
     .text {
       font-size: 13px;
       color:#515a6e;

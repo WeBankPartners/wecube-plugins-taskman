@@ -264,6 +264,7 @@
                         />
                       </FormItem>
                     </Form>
+                    <!--多选-->
                     <FormItem
                       :label="$t('tw_multiple')"
                       v-if="['select', 'wecmdbEntity'].includes(editElement.elementType)"
@@ -272,31 +273,34 @@
                         v-model="editElement.multiple"
                         true-value="yes"
                         false-value="no"
-                        :disabled="$parent.isCheck === 'Y'"
+                        :disabled="$parent.isCheck === 'Y' || Boolean(editElement.cmdbAttr)"
                         @on-change="paramsChanged"
                         size="default"
                       />
                     </FormItem>
+                    <!--可编辑-->
                     <FormItem :label="$t('editable')">
                       <i-switch
                         v-model="editElement.isEdit"
                         true-value="yes"
                         false-value="no"
-                        :disabled="$parent.isCheck === 'Y'"
+                        :disabled="$parent.isCheck === 'Y' || Boolean(editElement.cmdbAttr)"
                         @on-change="paramsChanged"
                         size="default"
                       />
                     </FormItem>
+                    <!--必填-->
                     <FormItem :label="$t('required')">
                       <i-switch
                         v-model="editElement.required"
                         true-value="yes"
                         false-value="no"
-                        :disabled="$parent.isCheck === 'Y' || editElement.controlSwitch === 'yes'"
+                        :disabled="$parent.isCheck === 'Y' || editElement.controlSwitch === 'yes' || Boolean(editElement.cmdbAttr)"
                         @on-change="paramsChanged"
                         size="default"
                       />
                     </FormItem>
+                    <!--显示-->
                     <FormItem :label="$t('display')">
                       <i-switch
                         v-model="editElement.inDisplayName"
@@ -307,6 +311,7 @@
                         size="default"
                       />
                     </FormItem>
+                    <!--默认清空-->
                     <FormItem :label="$t('tw_default_empty')">
                       <i-switch
                         v-model="editElement.defaultClear"
@@ -318,6 +323,7 @@
                       />
                     </FormItem>
                   </div>
+                  <!--默认值-->
                   <FormItem :label="$t('defaults')">
                     <Input
                       v-model="editElement.defaultValue"
@@ -326,6 +332,7 @@
                       @on-change="paramsChanged"
                     ></Input>
                   </FormItem>
+                  <!--宽度-->
                   <FormItem :label="$t('width')">
                     <Select v-model="editElement.width" @on-change="paramsChanged" :disabled="$parent.isCheck === 'Y'">
                       <Option :value="6">6</Option>
@@ -615,6 +622,23 @@ export default {
       const { statusCode, data } = await getRequestDataForm(this.requestTemplateId)
       if (statusCode === 'OK') {
         this.dataFormInfo = data
+        // 同步taskman和cmdb共有属性
+        this.dataFormInfo.groups && this.dataFormInfo.groups.forEach(group => {
+          group.items && group.items.forEach(item => {
+            if (item.cmdbAttr) {
+              const { nullable, editable, regularExpressionRule, inputType } = JSON.parse(item.cmdbAttr)
+              item.regular = regularExpressionRule
+              item.required = nullable
+              item.isEdit = editable
+              if (['ref', 'select', 'extRef'].includes(inputType)) {
+                item.multiple = 'no'
+              }
+              if (['multiSelect', 'multiRef'].includes(inputType)) {
+                item.multiple = 'yes'
+              }
+            }
+          })
+        })
         let groups = this.dataFormInfo.groups
         if (this.displayLastGroup) {
           const group = groups[groups.length - 1]

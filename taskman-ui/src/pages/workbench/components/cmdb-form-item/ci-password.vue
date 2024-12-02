@@ -71,6 +71,12 @@ export default {
       },
       modalLoading: false,
       rules: {
+        newPassword: [
+          {
+            message: this.$t('tw_new_password_input_placeholder'),
+            validator: () => !!this.editFormData.newPassword
+          }
+        ],
         comparedPassword: [
           {
             message: this.$t('tw_please_input_right_new_password'),

@@ -8,10 +8,10 @@ import task from '@/pages/task.vue'
 import taskManagementIndex from '@/pages/task-mgmt/index.vue'
 import requestCheck from '@/pages/request-management/request-check.vue'
 import workbenchIndex from '@/pages/workbench/index.vue'
-import workbenchTemplate  from '@/pages/workbench/template/index.vue'
+import workbenchTemplate from '@/pages/workbench/template/index.vue'
 import workbenchPublishCreate from '@/pages/workbench/publish/create'
 import workbenchPublishDetail from '@/pages/workbench/publish/detail'
-import workbenchPublishList  from '@/pages/workbench/publish/list'
+import workbenchPublishList from '@/pages/workbench/publish/list'
 import workbenchRequestCreate from '@/pages/workbench/request/create'
 import workbenchRequestDetail from '@/pages/workbench/request/detail'
 import workbenchRequestList from '@/pages/workbench/request/list'
@@ -25,7 +25,7 @@ import workbenchChangeCreate from '@/pages/workbench/change/create'
 import workbenchChangeDetail from '@/pages/workbench/change/detail'
 import workbenchChangeList from '@/pages/workbench/change/list'
 import workbenchRequestAudit from '@/pages/workbench/request-audit.vue'
-import workbenchVue  from '@/pages/workbench.vue'
+import workbenchVue from '@/pages/workbench.vue'
 
 const router = [
   {
@@ -33,7 +33,7 @@ const router = [
     name: 'taskman',
     redirect: '/taskman/workbench',
     component: pluginEntry,
-    children:[
+    children: [
       {
         path: '/taskman/template-mgmt',
         name: '/taskman/template-mgmt',

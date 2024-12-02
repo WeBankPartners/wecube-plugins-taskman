@@ -118,7 +118,7 @@ type TaskFormItemQueryObj struct {
 
 func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfigureDto, workflowEntityAttribute *ProcEntityAttributeObj, newItemGroupId string, remoteAttributes []*EntityAttributeObj) *FormItemTemplateTable {
 	var elementType = string(FormItemElementTypeInput)
-	var refPackage, refEntity, cmdbAttr string
+	var refPackage, refEntity, cmdbAttr, required, editable string
 	if workflowEntityAttribute.DataType == "ref" {
 		elementType = string(FormItemElementTypeSelect)
 		refPackage = workflowEntityAttribute.EntityPackage
@@ -131,8 +131,20 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 			if strings.Contains(remoteAttr.InputType, "select") {
 				elementType = string(FormItemElementTypeSelect)
 			}
+			if remoteAttr.Nullable == "yes" {
+				required = "no"
+			} else if remoteAttr.Nullable == "no" {
+				required = "yes"
+			}
+			editable = remoteAttr.Editable
 			break
 		}
+	}
+	if required == "" {
+		required = "no"
+	}
+	if editable == "" {
+		editable = "yes"
 	}
 	return &FormItemTemplateTable{
 		Id:              guid.CreateGuid(),
@@ -153,9 +165,9 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 		RefPackageName:  refPackage,
 		RefEntity:       refEntity,
 		DataOptions:     "",
-		Required:        "no",
+		Required:        required,
 		Regular:         "",
-		IsEdit:          "yes",
+		IsEdit:          editable,
 		IsView:          "yes",
 		IsOutput:        "no",
 		InDisplayName:   "yes",

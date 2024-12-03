@@ -52,27 +52,27 @@ module.exports = {
   productionSourceMap: process.env.PLUGIN !== 'plugin',
   configureWebpack: config => {
     if (process.env.PLUGIN === 'plugin') {
-      // config.optimization.splitChunks = {}
-      config.optimization = {
-        runtimeChunk: 'single',
-        splitChunks: {
-          chunks: 'all',
-          minSize: 20000, // 允许新拆出 chunk 的最小体积
-          maxSize: 500000, // 设置chunk的最大体积为500KB
-          automaticNameDelimiter: '-',
-          cacheGroups: {
-            defaultVendors: {
-              test: /[\\/]node_modules[\\/]/,
-              priority: -10
-            },
-            default: {
-              minChunks: 2,
-              priority: -20,
-              reuseExistingChunk: true
-            }
-          }
-        }
-      }
+      config.optimization.splitChunks = {}
+      // config.optimization = {
+      //   runtimeChunk: 'single',
+      //   splitChunks: {
+      //     chunks: 'all',
+      //     minSize: 20000, // 允许新拆出 chunk 的最小体积
+      //     maxSize: 500000, // 设置chunk的最大体积为500KB
+      //     automaticNameDelimiter: '-',
+      //     cacheGroups: {
+      //       defaultVendors: {
+      //         test: /[\\/]node_modules[\\/]/,
+      //         priority: -10
+      //       },
+      //       default: {
+      //         minChunks: 2,
+      //         priority: -20,
+      //         reuseExistingChunk: true
+      //       }
+      //     }
+      //   }
+      // }
       return
     }
     if (process.env.NODE_ENV === 'production') {

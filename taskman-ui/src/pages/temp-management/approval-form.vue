@@ -867,7 +867,7 @@ export default {
             if (item.cmdbAttr) {
               const { nullable, editable, regularExpressionRule, inputType } = JSON.parse(item.cmdbAttr)
               item.regular = regularExpressionRule
-              item.required = nullable
+              item.required = (nullable === 'yes' ? 'no' : 'yes')
               item.isEdit = editable
               if (['ref', 'select', 'extRef'].includes(inputType)) {
                 item.multiple = 'no'

@@ -204,26 +204,28 @@ export default {
   mounted () {
     if (this.$route.query.needCache === 'yes') {
       // 读取列表搜索参数
-      const storage = window.sessionStorage.getItem('search_workbench') || ''
+      const storage = window.sessionStorage.getItem('taskman_search_workbench') || ''
       if (storage) {
-        const { searchParams, searchOptions } = JSON.parse(storage)
+        const { searchParams, searchOptions, pagination } = JSON.parse(storage)
         this.form = searchParams
         this.searchOptions = searchOptions
+        this.pagination = pagination
         this.cacheFlag = true
       }
     }
     this.initData()
   },
-  beforeDestroy() {
+  beforeDestroy () {
     // 缓存列表搜索条件
     const storage = {
       searchParams: this.form,
-      searchOptions: this.searchOptions
+      searchOptions: this.searchOptions,
+      pagination: this.pagination
     }
-    window.sessionStorage.setItem('search_workbench', JSON.stringify(storage))
+    window.sessionStorage.setItem('taskman_search_workbench', JSON.stringify(storage))
   },
   methods: {
-    initData() {
+    initData () {
       this.initTab = this.$route.query.tabName || 'myPending'
       this.initAction = this.$route.query.actionName || '1'
       this.homePageInstance = document.querySelector('.platform-homepage')
@@ -270,7 +272,14 @@ export default {
         if (!this.cacheFlag) {
           this.handleReset()
         }
-        this.handleQuery(true)
+        if (!this.cacheFlag) {
+          this.pagination.currentPage = 1
+          this.getList()
+          this.$refs.dataCard.getData(true)
+        } else {
+          this.getList()
+          this.$refs.dataCard.getData(true)
+        }
       }
     },
     // 点击视图卡片触发查询

@@ -517,22 +517,24 @@ export default {
       immediate: true
     }
   },
-  mounted () {
-    // 读取列表搜索参数
-    if (this.$route.query.needCache === 'yes') {
-      const storage = window.sessionStorage.getItem('search_template') || ''
-      if (storage) {
-        const { searchParams } = JSON.parse(storage)
-        const { name, status, mgmtRoles, type, tags } = searchParams || {}
-        this.name = name
-        this.status = status
-        this.mgmtRoles = mgmtRoles
-        this.type = type
-        this.tags = tags
-        this.getInitRole()
+  async beforeRouteEnter (to, from, next) {
+    next(vm => {
+      if (from.path === '/templateManagementIndex') {
+        const storage = window.sessionStorage.getItem('taskman_search_template') || ''
+        if (storage) {
+          const { searchParams, pagination } = JSON.parse(storage)
+          const { name, status, mgmtRoles, type, tags } = searchParams || {}
+          vm.name = name
+          vm.status = status
+          vm.mgmtRoles = mgmtRoles
+          vm.type = type
+          vm.tags = tags
+          vm.pagination = pagination
+          vm.getInitRole()
+        }
       }
-    }
-    this.initData()
+      vm.initData()
+    })
   },
   beforeDestroy () {
     // 缓存列表搜索条件
@@ -543,9 +545,10 @@ export default {
         mgmtRoles: this.mgmtRoles,
         type: this.type,
         tags: this.tags
-      }
+      },
+      pagination: this.pagination
     }
-    window.sessionStorage.setItem('search_template', JSON.stringify(storage))
+    window.sessionStorage.setItem('taskman_search_template', JSON.stringify(storage))
   },
   methods: {
     initData () {

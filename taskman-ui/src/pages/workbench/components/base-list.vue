@@ -84,11 +84,12 @@ export default {
   mounted () {
     // 读取列表搜索参数
     if (this.$route.query.needCache === 'yes') {
-      const storage = window.sessionStorage.getItem('search_workbench_history') || ''
+      const storage = window.sessionStorage.getItem('taskman_search_workbench_history') || ''
       if (storage) {
-        const { searchParams, searchOptions } = JSON.parse(storage)
+        const { searchParams, searchOptions, pagination } = JSON.parse(storage)
         this.form = searchParams
         this.searchOptions = searchOptions
+        this.pagination = pagination
         this.cacheFlag = true
       }
     }
@@ -98,9 +99,10 @@ export default {
     // 缓存列表搜索条件
     const storage = {
       searchParams: this.form,
-      searchOptions: this.searchOptions
+      searchOptions: this.searchOptions,
+      pagination: this.pagination
     }
-    window.sessionStorage.setItem('search_workbench_history', JSON.stringify(storage))
+    window.sessionStorage.setItem('taskman_search_workbench_history', JSON.stringify(storage))
   },
   methods: {
     initData () {

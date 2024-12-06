@@ -365,7 +365,7 @@
                               size="default"
                             />
                           </FormItem>
-                          <FormItem :label="$t('display')">
+                          <!-- <FormItem :label="$t('display')">
                             <i-switch
                               v-model="editElement.inDisplayName"
                               true-value="yes"
@@ -374,7 +374,7 @@
                               @on-change="paramsChanged"
                               size="default"
                             />
-                          </FormItem>
+                          </FormItem> -->
                           <FormItem :label="$t('tw_default_empty')">
                             <i-switch
                               v-model="editElement.defaultClear"

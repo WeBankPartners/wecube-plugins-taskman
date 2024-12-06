@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-21 19:33:55
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-11-28 18:27:07
+ * @LastEditTime: 2024-12-06 19:16:18
  */
 import { getRefOptions, getWeCmdbOptions } from '@/api/server'
 import CustomMultipleSelect from './custom-select.vue'
@@ -45,7 +45,8 @@ export default {
       firstInput: true,
       firstChange: true,
       showDetail: false,
-      detailData: []
+      detailData: [],
+      activeName: ''
     }
   },
   methods: {
@@ -133,7 +134,7 @@ export default {
     },
     // ref勾选数据详情查看
     async showRefModal (e) {
-      e.preventDefault()
+      // e.preventDefault()
       e.stopPropagation()
       this.detailData = []
       this.showDetail = true
@@ -170,6 +171,7 @@ export default {
             }
           })
         }
+        this.activeName = this.detailData[0] && this.detailData[0].title
       }
     },
     closeModal () {
@@ -199,7 +201,7 @@ export default {
             on-on-open-change={this.getFilterRulesOptions}
             max-tag-count={2}
           >
-            <span slot="prefix" onClick={e => this.showRefModal(e)}>
+            <span slot="prefix" style="cursor:pointer !important;color:#000;" onClick={e => this.showRefModal(e)}>
               @
             </span>
             {renderOptions}
@@ -216,9 +218,9 @@ export default {
               v-model={this.selected}
             ></CustomMultipleSelect>
           )}
-        <Modal value={this.showDetail} footer-hide={true} title={this.column.title} width={1100}>
+        <Modal v-model={this.showDetail} footer-hide={true} title={this.column.title} width={1100}>
           <div style="overflow: auto;max-height:500px;overflow:auto">
-            <Collapse>
+            <Collapse v-model={this.activeName}>
               {this.detailData.map(column => {
                 return (
                   <Panel name={column.title}>

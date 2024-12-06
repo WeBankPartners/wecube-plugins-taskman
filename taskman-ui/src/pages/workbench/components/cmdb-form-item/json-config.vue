@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-11-19 10:23:32
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-11-28 18:37:34
+ * @LastEditTime: 2024-12-06 11:58:43
 -->
 <template>
   <div class="taskman-cmdb-json-config">
@@ -95,6 +95,7 @@ export default {
   .inline {
     display: flex;
     align-items: center;
+    height: 34px;
     .text {
       font-size: 13px;
       color:#515a6e;

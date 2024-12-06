@@ -301,7 +301,7 @@
                       />
                     </FormItem>
                     <!--显示-->
-                    <FormItem :label="$t('display')">
+                    <!-- <FormItem :label="$t('display')">
                       <i-switch
                         v-model="editElement.inDisplayName"
                         true-value="yes"
@@ -310,7 +310,7 @@
                         @on-change="paramsChanged"
                         size="default"
                       />
-                    </FormItem>
+                    </FormItem> -->
                     <!--默认清空-->
                     <FormItem :label="$t('tw_default_empty')">
                       <i-switch

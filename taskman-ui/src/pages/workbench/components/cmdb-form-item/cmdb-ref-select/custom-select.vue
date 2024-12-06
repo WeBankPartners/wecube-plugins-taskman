@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-14 15:05:46
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-11-26 11:52:32
+ * @LastEditTime: 2024-12-06 19:19:05
 -->
 <template>
   <div>
@@ -208,7 +208,6 @@ export default {
     },
     // 打开引用数据弹框回调
     handleOpenRefModal (e) {
-      if (this.disabled) return
       this.visible = false
       this.$emit('showRefModal', e)
     },
@@ -236,7 +235,8 @@ export default {
     border-radius: 4px;
     .ref {
       width: 24px;
-      cursor: pointer;
+      cursor: pointer !important;
+      color: #000;
     }
     .tags {
       width: 100%;

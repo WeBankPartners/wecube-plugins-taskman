@@ -529,11 +529,18 @@ export default {
           vm.mgmtRoles = mgmtRoles
           vm.type = type
           vm.tags = tags
-          vm.pagination = pagination
           vm.getInitRole()
+          // 多选下拉框有默认值自动触发onSearch事件，导致页数被重置，采用延时方法解决这个问题
+          setTimeout(() => {
+            vm.pagination = pagination
+            vm.initData()
+          }, 500)
+        } else {
+          vm.initData()
         }
+      } else {
+        vm.initData()
       }
-      vm.initData()
     })
   },
   beforeDestroy () {

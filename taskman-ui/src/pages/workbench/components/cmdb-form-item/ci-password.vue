@@ -73,12 +73,19 @@ export default {
       rules: {
         newPassword: [
           {
+            required: true,
             message: this.$t('tw_new_password_input_placeholder'),
             validator: () => !!this.editFormData.newPassword
           }
         ],
         comparedPassword: [
           {
+            required: true,
+            message: this.$t('tw_new_password_input_placeholder'),
+            validator: () => !!this.editFormData.comparedPassword
+          },
+          {
+            required: true,
             message: this.$t('tw_please_input_right_new_password'),
             validator: () => this.editFormData.newPassword === this.editFormData.comparedPassword
           }

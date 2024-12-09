@@ -9,7 +9,7 @@
       :content="type === 'json' ? JSON.stringify(originData) : JSON.stringify(formaMultiData)"
     >
       <div class="inline">
-        <span class="text">{{ type === 'json' ? originData : formaMultiData }}</span>
+        <span class="text">{{ type === 'json' ? originData : formaMultiData.length === 0 ? $t('tw_no_data') :  formaMultiData }}</span>
         <Icon v-if="type === 'json'" type="md-eye" @click="showDetail = true" class="operation-icon-confirm" />
       </div>
     </Tooltip>
@@ -19,7 +19,7 @@
     <Modal v-model="showModal" :title="$t('tw_config')" @on-ok="confirmData" @on-cancel="cancel">
       <template v-for="(item, itemIndex) in multiData">
         <div :key="itemIndex" style="margin:4px">
-          <Input v-model="item.value" :type="type" v-if="type !== 'json'" style="width:360px"></Input>
+          <Input v-model="item.value" v-if="type !== 'json'" style="width:360px"></Input>
           <Button @click="addItem" type="primary" size="small" icon="ios-add" style="margin:0 4px"></Button>
           <Button @click="deleteItem(itemIndex)" v-if="multiData.length !== 1" size="small" type="error" icon="ios-trash"></Button>
         </div>
@@ -47,7 +47,10 @@
 import Tree from './tree'
 import JsonViewer from 'vue-json-viewer'
 export default {
-  name: '',
+  components: {
+    Tree,
+    JsonViewer
+  },
   data () {
     return {
       showModal: false,
@@ -65,11 +68,13 @@ export default {
   props: ['title', 'inputKey', 'data', 'type', 'disabled'],
   computed: {
     formaMultiData () {
-      const res = this.multiData.map(item => {
+      const arr = this.multiData.filter(i => i.value !== '') || []
+      const res = arr.map(item => {
         if (this.type === 'number') {
           return Number(item.value)
+        } else {
+          return item.value
         }
-        return item.value
       })
       return res
     }
@@ -107,8 +112,9 @@ export default {
     showConfig () {
       if (this.type === 'json') {
         this.showJsonModal = true
+      } else {
+        this.showModal = true
       }
-      this.showModal = true
     },
     addItem () {
       this.multiData.push({
@@ -122,18 +128,15 @@ export default {
       const res = this.multiData.map(item => {
         if (this.type === 'number') {
           return Number(item.value)
+        } else {
+          return item.value
         }
-        return item.value
       })
       this.showJsonModal = false
       this.showModal = false
       this.$emit('input', res)
     },
     cancel () {}
-  },
-  components: {
-    Tree,
-    JsonViewer
   }
 }
 </script>

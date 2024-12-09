@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-18 17:55:45
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-11-28 19:37:36
+ * @LastEditTime: 2024-12-09 20:06:31
 -->
 <template>
   <div class="cmdb-entity-table">
@@ -234,9 +234,10 @@ export default {
     },
     getInputProps () {
       return function (column, value) {
-        let dataTmp = JSON.stringify(value[column.inputKey])
+        let dataTmp = value[column.inputKey] ? JSON.stringify(value[column.inputKey]) : ''
         return {
           ...column,
+          disabled: this.isGroupEditDisabled(column, value),
           data: dataTmp,
           value: dataTmp
         }

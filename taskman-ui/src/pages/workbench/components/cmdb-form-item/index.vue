@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-18 17:55:45
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-12-09 20:06:31
+ * @LastEditTime: 2024-12-10 15:23:41
 -->
 <template>
   <div class="cmdb-entity-table">
@@ -34,7 +34,7 @@
         :disabled="isGroupEditDisabled(column, value)"
         :data="JSON.parse(JSON.stringify(value[column.inputKey]))"
         type="number"
-        @input="(v) => {value[column.inputKey] = v.trim()}"
+        @input="(v) => {value[column.inputKey] = v}"
       ></MultiConfig>
     </template>
     <template v-else-if="column.component === 'Input' && column.inputType === 'multiObject'">
@@ -234,12 +234,11 @@ export default {
     },
     getInputProps () {
       return function (column, value) {
-        let dataTmp = value[column.inputKey] ? JSON.stringify(value[column.inputKey]) : ''
+        // let dataTmp = value[column.inputKey] ? JSON.stringify(value[column.inputKey]) : ''
         return {
           ...column,
           disabled: this.isGroupEditDisabled(column, value),
-          data: dataTmp,
-          value: dataTmp
+          value: value[column.inputKey]
         }
       }
     },

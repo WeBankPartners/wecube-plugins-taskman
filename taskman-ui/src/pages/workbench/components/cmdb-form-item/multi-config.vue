@@ -9,7 +9,7 @@
       :content="type === 'json' ? JSON.stringify(originData) : JSON.stringify(formaMultiData)"
     >
       <div class="inline">
-        <span class="text">{{ type === 'json' ? originData : formaMultiData.length === 0 ? $t('tw_no_data') :  formaMultiData }}</span>
+        <span class="text">{{ type === 'json' ? originData : (formaMultiData && formaMultiData.length === 0 ? $t('tw_no_data') :  formaMultiData) }}</span>
         <Icon v-if="type === 'json'" type="md-eye" @click="showDetail = true" class="operation-icon-confirm" />
       </div>
     </Tooltip>

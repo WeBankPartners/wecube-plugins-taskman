@@ -1,4 +1,5 @@
 const CompressionPlugin = require('compression-webpack-plugin')
+const postcssWrap = require('postcss-wrap')
 const path = require('path')
 const baseUrl = 'http://127.0.0.1/'
 module.exports = {
@@ -93,6 +94,22 @@ module.exports = {
     'style-resources-loader': {
       preProcessor: 'less',
       patterns: [path.resolve(__dirname, './src/assets/css/common.less')] // 引入全局样式变量
+    }
+  },
+  css: {
+    loaderOptions: {
+      postcss: {
+        plugins: process.env.PLUGIN === 'plugin' ? [
+          postcssWrap({
+            selector: '.taskman-wrap'
+          })
+          // (css, file) => {
+          //   if (file && file.opts.from.includes('wecube-common-ui')) {
+          //     throw new Error('Skipping node_modules');
+          //   }
+          // }
+        ] : []
+      }
     }
   }
 }

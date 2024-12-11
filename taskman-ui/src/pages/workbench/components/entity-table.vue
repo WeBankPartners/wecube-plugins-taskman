@@ -485,6 +485,10 @@ export default {
         if (key.indexOf('Hidden') > -1) {
           delete cache[key]
         }
+        // 将对象类型转为字符串
+        if (typeof cache[key] === 'object') {
+          cache[key] = JSON.stringify(cache[key])
+        }
       })
       this.refKeys.forEach(k => {
         delete cache[k + 'Options']

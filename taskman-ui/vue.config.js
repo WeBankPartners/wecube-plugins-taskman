@@ -103,11 +103,6 @@ module.exports = {
           postcssWrap({
             selector: '.taskman-wrap'
           })
-          // (css, file) => {
-          //   if (file && file.opts.from.includes('wecube-common-ui')) {
-          //     throw new Error('Skipping node_modules');
-          //   }
-          // }
         ] : []
       }
     }

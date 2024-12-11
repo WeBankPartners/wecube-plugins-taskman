@@ -206,13 +206,14 @@ export default {
       this.$emit('input', this.selected)
       this.$emit('change', this.selected)
     },
-    // 打开引用数据弹框回调
+    // 点击@符号打开弹框
     handleOpenRefModal (e) {
       this.visible = false
       this.$emit('showRefModal', e)
     },
     // 下拉展开回调
     handleOpenChange () {
+      this.keyword = ''
       this.$emit('openChange', true)
     }
   }

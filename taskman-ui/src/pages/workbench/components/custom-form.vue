@@ -215,6 +215,10 @@ export default {
         if (!cache[key] || (Array.isArray(cache[key]) && cache[key].length === 0)) {
           delete cache[key]
         }
+        // 将对象类型转为字符串
+        if (typeof cache[key] === 'object') {
+          cache[key] = JSON.stringify(cache[key])
+        }
       })
       this.refKeys.forEach(k => {
         delete cache[k + 'Options']

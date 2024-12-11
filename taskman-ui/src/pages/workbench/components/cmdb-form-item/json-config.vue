@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-11-19 10:23:32
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-12-06 11:58:43
+ * @LastEditTime: 2024-12-11 17:45:27
 -->
 <template>
   <div class="taskman-cmdb-json-config">
@@ -54,18 +54,22 @@ export default {
   },
   props: ['inputKey', 'jsonData', 'disabled', 'title'],
   mounted () {
-    this.isArray = Array.isArray(this.jsonData)
-    if (this.isArray) {
-      this.originData = this.jsonData
-    } else {
-      this.originData.push(this.jsonData || {})
-    }
-    const jsonDataString = JSON.stringify(this.jsonData)
-    this.jsonDataString = jsonDataString === '""' ? '' : jsonDataString
+    this.initData()
   },
   methods: {
+    initData () {
+      this.isArray = Array.isArray(this.jsonData)
+      if (this.isArray) {
+        this.originData = this.jsonData
+      } else {
+        this.originData.push(this.jsonData || {})
+      }
+      const jsonDataString = JSON.stringify(this.jsonData)
+      this.jsonDataString = jsonDataString === '""' ? '' : jsonDataString
+    },
     showTreeConfig () {
       this.showEdit = true
+      this.initData()
     },
     confirmJsonData () {
       if (this.isArray) {

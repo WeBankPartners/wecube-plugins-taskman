@@ -80,27 +80,30 @@ export default {
     }
   },
   mounted () {
-    let tmp = this.data ? this.data : []
-    if (this.type === 'json') {
-      this.originData = tmp || []
-    } else {
-      this.multiData =
-        tmp &&
-        tmp.map(d => {
-          return {
-            value: d
-          }
-        })
-      if (this.multiData.length === 0) {
-        this.multiData = [
-          {
-            value: ''
-          }
-        ]
-      }
-    }
+    this.initData()
   },
   methods: {
+    initData () {
+      let tmp = this.data ? this.data : []
+      if (this.type === 'json') {
+        this.originData = tmp || []
+      } else {
+        this.multiData =
+          tmp &&
+          tmp.map(d => {
+            return {
+              value: d
+            }
+          })
+        if (this.multiData.length === 0) {
+          this.multiData = [
+            {
+              value: ''
+            }
+          ]
+        }
+      }
+    },
     confirmJsonData () {
       this.$emit('input', this.originData)
       this.showJsonModal = false
@@ -115,6 +118,7 @@ export default {
       } else {
         this.showModal = true
       }
+      this.initData()
     },
     addItem () {
       this.multiData.push({

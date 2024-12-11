@@ -19,14 +19,14 @@
     <Modal v-model="showModal" :title="$t('tw_config')" @on-ok="confirmData" @on-cancel="cancel">
       <template v-for="(item, itemIndex) in multiData">
         <div :key="itemIndex" style="margin:4px">
-          <Input v-model="item.value" v-if="type !== 'json'" style="width:360px"></Input>
+          <Input v-model="item.value" :type="type" v-if="type !== 'json'" style="width:360px"></Input>
           <Button @click="addItem" type="primary" size="small" icon="ios-add" style="margin:0 4px"></Button>
           <Button @click="deleteItem(itemIndex)" v-if="multiData.length !== 1" size="small" type="error" icon="ios-trash"></Button>
         </div>
       </template>
     </Modal>
     <!--json编辑框-->
-    <Modal :z-index="2000" v-model="showJsonModal" :title="$t('tw_json_edit')" @on-ok="confirmJsonData" width="800">
+    <Modal :z-index="2000" v-model="showJsonModal" :title="$t('tw_json_edit')" width="800" @on-ok="confirmJsonData" @on-cancel="cancel">
       <Button type="primary" @click="addNewJson">新增一组</Button>
       <div style="max-height:500px; overflow:auto">
         <template v-for="(item, itemIndex) in originData">
@@ -105,9 +105,9 @@ export default {
       }
     },
     confirmJsonData () {
-      this.$emit('input', this.originData)
       this.showJsonModal = false
       this.showModal = false
+      this.$emit('input', this.originData)
     },
     addNewJson () {
       this.originData.push({})
@@ -129,6 +129,8 @@ export default {
       this.multiData.splice(index, 1)
     },
     confirmData () {
+      const emptyFlag = this.multiData.some(item => item.value === '')
+      if (emptyFlag) return this.$message.error('数据不能为空')
       const res = this.multiData.map(item => {
         if (this.type === 'number') {
           return Number(item.value)

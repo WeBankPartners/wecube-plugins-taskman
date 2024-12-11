@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-18 17:55:45
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-12-10 15:23:41
+ * @LastEditTime: 2024-12-11 20:06:27
 -->
 <template>
   <div class="cmdb-entity-table">
@@ -52,6 +52,14 @@
         v-bind="getInputProps(column, value)"
         @input="(v) => {setValueHandler(v.trim(), column, value)}"
       ></Input>
+    </template>
+    <template v-else-if="column.component === 'Input' && column.inputType === 'int'">
+      <div style="display:flex;">
+        <Input
+          v-bind="getObjectInputProps(column, value)"
+          @input="(v) => {setValueHandler(v, column, value)}"
+        ></Input>
+      </div>
     </template>
     <template v-else-if="column.component === 'Input' && column.inputType !== 'object'">
       <div style="display:flex;">
@@ -246,6 +254,7 @@ export default {
       return function (column, value) {
         return {
           ...column,
+          type: column.inputType === 'int' ? 'number' : 'text',
           disabled: this.isGroupEditDisabled(column, value),
           value: value[column.inputKey]
         }

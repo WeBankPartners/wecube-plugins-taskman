@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-11-19 10:23:32
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-12-11 17:45:27
+ * @LastEditTime: 2024-12-11 20:14:28
 -->
 <template>
   <div class="taskman-cmdb-json-config">
@@ -59,6 +59,7 @@ export default {
   methods: {
     initData () {
       this.isArray = Array.isArray(this.jsonData)
+      this.originData = []
       if (this.isArray) {
         this.originData = this.jsonData
       } else {

@@ -58,12 +58,13 @@ export default {
   },
   methods: {
     initData () {
-      this.isArray = Array.isArray(this.jsonData)
+      const jsonData = JSON.parse(JSON.stringify(this.jsonData))
+      this.isArray = Array.isArray(jsonData)
       this.originData = []
       if (this.isArray) {
-        this.originData = this.jsonData
+        this.originData = jsonData
       } else {
-        this.originData.push(this.jsonData || {})
+        this.originData.push(jsonData || {})
       }
       const jsonDataString = JSON.stringify(this.jsonData)
       this.jsonDataString = jsonDataString === '""' ? '' : jsonDataString

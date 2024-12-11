@@ -84,7 +84,8 @@ export default {
   },
   methods: {
     initData () {
-      let tmp = this.data ? this.data : []
+      const data = JSON.parse(JSON.stringify(this.data))
+      let tmp = data || []
       if (this.type === 'json') {
         this.originData = tmp || []
       } else {
@@ -130,7 +131,7 @@ export default {
     },
     confirmData () {
       const emptyFlag = this.multiData.some(item => item.value === '')
-      if (emptyFlag) return this.$message.error('数据不能为空')
+      if (emptyFlag) return this.$Message.warning('数据不能为空')
       const res = this.multiData.map(item => {
         if (this.type === 'number') {
           return Number(item.value)

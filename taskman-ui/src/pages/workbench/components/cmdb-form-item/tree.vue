@@ -42,8 +42,17 @@ export default {
     }
   },
   props: ['jsonData'],
+  watch: {
+    jsonData: {
+      handler (val) {
+        this.initJSON(this.jsonData)
+      },
+      deep: true,
+      immediate: true
+    }
+  },
   mounted () {
-    this.initJSON(this.jsonData)
+    // this.initJSON(this.jsonData)
   },
   methods: {
     renderContent (h, { root, node, data }) {

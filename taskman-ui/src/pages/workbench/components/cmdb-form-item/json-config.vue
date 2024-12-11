@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-11-19 10:23:32
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-12-11 20:14:28
+ * @LastEditTime: 2024-12-11 21:39:36
 -->
 <template>
   <div class="taskman-cmdb-json-config">
@@ -66,7 +66,7 @@ export default {
       } else {
         this.originData.push(jsonData || {})
       }
-      const jsonDataString = JSON.stringify(this.jsonData)
+      const jsonDataString = JSON.stringify(jsonData)
       this.jsonDataString = jsonDataString === '""' ? '' : jsonDataString
     },
     showTreeConfig () {

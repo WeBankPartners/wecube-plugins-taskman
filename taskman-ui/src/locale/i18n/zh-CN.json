@@ -524,5 +524,8 @@
   "tw_please_input_right_new_password": "请输入与新密码相同的值",
   "tw_json_edit": "JSON 编辑",
   "tw_password_empty": "未设置密码",
-  "tw_diff_variable": "变量格式化"
+  "tw_diff_variable": "变量格式化",
+  "tw_select_result": "选中结果",
+  "tw_keyword_search": "关键字搜索",
+  "tw_add_group": "新增一组"
 }

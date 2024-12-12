@@ -31,7 +31,7 @@
     </Modal>
     <!--json编辑框-->
     <Modal :z-index="2000" v-model="showJsonModal" :title="$t('tw_json_edit')" width="800" @on-ok="confirmJsonData" @on-cancel="cancel">
-      <Button type="primary" @click="addNewJson">新增一组</Button>
+      <Button type="primary" @click="addNewJson">{{ $t('tw_add_group') }}</Button>
       <div style="max-height:500px; overflow:auto">
         <template v-for="(item, itemIndex) in originData">
           <Tree :ref="'jsonTree' + itemIndex" :jsonData="item" :key="itemIndex"></Tree>

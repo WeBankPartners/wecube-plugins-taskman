@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-14 15:05:46
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-12-12 11:36:05
+ * @LastEditTime: 2024-12-12 17:36:32
 -->
 <template>
   <div>
@@ -47,13 +47,15 @@
         class="taskman-cmdb-custom-select-content"
         :style="{ minWidth: width + 'px', width: 'fit-content', maxWidth: '500px' }"
       >
+        <!-- 选中结果 -->
         <div class="dropdown-selected">
-          <span class="dropdown-selected-title">选中结果:</span>
+          <span class="dropdown-selected-title">{{ $t('tw_select_result') }}:</span>
           <Tag v-for="i in getSelectedOptions" :key="i.guid" closable @on-close="handleRemoveItem($event, i)">{{
             i.key_name
           }}</Tag>
         </div>
-        <Input v-model="keyword" @input="handleFilterOptions" placeholder="关键字搜索" style="width:100%;"></Input>
+        <!--关键字搜索-->
+        <Input v-model="keyword" @input="handleFilterOptions" :placeholder="$t('tw_keyword_search')" style="width:100%;"></Input>
         <div v-if="getFilterOptions.length > 0" class="dropdown-wrap">
           <div
             v-for="i in getFilterOptions"

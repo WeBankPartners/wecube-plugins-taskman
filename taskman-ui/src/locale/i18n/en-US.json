@@ -526,5 +526,8 @@
   "tw_please_input_right_new_password": "Please input the correct new password",
   "tw_json_edit": "JSON Edit",
   "tw_password_empty": "No password has been set",
-  "tw_diff_variable": "Variable Format"
+  "tw_diff_variable": "Variable Format",
+  "tw_select_result": "Selection Result",
+  "tw_keyword_search": "Keyword Search",
+  "tw_add_group": "Add Group"
 }

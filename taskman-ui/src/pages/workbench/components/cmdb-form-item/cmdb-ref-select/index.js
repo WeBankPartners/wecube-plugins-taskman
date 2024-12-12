@@ -2,7 +2,8 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-21 19:33:55
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-12-12 11:33:49
+ * @LastEditTime: 2024-12-06 19:16:18
+ * @Description: cmdb表单配置
  */
 import { getRefOptions, getWeCmdbOptions } from '@/api/server'
 import CustomMultipleSelect from './custom-select.vue'
@@ -189,8 +190,26 @@ export default {
     })
     return (
       <div class="cmdb-ref-select">
+        {!this.column.isMultiple && (
+          <Select
+            onInput={this.handleInput}
+            value={this.selected}
+            disabled={this.selectDisabled || this.disabled}
+            style="width:100%"
+            filterable
+            clearable
+            on-on-change={this.selectChangeHandler}
+            on-on-open-change={this.getFilterRulesOptions}
+            max-tag-count={2}
+          >
+            <span slot="prefix" style="cursor:pointer !important;color:#000;" onClick={e => this.showRefModal(e)}>
+              @
+            </span>
+            {renderOptions}
+          </Select>
+        )}
         {// 引用多选下拉框组件封装
-          (
+          this.column.isMultiple && (
             <CustomMultipleSelect
               options={this.allTableDataWithoutPaging}
               onShowRefModal={e => this.showRefModal(e)}

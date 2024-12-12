@@ -17,7 +17,7 @@
     <Button v-else type="primary" :disabled="disabled" @click="showTreeConfig">{{ $t('tw_config') }}</Button>
     <!--编辑弹框-->
     <Modal :z-index="2000" v-model="showEdit" :title="$t('tw_json_edit')" @on-ok="confirmJsonData" width="800">
-      <Button type="primary" v-if="isArray" @click="addNewJson">新增一组</Button>
+      <Button type="primary" v-if="isArray" @click="addNewJson">{{ $t('tw_add_group') }}</Button>
       <div style="max-height:500px; overflow:auto">
         <template v-for="(item, itemIndex) in originData">
           <Tree :ref="'jsonTree' + itemIndex" :jsonData="item" :key="itemIndex"></Tree>

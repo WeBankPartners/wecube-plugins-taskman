@@ -526,9 +526,11 @@ func SaveTaskFormNew(task *models.TaskTable, operator string, param *models.Task
 		}
 	}
 	formParam := models.ProcessTaskFormParam{
-		Operator:  operator,
-		RequestId: task.Request,
-		FormData:  param.FormData,
+		Task:             task,
+		Operator:         operator,
+		TaskApproveParam: param,
+		RequestId:        task.Request,
+		FormData:         param.FormData,
 	}
 	if actions, err = GetRequestService().processTaskForm(formParam); err != nil {
 		return

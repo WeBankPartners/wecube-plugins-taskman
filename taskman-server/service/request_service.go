@@ -545,15 +545,13 @@ func (s *RequestService) processTaskForm(formParam models.ProcessTaskFormParam) 
 			if formId == "" {
 				formId = "form_" + guid.CreateGuid()
 				// 数据行不存在，新增
-				if formParam.Task == nil {
-					actions = append(actions, &dao.ExecAction{Sql: "insert into form(id,request,form_template,data_id,created_by,updated_by,created_time,updated_time) values (?,?,?,?,?,?,?,?)", Param: []interface{}{
-						formId, formParam.RequestId, tableForm.FormTemplateId, valueObj.Id, formParam.Operator, formParam.Operator, nowTime, nowTime,
-					}})
-				} else {
-					actions = append(actions, &dao.ExecAction{Sql: "insert into form(id,request,task,form_template,data_id,created_by,updated_by,created_time,updated_time) values (?,?,?,?,?,?,?,?,?)", Param: []interface{}{
-						formId, formParam.Task.Request, formParam.Task.Id, tableForm.FormTemplateId, valueObj.Id, formParam.Operator, formParam.Operator, nowTime, nowTime,
-					}})
+				var taskId = sql.NullString{String: "", Valid: false}
+				if formParam.Task != nil {
+					taskId = sql.NullString{String: formParam.Task.Id, Valid: true}
 				}
+				actions = append(actions, &dao.ExecAction{Sql: "insert into form(id,request,task,form_template,data_id,created_by,updated_by,created_time,updated_time) values (?,?,?,?,?,?,?,?,?)", Param: []interface{}{
+					formId, formParam.RequestId, taskId, tableForm.FormTemplateId, valueObj.Id, formParam.Operator, formParam.Operator, nowTime, nowTime,
+				}})
 			}
 			// 判断数据行属性的变化
 			for k, v := range valueObj.EntityData {
@@ -603,7 +601,7 @@ func (s *RequestService) processTaskForm(formParam models.ProcessTaskFormParam) 
 				latestPoolItem := getRequestPoolLatestItem(poolForms, valueObj.Id, k)
 				var taskHandleId = sql.NullString{String: "", Valid: false}
 				if formParam.Task != nil {
-					taskHandleId = sql.NullString{String: formParam.TaskApproveParam.TaskHandleId, Valid: formParam.TaskApproveParam.TaskHandleId != ""}
+					taskHandleId = sql.NullString{String: formParam.TaskApproveParam.TaskHandleId, Valid: true}
 				}
 				if latestPoolItem.FormItemId == "" {
 					// 没有在数据池里找到相关数据行的该属性

@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-14 15:05:46
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-12-06 19:19:05
+ * @LastEditTime: 2024-12-12 11:36:05
 -->
 <template>
   <div>
@@ -322,6 +322,8 @@ export default {
     width: fit-content;
     display: flex;
     align-items: center;
+    line-height: 12px;
+    padding: 4px 6px;
   }
 }
 .taskman-cmdb-custom-select-popper .ivu-poptip-body {

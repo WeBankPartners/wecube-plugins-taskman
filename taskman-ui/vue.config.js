@@ -101,8 +101,7 @@ module.exports = {
       postcss: {
         plugins: process.env.PLUGIN === 'plugin' ? [
           postcssWrap({
-            // selector: '.taskman-wrap'
-            selector: ''
+            selector: '.taskman-wrap'
           })
         ] : []
       }

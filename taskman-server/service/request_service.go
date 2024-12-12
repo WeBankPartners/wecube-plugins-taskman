@@ -557,22 +557,25 @@ func UpdateRequestFormItemNew(requestId, operator, now string, param *models.Req
 					// 此处需要支持 CMDB multiInt 和multiObject 类型
 					if vInterfaceList, assertOk := v.([]interface{}); assertOk {
 						var tmpV []string
+						var multiObject bool
 						for _, interfaceV := range vInterfaceList {
 							switch interfaceType := interfaceV.(type) {
 							// 因为 JSON 解析后数字默认是 float64,int也会变成float64
 							case float64:
 								tmpV = append(tmpV, fmt.Sprintf("%d", int(interfaceType)))
 							case map[string]interface{}:
-								byteArr, err := json.Marshal(interfaceV)
-								if err != nil {
-									continue
-								}
-								tmpV = append(tmpV, string(byteArr))
+								multiObject = true
+								break
 							default:
 								tmpV = append(tmpV, fmt.Sprintf("%s", interfaceV))
 							}
 						}
-						valueString = strings.Join(tmpV, ",")
+						if multiObject {
+							byteArr, _ := json.Marshal(vInterfaceList)
+							valueString = string(byteArr)
+						} else {
+							valueString = strings.Join(tmpV, ",")
+						}
 					} else {
 						// 多选非必填情况下,valueString 为空
 						valueString = ""

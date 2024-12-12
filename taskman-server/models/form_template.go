@@ -118,7 +118,8 @@ type TaskFormItemQueryObj struct {
 
 func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfigureDto, workflowEntityAttribute *ProcEntityAttributeObj, newItemGroupId string, remoteAttributes []*EntityAttributeObj) *FormItemTemplateTable {
 	var elementType = string(FormItemElementTypeInput)
-	var refPackage, refEntity, cmdbAttr, required, editable string
+	var refPackage, refEntity, cmdbAttr, required, editable, attrDefDataType string
+	attrDefDataType = workflowEntityAttribute.DataType
 	if workflowEntityAttribute.DataType == "ref" {
 		elementType = string(FormItemElementTypeSelect)
 		refPackage = workflowEntityAttribute.EntityPackage
@@ -130,6 +131,9 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 			cmdbAttr = string(attrByte)
 			if strings.Contains(remoteAttr.InputType, "select") {
 				elementType = string(FormItemElementTypeSelect)
+			} else if strings.Contains(remoteAttr.InputType, string(CmdbDataTypeMultiObject)) {
+				// CMDB multiObject 对象数组类型,需要特殊记录下类型,方法请求表单处理
+				attrDefDataType = string(CmdbDataTypeMultiObject)
 			}
 			if remoteAttr.Nullable == "yes" {
 				required = "no"
@@ -158,7 +162,7 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 		Entity:          workflowEntityAttribute.EntityName,
 		AttrDefId:       workflowEntityAttribute.Id,
 		AttrDefName:     workflowEntityAttribute.Name,
-		AttrDefDataType: workflowEntityAttribute.DataType,
+		AttrDefDataType: attrDefDataType,
 		ElementType:     elementType,
 		Title:           workflowEntityAttribute.Description,
 		Width:           24,

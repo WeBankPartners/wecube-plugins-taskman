@@ -2424,10 +2424,14 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 				tmpRowObj.EntityData = make(map[string]interface{})
 				for _, rowItem := range rowItemMap[row] {
 					isMulti := false
+					isMultiObject := false
 					for _, tmpTitle := range formTable.Title {
 						if tmpTitle.Name == rowItem.Name {
 							if strings.EqualFold(tmpTitle.Multiple, models.Yes) || strings.EqualFold(tmpTitle.Multiple, models.Y) {
 								isMulti = true
+								if tmpTitle.AttrDefDataType == string(models.CmdbDataTypeMultiObject) {
+									isMultiObject = true
+								}
 								break
 							}
 						}
@@ -2435,6 +2439,11 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 					if isMulti {
 						if strings.TrimSpace(rowItem.Value) == "" {
 							tmpRowObj.EntityData[rowItem.Name] = []string{}
+						} else if isMultiObject {
+							// 对象数组
+							var jsonData interface{}
+							json.Unmarshal([]byte(rowItem.Value), &jsonData)
+							tmpRowObj.EntityData[rowItem.Name] = jsonData
 						} else {
 							tmpRowObj.EntityData[rowItem.Name] = strings.Split(rowItem.Value, ",")
 						}

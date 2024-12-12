@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-11-19 10:23:32
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-11-28 18:37:34
+ * @LastEditTime: 2024-12-11 21:39:36
 -->
 <template>
   <div class="taskman-cmdb-json-config">
@@ -17,7 +17,7 @@
     <Button v-else type="primary" :disabled="disabled" @click="showTreeConfig">{{ $t('tw_config') }}</Button>
     <!--编辑弹框-->
     <Modal :z-index="2000" v-model="showEdit" :title="$t('tw_json_edit')" @on-ok="confirmJsonData" width="800">
-      <Button type="primary" v-if="isArray" @click="addNewJson">新增一组</Button>
+      <Button type="primary" v-if="isArray" @click="addNewJson">{{ $t('tw_add_group') }}</Button>
       <div style="max-height:500px; overflow:auto">
         <template v-for="(item, itemIndex) in originData">
           <Tree :ref="'jsonTree' + itemIndex" :jsonData="item" :key="itemIndex"></Tree>
@@ -54,18 +54,24 @@ export default {
   },
   props: ['inputKey', 'jsonData', 'disabled', 'title'],
   mounted () {
-    this.isArray = Array.isArray(this.jsonData)
-    if (this.isArray) {
-      this.originData = this.jsonData
-    } else {
-      this.originData.push(this.jsonData || {})
-    }
-    const jsonDataString = JSON.stringify(this.jsonData)
-    this.jsonDataString = jsonDataString === '""' ? '' : jsonDataString
+    this.initData()
   },
   methods: {
+    initData () {
+      const jsonData = JSON.parse(JSON.stringify(this.jsonData))
+      this.isArray = Array.isArray(jsonData)
+      this.originData = []
+      if (this.isArray) {
+        this.originData = jsonData
+      } else {
+        this.originData.push(jsonData || {})
+      }
+      const jsonDataString = JSON.stringify(jsonData)
+      this.jsonDataString = jsonDataString === '""' ? '' : jsonDataString
+    },
     showTreeConfig () {
       this.showEdit = true
+      this.initData()
     },
     confirmJsonData () {
       if (this.isArray) {
@@ -95,6 +101,7 @@ export default {
   .inline {
     display: flex;
     align-items: center;
+    height: 34px;
     .text {
       font-size: 13px;
       color:#515a6e;

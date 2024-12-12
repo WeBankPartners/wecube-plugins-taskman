@@ -378,7 +378,7 @@
                               size="default"
                             />
                           </FormItem>
-                          <FormItem :label="$t('display')">
+                          <!-- <FormItem :label="$t('display')">
                             <i-switch
                               v-model="editElement.inDisplayName"
                               true-value="yes"
@@ -387,7 +387,7 @@
                               @on-change="paramsChanged"
                               size="default"
                             />
-                          </FormItem>
+                          </FormItem> -->
                           <FormItem :label="$t('tw_default_empty')">
                             <i-switch
                               v-model="editElement.defaultClear"
@@ -438,7 +438,7 @@
                         <FormItem :label="$t('validation_rules')">
                           <Input
                             v-model="editElement.regular"
-                            :disabled="$parent.isCheck === 'Y'"
+                            :disabled="$parent.isCheck === 'Y' || Boolean(editElement.cmdbAttr)"
                             :placeholder="$t('only_supports_regular')"
                             @on-change="paramsChanged"
                           ></Input>
@@ -917,7 +917,7 @@ export default {
             if (item.cmdbAttr) {
               const { nullable, editable, regularExpressionRule, inputType } = JSON.parse(item.cmdbAttr)
               item.regular = regularExpressionRule
-              item.required = nullable
+              item.required = (nullable === 'yes' ? 'no' : 'yes')
               item.isEdit = editable
               if (['ref', 'select', 'extRef'].includes(inputType)) {
                 item.multiple = 'no'

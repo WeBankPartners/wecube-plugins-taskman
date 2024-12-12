@@ -9,14 +9,14 @@
       :content="type === 'json' ? JSON.stringify(originData) : JSON.stringify(formaMultiData)"
     >
       <div class="inline">
-        <span class="text">{{ type === 'json' ? originData : formaMultiData }}</span>
+        <span class="text">{{ type === 'json' ? originData : (formaMultiData && formaMultiData.length === 0 ? $t('tw_no_data') :  formaMultiData) }}</span>
         <Icon v-if="type === 'json'" type="md-eye" @click="showDetail = true" class="operation-icon-confirm" />
       </div>
     </Tooltip>
     <!--编辑-->
     <Button v-else type="primary" @click="showConfig" :disabled="disabled">{{ $t('tw_config') }}</Button>
     <!--非json编辑框-->
-    <Modal v-model="showModal" :title="$t('tw_config')" @on-ok="confirmData" @on-cancel="cancel">
+    <Modal v-model="showModal" :title="$t('tw_config')">
       <template v-for="(item, itemIndex) in multiData">
         <div :key="itemIndex" style="margin:4px">
           <Input v-model="item.value" :type="type" v-if="type !== 'json'" style="width:360px"></Input>
@@ -24,10 +24,14 @@
           <Button @click="deleteItem(itemIndex)" v-if="multiData.length !== 1" size="small" type="error" icon="ios-trash"></Button>
         </div>
       </template>
+      <template #footer>
+        <Button @click="showModal = false">{{ $t('cancel') }}</Button>
+        <Button @click="confirmData" type="primary">{{ $t('confirm') }}</Button>
+      </template>
     </Modal>
     <!--json编辑框-->
-    <Modal :z-index="2000" v-model="showJsonModal" :title="$t('tw_json_edit')" @on-ok="confirmJsonData" width="800">
-      <Button type="primary" @click="addNewJson">新增一组</Button>
+    <Modal :z-index="2000" v-model="showJsonModal" :title="$t('tw_json_edit')" width="800" @on-ok="confirmJsonData" @on-cancel="cancel">
+      <Button type="primary" @click="addNewJson">{{ $t('tw_add_group') }}</Button>
       <div style="max-height:500px; overflow:auto">
         <template v-for="(item, itemIndex) in originData">
           <Tree :ref="'jsonTree' + itemIndex" :jsonData="item" :key="itemIndex"></Tree>
@@ -47,7 +51,10 @@
 import Tree from './tree'
 import JsonViewer from 'vue-json-viewer'
 export default {
-  name: '',
+  components: {
+    Tree,
+    JsonViewer
+  },
   data () {
     return {
       showModal: false,
@@ -65,41 +72,47 @@ export default {
   props: ['title', 'inputKey', 'data', 'type', 'disabled'],
   computed: {
     formaMultiData () {
-      const res = this.multiData.map(item => {
+      const arr = this.multiData.filter(i => i.value !== '') || []
+      const res = arr.map(item => {
         if (this.type === 'number') {
           return Number(item.value)
+        } else {
+          return item.value
         }
-        return item.value
       })
       return res
     }
   },
   mounted () {
-    let tmp = this.data ? this.data : []
-    if (this.type === 'json') {
-      this.originData = tmp || []
-    } else {
-      this.multiData =
-        tmp &&
-        tmp.map(d => {
-          return {
-            value: d
-          }
-        })
-      if (this.multiData.length === 0) {
-        this.multiData = [
-          {
-            value: ''
-          }
-        ]
-      }
-    }
+    this.initData()
   },
   methods: {
+    initData () {
+      const data = JSON.parse(JSON.stringify(this.data))
+      let tmp = data || []
+      if (this.type === 'json') {
+        this.originData = tmp || []
+      } else {
+        this.multiData =
+          tmp &&
+          tmp.map(d => {
+            return {
+              value: d
+            }
+          })
+        if (this.multiData.length === 0) {
+          this.multiData = [
+            {
+              value: ''
+            }
+          ]
+        }
+      }
+    },
     confirmJsonData () {
-      this.$emit('input', this.originData)
       this.showJsonModal = false
       this.showModal = false
+      this.$emit('input', this.originData)
     },
     addNewJson () {
       this.originData.push({})
@@ -107,8 +120,10 @@ export default {
     showConfig () {
       if (this.type === 'json') {
         this.showJsonModal = true
+      } else {
+        this.showModal = true
       }
-      this.showModal = true
+      this.initData()
     },
     addItem () {
       this.multiData.push({
@@ -119,21 +134,23 @@ export default {
       this.multiData.splice(index, 1)
     },
     confirmData () {
-      const res = this.multiData.map(item => {
-        if (this.type === 'number') {
-          return Number(item.value)
-        }
-        return item.value
-      })
-      this.showJsonModal = false
-      this.showModal = false
-      this.$emit('input', res)
+      const emptyFlag = this.multiData.some(item => item.value === '')
+      if (emptyFlag) {
+        this.$Message.warning('数据不能为空')
+      } else {
+        const res = this.multiData.map(item => {
+          if (this.type === 'number') {
+            return Number(item.value)
+          } else {
+            return item.value
+          }
+        })
+        this.showJsonModal = false
+        this.showModal = false
+        this.$emit('input', res)
+      }
     },
     cancel () {}
-  },
-  components: {
-    Tree,
-    JsonViewer
   }
 }
 </script>
@@ -143,6 +160,7 @@ export default {
   .inline {
     display: flex;
     align-items: center;
+    height: 34px;
     .text {
       font-size: 13px;
       color:#515a6e;

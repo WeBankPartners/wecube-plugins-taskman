@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-18 17:55:45
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-11-28 19:37:36
+ * @LastEditTime: 2024-12-12 18:51:00
 -->
 <template>
   <div class="cmdb-entity-table">
@@ -34,7 +34,7 @@
         :disabled="isGroupEditDisabled(column, value)"
         :data="JSON.parse(JSON.stringify(value[column.inputKey]))"
         type="number"
-        @input="(v) => {value[column.inputKey] = v.trim()}"
+        @input="(v) => {value[column.inputKey] = v}"
       ></MultiConfig>
     </template>
     <template v-else-if="column.component === 'Input' && column.inputType === 'multiObject'">
@@ -53,10 +53,18 @@
         @input="(v) => {setValueHandler(v.trim(), column, value)}"
       ></Input>
     </template>
+    <template v-else-if="column.component === 'Input' && column.inputType === 'int'">
+      <div style="display:flex;">
+        <Input
+          v-bind="getInputProps(column, value)"
+          @input="(v) => {setValueHandler(v, column, value)}"
+        ></Input>
+      </div>
+    </template>
     <template v-else-if="column.component === 'Input' && column.inputType !== 'object'">
       <div style="display:flex;">
         <Input
-          v-bind="getObjectInputProps(column, value)"
+          v-bind="getInputProps(column, value)"
           @input="(v) => {setValueHandler(v.trim(), column, value)}"
         ></Input>
         <Button
@@ -234,18 +242,9 @@ export default {
     },
     getInputProps () {
       return function (column, value) {
-        let dataTmp = JSON.stringify(value[column.inputKey])
         return {
           ...column,
-          data: dataTmp,
-          value: dataTmp
-        }
-      }
-    },
-    getObjectInputProps () {
-      return function (column, value) {
-        return {
-          ...column,
+          type: column.inputType === 'int' ? 'number' : 'text',
           disabled: this.isGroupEditDisabled(column, value),
           value: value[column.inputKey]
         }
@@ -292,7 +291,7 @@ export default {
         if (v !== '') {
           attrsWillReset.push({
             propertyName: col.inputKey,
-            value: JSON.stringify(JSON.parse(v))
+            value: v
           })
         }
       }

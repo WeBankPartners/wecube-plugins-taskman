@@ -425,7 +425,7 @@
                         <FormItem :label="$t('validation_rules')">
                           <Input
                             v-model="editElement.regular"
-                            :disabled="$parent.isCheck === 'Y'"
+                            :disabled="$parent.isCheck === 'Y' || Boolean(editElement.cmdbAttr)"
                             :placeholder="$t('only_supports_regular')"
                             @on-change="paramsChanged"
                           ></Input>

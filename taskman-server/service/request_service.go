@@ -554,10 +554,23 @@ func UpdateRequestFormItemNew(requestId, operator, now string, param *models.Req
 					valueString = fmt.Sprintf("%s", v)
 				}
 				if _, multipleFlag := isColumnMultiMap[k]; multipleFlag {
+					// 此处需要支持 CMDB multiInt 和multiObject 类型
 					if vInterfaceList, assertOk := v.([]interface{}); assertOk {
 						var tmpV []string
 						for _, interfaceV := range vInterfaceList {
-							tmpV = append(tmpV, fmt.Sprintf("%s", interfaceV))
+							switch interfaceType := interfaceV.(type) {
+							// 因为 JSON 解析后数字默认是 float64,int也会变成float64
+							case float64:
+								tmpV = append(tmpV, fmt.Sprintf("%d", int(interfaceType)))
+							case map[string]interface{}:
+								byteArr, err := json.Marshal(interfaceV)
+								if err != nil {
+									continue
+								}
+								tmpV = append(tmpV, string(byteArr))
+							default:
+								tmpV = append(tmpV, fmt.Sprintf("%s", interfaceV))
+							}
 						}
 						valueString = strings.Join(tmpV, ",")
 					} else {

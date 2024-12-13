@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-18 17:55:45
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-12-12 18:51:00
+ * @LastEditTime: 2024-12-13 11:59:48
 -->
 <template>
   <div class="cmdb-entity-table">
@@ -55,10 +55,12 @@
     </template>
     <template v-else-if="column.component === 'Input' && column.inputType === 'int'">
       <div style="display:flex;">
-        <Input
+        <InputNumber
           v-bind="getInputProps(column, value)"
+          :max="99999999"
+          :min="-99999999"
           @input="(v) => {setValueHandler(v, column, value)}"
-        ></Input>
+        />
       </div>
     </template>
     <template v-else-if="column.component === 'Input' && column.inputType !== 'object'">

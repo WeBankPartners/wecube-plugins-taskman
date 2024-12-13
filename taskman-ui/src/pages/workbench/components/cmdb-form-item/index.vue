@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-18 17:55:45
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-12-13 11:59:48
+ * @LastEditTime: 2024-12-13 15:47:00
 -->
 <template>
   <div class="cmdb-entity-table">
@@ -59,7 +59,9 @@
           v-bind="getInputProps(column, value)"
           :max="99999999"
           :min="-99999999"
+          :precision="0"
           @input="(v) => {setValueHandler(v, column, value)}"
+          style="width:360px;"
         />
       </div>
     </template>

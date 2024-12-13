@@ -19,7 +19,14 @@
     <Modal v-model="showModal" :title="$t('tw_config')">
       <template v-for="(item, itemIndex) in multiData">
         <div :key="itemIndex" style="margin:4px">
-          <InputNumber v-if="type === 'number'" :max="99999999" :min="-99999999" style="width:360px" v-model="item.value" />
+          <InputNumber
+            v-if="type === 'number'"
+            :max="99999999"
+            :min="-99999999"
+            style="width:360px"
+            :precision="0"
+            v-model="item.value"
+          />
           <Input v-else v-model="item.value" :maxlength="255" show-word-limit style="width:360px"></Input>
           <Button @click="addItem" type="primary" size="small" icon="ios-add" style="margin:0 4px"></Button>
           <Button @click="deleteItem(itemIndex)" v-if="multiData.length !== 1" size="small" type="error" icon="ios-trash"></Button>

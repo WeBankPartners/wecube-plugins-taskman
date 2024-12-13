@@ -373,11 +373,22 @@ func (s *FormTemplateService) GetDataFormConfig(requestTemplateId, taskTemplateI
 	}
 	// 2.查询entity 属性集合
 	if entity != "" {
+		var attributeNameMap = make(map[string]string)
 		entitiesList, err = rpc.QueryEntityAttributes(models.QueryExpressionDataParam{DataModelExpression: entity}, userToken, language)
 		if err != nil {
 			return
 		}
 		if len(entitiesList) > 0 && len(entitiesList[0].Attributes) > 0 {
+			var attributes []*models.EntityAttributeObj
+			// cmdb属性,需要特殊调用下CMDB接口,平台接口CMDB属性名称没有存储
+			if len(entity) > 7 && strings.HasPrefix(entity, "wecmdb:") {
+				if attributes, err = getCMDBCiAttrDefs(entity[7:], userToken); err != nil {
+					return
+				}
+				for _, attr := range attributes {
+					attributeNameMap[attr.PropertyName] = attr.Name
+				}
+			}
 			expressEntity = entitiesList[0]
 			if configureDto.ItemGroup == "" {
 				configureDto.ItemGroup = entity
@@ -386,6 +397,10 @@ func (s *FormTemplateService) GetDataFormConfig(requestTemplateId, taskTemplateI
 			}
 			for _, attribute := range entitiesList[0].Attributes {
 				attribute.Id = fmt.Sprintf("%s:%s:%s", entitiesList[0].PackageName, entitiesList[0].EntityName, attribute.Name)
+				// attribute name值存储是CMDB的ID
+				if v, ok := attributeNameMap[attribute.Name]; ok {
+					attribute.Name = v
+				}
 				attribute.EntityName = expressEntity.EntityName
 				attribute.EntityPackage = expressEntity.PackageName
 				if existAttrMap[attribute.Id] {

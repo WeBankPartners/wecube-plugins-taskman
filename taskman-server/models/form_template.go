@@ -118,7 +118,7 @@ type TaskFormItemQueryObj struct {
 
 func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfigureDto, workflowEntityAttribute *ProcEntityAttributeObj, newItemGroupId string, remoteAttributes []*EntityAttributeObj) *FormItemTemplateTable {
 	var elementType = string(FormItemElementTypeInput)
-	var refPackage, refEntity, cmdbAttr, required, editable, attrDefDataType string
+	var refPackage, refEntity, cmdbAttr, required, editable, attrDefDataType, title string
 	attrDefDataType = workflowEntityAttribute.DataType
 	if workflowEntityAttribute.DataType == "ref" {
 		elementType = string(FormItemElementTypeSelect)
@@ -150,6 +150,10 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 	if editable == "" {
 		editable = "yes"
 	}
+	// 兼容cmdb中title为空的情况
+	if title = workflowEntityAttribute.Title; title == "" {
+		title = workflowEntityAttribute.Description
+	}
 	return &FormItemTemplateTable{
 		Id:              guid.CreateGuid(),
 		Name:            workflowEntityAttribute.Name,
@@ -164,7 +168,7 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 		AttrDefName:     workflowEntityAttribute.Name,
 		AttrDefDataType: attrDefDataType,
 		ElementType:     elementType,
-		Title:           workflowEntityAttribute.Description,
+		Title:           title,
 		Width:           24,
 		RefPackageName:  refPackage,
 		RefEntity:       refEntity,

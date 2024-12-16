@@ -386,7 +386,7 @@ func (s *FormTemplateService) GetDataFormConfig(requestTemplateId, taskTemplateI
 					return
 				}
 				for _, attr := range attributes {
-					attributeTitleMap[attr.Name] = attr.PropertyName
+					attributeTitleMap[attr.PropertyName] = attr.Name
 				}
 			}
 			expressEntity = entitiesList[0]

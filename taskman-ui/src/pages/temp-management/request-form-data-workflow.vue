@@ -30,7 +30,7 @@
           <Row>
             <Col span="12" v-for="system in group.systemItems" :key="system.id">
               <Checkbox v-model="system.active" @on-change="paramsChanged"
-                >{{ system.description || system.name }}({{ system.name }})</Checkbox
+                >{{ system.title || system.description || system.name }}({{ system.name }})</Checkbox
               >
             </Col>
           </Row>

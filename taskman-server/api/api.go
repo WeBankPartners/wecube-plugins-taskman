@@ -211,7 +211,7 @@ func InitHttpServer() {
 		case "DELETE":
 			authRouter.DELETE(funcObj.Url, funcObj.HandlerFunc)
 		}
-		apiCodeMap[fmt.Sprintf("%s_%s%s", funcObj.Method, models.UrlPrefix, funcObj.Url)] = funcObj.ApiCode
+		apiCodeMap[fmt.Sprintf("%s_%s%s", funcObj.Method, models.UrlPrefix+"/api/v1", funcObj.Url)] = funcObj.ApiCode
 	}
 
 	authRouterV2 := r.Group(urlPrefix+"/api/v2", middleware.AuthCoreRequestToken())
@@ -226,7 +226,7 @@ func InitHttpServer() {
 		case "DELETE":
 			authRouterV2.DELETE(funcObj.Url, funcObj.HandlerFunc)
 		}
-		apiCodeMap[fmt.Sprintf("%s_%s%s", funcObj.Method, models.UrlPrefix, funcObj.Url)] = funcObj.ApiCode
+		apiCodeMap[fmt.Sprintf("%s_%s%s", funcObj.Method, models.UrlPrefix+"/api/v2", funcObj.Url)] = funcObj.ApiCode
 	}
 
 	// entity query

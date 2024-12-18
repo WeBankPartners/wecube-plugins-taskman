@@ -1,7 +1,9 @@
 package middleware
 
 import (
+	"errors"
 	"fmt"
+	"strconv"
 
 	"encoding/json"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
@@ -48,55 +50,59 @@ func ReturnSuccess(c *gin.Context) {
 }
 
 func ReturnError(c *gin.Context, err error) {
-	if _, ok := err.(exterror.CustomError); !ok {
+	var customError exterror.CustomError
+	if !errors.As(err, &customError) {
 		err = exterror.Catch(exterror.New().ServerHandleError, err)
 	}
-	_, errorKey, errorMessage := exterror.GetErrorResult(c.GetHeader(AcceptLanguageHeader), err)
+	errorCode, errorKey, errorMessage := exterror.GetErrorResult(c.GetHeader(AcceptLanguageHeader), err)
 	log.Logger.Error("Handle error", log.String("statusCode", errorKey), log.String("message", errorMessage))
 	obj := models.ResponseErrorJson{StatusCode: errorKey, StatusMessage: errorMessage}
 	bodyBytes, _ := json.Marshal(obj)
+	c.Writer.Header().Add("Error-Code", strconv.Itoa(errorCode))
 	c.Set("responseBody", string(bodyBytes))
 	c.JSON(http.StatusOK, obj)
 }
 
 func ReturnParamValidateError(c *gin.Context, err error) {
-	if _, ok := err.(exterror.CustomError); !ok {
+	var customError exterror.CustomError
+	if !errors.As(err, &customError) {
 		err = exterror.Catch(exterror.New().RequestParamValidateError, err)
 	}
+	c.Writer.Header().Add("Error-Code", strconv.Itoa(exterror.New().RequestParamValidateError.Code))
 	ReturnError(c, err)
 }
 
 func ReturnParamEmptyError(c *gin.Context, paramName string) {
 	ReturnParamValidateError(c, fmt.Errorf("param %s empty", paramName))
-	//ReturnError(c, "PARAM_EMPTY_ERROR", paramName, nil)
 }
 
 func ReturnServerHandleError(c *gin.Context, err error) {
-	if _, ok := err.(exterror.CustomError); !ok {
+	var customError exterror.CustomError
+	if !errors.As(err, &customError) {
 		err = exterror.Catch(exterror.New().ServerHandleError, err)
 	}
 	ReturnError(c, err)
-	//log.Logger.Error("Request server handle error", log.Error(err))
-	//ReturnError(c, "SERVER_HANDLE_ERROR", err.Error(), nil)
 }
 
 func ReturnTokenValidateError(c *gin.Context, err error) {
-	if _, ok := err.(exterror.CustomError); !ok {
+	var customError exterror.CustomError
+	if !errors.As(err, &customError) {
 		err = exterror.Catch(exterror.New().RequestTokenValidateError, err)
 	}
 	ReturnError(c, err)
-	//c.JSON(http.StatusUnauthorized, models.ResponseErrorJson{StatusCode: "TOKEN_VALIDATE_ERROR", StatusMessage: err.Error(), Data: nil})
 }
 
 func ReturnDataPermissionError(c *gin.Context, err error) {
-	if _, ok := err.(exterror.CustomError); !ok {
+	var customError exterror.CustomError
+	if !errors.As(err, &customError) {
 		err = exterror.Catch(exterror.New().DataPermissionDeny, err)
 	}
 	ReturnError(c, err)
 }
 
 func ReturnRequestTemplateUpdatePermissionError(c *gin.Context, err error) {
-	if _, ok := err.(exterror.CustomError); !ok {
+	var customError exterror.CustomError
+	if !errors.As(err, &customError) {
 		err = exterror.Catch(exterror.New().TemplateUpdatePermissionDeny, err)
 	}
 	ReturnError(c, err)
@@ -104,12 +110,6 @@ func ReturnRequestTemplateUpdatePermissionError(c *gin.Context, err error) {
 
 func ReturnDataPermissionDenyError(c *gin.Context) {
 	ReturnError(c, exterror.New().DataPermissionDeny)
-	//ReturnError(c, "DATA_PERMISSION_DENY", "permission deny", nil)
-}
-
-func ReturnApiPermissionError(c *gin.Context) {
-	ReturnError(c, exterror.New().ApiPermissionDeny)
-	//ReturnError(c, "API_PERMISSION_ERROR", "api permission deny", nil)
 }
 
 func ReturnTemplateAlreadyCollectError(c *gin.Context) {
@@ -136,20 +136,8 @@ func ReturnTaskApproveNotPermissionError(c *gin.Context) {
 	ReturnError(c, exterror.New().TaskApproveNotPermission)
 }
 
-func ReturnTaskSaveNotPermissionError(c *gin.Context) {
-	ReturnError(c, exterror.New().TaskSaveNotPermission)
-}
-
 func ReturnUpdateRequestHandlerStatusError(c *gin.Context) {
 	ReturnError(c, exterror.New().UpdateRequestHandlerStatusError)
-}
-
-func ReturnRevokeRequestErrorError(c *gin.Context) {
-	ReturnError(c, exterror.New().RevokeRequestError)
-}
-
-func ReturnGetRequestPreviewDataError(c *gin.Context) {
-	ReturnError(c, exterror.New().GetRequestPreviewDataError)
 }
 
 func ReturnReportRequestNotPermissionError(c *gin.Context) {

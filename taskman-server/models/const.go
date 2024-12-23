@@ -83,6 +83,7 @@ type CmdbDataType string
 
 const (
 	CmdbDataTypeMultiObject CmdbDataType = "multiObject" // 对象数组
+	CmdbDataTypeExtRef      CmdbDataType = "extRef"
 )
 
 // TaskType 任务模板、任务 类型

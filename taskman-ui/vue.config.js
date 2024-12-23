@@ -1,6 +1,7 @@
 const CompressionPlugin = require('compression-webpack-plugin')
+const postcssWrap = require('postcss-wrap')
 const path = require('path')
-const baseUrl = 'http://106.52.160.142:18080/'
+const baseUrl = process.env.VUE_APP_API || 'http://127.0.0.1/'
 module.exports = {
   devServer: {
     // hot: true,
@@ -53,6 +54,26 @@ module.exports = {
   configureWebpack: config => {
     if (process.env.PLUGIN === 'plugin') {
       config.optimization.splitChunks = {}
+      // config.optimization = {
+      //   runtimeChunk: 'single',
+      //   splitChunks: {
+      //     chunks: 'all',
+      //     minSize: 20000, // 允许新拆出 chunk 的最小体积
+      //     maxSize: 500000, // 设置chunk的最大体积为500KB
+      //     automaticNameDelimiter: '-',
+      //     cacheGroups: {
+      //       defaultVendors: {
+      //         test: /[\\/]node_modules[\\/]/,
+      //         priority: -10
+      //       },
+      //       default: {
+      //         minChunks: 2,
+      //         priority: -20,
+      //         reuseExistingChunk: true
+      //       }
+      //     }
+      //   }
+      // }
       return
     }
     if (process.env.NODE_ENV === 'production') {
@@ -73,6 +94,17 @@ module.exports = {
     'style-resources-loader': {
       preProcessor: 'less',
       patterns: [path.resolve(__dirname, './src/assets/css/common.less')] // 引入全局样式变量
+    }
+  },
+  css: {
+    loaderOptions: {
+      postcss: {
+        plugins: process.env.PLUGIN === 'plugin' ? [
+          postcssWrap({
+            // selector: '.taskman-wrap'
+          })
+        ] : []
+      }
     }
   }
 }

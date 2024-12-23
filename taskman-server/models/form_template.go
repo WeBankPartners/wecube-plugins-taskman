@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"github.com/WeBankPartners/go-common-lib/guid"
 	"strings"
 )
@@ -117,7 +118,8 @@ type TaskFormItemQueryObj struct {
 
 func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfigureDto, workflowEntityAttribute *ProcEntityAttributeObj, newItemGroupId string, remoteAttributes []*EntityAttributeObj) *FormItemTemplateTable {
 	var elementType = string(FormItemElementTypeInput)
-	var refPackage, refEntity string
+	var refPackage, refEntity, cmdbAttr, required, editable, attrDefDataType, title string
+	attrDefDataType = workflowEntityAttribute.DataType
 	if workflowEntityAttribute.DataType == "ref" {
 		elementType = string(FormItemElementTypeSelect)
 		refPackage = workflowEntityAttribute.EntityPackage
@@ -125,11 +127,32 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 	}
 	for _, remoteAttr := range remoteAttributes {
 		if remoteAttr.PropertyName == workflowEntityAttribute.Name {
+			attrByte, _ := json.Marshal(remoteAttr)
+			cmdbAttr = string(attrByte)
 			if strings.Contains(remoteAttr.InputType, "select") {
 				elementType = string(FormItemElementTypeSelect)
+			} else if strings.Contains(remoteAttr.InputType, string(CmdbDataTypeMultiObject)) {
+				// CMDB multiObject 对象数组类型,需要特殊记录下类型,方法请求表单处理
+				attrDefDataType = string(CmdbDataTypeMultiObject)
 			}
+			if remoteAttr.Nullable == "yes" {
+				required = "no"
+			} else if remoteAttr.Nullable == "no" {
+				required = "yes"
+			}
+			editable = remoteAttr.Editable
 			break
 		}
+	}
+	if required == "" {
+		required = "no"
+	}
+	if editable == "" {
+		editable = "yes"
+	}
+	// 兼容cmdb中title为空的情况
+	if title = workflowEntityAttribute.Title; title == "" {
+		title = workflowEntityAttribute.Description
 	}
 	return &FormItemTemplateTable{
 		Id:              guid.CreateGuid(),
@@ -143,16 +166,16 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 		Entity:          workflowEntityAttribute.EntityName,
 		AttrDefId:       workflowEntityAttribute.Id,
 		AttrDefName:     workflowEntityAttribute.Name,
-		AttrDefDataType: workflowEntityAttribute.DataType,
+		AttrDefDataType: attrDefDataType,
 		ElementType:     elementType,
-		Title:           workflowEntityAttribute.Description,
+		Title:           title,
 		Width:           24,
 		RefPackageName:  refPackage,
 		RefEntity:       refEntity,
 		DataOptions:     "",
-		Required:        "no",
+		Required:        required,
 		Regular:         "",
-		IsEdit:          "yes",
+		IsEdit:          editable,
 		IsView:          "yes",
 		IsOutput:        "no",
 		InDisplayName:   "yes",
@@ -163,6 +186,7 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 		SelectList:      nil,
 		Active:          false,
 		ControlSwitch:   "no",
+		CmdbAttr:        cmdbAttr,
 	}
 }
 

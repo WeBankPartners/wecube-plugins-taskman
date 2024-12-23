@@ -330,24 +330,24 @@ export default {
                   })
               // 获取事件模板
               } else if (this.actionName === '4') {
-              this.baseSearch[key].list =
-                data.eventTemplateList &&
-                data.eventTemplateList.map(item => {
-                  return {
-                    label: `${item.templateName}【${item.version}】`,
-                    value: item.templateId
-                  }
-                })
+                this.baseSearch[key].list =
+                  data.eventTemplateList &&
+                  data.eventTemplateList.map(item => {
+                    return {
+                      label: `${item.templateName}【${item.version}】`,
+                      value: item.templateId
+                    }
+                  })
               // 获取变更模板
               } else if (this.actionName === '5') {
-              this.baseSearch[key].list =
-                data.changeTemplateList &&
-                data.changeTemplateList.map(item => {
-                  return {
-                    label: `${item.templateName}【${item.version}】`,
-                    value: item.templateId
-                  }
-                })
+                this.baseSearch[key].list =
+                  data.changeTemplateList &&
+                  data.changeTemplateList.map(item => {
+                    return {
+                      label: `${item.templateName}【${item.version}】`,
+                      value: item.templateId
+                    }
+                  })
               // 获取全部模板
               } else {
                 this.baseSearch[key].list =

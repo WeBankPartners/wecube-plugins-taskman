@@ -525,113 +525,15 @@ func SaveTaskFormNew(task *models.TaskTable, operator string, param *models.Task
 			return dao.Transaction(actions)
 		}
 	}
-	// 查请求数据池里的数据(里面的数据可能包含当前任务之前保存的数据)
-	requestPoolRows := models.RequestPoolDataQueryRows{}
-	if err = dao.X.SQL("select t1.id as form_id,t1.task,t1.form_template,t3.item_group,t3.item_group_type ,t1.data_id,t2.id as form_item_id,t2.form_item_template,t2.name,t2.value,t2.updated_time from form t1 left join form_item t2 on t1.id=t2.form left join form_template t3 on t1.form_template=t3.id where t1.request=?", task.Request).Find(&requestPoolRows); err != nil {
-		return fmt.Errorf("query request item pool data fail,%s ", err.Error())
+	formParam := models.ProcessTaskFormParam{
+		Task:             task,
+		Operator:         operator,
+		TaskApproveParam: param,
+		RequestId:        task.Request,
+		FormData:         param.FormData,
 	}
-	requestPoolForms := requestPoolRows.DataParse()
-	// 把form数据按itemGroup分开来
-	itemGroupFormMap := make(map[string][]*models.RequestPoolForm)
-	for _, poolForm := range requestPoolForms {
-		if existForms, ok := itemGroupFormMap[poolForm.ItemGroup]; ok {
-			itemGroupFormMap[poolForm.ItemGroup] = append(existForms, poolForm)
-		} else {
-			itemGroupFormMap[poolForm.ItemGroup] = []*models.RequestPoolForm{poolForm}
-		}
-	}
-	for _, tableForm := range param.FormData {
-		columnNameIdMap := make(map[string]string)
-		isColumnMultiMap := make(map[string]int)
-		for _, title := range tableForm.Title {
-			columnNameIdMap[title.Name] = title.Id
-			if strings.EqualFold(title.Multiple, models.Yes) || strings.EqualFold(title.Multiple, models.Y) {
-				isColumnMultiMap[title.Name] = 1
-			}
-		}
-		poolForms := itemGroupFormMap[tableForm.ItemGroup]
-		for _, valueObj := range tableForm.Value {
-			if valueObj.Id == "" {
-				valueObj.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, guid.CreateGuid())
-			}
-			// 判断数据行的变化
-			existForm := &models.RequestPoolForm{}
-			for _, poolForm := range poolForms {
-				if poolForm.DataId == valueObj.Id {
-					existForm = poolForm
-					break
-				}
-			}
-			formId := existForm.FormId
-			if formId == "" {
-				formId = "form_" + guid.CreateGuid()
-				// 数据行不存在，新增
-				actions = append(actions, &dao.ExecAction{Sql: "insert into form(id,request,task,form_template,data_id,created_by,updated_by,created_time,updated_time) values (?,?,?,?,?,?,?,?,?)", Param: []interface{}{
-					formId, task.Request, task.Id, tableForm.FormTemplateId, valueObj.Id, operator, operator, nowTime, nowTime,
-				}})
-			}
-			// 判断数据行属性的变化
-			for k, v := range valueObj.EntityData {
-				// 判断属性合不合法，是不是属性该表单的属性
-				formItemTemplateId, nameLegalCheck := columnNameIdMap[k]
-				if !nameLegalCheck {
-					continue
-				}
-				// 整理属性值，特殊处理数组
-				valueString := fmt.Sprintf("%s", v)
-				if _, multipleFlag := isColumnMultiMap[k]; multipleFlag {
-					if vInterfaceList, assertOk := v.([]interface{}); assertOk {
-						var tmpV []string
-						for _, interfaceV := range vInterfaceList {
-							tmpV = append(tmpV, fmt.Sprintf("%s", interfaceV))
-						}
-						valueString = strings.Join(tmpV, ",")
-					} else {
-						log.Logger.Info(fmt.Sprintf("row:%s key:%s value:%v is not array,format to []interface{} fail", valueObj.Id, k, v))
-						valueString = ""
-					}
-				}
-				// 从数据池里尝试查找有没有已存在的数据(同一个itemGroup，同一个数据行下的同一属性)
-				latestPoolItem := getRequestPoolLatestItem(poolForms, valueObj.Id, k)
-				if latestPoolItem.FormItemId == "" {
-					// 没有在数据池里找到相关数据行的该属性
-					actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time,task_handle) values (?,?,?,?,?,?,?,?)", Param: []interface{}{
-						"item_" + guid.CreateGuid(), formId, formItemTemplateId, k, valueString, task.Request, nowTime, param.TaskHandleId,
-					}})
-				} else {
-					if latestPoolItem.Value != valueString {
-						// 数据有更新
-						if latestPoolItem.Task == task.Id {
-							// 属于该任务，更新数据值
-							actions = append(actions, &dao.ExecAction{Sql: "update form_item set value=?,updated_time=?,task_handle=? where id=?", Param: []interface{}{
-								valueString, nowTime, param.TaskHandleId, latestPoolItem.FormItemId,
-							}})
-						} else {
-							// 不属于该任务，新增数据纪录
-							actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time,original_id,task_handle) values (?,?,?,?,?,?,?,?,?)", Param: []interface{}{
-								"item_" + guid.CreateGuid(), formId, formItemTemplateId, k, valueString, task.Request, nowTime, latestPoolItem.FormItemId, param.TaskHandleId,
-							}})
-						}
-					}
-				}
-			}
-		}
-		// 如果之前是该任务保存的数据行但又没传过来了，说明已经删除行
-		for _, poolForm := range poolForms {
-			if poolForm.Task == task.Id {
-				deleteFlag := true
-				for _, valueObj := range tableForm.Value {
-					if poolForm.DataId == valueObj.Id {
-						deleteFlag = false
-						break
-					}
-				}
-				if deleteFlag {
-					actions = append(actions, &dao.ExecAction{Sql: "delete from form_item where form=?", Param: []interface{}{poolForm.FormId}})
-					actions = append(actions, &dao.ExecAction{Sql: "delete from form where id=?", Param: []interface{}{poolForm.FormId}})
-				}
-			}
-		}
+	if actions, err = GetRequestService().processTaskForm(formParam); err != nil {
+		return
 	}
 	if len(actions) > 0 {
 		if err = dao.Transaction(actions); err != nil {

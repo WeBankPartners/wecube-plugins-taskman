@@ -134,6 +134,16 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 			} else if strings.Contains(remoteAttr.InputType, string(CmdbDataTypeMultiObject)) {
 				// CMDB multiObject 对象数组类型,需要特殊记录下类型,方法请求表单处理
 				attrDefDataType = string(CmdbDataTypeMultiObject)
+			} else if strings.Contains(remoteAttr.InputType, string(CmdbDataTypeExtRef)) {
+				// 支持 extRef类型
+				elementType = string(FormItemElementTypeSelect)
+				strArr := strings.Split(remoteAttr.ExtRefEntity, ":")
+				if len(strArr) == 2 {
+					refPackage = strArr[0]
+					refEntity = strArr[1]
+				} else {
+					refEntity = remoteAttr.ExtRefEntity
+				}
 			}
 			if remoteAttr.Nullable == "yes" {
 				required = "no"

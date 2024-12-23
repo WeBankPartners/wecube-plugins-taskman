@@ -108,6 +108,11 @@ func init() {
 		{Url: "/user/template/collect/query", Method: "POST", HandlerFunc: collect.QueryTemplateCollect, ApiCode: "user-template-collect-query"},
 		{Url: "/user/template/filter-item", Method: "POST", HandlerFunc: collect.FilterItem, ApiCode: "user-template-filter-item"},
 
+		{Url: "/entity/data", Method: "GET", HandlerFunc: workflow.GetEntityData, ApiCode: "entity-data-get"},
+		{Url: "/models/package/:packageName/entity/:entity", Method: "GET", HandlerFunc: workflow.GetEntityModel, ApiCode: "models-package-entity"},
+		{Url: "/packages/:pluginPackageId/entities/:entityName/query", Method: "POST", HandlerFunc: workflow.ProcEntityDataQuery, ApiCode: "packages-entities-query"},
+		{Url: "/process/preview", Method: "GET", HandlerFunc: workflow.ProcessDataPreview, ApiCode: "process-preview"},
+
 		{Url: "/request/:requestId", Method: "GET", HandlerFunc: request.GetRequest, ApiCode: "get-request-by-id"},
 		{Url: "/request", Method: "POST", HandlerFunc: request.CreateRequest, ApiCode: "create-request"},
 		{Url: "/request/:requestId", Method: "PUT", HandlerFunc: request.UpdateRequest, ApiCode: "update-request-by-id"},
@@ -170,8 +175,10 @@ func init() {
 		{Url: "/request/history/:requestId", Method: "GET", HandlerFunc: requestNew.GetRequestHistory, ApiCode: "request-history"},
 		{Url: "/plugin/request/create", Method: "POST", HandlerFunc: requestNew.PluginCreateRequest, ApiCode: "plugin-request-create"},
 		{Url: "/request-data/form/save/:requestId", Method: "POST", HandlerFunc: requestNew.SaveRequestFormData, ApiCode: "request-data-form-save"},
+		// 转发platform接口
 		{Url: "/platform/models", Method: "GET", HandlerFunc: requestNew.GetPlatformAllModels, ApiCode: "platform-models"},
 		{Url: "/platform/:package/entities/:entity/query", Method: "POST", HandlerFunc: requestNew.QueryPlatformEntityData, ApiCode: "platform-entity-query"},
+		// 转发auth接口
 		{Url: "/auth/roles", Method: "GET", HandlerFunc: requestNew.TransAuthGetApplyRoles, ApiCode: "auth-roles"},
 		{Url: "/auth/roles/apply", Method: "POST", HandlerFunc: requestNew.TransAuthStartApply, ApiCode: "auth-roles-apply"},
 		{Url: "/auth/roles/apply/byhandler", Method: "POST", HandlerFunc: requestNew.TransAuthGetProcessableList, ApiCode: "auth-roles-apply-byhandler"},

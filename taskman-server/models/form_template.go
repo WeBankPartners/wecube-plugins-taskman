@@ -129,7 +129,7 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 		if remoteAttr.PropertyName == workflowEntityAttribute.Name {
 			attrByte, _ := json.Marshal(remoteAttr)
 			cmdbAttr = string(attrByte)
-			if strings.Contains(remoteAttr.InputType, "select") || strings.Contains(remoteAttr.InputType, string(CmdbDataTypeExtRef)) {
+			if strings.Contains(remoteAttr.InputType, "select") {
 				elementType = string(FormItemElementTypeSelect)
 			} else if strings.Contains(remoteAttr.InputType, string(CmdbDataTypeMultiObject)) {
 				// CMDB multiObject 对象数组类型,需要特殊记录下类型,方法请求表单处理

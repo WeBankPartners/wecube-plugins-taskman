@@ -489,6 +489,10 @@ export default {
         if (typeof cache[key] === 'object') {
           cache[key] = JSON.stringify(cache[key])
         }
+        // 将number类型转为字符串
+        if (typeof cache[key] === 'number') {
+          cache[key] = cache[key].toString()
+        }
       })
       this.refKeys.forEach(k => {
         delete cache[k + 'Options']

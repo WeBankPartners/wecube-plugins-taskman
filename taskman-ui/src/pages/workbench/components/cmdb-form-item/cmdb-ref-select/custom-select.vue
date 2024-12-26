@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-14 15:05:46
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-12-12 17:36:32
+ * @LastEditTime: 2024-12-25 16:00:27
 -->
 <template>
   <div>
@@ -26,6 +26,7 @@
               closable
               @on-close="handleRemoveItem($event, i)"
               :key="i.guid"
+              style="width:calc(100% - 50px)"
               >{{ i.key_name }}</Tag
             >
             <Tag v-if="selected && selected.length > 1" @click.native="visible = !visible">
@@ -226,8 +227,7 @@ export default {
   width: 100%;
   &-input {
     width: 100%;
-    min-height: 32px;
-    max-height: 60px;
+    height: 32px;
     padding: 0 3px;
     overflow: hidden;
     cursor: pointer;
@@ -246,9 +246,7 @@ export default {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      overflow-y: auto;
-      min-height: 32px;
-      max-height: 60px;
+      height: 32px;
     }
     .icon {
       width: 20px;
@@ -314,7 +312,6 @@ export default {
   }
   .ivu-tag-text {
     display: inline-block;
-    max-width: 120px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

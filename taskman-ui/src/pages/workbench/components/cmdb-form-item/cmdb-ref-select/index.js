@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-21 19:33:55
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-12-06 19:16:18
+ * @LastEditTime: 2024-12-25 17:47:28
  * @Description: cmdb表单配置
  */
 import { getRefOptions, getWeCmdbOptions } from '@/api/server'
@@ -42,7 +42,6 @@ export default {
     return {
       allTableDataWithoutPaging: [],
       selected: [],
-      selectDisabled: true,
       firstInput: true,
       firstChange: true,
       showDetail: false,
@@ -75,6 +74,10 @@ export default {
         if (typeof cache[key] === 'object') {
           cache[key] = JSON.stringify(cache[key])
         }
+        // 将number类型转为字符串
+        if (typeof cache[key] === 'number') {
+          cache[key] = cache[key].toString()
+        }
       })
       this.column.refKeys.forEach(k => {
         delete cache[k + 'Options']
@@ -104,7 +107,6 @@ export default {
             return false
           })
         }
-        this.selectDisabled = false
         this.allTableDataWithoutPaging = data
       }
     },
@@ -194,7 +196,7 @@ export default {
           <Select
             onInput={this.handleInput}
             value={this.selected}
-            disabled={this.selectDisabled || this.disabled}
+            disabled={this.disabled}
             style="width:100%"
             filterable
             clearable
@@ -215,7 +217,7 @@ export default {
               onShowRefModal={e => this.showRefModal(e)}
               onChange={val => this.$emit('input', val)}
               onOpenChange={this.getFilterRulesOptions}
-              disabled={this.selectDisabled || this.disabled}
+              disabled={this.disabled}
               v-model={this.selected}
             ></CustomMultipleSelect>
           )}

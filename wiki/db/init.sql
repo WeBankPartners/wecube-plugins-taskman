@@ -619,3 +619,6 @@ alter table form_item_template add column formula varchar(255) default null comm
 alter table form_item_template add column cmdb_attr mediumtext default null comment 'cmdb属性';
 alter table form_item_template_library add column cmdb_attr mediumtext default null comment 'cmdb属性';
 #@v1.2.4.10-end@;
+#@v1.3.1-begin@;
+ALTER TABLE task_handle MODIFY COLUMN form_data MEDIUMTEXT;
+#@v1.3.1-end@;

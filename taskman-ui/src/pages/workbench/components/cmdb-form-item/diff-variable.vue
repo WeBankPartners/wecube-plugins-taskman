@@ -51,6 +51,7 @@ export default {
       }
     },
     formatData (val) {
+      if (!val) return []
       const vari = val.split('\u0001=\u0001')
       const keys = vari[0].split(',\u0001')
       const values = vari[1].split(',\u0001')

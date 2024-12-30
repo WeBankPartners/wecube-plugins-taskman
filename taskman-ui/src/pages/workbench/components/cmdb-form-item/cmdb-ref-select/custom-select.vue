@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-14 15:05:46
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-12-25 16:00:27
+ * @LastEditTime: 2024-12-30 15:14:39
 -->
 <template>
   <div>
@@ -26,7 +26,7 @@
               closable
               @on-close="handleRemoveItem($event, i)"
               :key="i.guid"
-              style="width:calc(100% - 50px)"
+              style="max-width:calc(100% - 50px)"
               >{{ i.key_name }}</Tag
             >
             <Tag v-if="selected && selected.length > 1" @click.native="visible = !visible">

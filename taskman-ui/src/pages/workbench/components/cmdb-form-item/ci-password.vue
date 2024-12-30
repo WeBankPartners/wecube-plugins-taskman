@@ -43,10 +43,10 @@
         </FormItem>
       </Form>
       <div slot="footer">
+        <Button @click="closeEditModal">{{ $t('tw_close') }}</Button>
         <Button @click="confirm" :loading="modalLoading" type="primary">{{
           useLocalValue ? $t('confirm') : $t('save')
         }}</Button>
-        <Button @click="closeEditModal">{{ $t('tw_close') }}</Button>
       </div>
     </Modal>
   </div>

@@ -17,34 +17,40 @@
     <Button v-else type="primary" @click="showConfig" :disabled="disabled">{{ $t('tw_config') }}</Button>
     <!--非json编辑框-->
     <Modal v-model="showModal" :title="$t('tw_config')">
-      <template v-for="(item, itemIndex) in multiData">
-        <div :key="itemIndex" style="margin:4px">
-          <InputNumber
-            v-if="type === 'number'"
-            :max="99999999"
-            :min="-99999999"
-            style="width:360px"
-            :precision="0"
-            v-model="item.value"
-          />
-          <Input v-else v-model="item.value" :maxlength="255" show-word-limit style="width:360px"></Input>
-          <Button @click="addItem" type="primary" size="small" icon="ios-add" style="margin:0 4px"></Button>
-          <Button @click="deleteItem(itemIndex)" v-if="multiData.length !== 1" size="small" type="error" icon="ios-trash"></Button>
-        </div>
-      </template>
+      <div class="multiconfig-modal-content">
+        <template v-for="(item, itemIndex) in multiData">
+          <div :key="itemIndex" style="margin:4px">
+            <InputNumber
+              v-if="type === 'number'"
+              :max="99999999"
+              :min="-99999999"
+              style="width:360px"
+              :precision="0"
+              v-model="item.value"
+            />
+            <Input v-else v-model="item.value" :maxlength="255" show-word-limit style="width:360px"></Input>
+            <Button @click="addItem" type="primary" size="small" icon="ios-add" style="margin:0 4px"></Button>
+            <Button @click="deleteItem(itemIndex)" v-if="multiData.length !== 1" size="small" type="error" icon="ios-trash"></Button>
+          </div>
+        </template>
+      </div>
       <template #footer>
         <Button @click="showModal = false">{{ $t('cancel') }}</Button>
         <Button @click="confirmData" type="primary">{{ $t('confirm') }}</Button>
       </template>
     </Modal>
     <!--json编辑框-->
-    <Modal :z-index="2000" v-model="showJsonModal" :title="$t('tw_json_edit')" width="800" @on-ok="confirmJsonData" @on-cancel="cancel">
+    <Modal :z-index="2000" v-model="showJsonModal" :title="$t('tw_json_edit')" width="800">
       <Button type="primary" @click="addNewJson">{{ $t('tw_add_group') }}</Button>
       <div style="max-height:500px; overflow:auto">
         <template v-for="(item, itemIndex) in originData">
           <Tree :ref="'jsonTree' + itemIndex" :jsonData="item" :key="itemIndex"></Tree>
         </template>
       </div>
+      <template #footer>
+        <Button @click="showJsonModal = false">{{ $t('cancel') }}</Button>
+        <Button @click="confirmJsonData" type="primary">{{ $t('confirm') }}</Button>
+      </template>
     </Modal>
     <!--详情弹框-->
     <Modal :z-index="2000" v-model="showDetail" :title="title" @on-ok="showDetail = false" width="700">
@@ -157,8 +163,7 @@ export default {
         this.showModal = false
         this.$emit('input', res)
       }
-    },
-    cancel () {}
+    }
   }
 }
 </script>
@@ -189,5 +194,9 @@ export default {
       margin-left: 5px;
     }
   }
+}
+.multiconfig-modal-content {
+  max-height: 360px;
+  overflow-y: auto;
 }
 </style>

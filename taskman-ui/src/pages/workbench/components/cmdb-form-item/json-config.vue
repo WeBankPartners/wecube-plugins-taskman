@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-11-19 10:23:32
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-12-11 21:39:36
+ * @LastEditTime: 2025-01-06 16:36:18
 -->
 <template>
   <div class="taskman-cmdb-json-config">
@@ -16,13 +16,17 @@
     <!--编辑-->
     <Button v-else type="primary" :disabled="disabled" @click="showTreeConfig">{{ $t('tw_config') }}</Button>
     <!--编辑弹框-->
-    <Modal :z-index="2000" v-model="showEdit" :title="$t('tw_json_edit')" @on-ok="confirmJsonData" width="800">
+    <Modal :z-index="2000" v-model="showEdit" :title="$t('tw_json_edit')" width="800">
       <Button type="primary" v-if="isArray" @click="addNewJson">{{ $t('tw_add_group') }}</Button>
-      <div style="max-height:500px; overflow:auto">
+      <div style="max-height:500px;overflow-y:auto;">
         <template v-for="(item, itemIndex) in originData">
           <Tree :ref="'jsonTree' + itemIndex" :jsonData="item" :key="itemIndex"></Tree>
         </template>
       </div>
+      <template #footer>
+        <Button @click="showEdit = false">{{ $t('cancel') }}</Button>
+        <Button @click="confirmJsonData" type="primary">{{ $t('confirm') }}</Button>
+      </template>
     </Modal>
     <!--查看弹框-->
     <Modal :z-index="2000" v-model="showDetail" :title="title" @on-ok="showDetail = false" width="700">

@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-21 19:33:55
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-12-27 10:54:56
+ * @LastEditTime: 2025-01-06 16:11:22
  * @Description: cmdb表单配置
  */
 import { getRefOptions, getWeCmdbOptions } from '@/api/server'
@@ -159,7 +159,7 @@ export default {
           contents.forEach(item => {
             if (this.selected.includes(item.guid || item.id)) {
               this.detailData.push({
-                title: item.key_name || item.name,
+                title: item.key_name || item.displayName || item.name,
                 value: item
               })
             }
@@ -168,7 +168,7 @@ export default {
           contents.forEach(item => {
             if ((item.guid || item.id) === this.selected) {
               this.detailData.push({
-                title: item.key_name || item.name,
+                title: item.key_name || item.displayName || item.name,
                 value: item
               })
             }

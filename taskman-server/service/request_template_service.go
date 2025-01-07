@@ -2090,3 +2090,8 @@ func (s *RequestTemplateService) GetTaskHandleTemplateRolesByRequestTemplateIds(
 	}
 	return
 }
+
+func (s *RequestTemplateService) UpdateOperatorObjType(requestTemplateId, operatorObjType string) (err error) {
+	requestTemplate := &models.RequestTemplateTable{Id: requestTemplateId, OperatorObjType: operatorObjType}
+	return s.requestTemplateDao.Update(nil, requestTemplate)
+}

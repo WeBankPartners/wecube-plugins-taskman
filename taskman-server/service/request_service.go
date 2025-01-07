@@ -563,11 +563,22 @@ func (s *RequestService) processTaskForm(formParam models.ProcessTaskFormParam) 
 				}
 				// map需要特殊处理
 				if reflect.ValueOf(v).Kind() == reflect.Map {
-					byteArr, _ := json.Marshal(v.(map[string]interface{}))
-					valueString = string(byteArr)
+					m, ok := v.(map[string]interface{})
+					if !ok {
+						// 处理类型断言失败的情况
+						valueString = fmt.Sprintf("%v", v)
+					} else {
+						byteArr, err := json.Marshal(m)
+						if err != nil {
+							// 处理 JSON 序列化失败的情况
+							valueString = fmt.Sprintf("Error marshaling map: %v", err)
+						} else {
+							valueString = string(byteArr)
+						}
+					}
 				} else {
 					// 整理属性值，特殊处理数组
-					valueString = fmt.Sprintf("%s", v)
+					valueString = fmt.Sprintf("%v", v)
 				}
 				if _, multipleFlag := isColumnMultiMap[k]; multipleFlag {
 					// 此处需要支持 CMDB multiInt 和multiObject 类型

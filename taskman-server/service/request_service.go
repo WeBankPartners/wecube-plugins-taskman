@@ -577,8 +577,21 @@ func (s *RequestService) processTaskForm(formParam models.ProcessTaskFormParam) 
 						}
 					}
 				} else {
-					// 整理属性值，特殊处理数组
-					valueString = fmt.Sprintf("%v", v)
+					switch vType := v.(type) {
+					case int:
+						valueString = strconv.Itoa(vType)
+					case int32:
+						valueString = strconv.Itoa(int(vType))
+					case int64:
+						valueString = strconv.FormatInt(vType, 10)
+					case float32:
+						valueString = strconv.FormatFloat(float64(vType), 'f', -1, 32)
+					case float64:
+						valueString = strconv.FormatFloat(vType, 'f', -1, 64)
+					default:
+						// 如果 v 不是数字类型，使用 fmt.Sprintf
+						valueString = fmt.Sprintf("%v", vType)
+					}
 				}
 				if _, multipleFlag := isColumnMultiMap[k]; multipleFlag {
 					// 此处需要支持 CMDB multiInt 和multiObject 类型

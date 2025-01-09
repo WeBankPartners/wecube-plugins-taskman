@@ -25,8 +25,8 @@ func ReturnPageData(c *gin.Context, pageInfo models.PageInfo, contents interface
 	c.JSON(http.StatusOK, obj)
 }
 
-func ReturnEmptyPageData(c *gin.Context) {
-	c.JSON(http.StatusOK, models.ResponseJson{StatusCode: "OK", Data: models.ResponsePageData{PageInfo: models.PageInfo{StartIndex: 0, PageSize: 0, TotalRows: 0}, Contents: []string{}}})
+func ReturnApiPermissionError(c *gin.Context) {
+	ReturnError(c, exterror.New().ApiPermissionDeny)
 }
 
 func ReturnData(c *gin.Context, data interface{}) {
@@ -56,7 +56,7 @@ func ReturnError(c *gin.Context, err error) {
 	}
 	errorCode, errorKey, errorMessage := exterror.GetErrorResult(c.GetHeader(AcceptLanguageHeader), err)
 	log.Logger.Error("Handle error", log.String("statusCode", errorKey), log.String("message", errorMessage))
-	obj := models.ResponseErrorJson{StatusCode: errorKey, StatusMessage: errorMessage}
+	obj := models.ResponseErrorJson{StatusCode: strconv.Itoa(errorCode), StatusMessage: errorMessage}
 	bodyBytes, _ := json.Marshal(obj)
 	c.Writer.Header().Add("Error-Code", strconv.Itoa(errorCode))
 	c.Set("responseBody", string(bodyBytes))

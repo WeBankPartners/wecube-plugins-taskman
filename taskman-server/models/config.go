@@ -5,6 +5,7 @@ import (
 	"github.com/WeBankPartners/go-common-lib/cipher"
 	"github.com/WeBankPartners/go-common-lib/smtp"
 	"github.com/WeBankPartners/go-common-lib/token"
+	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -73,16 +74,31 @@ type GlobalConfig struct {
 	AttachFile      AttachFileConfig `json:"attach_file"`
 	EncryptSeed     string           `json:"encrypt_seed"`
 	WebUrl          string           `json:"web_url"`
+	MenuApiMap      MenuApiMapConfig `json:"menu_api_map"`
+}
+
+type MenuApiMapConfig struct {
+	Enable string `json:"enable"`
+	File   string `json:"file"`
+}
+
+type MenuApiMapObj struct {
+	Menu string           `json:"menu"`
+	Urls []*MenuApiUrlObj `json:"urls"`
+}
+
+type MenuApiUrlObj struct {
+	Url    string `json:"url"`
+	Method string `json:"method"`
 }
 
 var (
 	Config                   *GlobalConfig
 	CoreToken                *token.CoreToken
-	ProcessFetchTabs         string
 	MailEnable               bool
 	MailSender               smtp.MailSender
-	PriorityLevelMap         = map[int]string{1: "high", 2: "medium", 3: "low"}
 	RequestTemplateImportMap = map[string]RequestTemplateExport{}
+	MenuApiGlobalList        []*MenuApiMapObj
 )
 
 func InitConfig(configFile string) (errMessage string) {
@@ -121,7 +137,6 @@ func InitConfig(configFile string) (errMessage string) {
 	tmpCoreToken.SubSystemKey = Config.Wecube.SubSystemKey
 	tmpCoreToken.InitCoreToken()
 	CoreToken = &tmpCoreToken
-	ProcessFetchTabs = os.Getenv("TASKMAN_PROCESS_TAGS")
 	// attach file
 	if strings.Contains(Config.AttachFile.MinioAddress, "//") {
 		Config.AttachFile.MinioAddress = strings.Split(Config.AttachFile.MinioAddress, "//")[1]
@@ -145,6 +160,20 @@ func InitConfig(configFile string) (errMessage string) {
 		}
 	} else {
 		log.Println("Mail sender disable")
+	}
+	if c.MenuApiMap.Enable == "true" || strings.TrimSpace(c.MenuApiMap.Enable) == "" || strings.ToUpper(c.MenuApiMap.Enable) == "Y" {
+		maBytes, err := ioutil.ReadFile(c.MenuApiMap.File)
+		if err != nil {
+			errMessage = "read menu api map file fail " + err.Error()
+			return
+		}
+		err = json.Unmarshal(maBytes, &MenuApiGlobalList)
+		if err != nil {
+			errMessage = "json unmarshal menu api map content fail," + err.Error()
+			return
+		}
+	} else {
+		log.Println("disable menu api permission success")
 	}
 	return
 }

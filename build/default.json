@@ -48,5 +48,9 @@
     "ssl": false
   },
   "encrypt_seed": "{{ENCRYPT_SEED}}",
-  "web_url": "{{TASKMAN_WEB_URL}}"
+  "web_url": "{{TASKMAN_WEB_URL}}",
+  "menu_api_map": {
+    "enable": "{{TASKMAN_MENU_API_PERMISSION_ENABLE}}",
+    "file": "conf/menu-api-map.json"
+  }
 }

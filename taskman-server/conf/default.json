@@ -46,5 +46,9 @@
     "minio_secret_key": "",
     "bucket": "",
     "ssl": false
+  },
+  "menu_api_map": {
+    "enable": "true",
+    "file": "conf/menu-api-map.json"
   }
 }

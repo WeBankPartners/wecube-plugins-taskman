@@ -48,7 +48,7 @@ export default {
   },
   methods: {
     // 打开编排模板详情页
-    jumpToFlowDetail() {
+    jumpToFlowDetail () {
       if (process.env.VUE_APP_PLUGIN === 'plugin') {
         window.sessionStorage.currentPath = '' // 先清空session缓存页面，不然打开新标签页面会回退到缓存的页面
         const path = `${window.location.origin}/#/collaboration/workflow-mgmt?flowId=${this.flowId}&editFlow=false&flowListTab=deployed`

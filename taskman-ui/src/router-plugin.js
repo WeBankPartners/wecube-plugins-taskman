@@ -2,11 +2,6 @@ import pluginEntry from '@/plugin-entry.vue'
 import template from '@/pages/template.vue'
 import templateGroup from '@/pages/template-group.vue'
 import templateManagementIndex from '@/pages/temp-management/index.vue'
-import request from '@/pages/request.vue'
-import requestManagementIndex from '@/pages/request-management/index.vue'
-import task from '@/pages/task.vue'
-import taskManagementIndex from '@/pages/task-mgmt/index.vue'
-import requestCheck from '@/pages/request-management/request-check.vue'
 import workbenchIndex from '@/pages/workbench/index.vue'
 import workbenchTemplate from '@/pages/workbench/template/index.vue'
 import workbenchPublishCreate from '@/pages/workbench/publish/create'
@@ -48,31 +43,6 @@ const router = [
         path: '/templateManagementIndex',
         name: 'templateManagementIndex',
         component: templateManagementIndex
-      },
-      {
-        path: '/taskman/request-mgmt',
-        name: '/taskman/request-mgmt',
-        component: request
-      },
-      {
-        path: '/requestManagementIndex',
-        name: 'requestManagementIndex',
-        component: requestManagementIndex
-      },
-      {
-        path: '/taskman/task-mgmt',
-        name: '/taskman/task-mgmt',
-        component: task
-      },
-      {
-        path: '/taskMgmtIndex',
-        name: 'taskMgmtIndex',
-        component: taskManagementIndex
-      },
-      {
-        path: '/requestCheck',
-        name: 'requestCheck',
-        component: requestCheck
       },
       {
         path: '/taskman/workbench',

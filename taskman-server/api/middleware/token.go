@@ -113,6 +113,8 @@ func ReadFormFile(c *gin.Context, fileKey string) (fileName string, fileBytes []
 }
 
 func validateMenuApi(roles []string, path, method string) (legal bool) {
+	// 防止ip 之类数据配置不上
+	path = strings.ReplaceAll(path, ".", "")
 	for _, menuApi := range models.MenuApiGlobalList {
 		for _, role := range roles {
 			if strings.ToLower(menuApi.Menu) == strings.ToLower(role) {
@@ -135,6 +137,6 @@ func validateMenuApi(roles []string, path, method string) (legal bool) {
 }
 
 func buildRegexPattern(template string) string {
-	// 将 ${variable} 替换为 (\w+)
-	return regexp.MustCompile(`\$\{[\w.-]+\}`).ReplaceAllString(template, `(\w+)`)
+	// 将 ${variable} 替换为 (\w+) ,并且严格匹配
+	return "^" + regexp.MustCompile(`\$\{[\w.-]+\}`).ReplaceAllString(template, `(\w+)`) + "$"
 }

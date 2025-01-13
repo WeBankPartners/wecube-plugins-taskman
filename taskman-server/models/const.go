@@ -12,6 +12,7 @@ const (
 	WeCubeEmptySearch    = "WeCube-empty-search" //查询空数据
 	Yes                  = "yes"
 	Y                    = "y"
+	ContextApiCode       = "apiCode"
 )
 
 // RequestStatus 定义请求状态

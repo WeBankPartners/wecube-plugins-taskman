@@ -238,6 +238,7 @@ func InitHttpServer() {
 
 	// entity query
 	r.POST(urlPrefix+"/entities/request/query", request.QueryProcDefEntity)
+	middleware.InitApiMenuMap(apiCodeMap)
 	r.Run(":" + models.Config.HttpServer.Port)
 }
 

@@ -28,6 +28,9 @@ var (
 		models.UrlPrefix + "/api/v2/auth/roles/apply":    {},
 		models.UrlPrefix + "/api/v2/auth/users/register": {},
 	}
+	whitePathMap = map[string]bool{
+		models.UrlPrefix + "/entities/${model}/query": true,
+	}
 	ApiMenuMap = make(map[string][]string) // key -> apiCode  value -> menuList
 )
 
@@ -60,6 +63,14 @@ func AuthCoreRequestToken() gin.HandlerFunc {
 				c.Abort()
 			} else {
 				if models.Config.MenuApiMap.Enable == "true" || strings.TrimSpace(models.Config.MenuApiMap.Enable) == "" || strings.ToUpper(models.Config.MenuApiMap.Enable) == "Y" {
+					// 白名单URL直接放行
+					for path, _ := range whitePathMap {
+						re := regexp.MustCompile(buildRegexPattern(path))
+						if re.MatchString(c.Request.URL.Path) {
+							c.Next()
+							return
+						}
+					}
 					legal := false
 					if allowMenuList, ok := ApiMenuMap[c.GetString(models.ContextApiCode)]; ok {
 						legal = compareStringList(GetRequestRoles(c), allowMenuList)

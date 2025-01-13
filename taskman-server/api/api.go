@@ -259,6 +259,7 @@ func httpLogHandle() gin.HandlerFunc {
 		c.Set("requestBody", string(bodyBytes))
 		apiCode := apiCodeMap[c.Request.Method+"_"+c.FullPath()]
 		c.Writer.Header().Add("Api-Code", apiCode)
+		c.Set(models.ContextApiCode, apiCode)
 		c.Next()
 		log.AccessLogger.Info("request", log.String("url", c.Request.RequestURI), log.String("method", c.Request.Method), log.Int("code", c.Writer.Status()), log.String("operator", c.GetString("user")), log.String("ip", middleware.GetRemoteIp(c)), log.Float64("cost_ms", time.Since(start).Seconds()*1000), log.String("body", string(bodyBytes)))
 	}

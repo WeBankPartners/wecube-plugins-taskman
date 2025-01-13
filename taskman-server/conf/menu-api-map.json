@@ -236,12 +236,12 @@
       {
         "key": "",
         "url": "/taskman/api/v1/request/attach-file/upload/${val}",
-        "method": "get"
+        "method": "post"
       },
       {
         "key": "",
         "url": "/taskman/api/v1/task/attach-file/${this.id}/upload/${val}",
-        "method": "get"
+        "method": "post"
       }
     ]
   },

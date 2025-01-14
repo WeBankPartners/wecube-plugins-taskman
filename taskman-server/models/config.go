@@ -99,6 +99,7 @@ var (
 	MailSender               smtp.MailSender
 	RequestTemplateImportMap = map[string]RequestTemplateExport{}
 	MenuApiGlobalList        []*MenuApiMapObj
+	HomePageApi              *MenuApiMapObj
 )
 
 func InitConfig(configFile string) (errMessage string) {
@@ -178,6 +179,9 @@ func InitConfig(configFile string) (errMessage string) {
 				if !strings.HasPrefix(item.Url, "/") {
 					item.Url = "/" + item.Url
 				}
+			}
+			if menuApi.Menu == HomePage {
+				HomePageApi = menuApi
 			}
 		}
 		log.Println("enable menu api permission success")

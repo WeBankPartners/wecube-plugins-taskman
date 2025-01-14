@@ -62,15 +62,25 @@ func AuthCoreRequestToken() gin.HandlerFunc {
 				c.JSON(http.StatusUnauthorized, models.EntityResponse{Status: "ERROR", Message: "Core token validate fail "})
 				c.Abort()
 			} else {
-				if models.Config.MenuApiMap.Enable == "true" || strings.TrimSpace(models.Config.MenuApiMap.Enable) == "" || strings.ToUpper(models.Config.MenuApiMap.Enable) == "Y" {
-					// 白名单URL直接放行
-					for path, _ := range whitePathMap {
-						re := regexp.MustCompile(buildRegexPattern(path))
-						if re.MatchString(c.Request.URL.Path) {
+				// 白名单URL直接放行
+				for path, _ := range whitePathMap {
+					re := regexp.MustCompile(buildRegexPattern(path))
+					if re.MatchString(c.Request.URL.Path) {
+						c.Next()
+						return
+					}
+				}
+				// 首页菜单直接放行
+				if models.HomePageApi != nil && len(models.HomePageApi.Urls) > 0 {
+					for _, item := range models.HomePageApi.Urls {
+						re := regexp.MustCompile(buildRegexPattern(item.Url))
+						if re.MatchString(c.Request.URL.Path) && strings.ToLower(item.Method) == strings.ToLower(c.Request.Method) {
 							c.Next()
 							return
 						}
 					}
+				}
+				if models.Config.MenuApiMap.Enable == "true" || strings.TrimSpace(models.Config.MenuApiMap.Enable) == "" || strings.ToUpper(models.Config.MenuApiMap.Enable) == "Y" {
 					legal := false
 					if allowMenuList, ok := ApiMenuMap[c.GetString(models.ContextApiCode)]; ok {
 						legal = compareStringList(GetRequestRoles(c), allowMenuList)

@@ -605,6 +605,26 @@
         "key": "getWorkflowForkNode",
         "url": "/taskman/api/v1/task-template/workflow/options",
         "method": "get"
+      },
+      {
+        "url": "/taskman/api/v1/request-template/roles",
+        "method": "post"
+      },
+      {
+        "url": "/taskman/api/v1/request-template/export/batch",
+        "method": "post"
+      },
+      {
+        "url": "/taskman/api/v1/form-template-library/export-data",
+        "method": "post"
+      },
+      {
+        "url": "/taskman/api/v1/form-template-library/import",
+        "method": "post"
+      },
+      {
+        "url": "/taskman/api/v1/request-template/import-batch",
+        "method": "post"
       }
     ]
   },

@@ -34,6 +34,11 @@
         "method": "post"
       },
       {
+        "key": "getPlatformFilter",
+        "url": "/taskman/api/v1/user/platform/filter-item",
+        "method": "post"
+      },
+      {
         "key": "collectTemplateList",
         "url": "/taskman/api/v1/user/template/collect/query",
         "method": "post"

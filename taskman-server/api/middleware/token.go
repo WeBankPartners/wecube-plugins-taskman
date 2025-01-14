@@ -31,7 +31,8 @@ var (
 	whitePathMap = map[string]bool{
 		models.UrlPrefix + "/entities/${model}/query": true,
 	}
-	ApiMenuMap = make(map[string][]string) // key -> apiCode  value -> menuList
+	ApiMenuMap         = make(map[string][]string) // key -> apiCode  value -> menuList
+	HomePageApiCodeMap = make(map[string]bool)
 )
 
 func isWhiteListUrl(url string) (result bool) {
@@ -71,14 +72,9 @@ func AuthCoreRequestToken() gin.HandlerFunc {
 					}
 				}
 				// 首页菜单直接放行
-				if models.HomePageApi != nil && len(models.HomePageApi.Urls) > 0 {
-					for _, item := range models.HomePageApi.Urls {
-						re := regexp.MustCompile(buildRegexPattern(item.Url))
-						if re.MatchString(c.Request.URL.Path) && strings.ToLower(item.Method) == strings.ToLower(c.Request.Method) {
-							c.Next()
-							return
-						}
-					}
+				if HomePageApiCodeMap[c.GetString(models.ContextApiCode)] {
+					c.Next()
+					return
 				}
 				if models.Config.MenuApiMap.Enable == "true" || strings.TrimSpace(models.Config.MenuApiMap.Enable) == "" || strings.ToUpper(models.Config.MenuApiMap.Enable) == "Y" {
 					legal := false
@@ -180,6 +176,9 @@ func InitApiMenuMap(apiMenuCodeMap map[string]string) {
 						ApiMenuMap[code] = append(existList, menuApi.Menu)
 					} else {
 						ApiMenuMap[code] = []string{menuApi.Menu}
+					}
+					if menuApi.Menu == models.HomePage {
+						HomePageApiCodeMap[code] = true
 					}
 					matchUrlMap[item.Method+"_"+item.Url] = 1
 				}

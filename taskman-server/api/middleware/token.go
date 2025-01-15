@@ -165,13 +165,16 @@ func buildRegexPattern(template string) string {
 }
 
 func InitApiMenuMap(apiMenuCodeMap map[string]string) {
+	var exist bool
 	matchUrlMap := make(map[string]int)
 	for k, code := range apiMenuCodeMap {
-		re := regexp.MustCompile("^" + regexp.MustCompile(":[\\w\\-]+").ReplaceAllString(strings.ToLower(k), "([\\w\\.\\-\\$\\{\\}:]+)") + "$")
+		exist = false
+		re := regexp.MustCompile("^" + regexp.MustCompile(":[\\w\\-]+").ReplaceAllString(strings.ToLower(k), "([\\w\\.\\-\\$\\{\\}:\\[\\]]+)") + "$")
 		for _, menuApi := range models.MenuApiGlobalList {
 			for _, item := range menuApi.Urls {
 				key := strings.ToLower(item.Method + "_" + item.Url)
 				if re.MatchString(key) {
+					exist = true
 					if existList, existFlag := ApiMenuMap[code]; existFlag {
 						ApiMenuMap[code] = append(existList, menuApi.Menu)
 					} else {
@@ -184,11 +187,14 @@ func InitApiMenuMap(apiMenuCodeMap map[string]string) {
 				}
 			}
 		}
+		if !exist {
+			log.Logger.Info("", log.String("path", k), log.String("code", code))
+		}
 	}
 	for _, menuApi := range models.MenuApiGlobalList {
 		for _, item := range menuApi.Urls {
 			if _, ok := matchUrlMap[item.Method+"_"+item.Url]; !ok {
-				log.Logger.Info("InitApiMenuMap can not match menuUrl", log.String("menu", menuApi.Menu), log.String("method", item.Method), log.String("url", item.Url))
+				//log.Logger.Info("InitApiMenuMap can not match menuUrl", log.String("menu", menuApi.Menu), log.String("method", item.Method), log.String("url", item.Url))
 			}
 		}
 	}

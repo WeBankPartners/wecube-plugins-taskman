@@ -131,7 +131,6 @@
               </FormItem>
             </Form>
             <div v-if="handleData.editable" style="text-align: center">
-              <!-- <Button @click="saveTaskData" type="info">{{ $t('save') }}</Button> -->
               <Button :disabled="commitTaskDisabled" @click="commitTaskData" type="primary">{{
                 $t('tw_commit')
               }}</Button>

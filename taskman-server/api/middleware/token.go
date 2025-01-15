@@ -71,14 +71,19 @@ func AuthCoreRequestToken() gin.HandlerFunc {
 						return
 					}
 				}
+				contextApiCode := c.GetString(models.ContextApiCode)
 				// 首页菜单直接放行
-				if HomePageApiCodeMap[c.GetString(models.ContextApiCode)] {
+				if HomePageApiCodeMap[contextApiCode] {
+					c.Next()
+					return
+				}
+				if strings.HasPrefix(contextApiCode, "plugin-") {
 					c.Next()
 					return
 				}
 				if models.Config.MenuApiMap.Enable == "true" || strings.TrimSpace(models.Config.MenuApiMap.Enable) == "" || strings.ToUpper(models.Config.MenuApiMap.Enable) == "Y" {
 					legal := false
-					if allowMenuList, ok := ApiMenuMap[c.GetString(models.ContextApiCode)]; ok {
+					if allowMenuList, ok := ApiMenuMap[contextApiCode]; ok {
 						legal = compareStringList(GetRequestRoles(c), allowMenuList)
 					} else {
 						legal = validateMenuApi(GetRequestRoles(c), c.Request.URL.Path, c.Request.Method)

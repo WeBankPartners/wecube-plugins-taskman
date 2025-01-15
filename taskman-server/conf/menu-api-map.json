@@ -247,6 +247,11 @@
         "key": "",
         "url": "/taskman/api/v1/task/attach-file/${this.id}/upload/${val}",
         "method": "post"
+      },
+      {
+        "key": "deleteAttach",
+        "path": "/taskman/api/v1/request/attach-file/remove/${fileId}",
+        "method": "delete"
       }
     ]
   },

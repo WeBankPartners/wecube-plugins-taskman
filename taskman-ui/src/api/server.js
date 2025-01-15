@@ -32,15 +32,6 @@ export const updateTemp = data => req.put('/taskman/api/v1/request-template', da
 export const deleteTemp = data => req.delete('/taskman/api/v1/request-template', data)
 export const copyTemplate = id => req.post(`/taskman/api/v1/request-template/copy/${id}`)
 
-export const getFormList = requestTemplateId =>
-  req.get(`/taskman/api/v1/request-template/${requestTemplateId}/attrs/list`)
-
-export const saveAttrs = (requestTemplateId, data) =>
-  req.put(`/taskman/api/v1/request-template/${requestTemplateId}/attrs/update`, data)
-
-export const getSelectedForm = requestTemplateId =>
-  req.get(`/taskman/api/v1/request-template/${requestTemplateId}/attrs/get`)
-
 export const saveRequsetForm = (requestTemplateId, data) =>
   req.post(`/taskman/api/v1/request-form-template/${requestTemplateId}`, data)
 
@@ -52,8 +43,6 @@ export const getTemplateNodesForRequest = requestTemplateId =>
 export const saveTaskForm = (requestTemplateId, data) =>
   req.post(`/taskman/api/v1/task-template/${requestTemplateId}`, data)
 
-export const confirmTemplate = requestTemplateId =>
-  req.post(`/taskman/api/v1/request-template/confirm/${requestTemplateId}`)
 // 提交模版审核
 export const submitTemplate = data => req.post(`/taskman/api/v1/request-template/status/update`, data)
 
@@ -76,8 +65,6 @@ export const getTaskFormDataByNodeId = (requestTemplateId, nodeId) =>
   req.get(`/taskman/api/v1/task-template/${requestTemplateId}/${nodeId}`)
 
 export const getTemplateByUser = () => req.get('/taskman/api/v1/user/request-template')
-export const createRequest = (requestId, data) => req.post('/taskman/api/v1/request', data)
-export const updateRequest = (requestId, data) => req.put(`/taskman/api/v1/request/${requestId}`, data)
 export const getRootEntity = params => req.get('/taskman/api/v1/entity/data', params)
 export const getEntityData = params => req.get('/taskman/api/v1/request-data/preview', params)
 export const saveEntityData = (requestId, params) =>
@@ -90,8 +77,6 @@ export const updateRequestStatus = (requestId, status, params) =>
 export const requestListForDraftInitiated = params => req.post(`/taskman/api/v1/user/request/use`, params)
 export const requestListForHandle = params => req.post(`/taskman/api/v1/user/request/mgmt`, params)
 export const deleteRequest = id => req.delete(`/taskman/api/v1/request/${id}`)
-export const terminateRequest = id => req.post(`/taskman/api/v1/request/terminate/${id}`)
-export const startRequest = (requestId, data) => req.post(`/taskman/api/v1/request/start/${requestId}`, data)
 export const getRequestInfo = requestId => req.get(`/taskman/api/v1/request/${requestId}`)
 
 export const getRefOptions = (requestId, attr, params, attrName) =>
@@ -102,9 +87,6 @@ export const getWeCmdbOptions = (packageName, ciType, params) =>
 
 export const taskList = params => req.post(`/taskman/api/v1/task/list`, params)
 export const getTaskDetail = taskId => req.get(`/taskman/api/v1/task/detail/${taskId}`)
-export const saveTaskData = (taskId, data) => req.post(`/taskman/api/v1/task/save/${taskId}`, data)
-export const changeTaskStatus = (operation, taskId, timestamp) =>
-  req.post(`/taskman/api/v1/task/status/${operation}/${taskId}/${timestamp}`)
 export const commitTaskData = (taskId, data) => req.post(`/taskman/api/v1/task/approve/${taskId}`, data)
 export const getRequestDetail = requestId => req.get(`/taskman/api/v1/request/detail/${requestId}`)
 export const getHandlerRoles = params => req.get(`/taskman/api/v1/role/user/list`, params)
@@ -134,9 +116,6 @@ export const getPlatformList = params => req.post(`/taskman/api/v1/user/platform
 export const getPlatformFilter = params => req.post(`/taskman/api/v1/user/platform/filter-item`, params)
 // 获取模板收藏列表筛选数据集合
 export const getTemplateFilter = params => req.post(`/taskman/api/v1/user/template/filter-item`, params)
-// 工作台转给我
-export const tansferToMe = (templateId, timestamp) =>
-  req.post(`/taskman/api/v1/request/handler/${templateId}/${timestamp}`)
 // 工作台处理接口
 export const pendingHandle = params => req.post(`/taskman/api/v1/task-handle/update`, params)
 // 工作台撤回

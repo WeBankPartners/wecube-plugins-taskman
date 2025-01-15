@@ -96,24 +96,6 @@
     "description": "复制模板"
   },
   {
-    "key": "getFormList",
-    "path": "/taskman/api/v1/request-template/{requestTemplateId}/attrs/list",
-    "method": "get",
-    "description": "获取表单属性列表"
-  },
-  {
-    "key": "saveAttrs",
-    "path": "/taskman/api/v1/request-template/{requestTemplateId}/attrs/update",
-    "method": "put",
-    "description": "保存表单属性"
-  },
-  {
-    "key": "getSelectedForm",
-    "path": "/taskman/api/v1/request-template/{requestTemplateId}/attrs/get",
-    "method": "get",
-    "description": "获取选中的表单"
-  },
-  {
     "key": "saveRequsetForm",
     "path": "/taskman/api/v1/request-form-template/{requestTemplateId}",
     "method": "post",
@@ -136,12 +118,6 @@
     "path": "/taskman/api/v1/task-template/{requestTemplateId}",
     "method": "post",
     "description": "保存任务表单"
-  },
-  {
-    "key": "confirmTemplate",
-    "path": "/taskman/api/v1/request-template/confirm/{requestTemplateId}",
-    "method": "post",
-    "description": "确认模板"
   },
   {
     "key": "submitTemplate",
@@ -216,18 +192,6 @@
     "description": "获取用户的模板"
   },
   {
-    "key": "createRequest",
-    "path": "/taskman/api/v1/request",
-    "method": "post",
-    "description": "创建请求"
-  },
-  {
-    "key": "updateRequest",
-    "path": "/taskman/api/v1/request/{requestId}",
-    "method": "put",
-    "description": "更新请求"
-  },
-  {
     "key": "getRootEntity",
     "path": "/taskman/api/v1/entity/data",
     "method": "get",
@@ -288,18 +252,6 @@
     "description": "删除请求"
   },
   {
-    "key": "terminateRequest",
-    "path": "/taskman/api/v1/request/terminate/{id}",
-    "method": "post",
-    "description": "终止请求"
-  },
-  {
-    "key": "startRequest",
-    "path": "/taskman/api/v1/request/start/{requestId}",
-    "method": "post",
-    "description": "启动请求"
-  },
-  {
     "key": "getRequestInfo",
     "path": "/taskman/api/v1/request/{requestId}",
     "method": "get",
@@ -328,18 +280,6 @@
     "path": "/taskman/api/v1/task/detail/{taskId}",
     "method": "get",
     "description": "获取任务详情"
-  },
-  {
-    "key": "saveTaskData",
-    "path": "/taskman/api/v1/task/save/{taskId}",
-    "method": "post",
-    "description": "保存任务数据"
-  },
-  {
-    "key": "changeTaskStatus",
-    "path": "/taskman/api/v1/task/status/{operation}/{taskId}/{timestamp}",
-    "method": "post",
-    "description": "更改任务状态"
   },
   {
     "key": "commitTaskData",
@@ -448,12 +388,6 @@
     "path": "/taskman/api/v1/user/template/filter-item",
     "method": "post",
     "description": "获取模板收藏列表筛选数据集合"
-  },
-  {
-    "key": "tansferToMe",
-    "path": "/taskman/api/v1/request/handler/{templateId}/{timestamp}",
-    "method": "post",
-    "description": "工作台转给我"
   },
   {
     "key": "pendingHandle",

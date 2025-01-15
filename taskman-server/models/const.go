@@ -13,6 +13,7 @@ const (
 	Yes                  = "yes"
 	Y                    = "y"
 	ContextApiCode       = "apiCode"
+	HomePage             = "HOME_PAGE"
 )
 
 // RequestStatus 定义请求状态

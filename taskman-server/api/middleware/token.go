@@ -31,7 +31,8 @@ var (
 	whitePathMap = map[string]bool{
 		models.UrlPrefix + "/entities/${model}/query": true,
 	}
-	ApiMenuMap = make(map[string][]string) // key -> apiCode  value -> menuList
+	ApiMenuMap         = make(map[string][]string) // key -> apiCode  value -> menuList
+	HomePageApiCodeMap = make(map[string]bool)
 )
 
 func isWhiteListUrl(url string) (result bool) {
@@ -62,15 +63,20 @@ func AuthCoreRequestToken() gin.HandlerFunc {
 				c.JSON(http.StatusUnauthorized, models.EntityResponse{Status: "ERROR", Message: "Core token validate fail "})
 				c.Abort()
 			} else {
-				if models.Config.MenuApiMap.Enable == "true" || strings.TrimSpace(models.Config.MenuApiMap.Enable) == "" || strings.ToUpper(models.Config.MenuApiMap.Enable) == "Y" {
-					// 白名单URL直接放行
-					for path, _ := range whitePathMap {
-						re := regexp.MustCompile(buildRegexPattern(path))
-						if re.MatchString(c.Request.URL.Path) {
-							c.Next()
-							return
-						}
+				// 白名单URL直接放行
+				for path, _ := range whitePathMap {
+					re := regexp.MustCompile(buildRegexPattern(path))
+					if re.MatchString(c.Request.URL.Path) {
+						c.Next()
+						return
 					}
+				}
+				// 首页菜单直接放行
+				if HomePageApiCodeMap[c.GetString(models.ContextApiCode)] {
+					c.Next()
+					return
+				}
+				if models.Config.MenuApiMap.Enable == "true" || strings.TrimSpace(models.Config.MenuApiMap.Enable) == "" || strings.ToUpper(models.Config.MenuApiMap.Enable) == "Y" {
 					legal := false
 					if allowMenuList, ok := ApiMenuMap[c.GetString(models.ContextApiCode)]; ok {
 						legal = compareStringList(GetRequestRoles(c), allowMenuList)
@@ -170,6 +176,9 @@ func InitApiMenuMap(apiMenuCodeMap map[string]string) {
 						ApiMenuMap[code] = append(existList, menuApi.Menu)
 					} else {
 						ApiMenuMap[code] = []string{menuApi.Menu}
+					}
+					if menuApi.Menu == models.HomePage {
+						HomePageApiCodeMap[code] = true
 					}
 					matchUrlMap[item.Method+"_"+item.Url] = 1
 				}

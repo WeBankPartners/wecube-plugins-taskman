@@ -49,7 +49,7 @@ func init() {
 		{Url: "/user/roles", Method: "GET", HandlerFunc: role.GetUserRoles, ApiCode: "user-roles-get"},
 		{Url: "/request-template/query", Method: "POST", HandlerFunc: template.QueryRequestTemplate, ApiCode: "request-template-query-post"},
 		{Url: "/request-template/:id", Method: "GET", HandlerFunc: template.GetRequestTemplate, ApiCode: "request-template-get"},
-		{Url: "/request-template/all", Method: "GET", HandlerFunc: template.GetAllLatestReleaseRequestTemplate, ApiCode: "request-template-all-get"},
+		{Url: "/request-template/latest/all", Method: "GET", HandlerFunc: template.GetAllLatestReleaseRequestTemplate, ApiCode: "request-template-all-get"},
 		{Url: "/request-template/roles", Method: "POST", HandlerFunc: template.GetRequestTemplateRoles, ApiCode: "request-template-roles-post"},
 		{Url: "/request-template", Method: "POST", HandlerFunc: template.CreateRequestTemplate, ApiCode: "request-template-post"},
 		{Url: "/request-template", Method: "PUT", HandlerFunc: template.UpdateRequestTemplate, ApiCode: "request-template-put"},

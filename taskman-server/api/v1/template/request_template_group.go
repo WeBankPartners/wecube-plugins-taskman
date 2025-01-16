@@ -1,6 +1,7 @@
 package template
 
 import (
+	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
@@ -24,12 +25,21 @@ func QueryRequestTemplateGroup(c *gin.Context) {
 
 func CreateRequestTemplateGroup(c *gin.Context) {
 	var param models.RequestTemplateGroupTable
-	if err := c.ShouldBindJSON(&param); err != nil {
+	var requestTemplateGroupList []*models.RequestTemplateGroupTable
+	var err error
+	if err = c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	err := service.GetRequestTemplateGroupService().CreateRequestTemplateGroup(&param)
-	if err != nil {
+	if requestTemplateGroupList, err = service.GetRequestTemplateGroupService().QueryRequestTemplateGroupByName(param.Name); err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if len(requestTemplateGroupList) == 0 {
+		middleware.ReturnError(c, fmt.Errorf("the same name:%s already exists", param.Name))
+		return
+	}
+	if err = service.GetRequestTemplateGroupService().CreateRequestTemplateGroup(&param); err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
@@ -38,7 +48,9 @@ func CreateRequestTemplateGroup(c *gin.Context) {
 
 func UpdateRequestTemplateGroup(c *gin.Context) {
 	var param models.RequestTemplateGroupTable
-	if err := c.ShouldBindJSON(&param); err != nil {
+	var requestTemplateGroupList []*models.RequestTemplateGroupTable
+	var err error
+	if err = c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
@@ -46,7 +58,17 @@ func UpdateRequestTemplateGroup(c *gin.Context) {
 		middleware.ReturnParamEmptyError(c, "id")
 		return
 	}
-	err := service.GetRequestTemplateGroupService().CheckRequestTemplateGroupRoles(param.Id, middleware.GetRequestRoles(c))
+	if requestTemplateGroupList, err = service.GetRequestTemplateGroupService().QueryRequestTemplateGroupByName(param.Name); err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	for _, requestTemplateGroup := range requestTemplateGroupList {
+		if requestTemplateGroup.Id != param.Id {
+			middleware.ReturnError(c, fmt.Errorf("the same name:%s already exists", param.Name))
+			return
+		}
+	}
+	err = service.GetRequestTemplateGroupService().CheckRequestTemplateGroupRoles(param.Id, middleware.GetRequestRoles(c))
 	if err != nil {
 		middleware.ReturnDataPermissionError(c, err)
 		return

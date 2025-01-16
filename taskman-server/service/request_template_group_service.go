@@ -49,6 +49,11 @@ func (s *RequestTemplateGroupService) CreateRequestTemplateGroup(param *models.R
 	return err
 }
 
+func (s *RequestTemplateGroupService) QueryRequestTemplateGroupByName(name string) (rowData []*models.RequestTemplateGroupTable, err error) {
+	err = dao.X.SQL("select * from request_template_group where name = ?", name).Find(&rowData)
+	return
+}
+
 func (s *RequestTemplateGroupService) UpdateRequestTemplateGroup(param *models.RequestTemplateGroupTable) error {
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	_, err := dao.X.Exec("update request_template_group set name=?,description =?,manage_role=?,updated_by=?,updated_time=? where id=?",

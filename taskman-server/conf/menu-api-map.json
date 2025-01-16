@@ -1,0 +1,686 @@
+[
+  {
+    "menu": "TASK_WORKBENCH",
+    "content": "工作台",
+    "urls": [
+      {
+        "key": "getPlatformList",
+        "url": "/taskman/api/v1/user/platform/list",
+        "method": "post"
+      },
+      {
+        "key": "recallRequest",
+        "url": "/taskman/api/v1/user/request/revoke/${id}",
+        "method": "post"
+      },
+      {
+        "key": "pendingHandle",
+        "url": "/taskman/api/v1/task-handle/update",
+        "method": "post"
+      },
+      {
+        "key": "deleteRequest",
+        "url": "/taskman/api/v1/request/${id}",
+        "method": "delete"
+      },
+      {
+        "key": "reRequest",
+        "url": "/taskman/api/v1/request/copy/${fileId}",
+        "method": "post"
+      },
+      {
+        "key": "overviewData",
+        "url": "/taskman/api/v1/user/platform/count",
+        "method": "post"
+      },
+      {
+        "key": "getPlatformFilter",
+        "url": "/taskman/api/v1/user/platform/filter-item",
+        "method": "post"
+      },
+      {
+        "key": "collectTemplateList",
+        "url": "/taskman/api/v1/user/template/collect/query",
+        "method": "post"
+      },
+      {
+        "key": "uncollectTemplate",
+        "url": "/taskman/api/v1/user/template/collect/${templateId}",
+        "method": "delete"
+      },
+      {
+        "key": "getTemplateFilter",
+        "url": "/taskman/api/v1/user/template/filter-item",
+        "method": "post"
+      },
+      {
+        "key": "getTemplateTree",
+        "url": "/taskman/api/v2/user/request-template",
+        "method": "get"
+      },
+      {
+        "key": "collectTemplate",
+        "url": "/taskman/api/v1/user/template/collect",
+        "method": "post"
+      },
+      {
+        "key": "uncollectTemplate",
+        "url": "/taskman/api/v1/user/template/collect/${templateId}",
+        "method": "delete"
+      },
+      {
+        "key": "collectTemplateList",
+        "url": "/taskman/api/v1/user/template/collect/query",
+        "method": "post"
+      },
+      {
+        "key": "getRefOptions",
+        "url": "/taskman/api/v1/request-data/reference/query/${attr}/${requestId}/${attrName}",
+        "method": "post"
+      },
+      {
+        "key": "getWeCmdbOptions",
+        "url": "/taskman/api/v2/platform/${packageName}/entities/${ciType}/query",
+        "method": "post"
+      },
+      {
+        "key": "getEncryptKey",
+        "url": "/taskman/api/v1/login/seed",
+        "method": "get"
+      },
+      {
+        "key": "getFlowByInstanceId",
+        "url": "/taskman/api/v1/request/process/instances/${instanceId}",
+        "method": "get"
+      },
+      {
+        "key": "getNodeContextByNodeId",
+        "url": "/taskman/api/v1/request/workflow/task_node/${instanceId}/${nodeId}",
+        "method": "post"
+      },
+      {
+        "key": "getFlowByTemplateId",
+        "url": "/taskman/api/v1/request/process/definitions/${templateId}",
+        "method": "get"
+      },
+      {
+        "key": "getCreateInfo",
+        "url": "/taskman/api/v2/request",
+        "method": "post"
+      },
+      {
+        "key": "getPublishInfo",
+        "url": "/taskman/api/v2/request/detail",
+        "method": "get"
+      },
+      {
+        "key": "getRootEntity",
+        "url": "/taskman/api/v1/entity/data",
+        "method": "get"
+      },
+      {
+        "key": "getEntityData",
+        "url": "/taskman/api/v1/request-data/preview",
+        "method": "get"
+      },
+      {
+        "key": "savePublishData",
+        "url": "/taskman/api/v2/request-data/save/${requestId}/data/save",
+        "method": "post"
+      },
+      {
+        "key": "updateRequestStatus",
+        "url": "/taskman/api/v1/request-status/${requestId}/${status}",
+        "method": "post"
+      },
+      {
+        "key": "getTaskConfig",
+        "url": "/taskman/api/v1/task-template/${templateId}",
+        "method": "get"
+      },
+      {
+        "key": "getUserRoles",
+        "url": "/taskman/api/v1/role/list",
+        "method": "get"
+      },
+      {
+        "key": "getHandlerRoles",
+        "url": "/taskman/api/v1/role/user/list",
+        "method": "get"
+      },
+      {
+        "key": "getAdminUserByRole",
+        "url": "/taskman/api/v1/role/administrator/list",
+        "method": "get"
+      },
+      {
+        "key": "getAssociateList",
+        "url": "/taskman/api/v1/request/association",
+        "method": "post"
+      },
+      {
+        "key": "getRequestHistory",
+        "url": "/taskman/api/v2/request/history/${requestId}",
+        "method": "get"
+      },
+      {
+        "key": "commitTaskData",
+        "url": "/taskman/api/v1/task/approve/${taskId}",
+        "method": "post"
+      },
+      {
+        "key": "geTaskTagList",
+        "url": "/taskman/api/v1/request/${requestId}/task/list",
+        "method": "get"
+      },
+      {
+        "key": "confirmRequest",
+        "url": "/taskman/api/v1/request/confirm",
+        "method": "post"
+      },
+      {
+        "key": "getPublishList",
+        "url": "/taskman/api/v1/request/history/list",
+        "method": "post"
+      },
+      {
+        "key": "getProgressInfo",
+        "url": "/taskman/api/v1/request/progress",
+        "method": "get"
+      },
+      {
+        "key": "getTemplateNodesForRequest",
+        "url": "/taskman/api/v1/process-nodes/${requestTemplateId}/bind",
+        "method": "get"
+      },
+      {
+        "key": "getBindData",
+        "url": "/taskman/api/v1/request-data/get/${requestId}/data",
+        "method": "get"
+      },
+      {
+        "key": "saveRequestNew",
+        "url": "/taskman/api/v2/request-data/save/${requestId}/bing/${type}",
+        "method": "post"
+      },
+      {
+        "key": "getBindRelate",
+        "url": "/taskman/api/v1/request-data/get/${requestId}/bing",
+        "method": "get"
+      },
+      {
+        "key": "updateRequestStatus",
+        "url": "/taskman/api/v1/request-status/${requestId}/${status}",
+        "method": "post"
+      },
+      {
+        "key": "startRequestNew",
+        "url": "/taskman/api/v2/request-check/confirm/${requestId}",
+        "method": "post"
+      },
+      {
+        "key": "requestParent",
+        "url": "/taskman/api/v1/request-parent/get",
+        "method": "get"
+      },
+      {
+        "key": "saveFormData",
+        "url": "/taskman/api/v2/request-data/form/save/${requestId}",
+        "method": "post"
+      },
+      {
+        "key": "getExpressionData",
+        "url": "/taskman/api/v1/request-data/entity/expression/query/${titleId}/${dataId}",
+        "method": "get"
+      },
+      {
+        "key": "",
+        "url": "/taskman/api/v1/request/attach-file/download/${file.id}",
+        "method": "get"
+      },
+      {
+        "key": "",
+        "url": "/taskman/api/v1/request/attach-file/upload/${val}",
+        "method": "post"
+      },
+      {
+        "key": "",
+        "url": "/taskman/api/v1/task/attach-file/${this.id}/upload/${val}",
+        "method": "post"
+      },
+      {
+        "key": "deleteAttach",
+        "path": "/taskman/api/v1/request/attach-file/remove/${fileId}",
+        "method": "delete"
+      }
+    ]
+  },
+  {
+    "menu": "TASK_TEMPLATE_GROUP_MANAGEMENT",
+    "content": "模板组管理",
+    "urls": [
+      {
+        "key": "getTempGroupList",
+        "url": "/taskman/api/v1/request-template-group/query",
+        "method": "post"
+      },
+      {
+        "key": "getManagementRoles",
+        "url": "/taskman/api/v1/user/roles",
+        "method": "get"
+      },
+      {
+        "key": "createTempGroup",
+        "url": "/taskman/api/v1/request-template-group",
+        "method": "post"
+      },
+      {
+        "key": "updateTempGroup",
+        "url": "/taskman/api/v1/request-template-group",
+        "method": "put"
+      },
+      {
+        "key": "deleteTempGroup",
+        "url": "/taskman/api/v1/request-template-group",
+        "method": "delete"
+      }
+    ]
+  },
+  {
+    "menu": "TASK_REQUEST_AUDIT",
+    "content": "请求报表",
+    "urls": [
+      {
+        "key": "getPublishList",
+        "url": "/taskman/api/v1/request/history/list",
+        "method": "post"
+      },
+      {
+        "key": "",
+        "url": "/taskman/api/v1/request/export",
+        "method": "post"
+      }
+    ]
+  },
+  {
+    "menu": "TASK_TEMPLATE_MANAGEMENT",
+    "content": "模板管理",
+    "urls": [
+      {
+        "key": "getTemplateList",
+        "url": "/taskman/api/v1/request-template/query",
+        "method": "post"
+      },
+      {
+        "key": "deleteTemplate",
+        "url": "/taskman/api/v1/request-template",
+        "method": "delete"
+      },
+      {
+        "key": "forkTemplate",
+        "url": "/taskman/api/v1/request-template/fork/${requestTemplateId}",
+        "method": "post"
+      },
+      {
+        "key": "copyTemplate",
+        "url": "/taskman/api/v1/request-template/copy/${id}",
+        "method": "post"
+      },
+      {
+        "key": "getManagementRoles",
+        "url": "/taskman/api/v1/user/roles",
+        "method": "get"
+      },
+      {
+        "key": "confirmUploadTemplate",
+        "url": "/taskman/api/v1/request-template/import-confirm/${confirmToken}",
+        "method": "post"
+      },
+      {
+        "key": "enableTemplate",
+        "url": "/taskman/api/v1/request-template/enable/${templateId}",
+        "method": "post"
+      },
+      {
+        "key": "disableTemplate",
+        "url": "/taskman/api/v1/request-template/disable/${templateId}",
+        "method": "post"
+      },
+      {
+        "key": "templateGiveMe",
+        "url": "/taskman/api/v1/request-template/handler/update",
+        "method": "post"
+      },
+      {
+        "key": "updateTemplateStatus",
+        "url": "/taskman/api/v1/request-template/status/update",
+        "method": "post"
+      },
+      {
+        "key": "templateConfirmCount",
+        "url": "/taskman/api/v1/request-template/confirm_count",
+        "method": "get"
+      },
+      {
+        "key": "",
+        "url": "/taskman/api/v1/request-template/import",
+        "method": "post"
+      },
+      {
+        "key": "",
+        "url": "/taskman/api/v1/request-template/export/${row.id}",
+        "method": "get"
+      },
+      {
+        "key": "getTemplateLibraryList",
+        "url": "/taskman/api/v1/form-template-library/query",
+        "method": "post"
+      },
+      {
+        "key": "getLibraryFormTypeList",
+        "url": "/taskman/api/v1/form-template-library/form-type",
+        "method": "get"
+      },
+      {
+        "key": "getAllUser",
+        "url": "/taskman/api/v2/auth/users",
+        "method": "get"
+      },
+      {
+        "key": "saveTemplateLibrary",
+        "url": "/taskman/api/v1/form-template-library",
+        "method": "post"
+      },
+      {
+        "key": "getTemplateLibraryList",
+        "url": "/taskman/api/v1/form-template-library/query",
+        "method": "post"
+      },
+      {
+        "key": "deleteTemplateLibrary",
+        "url": "/taskman/api/v1/form-template-library",
+        "method": "delete"
+      },
+      {
+        "key": "getLibraryFormTypeList",
+        "url": "/taskman/api/v1/form-template-library/form-type",
+        "method": "get"
+      },
+      {
+        "key": "getWeCmdbOptions",
+        "url": "/taskman/api/v2/platform/${packageName}/entities/${ciType}/query",
+        "method": "post"
+      },
+      {
+        "key": "getTargetOptions",
+        "url": "/taskman/api/v1/packages/${pkgName}/entities/${entityName}/query",
+        "method": "post"
+      },
+      {
+        "key": "getEntityRefsByPkgNameAndEntityName",
+        "url": "/taskman/api/v1/models/package/${pkgName}/entity/${entityName}",
+        "method": "get"
+      },
+      {
+        "key": "getUserRoles",
+        "url": "/taskman/api/v1/role/list",
+        "method": "get"
+      },
+      {
+        "key": "getHandlerRoles",
+        "url": "/taskman/api/v1/role/user/list",
+        "method": "get"
+      },
+      {
+        "key": "updateApprovalNode",
+        "url": "/taskman/api/v1/task-template/${requestTemplate}/${id}",
+        "method": "put"
+      },
+      {
+        "key": "getApprovalNodeById",
+        "url": "/taskman/api/v1/task-template/${tmpId}/${nodeId}",
+        "method": "get"
+      },
+      {
+        "key": "deleteGroupsByNodeid",
+        "url": "/taskman/api/v1/task-template/form-template/${tmpId}/${nodeId}",
+        "method": "delete"
+      },
+      {
+        "key": "getRequestDataForm",
+        "url": "/taskman/api/v1/request-form-template/${tmpId}/data-form",
+        "method": "get"
+      },
+      {
+        "key": "getRequestFormTemplateData",
+        "url": "/taskman/api/v1/request-form-template/${requestTemplateId}",
+        "method": "get"
+      },
+      {
+        "key": "getWeCmdbOptions",
+        "url": "/taskman/api/v2/platform/${packageName}/entities/${ciType}/query",
+        "method": "post"
+      },
+      {
+        "key": "getApprovalNode",
+        "url": "/taskman/api/v1/task-template/${tmpId}/ids",
+        "method": "get"
+      },
+      {
+        "key": "addApprovalNode",
+        "url": "/taskman/api/v1/task-template/${requestTemplate}",
+        "method": "post"
+      },
+      {
+        "key": "removeApprovalNode",
+        "url": "/taskman/api/v1/task-template/${requestTemplate}/${id}",
+        "method": "delete"
+      },
+      {
+        "key": "getApprovalGlobalForm",
+        "url": "/taskman/api/v1/request-form-template/${tmpId}/global-form",
+        "method": "get"
+      },
+      {
+        "key": "copyItemGroup",
+        "url": "/taskman/api/v1/form-template/item-group/copy",
+        "method": "post"
+      },
+      {
+        "key": "removeEmptyDataForm",
+        "url": "/taskman/api/v1/request-template/${tmpId}/data-form-clean",
+        "method": "post"
+      },
+      {
+        "key": "getApprovalNodeGroups",
+        "url": "/taskman/api/v1/request-form-template/${tmpId}/form/${taskTemplateId}",
+        "method": "get"
+      },
+      {
+        "key": "getAllDataModels",
+        "url": "/taskman/api/v2/platform/models",
+        "method": "get"
+      },
+      {
+        "key": "saveRequestGroupCustomForm",
+        "url": "/taskman/api/v1/form-template/item-group",
+        "method": "post"
+      },
+      {
+        "key": "getTempGroupList",
+        "url": "/taskman/api/v1/request-template-group/query",
+        "method": "post"
+      },
+      {
+        "key": "getManagementRoles",
+        "url": "/taskman/api/v1/user/roles",
+        "method": "get"
+      },
+      {
+        "key": "getTemplateTags",
+        "url": "/taskman/api/v1/request-template/tags/${requestTemplateGroup}",
+        "method": "get"
+      },
+      {
+        "key": "getHandlerRoles",
+        "url": "/taskman/api/v1/role/user/list",
+        "method": "get"
+      },
+      {
+        "key": "getUserRoles",
+        "url": "/taskman/api/v1/role/list",
+        "method": "get"
+      },
+      {
+        "key": "getProcess",
+        "url": "/taskman/api/v1/process/list",
+        "method": "get"
+      },
+      {
+        "key": "createTemp",
+        "url": "/taskman/api/v1/request-template",
+        "method": "post"
+      },
+      {
+        "key": "updateTemp",
+        "url": "/taskman/api/v1/request-template",
+        "method": "put"
+      },
+      {
+        "key": "getTemplateDetail",
+        "url": "/taskman/api/v1/request-template/${requestTemplateId}",
+        "method": "get"
+      },
+      {
+        "key": "saveRequestGroupForm",
+        "url": "/taskman/api/v1/form-template/item-group-config",
+        "method": "post"
+      },
+      {
+        "key": "getRequestGroupForm",
+        "url": "/taskman/api/v1/form-template/item-group-config",
+        "method": "get"
+      },
+      {
+        "key": "getEntityByTemplateId",
+        "url": "/taskman/api/v1/request-template/${tmpId}/entity",
+        "method": "get"
+      },
+      {
+        "key": "getRequestDataForm",
+        "url": "/taskman/api/v1/request-form-template/${tmpId}/data-form",
+        "method": "get"
+      },
+      {
+        "key": "deleteRequestGroupForm",
+        "url": "/taskman/api/v1/form-template/item-group",
+        "method": "delete"
+      },
+      {
+        "key": "cleanFilterData",
+        "url": "/taskman/api/v1/request-template/${taskTemplateId}/filter-clean/${type}",
+        "method": "post"
+      },
+      {
+        "key": "saveRequsetForm",
+        "url": "/taskman/api/v1/request-form-template/${requestTemplateId}",
+        "method": "post"
+      },
+      {
+        "key": "getRequestFormTemplateData",
+        "url": "/taskman/api/v1/request-form-template/${requestTemplateId}",
+        "method": "get"
+      },
+      {
+        "key": "getApprovalNodeById",
+        "url": "/taskman/api/v1/task-template/${tmpId}/${nodeId}",
+        "method": "get"
+      },
+      {
+        "key": "getWeCmdbOptions",
+        "url": "/taskman/api/v2/platform/${packageName}/entities/${ciType}/query",
+        "method": "post"
+      },
+      {
+        "key": "submitTemplate",
+        "url": "/taskman/api/v1/request-template/status/update",
+        "method": "post"
+      },
+      {
+        "key": "getWorkflowForkNode",
+        "url": "/taskman/api/v1/task-template/workflow/options",
+        "method": "get"
+      },
+      {
+        "url": "/taskman/api/v1/request-template/roles",
+        "method": "post"
+      },
+      {
+        "url": "/taskman/api/v1/request-template/export/batch",
+        "method": "post"
+      },
+      {
+        "url": "/taskman/api/v1/form-template-library/export-data",
+        "method": "get"
+      },
+      {
+        "url": "/taskman/api/v1/form-template-library/import",
+        "method": "post"
+      },
+      {
+        "url": "/taskman/api/v1/request-template/import-batch",
+        "method": "post"
+      }
+    ]
+  },
+  {
+    "menu": "HOME_PAGE",
+    "content": "taskman首页配置页面",
+    "urls": [
+      {
+        "url": "/taskman/api/v1/request-template/export/batch",
+        "method": "post"
+      },
+      {
+        "url": "/taskman/api/v1/form-template-library/export-data",
+        "method": "get"
+      },
+      {
+        "url": "/taskman/api/v1/form-template-library/import",
+        "method": "post"
+      },
+      {
+        "url": "/taskman/api/v1/request-template/import-batch",
+        "method": "post"
+      },
+      {
+        "url": "/taskman/api/v1/request-template/latest/all",
+        "method": "get"
+      },
+      {
+        "url": "/taskman/api/v2/auth/roles/${roleId}/users",
+        "method": "get"
+      },
+      {
+        "url": "taskman/api/v2/auth/roles/${roleId}/users/revoke",
+        "method": "post"
+      },
+      {
+        "url": "taskman/api/v2/auth/roles/apply/byhandler",
+        "method": "post"
+      },
+      {
+        "url": "taskman/api/v2/auth/roles/apply/byapplier",
+        "method": "post"
+      },
+      {
+        "url": "/taskman/api/v2/auth/roles/${roleId}/users",
+        "method": "post"
+      },
+      {
+        "url": "/taskman/api/v2/auth/roles",
+        "method": "get"
+      }
+    ]
+  }
+]

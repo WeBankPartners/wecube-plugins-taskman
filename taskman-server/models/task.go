@@ -246,6 +246,15 @@ type TaskApproveParam struct {
 	ProcDefResult string                    `json:"procDefResult"` // 编排选项
 }
 
+type ProcessTaskFormParam struct {
+	Task              *TaskTable
+	Operator          string
+	TaskApproveParam  *TaskApproveParam
+	RequestPreDataDto *RequestPreDataDto
+	RequestId         string
+	FormData          []*RequestPreDataTableObj
+}
+
 type TaskHandlerQueryData struct {
 	Id          string `xorm:"id"`
 	Handler     string `xorm:"handler"`

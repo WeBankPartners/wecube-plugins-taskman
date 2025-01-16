@@ -543,8 +543,8 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 }
 
 func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (pageInfo models.PageInfo, rowsData []*models.PlatformDataObj, err error) {
-	var operatorObjTypeMap = make(map[string]string)
 	var roleDtoMap map[string]*models.SimpleLocalRoleDto
+	var emptyOperatorObjTypeTemplateMap = make(map[string]string)
 	var roleDisplayMap = make(map[string]string)
 	// 请求已处理(防止同一个请求重复处理)
 	var processedRequestMap = make(map[string]bool)
@@ -572,8 +572,6 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 		err = dao.X.SQL(newSQL, req.QueryParam...).Find(&rowsData)
 	}
 	if len(rowsData) > 0 {
-		// 操作对象类型,新增模板是录入.历史模板操作对象类型为空,需要全量处理下
-		operatorObjTypeMap = GetRequestTemplateService().GetAllCoreProcess(req.UserToken, language)
 		// 查询当前用户所有收藏模板记录
 		collectMap, _ := QueryAllTemplateCollect(req.User)
 		templateMap, _ := GetRequestTemplateService().getAllRequestTemplate()
@@ -638,7 +636,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 				platformDataObj.CollectFlag = 1
 			}
 			if platformDataObj.OperatorObjType == "" {
-				platformDataObj.OperatorObjType = operatorObjTypeMap[platformDataObj.ProcDefKey]
+				emptyOperatorObjTypeTemplateMap[platformDataObj.TemplateId] = platformDataObj.ProcDefKey
 			}
 			// 人员设置方式: 模板指定,提交人指定, 只能: 处理人(处理)和角色管理员(转给我),需要RoleAdministrator、HandlerType返回给前端判断
 			// 设置角色管理员
@@ -723,6 +721,18 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 			if updateRequestErr != nil {
 				log.Logger.Error("Try to update request status fail", log.Error(updateRequestErr))
 			}
+		}
+		if len(emptyOperatorObjTypeTemplateMap) > 0 {
+			go func() {
+				// 操作对象类型,新增模板是录入.历史模板操作对象类型为空,异步查询下赋值
+				operatorObjTypeMap := GetRequestTemplateService().GetAllCoreProcess(req.UserToken, language)
+				for templateId, procDefKey := range emptyOperatorObjTypeTemplateMap {
+					err2 := GetRequestTemplateService().UpdateOperatorObjType(templateId, operatorObjTypeMap[procDefKey])
+					if err2 != nil {
+						log.Logger.Error("UpdateOperatorObjType err", log.Error(err))
+					}
+				}
+			}()
 		}
 	}
 	return

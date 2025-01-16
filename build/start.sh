@@ -20,5 +20,6 @@ sed -i "s~{{MINIO_ACCESS_KEY}}~$MINIO_ACCESS_KEY~g" /app/taskman/conf/default.js
 sed -i "s~{{MINIO_SECRET_KEY}}~$MINIO_SECRET_KEY~g" /app/taskman/conf/default.json
 sed -i "s~{{ENCRYPT_SEED}}~$ENCRYPT_SEED~g" /app/taskman/conf/default.json
 sed -i "s~{{TASKMAN_WEB_URL}}~$TASKMAN_WEB_URL~g" /app/taskman/conf/default.json
+sed -i "s~{{TASKMAN_MENU_API_PERMISSION_ENABLE}}~$TASKMAN_MENU_API_PERMISSION_ENABLE~g" /app/taskman/conf/default.json
 
 ./taskman-server

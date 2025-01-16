@@ -5,7 +5,8 @@
   "scripts": {
     "build": "vue-cli-service build",
     "plugin": "vue-cli-service build --mode plugin",
-    "start": "vue-cli-service serve"
+    "start": "vue-cli-service serve",
+    "dev": "node ./scripts/run.js dev"
   },
   "dependencies": {
     "@popperjs/core": "^2.4.4",
@@ -30,7 +31,7 @@
     "@babel/core": "^7.4.0",
     "@vue/cli-plugin-babel": "^3.4.0",
     "@vue/cli-service": "^3.4.0",
-    "autoprefixer": "^7.1.2",
+    "autoprefixer": "^10.4.20",
     "babel-eslint": "^8.2.1",
     "babel-helper-vue-jsx-merge-props": "^2.0.3",
     "babel-loader": "^8.0.5",
@@ -45,6 +46,7 @@
     "commit-message-validator": "^1.0.2",
     "compression-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^4.0.1",
+    "cross-env": "^7.0.3",
     "css-loader": "^0.28.11",
     "eslint": "^4.19.1",
     "eslint-config-standard": "^10.2.1",
@@ -68,6 +70,7 @@
     "postcss-import": "^11.0.0",
     "postcss-loader": "^2.0.8",
     "postcss-url": "^7.2.1",
+    "postcss-wrap": "^0.0.4",
     "rimraf": "^2.6.0",
     "sass": "^1.26.5",
     "sass-loader": "^8.0.2",

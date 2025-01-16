@@ -42,51 +42,64 @@
                         : []
                     "
                   >
-                    <!--输入框-->
-                    <Input
-                      v-if="i.elementType === 'input'"
-                      v-model.trim="value[i.name]"
-                      :disabled="i.isEdit === 'no' || formDisable"
-                      style="width: calc(100% - 20px)"
-                    ></Input>
-                    <Input
-                      v-else-if="i.elementType === 'textarea'"
-                      v-model.trim="value[i.name]"
-                      type="textarea"
-                      :disabled="i.isEdit === 'no' || formDisable"
-                      style="width: calc(100% - 20px)"
-                    ></Input>
-                    <LimitSelect
-                      v-if="i.elementType === 'select' || i.elementType === 'wecmdbEntity'"
-                      v-model="value[i.name]"
-                      :displayName="i.elementType === 'wecmdbEntity' ? 'displayName' : i.entity ? 'key_name' : 'label'"
-                      :displayValue="i.elementType === 'wecmdbEntity' ? 'id' : i.entity ? 'guid' : 'value'"
-                      :options="value[i.name + 'Options']"
-                      :disabled="i.isEdit === 'no' || formDisable"
-                      :multiple="i.multiple === 'Y' || i.multiple === 'yes'"
-                      style="width: calc(100% - 20px)"
-                      @open-change="handleRefOpenChange(i, value, index)"
-                    >
-                    </LimitSelect>
-                    <!--自定义分析类型-->
-                    <Input
-                      v-else-if="i.elementType === 'calculate'"
-                      :value="value[i.name]"
-                      type="textarea"
-                      :disabled="true"
-                      style="width: calc(100% - 20px)"
-                    ></Input>
-                    <!--日期时间类型-->
-                    <DatePicker
-                      v-else-if="i.elementType === 'datePicker'"
-                      :value="value[i.name]"
-                      @on-change="$event => handleTimeChange($event, value, i.name)"
-                      format="yyyy-MM-dd HH:mm:ss"
-                      :disabled="i.isEdit === 'no' || formDisable"
-                      type="datetime"
-                      style="width: calc(100% - 20px)"
-                    >
-                    </DatePicker>
+                    <!--cmdb表单类型-->
+                    <template v-if="i.cmdbAttr">
+                      <CMDBFormItem
+                        :options="cmdbOptions"
+                        :column="getCMDBColumn(i.name)"
+                        :value="value"
+                        :disabled="formDisabled(i)"
+                        style="width: calc(100% - 20px)"
+                      />
+                    </template>
+                    <!--taskman表单类型-->
+                    <template v-else>
+                      <!--输入框-->
+                      <Input
+                        v-if="i.elementType === 'input'"
+                        v-model.trim="value[i.name]"
+                        :disabled="formDisabled(i)"
+                        style="width: calc(100% - 20px)"
+                      ></Input>
+                      <Input
+                        v-else-if="i.elementType === 'textarea'"
+                        v-model.trim="value[i.name]"
+                        type="textarea"
+                        :disabled="formDisabled(i)"
+                        style="width: calc(100% - 20px)"
+                      ></Input>
+                      <LimitSelect
+                        v-if="i.elementType === 'select' || i.elementType === 'wecmdbEntity'"
+                        v-model="value[i.name]"
+                        :displayName="i.elementType === 'wecmdbEntity' ? 'displayName' : i.entity ? 'key_name' : 'label'"
+                        :displayValue="i.elementType === 'wecmdbEntity' ? 'id' : i.entity ? 'guid' : 'value'"
+                        :options="value[i.name + 'Options']"
+                        :disabled="formDisabled(i)"
+                        :multiple="i.multiple === 'Y' || i.multiple === 'yes'"
+                        style="width: calc(100% - 20px)"
+                        @open-change="handleRefOpenChange(i, value, index)"
+                      >
+                      </LimitSelect>
+                      <!--自定义分析类型-->
+                      <Input
+                        v-else-if="i.elementType === 'calculate'"
+                        :value="value[i.name]"
+                        type="textarea"
+                        :disabled="true"
+                        style="width: calc(100% - 20px)"
+                      ></Input>
+                      <!--日期时间类型-->
+                      <DatePicker
+                        v-else-if="i.elementType === 'datePicker'"
+                        :value="value[i.name]"
+                        @on-change="$event => handleTimeChange($event, value, i.name)"
+                        format="yyyy-MM-dd HH:mm:ss"
+                        :disabled="formDisabled(i)"
+                        type="datetime"
+                        style="width: calc(100% - 20px)"
+                      >
+                      </DatePicker>
+                    </template>
                   </FormItem>
                 </Col>
               </template>
@@ -134,9 +147,12 @@ import LimitSelect from '@/pages/components/limit-select.vue'
 import { getRefOptions, getWeCmdbOptions, saveFormData, getExpressionData } from '@/api/server'
 import { debounce, deepClone, fixArrStrToJsonArray } from '@/pages/util'
 import { evaluateCondition } from '../evaluate'
+import CMDBFormItem from './cmdb-form-item/index.vue'
+import { components } from './cmdb-form-item/action.js'
 export default {
   components: {
-    LimitSelect
+    LimitSelect,
+    CMDBFormItem
   },
   props: {
     data: {
@@ -173,7 +189,9 @@ export default {
       tableData: [],
       addRowSource: '',
       addRowSourceOptions: [],
-      worklfowDataIdsObj: {} // 编排类表单默认下发数据dataId集合
+      worklfowDataIdsObj: {}, // 编排类表单默认下发数据dataId集合
+      cmdbOptions: [] // cmdb属性集合
+
     }
   },
   computed: {
@@ -192,6 +210,16 @@ export default {
           }
         }
         return { background: color }
+      }
+    },
+    formDisabled () {
+      return function (attr) {
+        return attr.isEdit === 'no' || this.formDisable
+      }
+    },
+    getCMDBColumn () {
+      return function (attr) {
+        return this.cmdbOptions.find(i => i.propertyName === attr) || {}
       }
     }
   },
@@ -292,14 +320,33 @@ export default {
       this.refKeys = []
       this.calculateKeys = []
       data.title.forEach(t => {
-        if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
+        // 非cmdb下发的下拉类型
+        if ((t.elementType === 'select' || t.elementType === 'wecmdbEntity') && !t.cmdbAttr) {
           this.refKeys.push(t.name)
         }
+        // 自定义计算分析类型
         if (t.elementType === 'calculate') {
           this.calculateKeys.push(t.name)
         }
       })
+
+      // taskman表单属性初始化
       this.formOptions = data.title
+
+      // cmdb表单属性初始化
+      const cmdbOptions = []
+      const formOptions = deepClone(this.formOptions)
+      formOptions.forEach(item => {
+        if (item.cmdbAttr) {
+          item.cmdbAttr = JSON.parse(item.cmdbAttr)
+          item.cmdbAttr.editable = item.isEdit
+          const cmdbObj = Object.assign({}, { ...item.cmdbAttr, titleObj: item })
+          cmdbOptions.push(cmdbObj)
+        }
+      })
+      if (cmdbOptions && cmdbOptions.length > 0) {
+        this.getCMDBInitData(cmdbOptions)
+      }
 
       // table数据初始化
       this.tableData = data.value.map(v => {
@@ -348,6 +395,56 @@ export default {
         })
       })
     },
+    // cmdb表单属性初始化
+    getCMDBInitData (data) {
+      this.cmdbOptions = []
+      let columns = []
+      for (let index = 0; index < data.length; index++) {
+        let renderKey = data[index].propertyName
+        if (!['decommissioned', 'notCreated'].includes(data[index].status)) {
+          if (['select', 'multiSelect'].includes(data[index].inputType) && data[index].selectList !== '') {
+            const { titleObj } = data[index] || { titleObj: {} }
+            const attrName = titleObj.entity + '__' + titleObj.name
+            const attr = titleObj.id
+            // 异步获取cmdb select和multiSelect下拉框的值
+            getRefOptions(this.requestId, attr, {}, attrName)
+              .then(res => {
+                if (res.statusCode === 'OK') {
+                  this.cmdbOptions[index].options = res.data.map(item => {
+                    return {
+                      label: item.key_name,
+                      value: item.guid
+                    }
+                  })
+                }
+              })
+          }
+          const columnItem = {
+            ...data[index],
+            title: data[index].name,
+            key: renderKey,
+            inputKey: data[index].propertyName,
+            inputType: data[index].inputType,
+            referenceId: data[index].referenceId,
+            disEditor: !data[index].isEditable,
+            disAdded: !data[index].isEditable,
+            placeholder: data[index].name,
+            component: 'Input',
+            referenceFilter: data[index].referenceFilter,
+            ciType: { id: data[index].referenceId, name: data[index].name },
+            type: 'text',
+            isMultiple: ['multiSelect', 'multiRef'].includes(data[index].inputType),
+            ...components[data[index].inputType],
+            options: data[index].options,
+            requestId: this.requestId,
+            refKeys: this.refKeys
+          }
+          columns.push(columnItem)
+        }
+      }
+      this.cmdbOptions = columns
+    },
+    // taskman下拉框选项值初始化
     async getRefOptions (titleObj, row, index, first) {
       // 模板自定义下拉类型
       if (titleObj.elementType === 'select' && titleObj.entity === '') {
@@ -368,11 +465,6 @@ export default {
         }
         return
       }
-      // if (titleObj.refEntity === '') {
-      //   row[titleObj.name + 'Options'] = titleObj.selectList
-      //   this.$set(this.tableData, index, row)
-      //   return
-      // }
       let cache = JSON.parse(JSON.stringify(row))
       cache[titleObj.name] = ''
       const keys = Object.keys(cache)
@@ -392,6 +484,14 @@ export default {
         // 数据表单【表单隐藏标识】放到了row里面，需要删除
         if (key.indexOf('Hidden') > -1) {
           delete cache[key]
+        }
+        // 将对象类型转为字符串
+        if (typeof cache[key] === 'object') {
+          cache[key] = JSON.stringify(cache[key])
+        }
+        // 将number类型转为字符串
+        if (typeof cache[key] === 'number') {
+          cache[key] = cache[key].toString()
         }
       })
       this.refKeys.forEach(k => {

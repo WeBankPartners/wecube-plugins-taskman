@@ -38,6 +38,7 @@ type FormItemTemplateLibraryTable struct {
 	ControlSwitch       string `json:"controlSwitch" xorm:"control_switch"`              // 控制审批/任务开关
 	FormTemplateLibrary string `json:"formTemplateLibrary" xorm:"form_template_library"` // 表单组件库id
 	HiddenCondition     string `json:"hiddenCondition" xorm:"hidden_condition"`          // 隐藏条件
+	CmdbAttr            string `json:"cmdbAttr" xorm:"cmdb_attr"`                        // Cmdb属性
 }
 
 type FormItemTemplateLibraryDto struct {
@@ -68,11 +69,12 @@ type FormItemTemplateLibraryDto struct {
 	IsRefInside         string                   `json:"isRefInside"`
 	Multiple            string                   `json:"multiple"`
 	DefaultClear        string                   `json:"defaultClear"`
-	RefId               string                   `json:"refId"`               // 复制数据表单ID,数据表单删除该表单项时,需要删除审批表单,任务表单对应数据项
-	RoutineExpression   string                   `json:"routineExpression"`   // 计算表达式
-	ControlSwitch       string                   `json:"controlSwitch"`       // 控制审批/任务开关
-	FormTemplateLibrary string                   `json:"formTemplateLibrary"` // 表单组件库id
-	HiddenCondition     []*QueryRequestFilterObj `json:"hiddenCondition"`     // 隐藏条件
+	RefId               string                   `json:"refId"`                     // 复制数据表单ID,数据表单删除该表单项时,需要删除审批表单,任务表单对应数据项
+	RoutineExpression   string                   `json:"routineExpression"`         // 计算表达式
+	ControlSwitch       string                   `json:"controlSwitch"`             // 控制审批/任务开关
+	FormTemplateLibrary string                   `json:"formTemplateLibrary"`       // 表单组件库id
+	HiddenCondition     []*QueryRequestFilterObj `json:"hiddenCondition"`           // 隐藏条件
+	CmdbAttr            string                   `json:"cmdbAttr" xorm:"cmdb_attr"` // Cmdb属性
 }
 
 func (FormItemTemplateLibraryTable) TableName() string {
@@ -120,6 +122,7 @@ func ConvertFormItemTemplateLibraryDto2Model(dto *FormItemTemplateLibraryDto) *F
 		ControlSwitch:       dto.ControlSwitch,
 		FormTemplateLibrary: dto.FormTemplateLibrary,
 		HiddenCondition:     hiddenCondition,
+		CmdbAttr:            dto.CmdbAttr,
 	}
 }
 
@@ -164,6 +167,7 @@ func ConvertFormItemTemplateLibraryModel2Dto(list []*FormItemTemplateLibraryTabl
 				ControlSwitch:       library.ControlSwitch,
 				FormTemplateLibrary: library.FormTemplateLibrary,
 				HiddenCondition:     newHiddenCondition,
+				CmdbAttr:            library.CmdbAttr,
 			}
 			dtoList = append(dtoList, dto)
 		}
@@ -218,4 +222,5 @@ type FormItemTemplateLibraryTableData struct {
 	ControlSwitch       string `json:"controlSwitch" xorm:"control_switch"`              // 控制审批/任务开关
 	FormTemplateLibrary string `json:"formTemplateLibrary" xorm:"form_template_library"` // 表单组件库id
 	HiddenCondition     string `json:"hiddenCondition" xorm:"hidden_condition"`          // 隐藏条件
+	CmdbAttr            string `json:"cmdbAttr" xorm:"cmdb_attr"`                        // Cmdb属性
 }

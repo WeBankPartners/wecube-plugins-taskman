@@ -277,6 +277,7 @@
                             placeholder=""
                           ></Input>
                         </FormItem>
+                        <!--表单类型-->
                         <FormItem :label="$t('tw_form_type')">
                           <Select
                             v-model="editElement.elementType"
@@ -290,6 +291,13 @@
                             <Option value="datePicker">DatePicker</Option>
                             <Option value="calculate">Calculate</Option>
                           </Select>
+                        </FormItem>
+                        <!--CMDB表单类型-->
+                        <FormItem v-if="editElement.cmdbAttr" :label="$t('tw_cmdb_data_type')">
+                          <Input
+                            v-model="JSON.parse(editElement.cmdbAttr).inputType"
+                            :disabled="true"
+                          />
                         </FormItem>
                         <!--数据集-->
                         <FormItem
@@ -332,7 +340,7 @@
                               v-model="editElement.multiple"
                               true-value="yes"
                               false-value="no"
-                              :disabled="$parent.isCheck === 'Y' || Boolean(editElement.copyId)"
+                              :disabled="$parent.isCheck === 'Y' || Boolean(editElement.copyId) || Boolean(editElement.cmdbAttr)"
                               @on-change="paramsChanged"
                               size="default"
                             />
@@ -342,7 +350,7 @@
                               v-model="editElement.isEdit"
                               true-value="yes"
                               false-value="no"
-                              :disabled="$parent.isCheck === 'Y' || editElement.isEditDisabled"
+                              :disabled="$parent.isCheck === 'Y' || editElement.isEditDisabled || Boolean(editElement.cmdbAttr)"
                               @on-change="paramsChanged"
                               size="default"
                             />
@@ -352,12 +360,12 @@
                               v-model="editElement.required"
                               true-value="yes"
                               false-value="no"
-                              :disabled="$parent.isCheck === 'Y'"
+                              :disabled="$parent.isCheck === 'Y' || Boolean(editElement.cmdbAttr)"
                               @on-change="paramsChanged"
                               size="default"
                             />
                           </FormItem>
-                          <FormItem :label="$t('display')">
+                          <!-- <FormItem :label="$t('display')">
                             <i-switch
                               v-model="editElement.inDisplayName"
                               true-value="yes"
@@ -366,7 +374,7 @@
                               @on-change="paramsChanged"
                               size="default"
                             />
-                          </FormItem>
+                          </FormItem> -->
                           <FormItem :label="$t('tw_default_empty')">
                             <i-switch
                               v-model="editElement.defaultClear"
@@ -417,7 +425,7 @@
                         <FormItem :label="$t('validation_rules')">
                           <Input
                             v-model="editElement.regular"
-                            :disabled="$parent.isCheck === 'Y'"
+                            :disabled="$parent.isCheck === 'Y' || Boolean(editElement.cmdbAttr)"
                             :placeholder="$t('only_supports_regular')"
                             @on-change="paramsChanged"
                           ></Input>
@@ -853,6 +861,23 @@ export default {
       const { statusCode, data } = await getApprovalNodeGroups(this.requestTemplateId, node.id)
       if (statusCode === 'OK') {
         this.dataFormInfo = data
+        // 同步taskman和cmdb共有属性
+        this.dataFormInfo.groups && this.dataFormInfo.groups.forEach(group => {
+          group.items && group.items.forEach(item => {
+            if (item.cmdbAttr) {
+              const { nullable, editable, regularExpressionRule, inputType } = JSON.parse(item.cmdbAttr)
+              item.regular = regularExpressionRule
+              item.required = (nullable === 'yes' ? 'no' : 'yes')
+              item.isEdit = editable
+              if (['ref', 'select', 'extRef'].includes(inputType)) {
+                item.multiple = 'no'
+              }
+              if (['multiSelect', 'multiRef'].includes(inputType)) {
+                item.multiple = 'yes'
+              }
+            }
+          })
+        })
         this.setIsEditDisabled()
         let groups = this.dataFormInfo.groups
         if (groups.length !== 0) {

@@ -34,7 +34,7 @@ func (s *FormTemplateService) AddRequestFormTemplate(session *xorm.Session, form
 	}
 	// 添加模板项
 	for i, item := range formTemplateDto.Items {
-		item.Id = itemIds[i]
+		item.Id = "item_tpl_" + itemIds[i]
 		item.FormTemplate = newId
 		_, err = s.formItemTemplateDao.Add(session, models.ConvertFormItemTemplateDto2Model(item))
 		if err != nil {
@@ -55,7 +55,7 @@ func (s *FormTemplateService) UpdateFormTemplateByDto(session *xorm.Session, for
 	// 新增or更新表单项模板
 	for i, inputItem := range formTemplateDto.Items {
 		if inputItem.Id == "" {
-			inputItem.Id = newItemGuidList[i]
+			inputItem.Id = "item_tpl_" + newItemGuidList[i]
 			if inputItem.FormTemplate == "" {
 				inputItem.FormTemplate = formTemplateDto.Id
 			}
@@ -373,11 +373,22 @@ func (s *FormTemplateService) GetDataFormConfig(requestTemplateId, taskTemplateI
 	}
 	// 2.查询entity 属性集合
 	if entity != "" {
+		var attributeTitleMap = make(map[string]string)
 		entitiesList, err = rpc.QueryEntityAttributes(models.QueryExpressionDataParam{DataModelExpression: entity}, userToken, language)
 		if err != nil {
 			return
 		}
 		if len(entitiesList) > 0 && len(entitiesList[0].Attributes) > 0 {
+			var attributes []*models.EntityAttributeObj
+			// cmdb属性,需要特殊调用下CMDB接口,平台接口CMDB属性名称没有存储,需要用title存储
+			if len(entity) > 7 && strings.HasPrefix(entity, "wecmdb:") {
+				if attributes, err = getCMDBCiAttrDefs(entity[7:], userToken); err != nil {
+					return
+				}
+				for _, attr := range attributes {
+					attributeTitleMap[attr.PropertyName] = attr.Name
+				}
+			}
 			expressEntity = entitiesList[0]
 			if configureDto.ItemGroup == "" {
 				configureDto.ItemGroup = entity
@@ -386,6 +397,9 @@ func (s *FormTemplateService) GetDataFormConfig(requestTemplateId, taskTemplateI
 			}
 			for _, attribute := range entitiesList[0].Attributes {
 				attribute.Id = fmt.Sprintf("%s:%s:%s", entitiesList[0].PackageName, entitiesList[0].EntityName, attribute.Name)
+				if v, ok := attributeTitleMap[attribute.Name]; ok {
+					attribute.Title = v
+				}
 				attribute.EntityName = expressEntity.EntityName
 				attribute.EntityPackage = expressEntity.PackageName
 				if existAttrMap[attribute.Id] {

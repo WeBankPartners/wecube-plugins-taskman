@@ -17,50 +17,62 @@
               "
               style="margin-bottom:20px;"
             >
+              <!--cmdb表单类型-->
+              <template v-if="i.cmdbAttr">
+                <CMDBFormItem
+                  :options="cmdbOptions"
+                  :column="getCMDBColumn(i.name)"
+                  :value="value"
+                  :disabled="i.isEdit === 'no' || disabled"
+                  style="width: calc(100% - 20px)"
+                />
+              </template>
               <!--输入框-->
-              <Input
-                v-if="i.elementType === 'input'"
-                v-model.trim="value[i.name]"
-                :disabled="i.isEdit === 'no' || disabled"
-                style="width:100%;"
-              ></Input>
-              <Input
-                v-else-if="i.elementType === 'textarea'"
-                v-model.trim="value[i.name]"
-                type="textarea"
-                :disabled="i.isEdit === 'no' || disabled"
-                style="width:100%;"
-              ></Input>
-              <LimitSelect
-                v-else-if="i.elementType === 'select' || i.elementType === 'wecmdbEntity'"
-                v-model="value[i.name]"
-                :displayName="i.elementType === 'wecmdbEntity' ? 'displayName' : i.entity ? 'key_name' : 'label'"
-                :displayValue="i.elementType === 'wecmdbEntity' ? 'id' : i.entity ? 'guid' : 'value'"
-                :options="entityData[i.name + 'Options']"
-                :disabled="i.isEdit === 'no' || disabled"
-                :multiple="i.multiple === 'Y' || i.multiple === 'yes'"
-                style="width:100%;"
-              >
-              </LimitSelect>
-              <!--自定义分析类型-->
-              <Input
-                v-else-if="i.elementType === 'calculate'"
-                :value="value[i.name]"
-                type="textarea"
-                :disabled="true"
-                style="width:100%;"
-              ></Input>
-              <!--日期时间类型-->
-              <DatePicker
-                v-else-if="i.elementType === 'datePicker'"
-                :value="value[i.name]"
-                @on-change="$event => handleTimeChange($event, value, i.name)"
-                format="yyyy-MM-dd HH:mm:ss"
-                :disabled="i.isEdit === 'no' || disabled"
-                type="datetime"
-                style="width:100%;"
-              >
-              </DatePicker>
+              <template v-else>
+                <Input
+                  v-if="i.elementType === 'input'"
+                  v-model.trim="value[i.name]"
+                  :disabled="i.isEdit === 'no' || disabled"
+                  style="width:100%;"
+                ></Input>
+                <Input
+                  v-else-if="i.elementType === 'textarea'"
+                  v-model.trim="value[i.name]"
+                  type="textarea"
+                  :disabled="i.isEdit === 'no' || disabled"
+                  style="width:100%;"
+                ></Input>
+                <LimitSelect
+                  v-else-if="i.elementType === 'select' || i.elementType === 'wecmdbEntity'"
+                  v-model="value[i.name]"
+                  :displayName="i.elementType === 'wecmdbEntity' ? 'displayName' : i.entity ? 'key_name' : 'label'"
+                  :displayValue="i.elementType === 'wecmdbEntity' ? 'id' : i.entity ? 'guid' : 'value'"
+                  :options="entityData[i.name + 'Options']"
+                  :disabled="i.isEdit === 'no' || disabled"
+                  :multiple="i.multiple === 'Y' || i.multiple === 'yes'"
+                  style="width:100%;"
+                >
+                </LimitSelect>
+                <!--自定义分析类型-->
+                <Input
+                  v-else-if="i.elementType === 'calculate'"
+                  :value="value[i.name]"
+                  type="textarea"
+                  :disabled="true"
+                  style="width:100%;"
+                ></Input>
+                <!--日期时间类型-->
+                <DatePicker
+                  v-else-if="i.elementType === 'datePicker'"
+                  :value="value[i.name]"
+                  @on-change="$event => handleTimeChange($event, value, i.name)"
+                  format="yyyy-MM-dd HH:mm:ss"
+                  :disabled="i.isEdit === 'no' || disabled"
+                  type="datetime"
+                  style="width:100%;"
+                >
+                </DatePicker>
+              </template>
             </FormItem>
           </Col>
         </template>
@@ -73,10 +85,13 @@
 import LimitSelect from '@/pages/components/limit-select.vue'
 import { getRefOptions, getWeCmdbOptions } from '@/api/server'
 import { evaluateCondition } from '../evaluate'
-import { fixArrStrToJsonArray } from '@/pages/util'
+import { components } from './cmdb-form-item/action.js'
+import { fixArrStrToJsonArray, deepClone } from '@/pages/util'
+import CMDBFormItem from './cmdb-form-item/index.vue'
 export default {
   components: {
-    LimitSelect
+    LimitSelect,
+    CMDBFormItem
   },
   props: {
     options: {
@@ -108,7 +123,15 @@ export default {
     return {
       refKeys: [],
       entityData: {},
-      formOptions: []
+      formOptions: [],
+      cmdbOptions: []
+    }
+  },
+  computed: {
+    getCMDBColumn () {
+      return function (attr) {
+        return this.cmdbOptions.find(i => i.propertyName === attr) || {}
+      }
     }
   },
   watch: {
@@ -150,6 +173,20 @@ export default {
               this.getRefOptions(titleObj)
             }
           })
+          // cmdb表单属性初始化
+          const cmdbOptions = []
+          const formOptions = deepClone(this.formOptions)
+          formOptions.forEach(item => {
+            if (item.cmdbAttr) {
+              item.cmdbAttr = JSON.parse(item.cmdbAttr)
+              item.cmdbAttr.editable = item.isEdit
+              const cmdbObj = Object.assign({}, { ...item.cmdbAttr, titleObj: item })
+              cmdbOptions.push(cmdbObj)
+            }
+          })
+          if (cmdbOptions && cmdbOptions.length > 0) {
+            this.getCMDBInitData(cmdbOptions)
+          }
         }
       },
       immediate: true,
@@ -215,6 +252,14 @@ export default {
         if (!cache[key] || (Array.isArray(cache[key]) && cache[key].length === 0)) {
           delete cache[key]
         }
+        // 将对象类型转为字符串
+        if (typeof cache[key] === 'object') {
+          cache[key] = JSON.stringify(cache[key])
+        }
+        // 将number类型转为字符串
+        if (typeof cache[key] === 'number') {
+          cache[key] = cache[key].toString()
+        }
       })
       this.refKeys.forEach(k => {
         delete cache[k + 'Options']
@@ -243,6 +288,55 @@ export default {
       if (statusCode === 'OK') {
         this.$set(this.entityData, titleObj.name + 'Options', data)
       }
+    },
+    // cmdb表单属性初始化
+    getCMDBInitData (data) {
+      this.cmdbOptions = []
+      let columns = []
+      for (let index = 0; index < data.length; index++) {
+        let renderKey = data[index].propertyName
+        if (!['decommissioned', 'notCreated'].includes(data[index].status)) {
+          if (['select', 'multiSelect'].includes(data[index].inputType) && data[index].selectList !== '') {
+            const { titleObj } = data[index] || { titleObj: {} }
+            const attrName = titleObj.entity + '__' + titleObj.name
+            const attr = titleObj.id
+            // 异步获取cmdb select和multiSelect下拉框的值
+            getRefOptions(this.requestId, attr, {}, attrName)
+              .then(res => {
+                if (res.statusCode === 'OK') {
+                  this.cmdbOptions[index].options = res.data.map(item => {
+                    return {
+                      label: item.key_name,
+                      value: item.guid
+                    }
+                  })
+                }
+              })
+          }
+          const columnItem = {
+            ...data[index],
+            title: data[index].name,
+            key: renderKey,
+            inputKey: data[index].propertyName,
+            inputType: data[index].inputType,
+            referenceId: data[index].referenceId,
+            disEditor: !data[index].isEditable,
+            disAdded: !data[index].isEditable,
+            placeholder: data[index].name,
+            component: 'Input',
+            referenceFilter: data[index].referenceFilter,
+            ciType: { id: data[index].referenceId, name: data[index].name },
+            type: 'text',
+            isMultiple: ['multiSelect', 'multiRef'].includes(data[index].inputType),
+            ...components[data[index].inputType],
+            options: data[index].options,
+            requestId: this.requestId,
+            refKeys: this.refKeys
+          }
+          columns.push(columnItem)
+        }
+      }
+      this.cmdbOptions = columns
     }
   }
 }

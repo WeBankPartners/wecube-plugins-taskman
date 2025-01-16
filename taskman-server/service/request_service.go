@@ -2,12 +2,14 @@ package service
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"io"
 	"net/http"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -416,7 +418,7 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 		}
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	actions, buildActionErr := UpdateRequestFormItemNew(requestId, operator, nowTime, newParam)
+	actions, buildActionErr := UpdateRequestFormItemNew(requestId, operator, newParam)
 	if buildActionErr != nil {
 		return fmt.Errorf("build update request form data action fail,%s ", buildActionErr.Error())
 	}
@@ -483,14 +485,25 @@ func UpdateRequestFormItem(requestId, operator, now string, param *models.Reques
 	return actions
 }
 
-func UpdateRequestFormItemNew(requestId, operator, now string, param *models.RequestPreDataDto) (actions []*dao.ExecAction, err error) {
+func UpdateRequestFormItemNew(requestId, operator string, param *models.RequestPreDataDto) (actions []*dao.ExecAction, err error) {
+	formParam := models.ProcessTaskFormParam{
+		Operator:          operator,
+		RequestPreDataDto: param,
+		RequestId:         requestId,
+		FormData:          param.Data,
+	}
+	actions, err = GetRequestService().processTaskForm(formParam)
+	return
+}
+
+// 表单通用处理,根据 ProcessTaskFormParam里面 Task属性为空判断是请求保存,还是任务保存
+func (s *RequestService) processTaskForm(formParam models.ProcessTaskFormParam) (actions []*dao.ExecAction, err error) {
+	nowTime := time.Now()
 	// 查请求数据池里的数据(里面的数据可能包含当前任务之前保存的数据)
 	requestPoolRows := models.RequestPoolDataQueryRows{}
-	if err = dao.X.SQL("select t1.id as form_id,t1.task,t1.form_template,t3.item_group,t3.item_group_type ,t1.data_id,t2.id as form_item_id,t2.form_item_template,t2.name,t2.value,t2.updated_time from form t1 left join form_item t2 on t1.id=t2.form left join form_template t3 on t1.form_template=t3.id where t1.request=?", requestId).Find(&requestPoolRows); err != nil {
+	if err = dao.X.SQL("select t1.id as form_id,t1.task,t1.form_template,t3.item_group,t3.item_group_type ,t1.data_id,t2.id as form_item_id,t2.form_item_template,t2.name,t2.value,t2.updated_time from form t1 left join form_item t2 on t1.id=t2.form left join form_template t3 on t1.form_template=t3.id where t1.request=?", formParam.RequestId).Find(&requestPoolRows); err != nil {
 		err = fmt.Errorf("query request item pool data fail,%s ", err.Error())
-		return
 	}
-	nowTime := time.Now()
 	requestPoolForms := requestPoolRows.DataParse()
 	// 把form数据按itemGroup分开来
 	itemGroupFormMap := make(map[string][]*models.RequestPoolForm)
@@ -501,7 +514,7 @@ func UpdateRequestFormItemNew(requestId, operator, now string, param *models.Req
 			itemGroupFormMap[poolForm.ItemGroup] = []*models.RequestPoolForm{poolForm}
 		}
 	}
-	for _, tableForm := range param.Data {
+	for _, tableForm := range formParam.FormData {
 		columnNameIdMap := make(map[string]string)
 		isColumnMultiMap := make(map[string]int)
 		for _, title := range tableForm.Title {
@@ -512,7 +525,7 @@ func UpdateRequestFormItemNew(requestId, operator, now string, param *models.Req
 		}
 		poolForms := itemGroupFormMap[tableForm.ItemGroup]
 		for _, valueObj := range tableForm.Value {
-			if valueObj.EntityDataOp == "create" && valueObj.Id != "" {
+			if formParam.Task == nil && valueObj.EntityDataOp == "create" && valueObj.Id != "" {
 				if !strings.HasPrefix(valueObj.Id, "tmp") {
 					valueObj.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, valueObj.Id)
 				}
@@ -532,26 +545,77 @@ func UpdateRequestFormItemNew(requestId, operator, now string, param *models.Req
 			if formId == "" {
 				formId = "form_" + guid.CreateGuid()
 				// 数据行不存在，新增
-				actions = append(actions, &dao.ExecAction{Sql: "insert into form(id,request,form_template,data_id,created_by,updated_by,created_time,updated_time) values (?,?,?,?,?,?,?,?)", Param: []interface{}{
-					formId, requestId, tableForm.FormTemplateId, valueObj.Id, operator, operator, nowTime, nowTime,
+				var taskId = sql.NullString{String: "", Valid: false}
+				if formParam.Task != nil {
+					taskId = sql.NullString{String: formParam.Task.Id, Valid: true}
+				}
+				actions = append(actions, &dao.ExecAction{Sql: "insert into form(id,request,task,form_template,data_id,created_by,updated_by,created_time,updated_time) values (?,?,?,?,?,?,?,?,?)", Param: []interface{}{
+					formId, formParam.RequestId, taskId, tableForm.FormTemplateId, valueObj.Id, formParam.Operator, formParam.Operator, nowTime, nowTime,
 				}})
 			}
 			// 判断数据行属性的变化
 			for k, v := range valueObj.EntityData {
+				var valueString string
 				// 判断属性合不合法，是不是属性该表单的属性
 				formItemTemplateId, nameLegalCheck := columnNameIdMap[k]
 				if !nameLegalCheck {
 					continue
 				}
-				// 整理属性值，特殊处理数组
-				valueString := fmt.Sprintf("%s", v)
-				if _, multipleFlag := isColumnMultiMap[k]; multipleFlag {
-					if vInterfaceList, assertOk := v.([]interface{}); assertOk {
-						tmpV := []string{}
-						for _, interfaceV := range vInterfaceList {
-							tmpV = append(tmpV, fmt.Sprintf("%s", interfaceV))
+				// map需要特殊处理
+				if reflect.ValueOf(v).Kind() == reflect.Map {
+					m, ok := v.(map[string]interface{})
+					if !ok {
+						// 处理类型断言失败的情况
+						valueString = fmt.Sprintf("%v", v)
+					} else {
+						byteArr, err := json.Marshal(m)
+						if err != nil {
+							// 处理 JSON 序列化失败的情况
+							valueString = fmt.Sprintf("Error marshaling map: %v", err)
+						} else {
+							valueString = string(byteArr)
 						}
-						valueString = strings.Join(tmpV, ",")
+					}
+				} else {
+					switch vType := v.(type) {
+					case int:
+						valueString = strconv.Itoa(vType)
+					case int32:
+						valueString = strconv.Itoa(int(vType))
+					case int64:
+						valueString = strconv.FormatInt(vType, 10)
+					case float32:
+						valueString = strconv.FormatFloat(float64(vType), 'f', -1, 32)
+					case float64:
+						valueString = strconv.FormatFloat(vType, 'f', -1, 64)
+					default:
+						// 如果 v 不是数字类型，使用 fmt.Sprintf
+						valueString = fmt.Sprintf("%v", vType)
+					}
+				}
+				if _, multipleFlag := isColumnMultiMap[k]; multipleFlag {
+					// 此处需要支持 CMDB multiInt 和multiObject 类型
+					if vInterfaceList, assertOk := v.([]interface{}); assertOk {
+						var tmpV []string
+						var multiObject bool
+						for _, interfaceV := range vInterfaceList {
+							switch interfaceType := interfaceV.(type) {
+							// 因为 JSON 解析后数字默认是 float64,int也会变成float64
+							case float64:
+								tmpV = append(tmpV, fmt.Sprintf("%d", int(interfaceType)))
+							case map[string]interface{}:
+								multiObject = true
+								break
+							default:
+								tmpV = append(tmpV, fmt.Sprintf("%s", interfaceV))
+							}
+						}
+						if multiObject {
+							byteArr, _ := json.Marshal(vInterfaceList)
+							valueString = string(byteArr)
+						} else {
+							valueString = strings.Join(tmpV, ",")
+						}
 					} else {
 						// 多选非必填情况下,valueString 为空
 						valueString = ""
@@ -559,43 +623,56 @@ func UpdateRequestFormItemNew(requestId, operator, now string, param *models.Req
 				}
 				// 从数据池里尝试查找有没有已存在的数据(同一个itemGroup，同一个数据行下的同一属性)
 				latestPoolItem := getRequestPoolLatestItem(poolForms, valueObj.Id, k)
+				var taskHandleId = sql.NullString{String: "", Valid: false}
+				if formParam.Task != nil {
+					taskHandleId = sql.NullString{String: formParam.TaskApproveParam.TaskHandleId, Valid: true}
+				}
 				if latestPoolItem.FormItemId == "" {
 					// 没有在数据池里找到相关数据行的该属性
-					actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time) values (?,?,?,?,?,?,?)", Param: []interface{}{
-						"item_" + guid.CreateGuid(), formId, formItemTemplateId, k, valueString, requestId, nowTime,
+					actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time,task_handle) values (?,?,?,?,?,?,?,?)", Param: []interface{}{
+						"item_" + guid.CreateGuid(), formId, formItemTemplateId, k, valueString, formParam.RequestId, nowTime, taskHandleId,
 					}})
 				} else {
 					if latestPoolItem.Value != valueString {
 						// 数据有更新
-						// 不属于该任务，新增数据纪录
-						actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time,original_id) values (?,?,?,?,?,?,?,?)", Param: []interface{}{
-							"item_" + guid.CreateGuid(), formId, formItemTemplateId, k, valueString, requestId, nowTime, latestPoolItem.FormItemId,
-						}})
+						if formParam.Task != nil && latestPoolItem.Task == formParam.Task.Id {
+							// 属于该任务，更新数据值
+							actions = append(actions, &dao.ExecAction{Sql: "update form_item set value=?,updated_time=?,task_handle=? where id=?", Param: []interface{}{
+								valueString, nowTime, taskHandleId, latestPoolItem.FormItemId,
+							}})
+						} else {
+							// 不属于该任务，新增数据纪录
+							actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time,original_id,task_handle) values (?,?,?,?,?,?,?,?,?)", Param: []interface{}{
+								"item_" + guid.CreateGuid(), formId, formItemTemplateId, k, valueString, formParam.RequestId, nowTime, latestPoolItem.FormItemId, taskHandleId,
+							}})
+						}
 					}
 				}
 			}
 		}
 		// 如果之前是该任务保存的数据行但又没传过来了，说明已经删除行
 		for _, poolForm := range poolForms {
-			deleteFlag := true
-			for _, valueObj := range tableForm.Value {
-				if poolForm.DataId == valueObj.Id {
-					deleteFlag = false
-					break
+			if formParam.Task == nil || poolForm.Task == formParam.Task.Id {
+				deleteFlag := true
+				for _, valueObj := range tableForm.Value {
+					if poolForm.DataId == valueObj.Id {
+						deleteFlag = false
+						break
+					}
 				}
-			}
-			if deleteFlag {
-				actions = append(actions, &dao.ExecAction{Sql: "delete from form_item where form=?", Param: []interface{}{poolForm.FormId}})
-				actions = append(actions, &dao.ExecAction{Sql: "delete from form where id=?", Param: []interface{}{poolForm.FormId}})
+				if deleteFlag {
+					actions = append(actions, &dao.ExecAction{Sql: "delete from form_item where form=?", Param: []interface{}{poolForm.FormId}})
+					actions = append(actions, &dao.ExecAction{Sql: "delete from form where id=?", Param: []interface{}{poolForm.FormId}})
+				}
 			}
 		}
 	}
 	return
 }
 
-func UpdateSingleRequestFormNew(requestId, operator, now string, param *models.RequestPreDataTableObj) (actions []*dao.ExecAction, err error) {
+func UpdateSingleRequestFormNew(requestId, operator string, param *models.RequestPreDataTableObj) (actions []*dao.ExecAction, err error) {
 	updateParam := models.RequestPreDataDto{Data: []*models.RequestPreDataTableObj{param}}
-	actions, err = UpdateRequestFormItemNew(requestId, operator, now, &updateParam)
+	actions, err = UpdateRequestFormItemNew(requestId, operator, &updateParam)
 	return
 }
 
@@ -2400,10 +2477,14 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 				tmpRowObj.EntityData = make(map[string]interface{})
 				for _, rowItem := range rowItemMap[row] {
 					isMulti := false
+					isMultiObject := false
 					for _, tmpTitle := range formTable.Title {
 						if tmpTitle.Name == rowItem.Name {
 							if strings.EqualFold(tmpTitle.Multiple, models.Yes) || strings.EqualFold(tmpTitle.Multiple, models.Y) {
 								isMulti = true
+								if tmpTitle.AttrDefDataType == string(models.CmdbDataTypeMultiObject) {
+									isMultiObject = true
+								}
 								break
 							}
 						}
@@ -2411,6 +2492,11 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 					if isMulti {
 						if strings.TrimSpace(rowItem.Value) == "" {
 							tmpRowObj.EntityData[rowItem.Name] = []string{}
+						} else if isMultiObject {
+							// 对象数组
+							var jsonData interface{}
+							json.Unmarshal([]byte(rowItem.Value), &jsonData)
+							tmpRowObj.EntityData[rowItem.Name] = jsonData
 						} else {
 							tmpRowObj.EntityData[rowItem.Name] = strings.Split(rowItem.Value, ",")
 						}
@@ -2551,8 +2637,7 @@ func getTaskFormItems(requestFormItems []*models.FormItemTable, taskForms []*mod
 }
 
 func SaveRequestForm(requestId, operator string, param *models.RequestPreDataTableObj) (err error) {
-	nowTime := time.Now().Format(models.DateTimeFormat)
-	actions, buildActionErr := UpdateSingleRequestFormNew(requestId, operator, nowTime, param)
+	actions, buildActionErr := UpdateSingleRequestFormNew(requestId, operator, param)
 	if buildActionErr != nil {
 		err = buildActionErr
 		return

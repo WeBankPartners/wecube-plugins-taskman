@@ -12,6 +12,8 @@ const (
 	WeCubeEmptySearch    = "WeCube-empty-search" //查询空数据
 	Yes                  = "yes"
 	Y                    = "y"
+	ContextApiCode       = "apiCode"
+	HomePage             = "HOME_PAGE"
 )
 
 // RequestStatus 定义请求状态
@@ -77,6 +79,13 @@ const (
 	FormItemElementTypeSelect       FormItemElementType = "select"
 	FormItemElementTypeCalculate    FormItemElementType = "calculate" //计算类型
 	FormItemElementTypeWeCMDBEntity FormItemElementType = "wecmdbEntity"
+)
+
+type CmdbDataType string
+
+const (
+	CmdbDataTypeMultiObject CmdbDataType = "multiObject" // 对象数组
+	CmdbDataTypeExtRef      CmdbDataType = "extRef"      // 引用别的插件
 )
 
 // TaskType 任务模板、任务 类型

@@ -35,7 +35,7 @@ func CreateRequestTemplateGroup(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	if len(requestTemplateGroupList) == 0 {
+	if len(requestTemplateGroupList) > 0 {
 		middleware.ReturnError(c, fmt.Errorf("the same name:%s already exists", param.Name))
 		return
 	}

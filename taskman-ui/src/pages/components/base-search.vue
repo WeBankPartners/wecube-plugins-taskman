@@ -98,8 +98,9 @@
                 v-model="value[i.key]"
                 @on-change="handleSearch"
                 style="margin-right:32px;"
+                button-style="solid"
               >
-                <Radio v-for="(j, idx) in i.list" :label="j.value" :key="idx" border>{{ j.label }}</Radio>
+                <Radio v-for="(j, idx) in i.list" :label="j.value" :key="idx">{{ j.label }}</Radio>
               </RadioGroup>
               <!--自定义时间选择器-->
               <div v-else-if="i.component === 'custom-time'" class="custom-time">
@@ -110,8 +111,10 @@
                   type="button"
                   size="small"
                   style="margin-top:-2px;"
+                button-style="solid"
+
                 >
-                  <Radio v-for="(j, idx) in dateTypeList" :label="j.value" :key="idx" border>{{ j.label }}</Radio>
+                  <Radio v-for="(j, idx) in dateTypeList" :label="j.value" :key="idx">{{ j.label }}</Radio>
                 </RadioGroup>
                 <div v-else>
                   <DatePicker

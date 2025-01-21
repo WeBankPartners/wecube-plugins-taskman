@@ -20,7 +20,7 @@ export default {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
+  color: #0F1222; // Fes字体颜色规范
   height: 100%;
   min-width: 1280px;
 
@@ -32,7 +32,7 @@ export default {
   padding: 30px;
   a {
     font-weight: bold;
-    color: #2c3e50;
+    color: #0F1222; // Fes字体颜色规范
     &.router-link-exact-active {
       color: #42b983;
     }

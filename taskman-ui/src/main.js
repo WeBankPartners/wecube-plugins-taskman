@@ -1,7 +1,9 @@
+/* eslint-disable camelcase */
 import 'regenerator-runtime/runtime'
 import Vue from 'vue'
 import App from './App.vue'
-import router from './router'
+import VueRouter from 'vue-router'
+import { routes } from './router'
 import ViewUI from 'view-design'
 import 'view-design/dist/styles/iview.css'
 import VueI18n from 'vue-i18n'
@@ -27,17 +29,53 @@ Vue.use(ViewUI, {
   locale: i18n.locale === 'en-US' ? viewDesignEn : viewDesignZh
 })
 
-router.beforeEach((to, from, next) => {
-  const ls = getCookie('accessToken')
-  if (ls || to.path === '/login') {
-    next()
-  } else {
-    next('/login')
-  }
-})
+// 判断是否在qiankun的运行环境下
+if (window.__POWERED_BY_QIANKUN__) {
+  // eslint-disable-next-line no-undef
+  __webpack_public_path__ = window.__INJECTED_PUBLIC_PATH_BY_QIANKUN__
+}
 
-new Vue({
-  router,
-  render: h => h(App),
-  i18n
-}).$mount('#app')
+let instance = null
+let router = null
+function render (props = {}) {
+  const { container } = props
+  router = new VueRouter({
+    base: window.__POWERED_BY_QIANKUN__ ? '/taskman' : '/',
+    mode: 'history',
+    routes
+  })
+  router.beforeEach((to, from, next) => {
+    const ls = getCookie('accessToken')
+    if (ls || to.path === '/login') {
+      next()
+    } else {
+      next('/login')
+    }
+  })
+  instance = new Vue({
+    router,
+    render: h => h(App),
+    i18n
+  }).$mount(container ? container.querySelector('#app') : '#app', true)
+}
+
+if (!window.__POWERED_BY_QIANKUN__) {
+  console.log('独立运行')
+  render()
+}
+
+// 各个生命周期，只会在微应用初始化的时候调用一次，下次进入微应用重新进入是会直接调用mount钩子，不会再重复调用bootstrap
+export async function bootstrap () {
+  console.log('[vue] vue app bootstraped')
+}
+// 应用每次进入都会调用mount方法，通常在这里触发应用的渲染方法
+export async function mount (props) {
+  console.log('[vue] props from main framework', props)
+  render(props)
+}
+// 应用每次切除/注销会调用的方法，在这里会注销微应用的应用实例
+export async function unmount () {
+  instance.$destroy()
+  instance.$el.innerHTML = ''
+  instance = null
+}

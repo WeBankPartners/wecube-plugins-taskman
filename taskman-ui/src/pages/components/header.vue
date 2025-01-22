@@ -86,7 +86,7 @@ import Vue from 'vue'
 export default {
   data () {
     return {
-      activeName: '/taskman/workbench',
+      activeName: '/workbench',
       username: '',
       currentLanguage: '',
       language: {
@@ -96,18 +96,18 @@ export default {
       menus: [
         {
           display: this.$t('tw_workbench'),
-          name: '/taskman/workbench',
-          path: '/taskman/workbench'
+          name: '/workbench',
+          path: '/workbench'
         },
         {
           display: this.$t('tw_template_group_mgmt'),
-          name: '/taskman/template-group',
-          path: '/taskman/template-group'
+          name: '/template-group',
+          path: '/template-group'
         },
         {
           display: this.$t('tw_template_mgmt'),
-          name: '/taskman/template-mgmt',
-          path: '/taskman/template-mgmt'
+          name: '/template-mgmt',
+          path: '/template-mgmt'
         }
       ],
       needLoad: true,
@@ -154,7 +154,7 @@ export default {
       this.$router.push({ path: path })
     },
     goHome () {
-      this.$router.push({ path: '/taskman/workbench' })
+      this.$router.push({ path: '/workbench' })
     },
     userMgmt () {
       this.$refs.userMgmtRef.openModal()

@@ -211,7 +211,7 @@ export default {
     // 表格操作-查看
     hanldeView (row) {
       const path = this.detailRouteMap[String(row.type)] || ''
-      const url = `/taskman/workbench/${path}`
+      const url = `/workbench/${path}`
       this.$router.push({
         path: url,
         query: {

@@ -246,7 +246,7 @@ export default {
     // 表格操作-查看
     hanldeView (row) {
       const path = this.detailRouteMap[this.actionName]
-      const url = `/taskman/workbench/${path}`
+      const url = `/workbench/${path}`
       this.$router.push({
         path: url,
         query: {
@@ -260,7 +260,7 @@ export default {
     async handleViewRefDetail (row) {
       window.sessionStorage.currentPath = '' // 先清空session缓存页面，不然打开新标签页面会回退到缓存的页面
       const subPath = this.detailRouteMap[this.actionName]
-      const path = `${window.location.origin}/#/taskman/workbench/${subPath}?requestId=${row.requestRefId}&requestTemplate=${row.refTemplateId}`
+      const path = `${window.location.origin}/taskman/workbench/${subPath}?requestId=${row.requestRefId}&requestTemplate=${row.refTemplateId}`
       window.open(path, '_blank')
     },
     // 表格操作-重新发起
@@ -268,7 +268,7 @@ export default {
       const { statusCode, data } = await reRequest(row.id)
       if (statusCode === 'OK') {
         const path = this.createRouteMap[this.actionName]
-        const url = `/taskman/workbench/${path}`
+        const url = `/workbench/${path}`
         this.$router.push({
           path: url,
           query: {
@@ -281,7 +281,7 @@ export default {
     // 表格操作-草稿去发起
     hanldeLaunch (row) {
       const path = this.createRouteMap[this.actionName]
-      const url = `/taskman/workbench/${path}`
+      const url = `/workbench/${path}`
       this.$router.push({
         path: url,
         query: {

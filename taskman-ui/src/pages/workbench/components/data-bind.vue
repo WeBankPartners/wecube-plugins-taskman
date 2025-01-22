@@ -279,7 +279,7 @@ export default {
                 desc: this.$t('successful')
               })
               this.$router.push({
-                path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=1`
+                path: `/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=1`
               })
             }
           }
@@ -351,7 +351,7 @@ export default {
                   desc: this.$t('successful')
                 })
                 this.$router.push({
-                  path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=1`
+                  path: `/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=1`
                 })
               }
             }

@@ -412,7 +412,7 @@ export default {
             desc: this.$t('successful')
           })
           this.$router.push({
-            path: `/taskman/workbench?tabName=${this.jumpFrom}&actionName=${this.actionName}&type=${this.type}`
+            path: `/workbench?tabName=${this.jumpFrom}&actionName=${this.actionName}&type=${this.type}`
           })
         }
       }
@@ -469,7 +469,7 @@ export default {
           title: this.$t('successful'),
           desc: this.$t('successful')
         })
-        this.$router.push({ path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=4` })
+        this.$router.push({ path: `/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=4` })
       }
     }
   }

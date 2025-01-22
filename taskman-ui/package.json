@@ -17,6 +17,7 @@
     "dayjs": "^1.11.10",
     "less": "^3.12.2",
     "less-loader": "^7.0.2",
+    "qiankun": "^2.10.16",
     "vee-validate": "^3.4.12",
     "view-design": "4.3.2",
     "vue": "2.6.6",

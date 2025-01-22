@@ -25,8 +25,8 @@ export default {
           icon: 'md-person-add',
           name: '1',
           children: [
-            { title: this.$t('tw_new'), path: '/taskman/workbench/template?type=1', name: '1-1' },
-            { title: this.$t('tw_history'), path: '/taskman/workbench/publishHistory', name: '1-2' }
+            { title: this.$t('tw_new'), path: '/workbench/template?type=1', name: '1-1' },
+            { title: this.$t('tw_history'), path: '/workbench/publishHistory', name: '1-2' }
           ]
         },
         {
@@ -34,8 +34,8 @@ export default {
           icon: 'ios-send',
           name: '2',
           children: [
-            { title: this.$t('tw_new'), path: '/taskman/workbench/template?type=2', name: '2-1' },
-            { title: this.$t('tw_history'), path: '/taskman/workbench/requestHistory', name: '2-2' }
+            { title: this.$t('tw_new'), path: '/workbench/template?type=2', name: '2-1' },
+            { title: this.$t('tw_history'), path: '/workbench/requestHistory', name: '2-2' }
           ]
         },
         {
@@ -43,8 +43,8 @@ export default {
           icon: 'md-help-circle',
           name: '3',
           children: [
-            { title: this.$t('tw_new'), path: '/taskman/workbench/template?type=3', name: '3-1' },
-            { title: this.$t('tw_history'), path: '/taskman/workbench/problemHistory', name: '3-2' }
+            { title: this.$t('tw_new'), path: '/workbench/template?type=3', name: '3-1' },
+            { title: this.$t('tw_history'), path: '/workbench/problemHistory', name: '3-2' }
           ]
         },
         {
@@ -52,8 +52,8 @@ export default {
           icon: 'md-pulse',
           name: '4',
           children: [
-            { title: this.$t('tw_new'), path: '/taskman/workbench/template?type=4', name: '4-1' },
-            { title: this.$t('tw_history'), path: '/taskman/workbench/eventHistory', name: '4-2' }
+            { title: this.$t('tw_new'), path: '/workbench/template?type=4', name: '4-1' },
+            { title: this.$t('tw_history'), path: '/workbench/eventHistory', name: '4-2' }
           ]
         },
         {
@@ -61,8 +61,8 @@ export default {
           icon: 'md-git-merge',
           name: '5',
           children: [
-            { title: this.$t('tw_new'), path: '/taskman/workbench/template?type=5', name: '5-1' },
-            { title: this.$t('tw_history'), path: '/taskman/workbench/changeHistory', name: '5-2' }
+            { title: this.$t('tw_new'), path: '/workbench/template?type=5', name: '5-1' },
+            { title: this.$t('tw_history'), path: '/workbench/changeHistory', name: '5-2' }
           ]
         }
       ]
@@ -89,7 +89,7 @@ export default {
   methods: {
     handleGoHome () {
       this.$router.push({
-        path: '/taskman/workbench'
+        path: '/workbench'
       })
     }
   }

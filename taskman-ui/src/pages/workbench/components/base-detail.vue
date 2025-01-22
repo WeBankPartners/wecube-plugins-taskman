@@ -436,7 +436,7 @@ export default {
     handleToHome () {
       if (this.$route.query.type) {
         this.$router.push({
-          path: `/taskman/workbench?tabName=${this.jumpFrom}&actionName=${this.actionName}&${
+          path: `/workbench?tabName=${this.jumpFrom}&actionName=${this.actionName}&${
             this.jumpFrom === 'submit' ? 'rollback' : 'type'
           }=${this.type}&needCache=yes`
         })
@@ -449,7 +449,7 @@ export default {
           5: 'changeHistory'
         }
         this.$router.push({
-          path: `/taskman/workbench/${pathMap[this.actionName]}?&needCache=yes`
+          path: `/workbench/${pathMap[this.actionName]}?&needCache=yes`
         })
       }
     },
@@ -459,9 +459,9 @@ export default {
       const subPath = this.detailRouteMap[this.actionName]
       let path = ''
       if (type === 'ref') {
-        path = `${window.location.origin}/#/taskman/workbench/${subPath}?requestId=${this.detail.refId}&requestTemplate=${this.detail.refTemplateId}`
+        path = `${window.location.origin}/taskman/workbench/${subPath}?requestId=${this.detail.refId}&requestTemplate=${this.detail.refTemplateId}`
       } else if (type === 'history') {
-        path = `${window.location.origin}/#/taskman/workbench/${subPath}?requestId=${this.detail.parentId}&requestTemplate=${this.detail.parentTemplateId}`
+        path = `${window.location.origin}/taskman/workbench/${subPath}?requestId=${this.detail.parentId}&requestTemplate=${this.detail.parentTemplateId}`
       }
       window.open(path, '_blank')
     },
@@ -542,7 +542,7 @@ export default {
               title: this.$t('successful'),
               desc: this.$t('successful')
             })
-            this.$router.push({ path: `/taskman/workbench?tabName=submit&actionName=${this.actionName}&rollback=3` })
+            this.$router.push({ path: `/workbench?tabName=submit&actionName=${this.actionName}&rollback=3` })
           }
         },
         onCancel: () => {}

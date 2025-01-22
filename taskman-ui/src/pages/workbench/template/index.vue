@@ -338,7 +338,7 @@ export default {
         })
       }
       const path = this.createRouteMap[this.type]
-      const url = `/taskman/workbench/${path}`
+      const url = `/workbench/${path}`
       this.$router.push({
         path: url,
         query: {

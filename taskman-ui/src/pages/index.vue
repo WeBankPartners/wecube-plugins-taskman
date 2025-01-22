@@ -1,21 +1,28 @@
 <template>
   <div id="taskman">
-    <div class="header">
-      <Header></Header>
-    </div>
-    <div class="taskman-content-container">
-      <Breadcrumb :style="setBreadcrumbStyle" v-if="isShowBreadcrum">
-        <BreadcrumbItem>
-          <a @click="homePageClickHandler">{{ $t('tw_home') }}</a>
-        </BreadcrumbItem>
-        <BreadcrumbItem v-for="(item, index) in breadcrumbList" :key="index">
-          {{ item }}
-        </BreadcrumbItem>
-      </Breadcrumb>
+    <template v-if="qiankunFlag">
       <transition name="fade" mode="out-in">
         <router-view></router-view>
       </transition>
-    </div>
+    </template>
+    <template v-else>
+      <div class="header">
+        <Header></Header>
+      </div>
+      <div class="taskman-content-container">
+        <Breadcrumb :style="setBreadcrumbStyle" v-if="isShowBreadcrum">
+          <BreadcrumbItem>
+            <a @click="homePageClickHandler">{{ $t('tw_home') }}</a>
+          </BreadcrumbItem>
+          <BreadcrumbItem v-for="(item, index) in breadcrumbList" :key="index">
+            {{ item }}
+          </BreadcrumbItem>
+        </Breadcrumb>
+        <transition name="fade" mode="out-in">
+          <router-view></router-view>
+        </transition>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -32,7 +39,8 @@ export default {
       allMenusAry: [],
       childBreadcrumb: '',
       breadcrumbList: [],
-      isSetting: this.$route.path.startsWith('/setting')
+      isSetting: this.$route.path.startsWith('/setting'),
+      qiankunFlag: window.__POWERED_BY_QIANKUN__
     }
   },
   computed: {
@@ -74,7 +82,7 @@ export default {
     },
     homePageClickHandler () {
       window.needReLoad = false
-      this.$router.push('/taskman/workbench')
+      this.$router.push('/workbench')
     }
   }
 }

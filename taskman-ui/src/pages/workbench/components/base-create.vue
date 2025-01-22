@@ -493,7 +493,7 @@ export default {
     handleToHome () {
       if (this.$route.query.jumpFrom) {
         this.$router.push({
-          path: `/taskman/workbench?tabName=${this.jumpFrom}&actionName=${this.actionName}&${
+          path: `/workbench?tabName=${this.jumpFrom}&actionName=${this.actionName}&${
             this.jumpFrom === 'submit' ? 'rollback' : 'type'
           }=${this.type}&needCache=yes`
         })
@@ -506,7 +506,7 @@ export default {
           5: 'changeHistory'
         }
         this.$router.push({
-          path: `/taskman/workbench/${pathMap[this.actionName]}?&needCache=yes`
+          path: `/workbench/${pathMap[this.actionName]}?&needCache=yes`
         })
       }
     },
@@ -884,7 +884,7 @@ export default {
                 title: this.$t('successful'),
                 desc: this.$t('successful')
               })
-              this.$router.push({ path: `/taskman/workbench?tabName=submit&actionName=${this.actionName}` })
+              this.$router.push({ path: `/workbench?tabName=submit&actionName=${this.actionName}` })
             }
           }
         },

@@ -9,7 +9,6 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"strings"
 )
 
 // GetRequestTemplateByUser 选择模板
@@ -37,9 +36,9 @@ func QueryPlatformEntityData(c *gin.Context) {
 	bodyString := c.GetString("requestBody")
 	plugin := c.Param("package")
 	entity := c.Param("entity")
-	var responseBytes []byte
+	var responseBytes, newResponseBytes []byte
 	var err error
-	var refAttributes []*models.EntityAttributeObj
+	var result = make([]map[string]interface{}, 0)
 	responseBytes, err = rpc.HttpPost(fmt.Sprintf("%s/%s/entities/%s/query", models.Config.Wecube.BaseUrl, plugin, entity),
 		c.GetHeader("Authorization"),
 		c.GetHeader(middleware.AcceptLanguageHeader), []byte(bodyString))
@@ -50,26 +49,20 @@ func QueryPlatformEntityData(c *gin.Context) {
 	// cmdb 涉及到敏感数据需要隐藏显示
 	if plugin == "wecmdb" {
 		var response models.EntityResponse
-		if refAttributes, err = service.GetCMDBCiAttrDefs(entity, c.GetHeader("Authorization")); err != nil {
-			err = fmt.Errorf("query remote entity:%s attr fail:%s ", entity, err.Error())
-			middleware.ReturnServerHandleError(c, err)
-			return
-		}
 		if err = json.Unmarshal(responseBytes, &response); err != nil {
 			middleware.ReturnServerHandleError(c, fmt.Errorf("json Unmarshal err,%s", err.Error()))
 			return
 		}
 		if response.Status == "OK" {
-			for _, dataMap := range response.Data {
-				for _, v1 := range refAttributes {
-					if strings.ToUpper(v1.Sensitive) == "Y" {
-						if _, ok := dataMap[v1.PropertyName]; ok {
-							dataMap[v1.PropertyName] = "******"
-						}
-					}
-				}
+			if result, err = service.HandleFormSensitiveData(response.Data, entity, c.GetHeader("Authorization")); err != nil {
+				middleware.ReturnServerHandleError(c, err)
+				return
+			}
+			if newResponseBytes, err = json.Marshal(result); err != nil {
+				middleware.ReturnServerHandleError(c, fmt.Errorf("json Marshal err,%s", err.Error()))
+				return
 			}
 		}
 	}
-	c.Data(http.StatusOK, "application/json; charset=utf-8", responseBytes)
+	c.Data(http.StatusOK, "application/json; charset=utf-8", newResponseBytes)
 }

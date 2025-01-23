@@ -250,8 +250,13 @@
       },
       {
         "key": "deleteAttach",
-        "path": "/taskman/api/v1/request/attach-file/remove/${fileId}",
+        "url": "/taskman/api/v1/request/attach-file/remove/${fileId}",
         "method": "delete"
+      },
+      {
+        "key": "getCmdbFormPermission",
+        "url": "/taskman/api/v1/request-data/form/sensitive-attr/query",
+        "method": "post"
       }
     ]
   },

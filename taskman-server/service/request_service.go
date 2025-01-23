@@ -2849,3 +2849,27 @@ func formDataDeepCopy(dataList []*models.RequestPreDataTableObj) []*models.Reque
 	}
 	return list
 }
+
+// HandleFormSensitiveData 处理表单敏感数据
+func HandleFormSensitiveData(originData []map[string]interface{}, entity, token string) (targetData []map[string]interface{}, err error) {
+	if len(originData) == 0 {
+		originData = make([]map[string]interface{}, 0)
+	}
+	targetData = make([]map[string]interface{}, 0)
+	var refAttributes []*models.EntityAttributeObj
+	if refAttributes, err = GetCMDBCiAttrDefs(entity, token); err != nil {
+		err = fmt.Errorf("query remote entity:%s attr fail:%s ", entity, err.Error())
+		return
+	}
+	for _, dataMap := range originData {
+		for _, v1 := range refAttributes {
+			if strings.ToUpper(v1.Sensitive) == "YES" || strings.ToUpper(v1.Sensitive) == "Y" {
+				if _, ok := dataMap[v1.PropertyName]; ok {
+					dataMap[v1.PropertyName] = "******"
+				}
+			}
+		}
+		targetData = append(targetData, dataMap)
+	}
+	return
+}

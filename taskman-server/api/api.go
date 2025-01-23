@@ -126,6 +126,7 @@ func init() {
 		{Url: "/request-status/:requestId/:status", Method: "POST", HandlerFunc: request.UpdateRequestStatus, ApiCode: "update-request-status"},
 		{Url: "/request-data/reference/query/:formItemTemplateId/:requestId/:attrName", Method: "POST", HandlerFunc: request.GetReferenceData, ApiCode: "query-reference-data"},
 		{Url: "/request-data/entity/expression/query/:formItemTemplateId/:rootDataId", Method: "GET", HandlerFunc: request.GetExpressionItemData, ApiCode: "query-expression-item-data"},
+		{Url: "/request-data/form/sensitive-attr/query", Method: "POST", HandlerFunc: request.AttrSensitiveDataQuery, ApiCode: "get-request-sensitive-data"},
 
 		{Url: "/user/platform/count", Method: "POST", HandlerFunc: request.CountPlatform, ApiCode: "count-platform"},
 		{Url: "/user/platform/filter-item", Method: "POST", HandlerFunc: request.FilterItem, ApiCode: "filter-item"},

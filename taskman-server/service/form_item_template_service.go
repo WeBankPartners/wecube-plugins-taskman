@@ -40,7 +40,7 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 		newItemGroupId = guid.CreateGuid()
 		if len(param.SystemItems) > 0 {
 			for _, systemItem := range param.SystemItems {
-				refAttributes, tmpErr := getCMDBCiAttrDefs(systemItem.EntityName, userToken)
+				refAttributes, tmpErr := GetCMDBCiAttrDefs(systemItem.EntityName, userToken)
 				if tmpErr != nil {
 					err = fmt.Errorf("query remote entity:%s attr fail:%s ", systemItem.EntityName, tmpErr.Error())
 					return
@@ -81,7 +81,7 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 				}
 			}
 			if !systemItemExist {
-				refAttributes, tmpErr := getCMDBCiAttrDefs(systemItem.EntityName, userToken)
+				refAttributes, tmpErr := GetCMDBCiAttrDefs(systemItem.EntityName, userToken)
 				if tmpErr != nil {
 					err = fmt.Errorf("query remote entity:%s attr fail:%s ", systemItem.EntityName, tmpErr.Error())
 					return

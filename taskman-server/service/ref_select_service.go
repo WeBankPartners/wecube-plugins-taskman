@@ -732,11 +732,11 @@ func GetCMDBCiAttrDefs(ciTypeEntity, userToken string) (attributes []*models.Ent
 	return
 }
 
-func GetCMDBCiAttrSensitiveData(param models.RequestFormSensitiveDataParam, userToken, language string) (result []*models.AttrPermissionQueryObj, err error) {
+func GetCMDBCiAttrSensitiveData(paramList []*models.RequestFormSensitiveDataParam, userToken, language string) (result []*models.AttrPermissionQueryObj, err error) {
 	var byteArr []byte
 	var response models.CMDBSensitiveDataResponse
 	url := fmt.Sprintf("%s/wecmdb/api/v1/ci-data/sensitive-attr/query", models.Config.Wecube.BaseUrl)
-	postBytes, _ := json.Marshal(param)
+	postBytes, _ := json.Marshal(paramList)
 	if byteArr, err = rpc.HttpPost(url, userToken, language, postBytes); err != nil {
 		return
 	}

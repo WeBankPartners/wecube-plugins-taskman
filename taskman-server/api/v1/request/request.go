@@ -605,14 +605,14 @@ func Association(c *gin.Context) {
 }
 
 func AttrSensitiveDataQuery(c *gin.Context) {
-	var param models.RequestFormSensitiveDataParam
-	var err error
+	var paramList []*models.RequestFormSensitiveDataParam
 	var result []*models.AttrPermissionQueryObj
-	if err = c.ShouldBindJSON(&param); err != nil {
+	var err error
+	if err = c.ShouldBindJSON(&paramList); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	if result, err = service.GetCMDBCiAttrSensitiveData(param, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader)); err != nil {
+	if result, err = service.GetCMDBCiAttrSensitiveData(paramList, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader)); err != nil {
 		middleware.ReturnError(c, err)
 		return
 	}

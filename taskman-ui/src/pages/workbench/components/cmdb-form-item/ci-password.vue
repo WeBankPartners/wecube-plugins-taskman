@@ -1,22 +1,29 @@
 <template>
   <div class="cmdb-ci-password">
-    <div v-if="realPassword" style="display:flex;align-items:center;">
+    <div style="display:flex;align-items:center;">
       <Tooltip
         max-width="200"
         class="ci-password-cell-show-span"
         placement="bottom-start"
         :content="isShowPassword ? realPassword : '******'"
       >
-        <div class="password-wrapper">{{ isShowPassword ? realPassword : '******' }}</div>
+        <div class="password-wrapper">{{ isShowPassword ? (realPassword || $t('tw_password_empty')) : '******' }}</div>
       </Tooltip>
-      <div style="float: right; margin-right: 12px;">
-        <Icon :type="isShowPassword ? 'md-eye-off' : 'md-eye'" @click="showPassword" class="operation-icon-confirm" />
-        <Icon type="ios-build-outline" v-if="!disabled" @click="resetPassword" class="operation-icon-confirm" />
-      </div>
-    </div>
-    <div v-else class="no-data-wrap">
-      <span class="text">{{ $t('tw_password_empty') }}</span>
-      <Icon type="ios-build-outline" v-if="!disabled" @click="resetPassword" class="operation-icon-confirm" />
+      <!-- <Icon :type="isShowPassword ? 'md-eye-off' : 'md-eye'" @click="showPassword" class="operation-icon-confirm" />
+      <Icon type="ios-build-outline" v-if="!disabled" @click="resetPassword" class="operation-icon-confirm" /> -->
+      <Button
+        @click="showPassword"
+        :disabled="getCmdbQueryPermission === false"
+        :icon="isShowPassword ? 'md-eye-off' : 'md-eye'"
+        size="small"
+      ></Button>
+      <Button
+        @click="resetPassword"
+        :disabled="disabled"
+        type="primary"
+        icon="md-create"
+        size="small"
+      ></Button>
     </div>
     <!--密码编辑弹框-->
     <Modal v-model="isShowEditModal" :title="useLocalValue ? $t('tw_enter_password') : $t('tw_password_edit')">
@@ -93,7 +100,13 @@ export default {
       }
     }
   },
-  props: ['formData', 'panalData', 'disabled'],
+  props: ['formData', 'panalData', 'allSensitiveData', 'dataId', 'disabled'],
+  computed: {
+    getCmdbQueryPermission () {
+      const obj = this.allSensitiveData.find(item => item.attrName === this.formData.propertyName && item.guid === this.dataId) || {}
+      return obj.queryPermission
+    }
+  },
   mounted () {
     this.realPassword = this.panalData[this.formData.propertyName]
   },
@@ -189,6 +202,9 @@ export default {
     font-size: 13px;
     color: #515a6e;
   }
+}
+Button {
+  margin-left: 5px;
 }
 </style>
 <style lang="scss">

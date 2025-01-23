@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-18 17:55:45
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2025-01-23 10:30:22
+ * @LastEditTime: 2025-01-23 18:13:43
 -->
 <template>
   <div class="cmdb-entity-table">
@@ -10,6 +10,8 @@
       <WeCMDBCIPassword
         :formData="column"
         :panalData="value"
+        :allSensitiveData="allSensitiveData"
+        :dataId="dataId"
         :disabled="isGroupEditDisabled(column, value)"
         @input="(v) => {value[column.inputKey] = v}"
       />
@@ -71,6 +73,8 @@
       <CustomInput
         :attrs="getInputProps(column, value)"
         :column="column"
+        :allSensitiveData="allSensitiveData"
+        :dataId="dataId"
         @input="(v) => {setValueHandler(v.trim(), column, value)}"
       ></CustomInput>
     </template>
@@ -188,6 +192,14 @@ export default {
     value: {
       type: Object,
       default: () => {}
+    },
+    allSensitiveData: {
+      type: Array,
+      default: () => []
+    },
+    dataId: {
+      type: String,
+      default: ''
     },
     disabled: {
       type: Boolean,

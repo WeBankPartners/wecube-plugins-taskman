@@ -48,6 +48,8 @@
                         :options="cmdbOptions"
                         :column="getCMDBColumn(i.name)"
                         :value="value"
+                        :allSensitiveData="allSensitiveData"
+                        :dataId="getFormRowDataId(value)"
                         :disabled="formDisabled(i)"
                         style="width: calc(100% - 20px)"
                       />
@@ -144,7 +146,7 @@
 
 <script>
 import LimitSelect from '@/pages/components/limit-select.vue'
-import { getRefOptions, getWeCmdbOptions, saveFormData, getExpressionData } from '@/api/server'
+import { getRefOptions, getWeCmdbOptions, saveFormData, getExpressionData, getCmdbFormPermission } from '@/api/server'
 import { debounce, deepClone, fixArrStrToJsonArray } from '@/pages/util'
 import { evaluateCondition } from '../evaluate'
 import CMDBFormItem from './cmdb-form-item/index.vue'
@@ -190,8 +192,9 @@ export default {
       addRowSource: '',
       addRowSourceOptions: [],
       worklfowDataIdsObj: {}, // 编排类表单默认下发数据dataId集合
-      cmdbOptions: [] // cmdb属性集合
-
+      cmdbOptions: [], // cmdb表单集合
+      cmdbSensitiveKeysArr: [], // cmdb表单敏感字段name集合
+      allSensitiveData: [] // 当前所有敏感字段数据
     }
   },
   computed: {
@@ -220,6 +223,18 @@ export default {
     getCMDBColumn () {
       return function (attr) {
         return this.cmdbOptions.find(i => i.propertyName === attr) || {}
+      }
+    },
+    // 当前行数据dataId
+    getFormRowDataId () {
+      return function (value) {
+        let dataId = ''
+        this.activeItem.value && this.activeItem.value.forEach(item => {
+          if (item.id === value._id) {
+            dataId = item.dataId
+          }
+        })
+        return dataId
       }
     }
   },
@@ -288,6 +303,25 @@ export default {
     }
   },
   methods: {
+    // 获取cmdb表单权限
+    async getCmdbFormPermission (ciType, guidArr) {
+      let params = []
+      this.cmdbSensitiveKeysArr.forEach(name => {
+        guidArr.forEach(guid => {
+          params.push(
+            {
+              attrName: name,
+              ciType,
+              guid
+            }
+          )
+        })
+      })
+      const { statusCode, data } = await getCmdbFormPermission(params)
+      if (statusCode === 'OK') {
+        this.allSensitiveData = data || []
+      }
+    },
     // ref类型下拉框每次展开调用接口
     handleRefOpenChange (titleObj, row, index) {
       this.getRefOptions(titleObj, row, index, false)
@@ -319,6 +353,8 @@ export default {
       const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
       this.refKeys = []
       this.calculateKeys = []
+      let cmdbOptions = []
+      this.cmdbSensitiveKeysArr = []
       data.title.forEach(t => {
         // 非cmdb下发的下拉类型
         if ((t.elementType === 'select' || t.elementType === 'wecmdbEntity') && !t.cmdbAttr) {
@@ -328,26 +364,20 @@ export default {
         if (t.elementType === 'calculate') {
           this.calculateKeys.push(t.name)
         }
-      })
-
-      // taskman表单属性初始化
-      this.formOptions = data.title
-
-      // cmdb表单属性初始化
-      const cmdbOptions = []
-      const formOptions = deepClone(this.formOptions)
-      formOptions.forEach(item => {
-        if (item.cmdbAttr) {
-          item.cmdbAttr = JSON.parse(item.cmdbAttr)
-          item.cmdbAttr.editable = item.isEdit
-          const cmdbObj = Object.assign({}, { ...item.cmdbAttr, titleObj: item })
+        // cmdb表单类型
+        if (t.cmdbAttr) {
+          const cloneObj = deepClone(t)
+          cloneObj.cmdbAttr = JSON.parse(cloneObj.cmdbAttr)
+          cloneObj.cmdbAttr.editable = cloneObj.isEdit // 以taskman表单可编辑为主
+          const cmdbObj = Object.assign({}, { ...cloneObj.cmdbAttr, titleObj: cloneObj })
           cmdbOptions.push(cmdbObj)
+          if (cloneObj.cmdbAttr.sensitive === 'yes') {
+            this.cmdbSensitiveKeysArr.push(cloneObj.name)
+          }
         }
       })
-      if (cmdbOptions && cmdbOptions.length > 0) {
-        this.getCMDBInitData(cmdbOptions)
-      }
-
+      // taskman表单属性初始化
+      this.formOptions = data.title
       // table数据初始化
       this.tableData = data.value.map(v => {
         // 缓存RefOptions数据，不需要每次调用
@@ -394,6 +424,18 @@ export default {
           }
         })
       })
+      // cmdb表单数据初始化
+      if (cmdbOptions && cmdbOptions.length > 0) {
+        this.getCMDBInitData(cmdbOptions)
+      }
+      // cmdb表单权限初始化
+      if (this.cmdbSensitiveKeysArr && this.cmdbSensitiveKeysArr.length > 0) {
+        const guidArr = (data.value && data.value.map(v => v.dataId)) || []
+        const ciType = data.entity
+        if (guidArr && ciType) {
+          this.getCmdbFormPermission(ciType, guidArr)
+        }
+      }
     },
     // cmdb表单属性初始化
     getCMDBInitData (data) {

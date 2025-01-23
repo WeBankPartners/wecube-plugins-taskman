@@ -2,23 +2,32 @@
   <div class="taskman-custom-input">
     <!--敏感字段-->
     <div v-if="column.sensitive === 'yes'" class="flex-row">
-      <Input v-bind="attrs" placeholder="" style="width: 50%;" @input="handleInputChange"></Input>
+      <template v-if="operation === 'detail'">
+        <Input v-if="isShowReal" disabled :value="getRealValue" placeholder="" style="width: 50%;" />
+        <Input v-else disabled value="******" placeholder="" style="width: 50%;" />
+      </template>
+      <template v-if="operation === 'edit'">
+        <Input v-bind="attrs" placeholder="" style="width: 50%;" @input="handleInputChange"></Input>
+      </template>
       <Button
         @click="handlePreviewData"
-        style="margin-left: 5px;"
-        :icon="visible ? 'md-eye-off' : 'md-eye'"
+        :disabled="getCmdbQueryPermission === false"
+        :icon="isShowReal ? 'md-eye-off' : 'md-eye'"
+        size="small"
       ></Button>
       <Button
         @click="handleEditData"
-        style="margin-left: 5px;"
+        :disabled="attrs.disabled"
         type="primary"
         icon="md-create"
+        size="small"
       ></Button>
       <Button
         v-if="column.autofillable === 'yes' && column.autoFillType === 'suggest'"
         @click="$emit('input', 'suggest#')"
+        :disabled="attrs.disabled"
         icon="md-checkmark"
-        style="margin-left: 5px;"
+        size="small"
       ></Button>
     </div>
     <!--非敏感字段-->
@@ -27,8 +36,9 @@
       <Button
         v-if="column.autofillable === 'yes' && column.autoFillType === 'suggest'"
         @click="$emit('input', 'suggest#')"
+        :disabled="attrs.disabled"
         icon="md-checkmark"
-        style="margin-left: 5px;"
+        size="small"
       ></Button>
     </div>
   </div>
@@ -43,11 +53,30 @@ export default {
     column: {
       type: Object,
       default: () => {}
+    },
+    allSensitiveData: {
+      type: Array,
+      default: () => []
+    },
+    dataId: {
+      type: String,
+      default: ''
     }
   },
   data () {
     return {
-      visible: false
+      isShowReal: false, // 显示原文
+      operation: 'detail' // 查看or编辑
+    }
+  },
+  computed: {
+    getCmdbQueryPermission () {
+      const obj = this.allSensitiveData.find(item => item.attrName === this.column.name && item.guid === this.dataId) || {}
+      return obj.queryPermission
+    },
+    getRealValue () {
+      const obj = this.allSensitiveData.find(item => item.attrName === this.column.name && item.guid === this.dataId) || {}
+      return obj.value
     }
   },
   methods: {
@@ -55,9 +84,12 @@ export default {
       this.$emit('input', val)
     },
     handlePreviewData () {
-      this.visible = !this.visible
+      this.operation = 'detail'
+      this.isShowReal = !this.isShowReal
     },
-    handleEditData () {}
+    handleEditData () {
+      this.operation = 'edit'
+    }
   }
 }
 </script>
@@ -65,5 +97,9 @@ export default {
 <style scoped lang="scss">
 .flex-row {
   display: flex;
+  align-items: center;
+}
+Button {
+  margin-left: 5px;
 }
 </style>

@@ -603,3 +603,18 @@ func Association(c *gin.Context) {
 	}
 	middleware.ReturnPageData(c, pageInfo, rowsData)
 }
+
+func AttrSensitiveDataQuery(c *gin.Context) {
+	var param models.RequestFormSensitiveDataParam
+	var err error
+	var result []*models.AttrPermissionQueryObj
+	if err = c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	if result, err = service.GetCMDBCiAttrSensitiveData(param, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader)); err != nil {
+		middleware.ReturnError(c, err)
+		return
+	}
+	middleware.ReturnData(c, result)
+}

@@ -751,6 +751,7 @@ func GetRequestRootForm(requestId string) (result models.RequestTemplateFormStru
 
 func GetRequestPreData(requestId, entityDataId, userToken, language string) (result []*models.RequestPreDataTableObj, previewData *models.EntityTreeData, err error) {
 	var requestTables []*models.RequestTable
+	var targetData []map[string]interface{}
 	err = dao.X.SQL("select cache from request where id=?", requestId).Find(&requestTables)
 	if err != nil {
 		return
@@ -785,6 +786,16 @@ func GetRequestPreData(requestId, entityDataId, userToken, language string) (res
 	if len(previewData.EntityTreeNodes) == 0 {
 		return
 	}
+	// 处理表单敏感数据
+	for _, entityData := range previewData.EntityTreeNodes {
+		if targetData, err = HandleFormSensitiveData([]map[string]interface{}{entityData.EntityData}, entityData.EntityName, userToken); err != nil {
+			return
+		}
+		if len(targetData) > 0 {
+			entityData.EntityData = targetData[0]
+		}
+	}
+
 	previewDataBytes, _ := json.Marshal(previewData)
 	_, err = dao.X.Exec("update request set preview_cache=? where id=?", string(previewDataBytes), requestId)
 	if err != nil {

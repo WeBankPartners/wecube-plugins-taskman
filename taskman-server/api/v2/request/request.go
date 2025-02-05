@@ -12,6 +12,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -99,10 +100,64 @@ func SaveRequestCache(c *gin.Context) {
 			middleware.ReturnParamValidateError(c, err)
 			return
 		}
-
 		if request.CreatedBy != user {
 			middleware.ReturnReportRequestNotPermissionError(c)
 			return
+		}
+		// 遇到6位*表示加密数据,需要从cmdb读取原始数据
+		for _, entityData := range param.Data {
+			cmdbAttrMap := make(map[string]bool)
+			cmdbAttrModel := models.EntityAttributeObj{}
+			var paramList []*models.RequestFormSensitiveDataParam
+			var queryResList []*models.AttrPermissionQueryObj
+			var originDataMap = make(map[string]map[string]string)
+			for _, attr := range entityData.Title {
+				if strings.TrimSpace(attr.CmdbAttr) == "" {
+					continue
+				}
+				if err = json.Unmarshal([]byte(attr.CmdbAttr), &cmdbAttrModel); err != nil {
+					middleware.ReturnServerHandleError(c, err)
+					return
+				}
+				if strings.ToUpper(cmdbAttrModel.Sensitive) == "YES" || strings.ToUpper(cmdbAttrModel.Sensitive) == "Y" {
+					cmdbAttrMap[attr.Name] = true
+				}
+			}
+			for _, entityTreeObj := range entityData.Value {
+				entityDataMap := entityTreeObj.EntityData
+				if len(entityDataMap) > 0 {
+					for key, value := range entityDataMap {
+						if value == "******" && cmdbAttrMap[key] {
+							paramList = append(paramList, &models.RequestFormSensitiveDataParam{
+								CiType:   entityTreeObj.EntityName,
+								AttrName: key,
+								Guid:     entityTreeObj.DataId,
+							})
+						}
+					}
+				}
+			}
+			if len(paramList) > 0 {
+				if queryResList, err = service.GetCMDBCiAttrSensitiveData(paramList, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader)); err != nil {
+					middleware.ReturnServerHandleError(c, err)
+				}
+				for _, item := range queryResList {
+					if _, ok := originDataMap[item.Guid]; ok {
+						originDataMap[item.Guid][item.AttrName] = item.Value
+					} else {
+						originDataMap[item.Guid] = map[string]string{
+							item.AttrName: item.Value,
+						}
+					}
+				}
+				for _, entityTreeObj := range entityData.Value {
+					if dataMap, ok := originDataMap[entityTreeObj.DataId]; ok {
+						for key, value := range dataMap {
+							entityTreeObj.EntityData[key] = value
+						}
+					}
+				}
+			}
 		}
 		err = service.SaveRequestCacheV2(requestId, user, c.GetHeader("Authorization"), &param)
 		if err != nil {

@@ -241,3 +241,5 @@ export const deleteTemplateLibrary = params => req.delete(`/taskman/api/v1/form-
 export const getLibraryFormTypeList = () => req.get(`/taskman/api/v1/form-template-library/form-type`)
 // 获取关联单列表
 export const getAssociateList = data => req.post(`/taskman/api/v1/request/association`, data)
+// 获取cmdb表单列权限
+export const getCmdbFormPermission = data => req.post(`/taskman/api/v1/request-data/form/sensitive-attr/query`, data)

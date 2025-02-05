@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-18 17:55:45
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-12-13 15:47:00
+ * @LastEditTime: 2025-01-23 18:13:43
 -->
 <template>
   <div class="cmdb-entity-table">
@@ -10,6 +10,8 @@
       <WeCMDBCIPassword
         :formData="column"
         :panalData="value"
+        :allSensitiveData="allSensitiveData"
+        :dataId="dataId"
         :disabled="isGroupEditDisabled(column, value)"
         @input="(v) => {value[column.inputKey] = v}"
       />
@@ -50,6 +52,7 @@
     <template v-else-if="column.component === 'Input' && column.inputType === 'autofillRule'">
       <Input
         v-bind="getInputProps(column, value)"
+        placeholder=""
         @input="(v) => {setValueHandler(v.trim(), column, value)}"
       ></Input>
     </template>
@@ -60,23 +63,20 @@
           :max="99999999"
           :min="-99999999"
           :precision="0"
+          placeholder=""
           @input="(v) => {setValueHandler(v, column, value)}"
           style="width:360px;"
         />
       </div>
     </template>
     <template v-else-if="column.component === 'Input' && column.inputType !== 'object'">
-      <div style="display:flex;">
-        <Input
-          v-bind="getInputProps(column, value)"
-          @input="(v) => {setValueHandler(v.trim(), column, value)}"
-        ></Input>
-        <Button
-          v-if="column.autofillable === 'yes' && column.autoFillType === 'suggest'"
-          @click="v => setValueHandler('suggest#', column, value)"
-          icon="md-checkmark"
-        ></Button>
-      </div>
+      <CustomInput
+        :attrs="getInputProps(column, value)"
+        :column="column"
+        :allSensitiveData="allSensitiveData"
+        :dataId="dataId"
+        @input="(v) => {setValueHandler(v.trim(), column, value)}"
+      ></CustomInput>
     </template>
     <template v-else-if="column.component === 'Input' && column.inputType === 'object'">
       <JsonConfig
@@ -169,6 +169,7 @@ import JsonConfig from './json-config.vue'
 import WeCMDBSelect from './cmdb-select.vue'
 import WeCMDBRefSelect from './cmdb-ref-select/index'
 import Diffvariable from './diff-variable.vue'
+import CustomInput from './custom-input.vue'
 export default {
   components: {
     WeCMDBCIPassword,
@@ -176,7 +177,8 @@ export default {
     JsonConfig,
     WeCMDBSelect,
     WeCMDBRefSelect,
-    Diffvariable
+    Diffvariable,
+    CustomInput
   },
   props: {
     options: {
@@ -190,6 +192,14 @@ export default {
     value: {
       type: Object,
       default: () => {}
+    },
+    allSensitiveData: {
+      type: Array,
+      default: () => []
+    },
+    dataId: {
+      type: String,
+      default: ''
     },
     disabled: {
       type: Boolean,

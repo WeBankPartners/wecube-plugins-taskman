@@ -706,5 +706,11 @@
     "path": "/taskman/api/v1/request/association",
     "method": "post",
     "description": "获取关联单列表"
+  },
+  {
+    "key": "getCmdbFormPermission",
+    "path": "/taskman/api/v1/request-data/form/sensitive-attr/query",
+    "method": "post",
+    "description": "获取cmdb表单权限"
   }
 ]

@@ -664,11 +664,13 @@ export default {
             return item.dataId
           })
         }
+        // 编排类表单，下拉框只能选择系统下发的数据
         if (this.activeItem.itemGroupType === 'workflow') {
           this.addRowSourceOptions = this.addRowSourceOptions.filter(item =>
             this.worklfowDataIdsObj[this.activeItem.formTemplateId].includes(item.id)
           )
         }
+        // 下拉框数据和表单已存在的数据做ID去重
         this.addRowSourceOptions = this.addRowSourceOptions.filter(item => !ids.includes(item.id))
       }
     },

@@ -3,11 +3,11 @@
     <!--敏感字段-->
     <div v-if="column.sensitive === 'yes'" class="flex-row">
       <template v-if="operation === 'detail'">
-        <Input v-if="isShowReal" disabled :value="getRealValue" placeholder="" style="width: 50%;" />
-        <Input v-else disabled value="******" placeholder="" style="width: 50%;" />
+        <Input v-if="isShowReal" disabled :value="getRealValue" placeholder="" style="width: 500px;" />
+        <Input v-else disabled :value="attrs.value ? '****' : ''" placeholder="" style="width: 500px;" />
       </template>
       <template v-if="operation === 'edit'">
-        <Input v-bind="attrs" placeholder="" style="width: 50%;" @input="handleInputChange"></Input>
+        <Input v-bind="attrs" placeholder="" style="width: 500px;" @input="handleInputChange"></Input>
       </template>
       <Button
         @click="handlePreviewData"
@@ -32,7 +32,7 @@
     </div>
     <!--非敏感字段-->
     <div v-else class="flex-row">
-      <Input v-bind="attrs" placeholder="" style="width: 50%;" @input="handleInputChange"></Input>
+      <Input v-bind="attrs" placeholder="" style="width: 500px;" @input="handleInputChange"></Input>
       <Button
         v-if="column.autofillable === 'yes' && column.autoFillType === 'suggest'"
         @click="$emit('input', 'suggest#')"
@@ -89,6 +89,7 @@ export default {
     },
     handleEditData () {
       this.operation = 'edit'
+      this.isShowReal = true
     }
   }
 }

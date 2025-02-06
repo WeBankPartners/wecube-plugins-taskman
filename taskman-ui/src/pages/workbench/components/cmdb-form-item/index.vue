@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-18 17:55:45
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2025-01-23 18:13:43
+ * @LastEditTime: 2025-02-05 17:07:57
 -->
 <template>
   <div class="cmdb-entity-table">
@@ -65,7 +65,7 @@
           :precision="0"
           placeholder=""
           @input="(v) => {setValueHandler(v, column, value)}"
-          style="width:360px;"
+          style="width:500px;"
         />
       </div>
     </template>
@@ -258,9 +258,10 @@ export default {
       return function (column, value) {
         return {
           ...column,
+          editable: column.editable === 'yes',
           type: column.inputType === 'int' ? 'number' : 'text',
           disabled: this.isGroupEditDisabled(column, value),
-          value: value[column.inputKey]
+          value: column.inputType === 'int' ? Number(value[column.inputKey]) : value[column.inputKey]
         }
       }
     },

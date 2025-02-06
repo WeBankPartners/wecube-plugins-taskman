@@ -14,6 +14,7 @@ const (
 	Y                    = "y"
 	ContextApiCode       = "apiCode"
 	HomePage             = "HOME_PAGE"
+	SensitiveStyle       = "******"
 )
 
 // RequestStatus 定义请求状态

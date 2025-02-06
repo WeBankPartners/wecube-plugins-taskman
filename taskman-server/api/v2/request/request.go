@@ -127,7 +127,7 @@ func SaveRequestCache(c *gin.Context) {
 				entityDataMap := entityTreeObj.EntityData
 				if len(entityDataMap) > 0 {
 					for key, value := range entityDataMap {
-						if value == "******" && cmdbAttrMap[key] {
+						if value == models.SensitiveStyle && cmdbAttrMap[key] {
 							paramList = append(paramList, &models.RequestFormSensitiveDataParam{
 								CiType:   entityTreeObj.EntityName,
 								AttrName: key,

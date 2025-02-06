@@ -9,6 +9,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/try"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -104,13 +105,12 @@ func SaveRequestCache(c *gin.Context) {
 			middleware.ReturnReportRequestNotPermissionError(c)
 			return
 		}
-		// 遇到6位*表示加密数据,需要从cmdb读取原始数据
+		// 遍历字段类型,如果是cmdb敏感字段,并且用户没有修改,则替换成敏感字段原始值
 		for _, entityData := range param.Data {
 			cmdbAttrMap := make(map[string]bool)
 			cmdbAttrModel := models.EntityAttributeObj{}
-			var paramList []*models.RequestFormSensitiveDataParam
-			var queryResList []*models.AttrPermissionQueryObj
-			var originDataMap = make(map[string]map[string]string)
+			queryEntityFlag := false
+			var response models.EntityResponse
 			for _, attr := range entityData.Title {
 				if strings.TrimSpace(attr.CmdbAttr) == "" {
 					continue
@@ -126,34 +126,28 @@ func SaveRequestCache(c *gin.Context) {
 			for _, entityTreeObj := range entityData.Value {
 				entityDataMap := entityTreeObj.EntityData
 				if len(entityDataMap) > 0 {
-					for key, value := range entityDataMap {
-						if value == models.SensitiveStyle && cmdbAttrMap[key] {
-							paramList = append(paramList, &models.RequestFormSensitiveDataParam{
-								CiType:   entityTreeObj.EntityName,
-								AttrName: key,
-								Guid:     entityTreeObj.DataId,
-							})
+					for key, _ := range cmdbAttrMap {
+						if _, ok := entityDataMap[key]; !ok {
+							queryEntityFlag = true
 						}
 					}
 				}
 			}
-			if len(paramList) > 0 {
-				if queryResList, err = service.GetCMDBCiAttrSensitiveData(paramList, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader)); err != nil {
-					middleware.ReturnServerHandleError(c, err)
-				}
-				for _, item := range queryResList {
-					if _, ok := originDataMap[item.Guid]; ok {
-						originDataMap[item.Guid][item.AttrName] = item.Value
-					} else {
-						originDataMap[item.Guid] = map[string]string{
-							item.AttrName: item.Value,
-						}
-					}
+			if queryEntityFlag {
+				response, err = rpc.EntitiesQuery(models.EntityQueryParam{}, "wecmdb", entityData.Entity, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+				if err != nil {
+					middleware.ReturnError(c, err)
+					return
 				}
 				for _, entityTreeObj := range entityData.Value {
-					if dataMap, ok := originDataMap[entityTreeObj.DataId]; ok {
-						for key, value := range dataMap {
-							entityTreeObj.EntityData[key] = value
+					for _, dataMap := range response.Data {
+						if dataMap["guid"] == entityTreeObj.DataId || dataMap["id"] == entityTreeObj.DataId {
+							for key, value := range dataMap {
+								if cmdbAttrMap[key] {
+									entityTreeObj.EntityData[key] = value
+								}
+							}
+							break
 						}
 					}
 				}

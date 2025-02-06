@@ -1,6 +1,7 @@
 package request
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/try"
@@ -605,16 +606,72 @@ func Association(c *gin.Context) {
 }
 
 func AttrSensitiveDataQuery(c *gin.Context) {
-	var paramList []*models.RequestFormSensitiveDataParam
+	var paramList, filterParamList []*models.RequestFormSensitiveDataParam
 	var result []*models.AttrPermissionQueryObj
+	var request models.RequestTable
 	var err error
 	if err = c.ShouldBindJSON(&paramList); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	if result, err = service.GetCMDBCiAttrSensitiveData(paramList, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader)); err != nil {
+	if len(paramList) == 0 {
+		middleware.ReturnError(c, fmt.Errorf("param empty"))
+		return
+	}
+	// 处理 paramList 过滤掉 guid为空数据,新增一行的数据guid为空,查询CMDB返回行guid不为空
+	for _, param := range paramList {
+		if strings.TrimSpace(param.Guid) != "" {
+			filterParamList = append(filterParamList, param)
+		}
+	}
+	if len(filterParamList) > 0 {
+		if result, err = service.GetCMDBCiAttrSensitiveData(filterParamList, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader)); err != nil {
+			middleware.ReturnError(c, err)
+			return
+		}
+	}
+	// 从request表里面拿到最新cache数据,替换result,但是需要使用cmdb权限控制
+	if request, err = service.GetSimpleRequest(paramList[0].RequestId); err != nil {
 		middleware.ReturnError(c, err)
 		return
+	}
+	if request.Cache != "" {
+		var cacheObj models.RequestPreDataDto
+		err = json.Unmarshal([]byte(request.Cache), &cacheObj)
+		if err != nil {
+			err = fmt.Errorf("try to json unmarshal cache data fail,%s ", err.Error())
+			middleware.ReturnError(c, err)
+			return
+		}
+		for _, attrPermission := range result {
+			for _, item := range cacheObj.Data {
+				for _, entityItem := range item.Value {
+					if entityItem.DataId == attrPermission.Guid {
+						attrPermission.Value = fmt.Sprintf("%+v", entityItem.EntityData[attrPermission.AttrName])
+					}
+				}
+			}
+		}
+		if len(result) == 0 {
+			result = make([]*models.AttrPermissionQueryObj, 0)
+			for _, param := range paramList {
+				if strings.TrimSpace(param.Guid) == "" {
+					for _, item := range cacheObj.Data {
+						for _, entityItem := range item.Value {
+							if entityItem.Id == param.TmpId {
+								result = append(result, &models.AttrPermissionQueryObj{
+									CiType:           param.CiType,
+									AttrName:         param.AttrName,
+									QueryPermission:  true,
+									UpdatePermission: true,
+									Value:            fmt.Sprintf("%+v", entityItem.EntityData[param.AttrName]),
+								})
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 	middleware.ReturnData(c, result)
 }

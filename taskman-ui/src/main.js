@@ -3,8 +3,10 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
 import ViewUI from 'view-design'
-import 'view-design/dist/styles/iview.css'
 import VueI18n from 'vue-i18n'
+
+import './styles/index.less'
+
 import { i18n } from './locale/i18n/index.js'
 import viewDesignEn from 'view-design/dist/locale/en-US'
 import viewDesignZh from 'view-design/dist/locale/zh-CN'

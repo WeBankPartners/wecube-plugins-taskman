@@ -1806,6 +1806,7 @@ func getAttrCat(catId, userToken string) (result []*models.EntityDataObj, err er
 }
 
 func BuildRequestProcessData(input models.RequestCacheData, preData *models.EntityTreeData) (result models.RequestProcessData) {
+	var err error
 	result.ProcDefId = input.ProcDefId
 	result.ProcDefKey = input.ProcDefKey
 	result.RootEntityOid = input.RootEntityValue.Oid
@@ -1844,6 +1845,23 @@ func BuildRequestProcessData(input models.RequestCacheData, preData *models.Enti
 			if !existFlag {
 				tmpEntity := models.RequestCacheEntityValue{Oid: preEntity.Id, PackageName: preEntity.PackageName, EntityName: preEntity.EntityName, BindFlag: "N", EntityDataId: preEntity.DataId, EntityDisplayName: preEntity.DisplayName, FullEntityDataId: preEntity.FullDataId, PreviousOids: preEntity.PreviousIds, SucceedingOids: preEntity.SucceedingIds}
 				result.Entities = append(result.Entities, &tmpEntity)
+			}
+		}
+	}
+	// 密码类型数据解密
+	for _, entity := range result.Entities {
+		for _, attr := range entity.AttrValues {
+			inputValue := ""
+			if attr.DataValue != nil {
+				inputValue = fmt.Sprintf("%+v", attr.DataValue)
+			}
+			if attr.DataType == "str" && strings.HasPrefix(strings.ToLower(inputValue), "{cipher_a}") {
+				if inputValue, err = cipher.AesDePasswordByGuid("", models.Config.EncryptSeed, inputValue); err != nil {
+					log.Logger.Error("try to decode password fail", log.String("attrName", attr.AttrName), log.String("value", inputValue), log.Error(err))
+					return
+				}
+				attr.DataValue = inputValue
+				log.Logger.Info("start workflow decode password success", log.String("attrName", attr.AttrName), log.String("value", inputValue))
 			}
 		}
 	}

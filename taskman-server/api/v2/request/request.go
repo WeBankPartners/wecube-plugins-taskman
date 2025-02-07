@@ -107,54 +107,9 @@ func SaveRequestCache(c *gin.Context) {
 		}
 		// 遍历字段类型,如果是cmdb敏感字段,并且用户没有修改,没有修改的话web不传递数据,则替换成敏感字段原始值
 		for _, entityData := range param.Data {
-			sensitiveAttrMap := make(map[string]bool)
-			needReplaceAttrMap := make(map[string]bool)
-			passwordAttrMap := make(map[string]bool)
-			cmdbAttrModel := models.EntityAttributeObj{}
-			var response models.EntityResponse
-			for _, attr := range entityData.Title {
-				if strings.TrimSpace(attr.CmdbAttr) == "" {
-					continue
-				}
-				if err = json.Unmarshal([]byte(attr.CmdbAttr), &cmdbAttrModel); err != nil {
-					middleware.ReturnServerHandleError(c, err)
-					return
-				}
-				if strings.ToUpper(cmdbAttrModel.Sensitive) == "YES" || strings.ToUpper(cmdbAttrModel.Sensitive) == "Y" {
-					sensitiveAttrMap[attr.Name] = true
-				}
-				if attr.ElementType == string(models.FormItemElementTypePassword) {
-					passwordAttrMap[attr.Name] = true
-				}
-			}
-			for _, entityTreeObj := range entityData.Value {
-				entityDataMap := entityTreeObj.EntityData
-				if len(entityDataMap) > 0 {
-					for key, _ := range sensitiveAttrMap {
-						if _, ok := entityDataMap[key]; !ok {
-							needReplaceAttrMap[key] = true
-						}
-					}
-				}
-			}
-			if len(needReplaceAttrMap) > 0 {
-				response, err = rpc.EntitiesQuery(models.EntityQueryParam{}, "wecmdb", entityData.Entity, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
-				if err != nil {
-					middleware.ReturnError(c, err)
-					return
-				}
-				for _, entityTreeObj := range entityData.Value {
-					for _, dataMap := range response.Data {
-						if dataMap["guid"] == entityTreeObj.DataId || dataMap["id"] == entityTreeObj.DataId {
-							for key, value := range dataMap {
-								if needReplaceAttrMap[key] {
-									entityTreeObj.EntityData[key] = value
-								}
-							}
-							break
-						}
-					}
-				}
+			if err = RestoreSensitiveData(entityData, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader)); err != nil {
+				middleware.ReturnServerHandleError(c, err)
+				return
 			}
 		}
 		err = service.SaveRequestCacheV2(requestId, user, c.GetHeader("Authorization"), &param)
@@ -401,10 +356,62 @@ func SaveRequestFormData(c *gin.Context) {
 		middleware.ReturnReportRequestNotPermissionError(c)
 		return
 	}
+	if err = RestoreSensitiveData(&param, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader)); err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
 	err = service.SaveRequestForm(requestId, user, &param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
 		middleware.ReturnData(c, param)
 	}
+}
+
+// RestoreSensitiveData 还原敏感数据,敏感数据展示 ******,需要解析回原值
+func RestoreSensitiveData(entityData *models.RequestPreDataTableObj, token, language string) (err error) {
+	sensitiveAttrMap := make(map[string]bool)
+	needReplaceAttrMap := make(map[string]bool)
+	cmdbAttrModel := models.EntityAttributeObj{}
+	var response models.EntityResponse
+	for _, attr := range entityData.Title {
+		if strings.TrimSpace(attr.CmdbAttr) == "" {
+			continue
+		}
+		if err = json.Unmarshal([]byte(attr.CmdbAttr), &cmdbAttrModel); err != nil {
+			return
+		}
+		if strings.ToUpper(cmdbAttrModel.Sensitive) == "YES" || strings.ToUpper(cmdbAttrModel.Sensitive) == "Y" {
+			sensitiveAttrMap[attr.Name] = true
+		}
+	}
+	for _, entityTreeObj := range entityData.Value {
+		entityDataMap := entityTreeObj.EntityData
+		if len(entityDataMap) > 0 {
+			for key, _ := range sensitiveAttrMap {
+				if _, ok := entityDataMap[key]; !ok {
+					needReplaceAttrMap[key] = true
+				}
+			}
+		}
+	}
+	if len(needReplaceAttrMap) > 0 {
+		response, err = rpc.EntitiesQuery(models.EntityQueryParam{}, "wecmdb", entityData.Entity, token, language)
+		if err != nil {
+			return
+		}
+		for _, entityTreeObj := range entityData.Value {
+			for _, dataMap := range response.Data {
+				if dataMap["guid"] == entityTreeObj.DataId || dataMap["id"] == entityTreeObj.DataId {
+					for key, value := range dataMap {
+						if needReplaceAttrMap[key] {
+							entityTreeObj.EntityData[key] = value
+						}
+					}
+					break
+				}
+			}
+		}
+	}
+	return
 }

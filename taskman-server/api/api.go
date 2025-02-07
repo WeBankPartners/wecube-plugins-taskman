@@ -176,6 +176,7 @@ func init() {
 		{Url: "/request/history/:requestId", Method: "GET", HandlerFunc: requestNew.GetRequestHistory, ApiCode: "request-history"},
 		{Url: "/plugin/request/create", Method: "POST", HandlerFunc: requestNew.PluginCreateRequest, ApiCode: "plugin-request-create"},
 		{Url: "/request-data/form/save/:requestId", Method: "POST", HandlerFunc: requestNew.SaveRequestFormData, ApiCode: "request-data-form-save"},
+		{Url: "/request-data/form/password/decode", Method: "GET", HandlerFunc: requestNew.DecodeRequestFormDataPassword, ApiCode: "request-data-form-password-decode"},
 		// 转发platform接口
 		{Url: "/platform/models", Method: "GET", HandlerFunc: requestNew.GetPlatformAllModels, ApiCode: "platform-models"},
 		{Url: "/platform/:package/entities/:entity/query", Method: "POST", HandlerFunc: requestNew.QueryPlatformEntityData, ApiCode: "platform-entity-query"},

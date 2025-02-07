@@ -536,7 +536,7 @@ func (s *RequestService) processTaskForm(formParam models.ProcessTaskFormParam) 
 				if value != nil {
 					inputValue = fmt.Sprintf("%+v", value)
 				}
-				if passwordAttrMap[key] && !strings.HasPrefix(strings.ToLower(inputValue), "{cipher_a}") {
+				if passwordAttrMap[key] && !strings.HasPrefix(strings.ToLower(inputValue), models.EncryptPasswordPrefix) {
 					if inputValue, err = cipher.AesEnPasswordByGuid("", models.Config.EncryptSeed, inputValue, ""); err != nil {
 						err = fmt.Errorf("try to encrypt password type column:%s value:%s fail,%s  ", key, inputValue, err.Error())
 						return
@@ -1855,7 +1855,7 @@ func BuildRequestProcessData(input models.RequestCacheData, preData *models.Enti
 			if attr.DataValue != nil {
 				inputValue = fmt.Sprintf("%+v", attr.DataValue)
 			}
-			if attr.DataType == "str" && strings.HasPrefix(strings.ToLower(inputValue), "{cipher_a}") {
+			if attr.DataType == "str" && strings.HasPrefix(strings.ToLower(inputValue), models.EncryptPasswordPrefix) {
 				if inputValue, err = cipher.AesDePasswordByGuid("", models.Config.EncryptSeed, inputValue); err != nil {
 					log.Logger.Error("try to decode password fail", log.String("attrName", attr.AttrName), log.String("value", inputValue), log.Error(err))
 					return

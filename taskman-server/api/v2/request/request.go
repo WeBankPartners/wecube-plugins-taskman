@@ -3,6 +3,7 @@ package request
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/WeBankPartners/go-common-lib/cipher"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
@@ -414,4 +415,23 @@ func RestoreSensitiveData(entityData *models.RequestPreDataTableObj, token, lang
 		}
 	}
 	return
+}
+
+func DecodeRequestFormDataPassword(c *gin.Context) {
+	encryptPwd := c.Query("encryptPwd")
+	var err error
+	var result string
+	if strings.TrimSpace(encryptPwd) == "" {
+		middleware.ReturnParamValidateError(c, fmt.Errorf("encryptPwd is empty"))
+		return
+	}
+	if !strings.HasPrefix(strings.ToLower(encryptPwd), models.EncryptPasswordPrefix) {
+		middleware.ReturnParamValidateError(c, fmt.Errorf("encryptPwd format is invalid"))
+		return
+	}
+	if result, err = cipher.AesDePasswordByGuid("", models.Config.EncryptSeed, encryptPwd); err != nil {
+		middleware.ReturnError(c, err)
+		return
+	}
+	middleware.ReturnData(c, result)
 }

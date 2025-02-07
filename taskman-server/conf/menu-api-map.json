@@ -288,6 +288,11 @@
         "key": "deleteTempGroup",
         "url": "/taskman/api/v1/request-template-group",
         "method": "delete"
+      },
+      {
+        "key": "decodePassword",
+        "url": "/taskman/api/v2/request-data/form/password/decode",
+        "method": "get"
       }
     ]
   },

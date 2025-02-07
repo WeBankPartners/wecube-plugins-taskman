@@ -60,8 +60,8 @@
 </template>
 
 <script>
-import { getEncryptKey } from '@/api/server'
-import CryptoJS from 'crypto-js'
+// import { getEncryptKey } from '@/api/server'
+// import CryptoJS from 'crypto-js'
 export default {
   name: '',
   data () {
@@ -129,16 +129,16 @@ export default {
       })
     },
     async handleInput () {
-      if (this.editFormData.newPassword) {
-        await this.getEncryptKey()
-        const key = CryptoJS.enc.Utf8.parse(this.encryptKey)
-        const config = {
-          iv: CryptoJS.enc.Utf8.parse(Math.trunc(new Date() / 100000) * 100000000),
-          mode: CryptoJS.mode.CBC
-          // padding: CryptoJS.pad.PKcs7
-        }
-        this.editFormData.newPassword = CryptoJS.AES.encrypt(this.editFormData.newPassword, key, config).toString()
-      }
+      // if (this.editFormData.newPassword) {
+      //   await this.getEncryptKey()
+      //   const key = CryptoJS.enc.Utf8.parse(this.encryptKey)
+      //   const config = {
+      //     iv: CryptoJS.enc.Utf8.parse(Math.trunc(new Date() / 100000) * 100000000),
+      //     mode: CryptoJS.mode.CBC
+      //     // padding: CryptoJS.pad.PKcs7
+      //   }
+      //   this.editFormData.newPassword = CryptoJS.AES.encrypt(this.editFormData.newPassword, key, config).toString()
+      // }
       // this.panalData[this.formData.propertyName] = this.editFormData.newPassword
       this.$emit('input', this.editFormData.newPassword)
       this.realPassword = this.editFormData.newPassword
@@ -171,13 +171,13 @@ export default {
       // }
       this.realPassword = this.panalData[this.formData.propertyName]
       this.isShowPassword = !this.isShowPassword
-    },
-    async getEncryptKey () {
-      const { statusCode, data } = await getEncryptKey()
-      if (statusCode === 'OK') {
-        this.encryptKey = data
-      }
     }
+    // async getEncryptKey () {
+    //   const { statusCode, data } = await getEncryptKey()
+    //   if (statusCode === 'OK') {
+    //     this.encryptKey = data
+    //   }
+    // }
   }
 }
 </script>

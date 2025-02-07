@@ -521,10 +521,17 @@ func (s *RequestService) processTaskForm(formParam models.ProcessTaskFormParam) 
 		passwordAttrMap := make(map[string]bool)
 		for _, title := range tableForm.Title {
 			columnNameIdMap[title.Name] = title.Id
+			cmdbAttrModel := models.EntityAttributeObj{}
 			if strings.EqualFold(title.Multiple, models.Yes) || strings.EqualFold(title.Multiple, models.Y) {
 				isColumnMultiMap[title.Name] = 1
 			}
-			if title.ElementType == string(models.FormItemElementTypePassword) {
+			if strings.TrimSpace(title.CmdbAttr) == "" {
+				continue
+			}
+			if err = json.Unmarshal([]byte(title.CmdbAttr), &cmdbAttrModel); err != nil {
+				return
+			}
+			if cmdbAttrModel.InputType == string(models.FormItemElementTypePassword) {
 				passwordAttrMap[title.Name] = true
 			}
 		}

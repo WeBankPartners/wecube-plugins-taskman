@@ -647,7 +647,11 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 			for _, item := range cacheObj.Data {
 				for _, entityItem := range item.Value {
 					if entityItem.DataId == attrPermission.Guid {
-						attrPermission.Value = fmt.Sprintf("%+v", entityItem.EntityData[attrPermission.AttrName])
+						if v, ok := entityItem.EntityData[attrPermission.AttrName]; ok && v != nil {
+							attrPermission.Value = fmt.Sprintf("%+v", entityItem.EntityData[attrPermission.AttrName])
+						} else {
+							attrPermission.Value = ""
+						}
 					}
 				}
 			}
@@ -659,12 +663,16 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 					for _, item := range cacheObj.Data {
 						for _, entityItem := range item.Value {
 							if entityItem.Id == param.TmpId {
+								value := ""
+								if v, ok := entityItem.EntityData[param.AttrName]; ok && v != nil {
+									value = fmt.Sprintf("%+v", entityItem.EntityData[param.AttrName])
+								}
 								result = append(result, &models.AttrPermissionQueryObj{
 									CiType:           param.CiType,
 									AttrName:         param.AttrName,
 									QueryPermission:  true,
 									UpdatePermission: true,
-									Value:            fmt.Sprintf("%+v", entityItem.EntityData[param.AttrName]),
+									Value:            value,
 									TmpId:            param.TmpId,
 								})
 							}

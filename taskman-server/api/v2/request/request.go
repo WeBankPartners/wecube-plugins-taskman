@@ -3,7 +3,6 @@ package request
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/WeBankPartners/go-common-lib/cipher"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
@@ -153,17 +152,6 @@ func SaveRequestCache(c *gin.Context) {
 								}
 							}
 							break
-						}
-					}
-					// 密码处理,web传递原密码,需要加密处理
-					for key, value := range entityTreeObj.EntityData {
-						inputValue := fmt.Sprintf("%+v", value)
-						if passwordAttrMap[key] && !strings.HasPrefix(strings.ToLower(inputValue), "{cipher_a}") {
-							if inputValue, err = cipher.AesEnPasswordByGuid("", models.Config.EncryptSeed, inputValue, ""); err != nil {
-								err = fmt.Errorf("try to encrypt password type column:%s value:%s fail,%s  ", key, inputValue, err.Error())
-								return
-							}
-							entityTreeObj.EntityData[key] = inputValue
 						}
 					}
 				}

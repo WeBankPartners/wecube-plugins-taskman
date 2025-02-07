@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/WeBankPartners/go-common-lib/cipher"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"io"
@@ -517,14 +518,32 @@ func (s *RequestService) processTaskForm(formParam models.ProcessTaskFormParam) 
 	for _, tableForm := range formParam.FormData {
 		columnNameIdMap := make(map[string]string)
 		isColumnMultiMap := make(map[string]int)
+		passwordAttrMap := make(map[string]bool)
 		for _, title := range tableForm.Title {
 			columnNameIdMap[title.Name] = title.Id
 			if strings.EqualFold(title.Multiple, models.Yes) || strings.EqualFold(title.Multiple, models.Y) {
 				isColumnMultiMap[title.Name] = 1
 			}
+			if title.ElementType == string(models.FormItemElementTypePassword) {
+				passwordAttrMap[title.Name] = true
+			}
 		}
 		poolForms := itemGroupFormMap[tableForm.ItemGroup]
 		for _, valueObj := range tableForm.Value {
+			// 密码处理,web传递原密码,需要加密处理
+			for key, value := range valueObj.EntityData {
+				inputValue := ""
+				if value != nil {
+					inputValue = fmt.Sprintf("%+v", value)
+				}
+				if passwordAttrMap[key] && !strings.HasPrefix(strings.ToLower(inputValue), "{cipher_a}") {
+					if inputValue, err = cipher.AesEnPasswordByGuid("", models.Config.EncryptSeed, inputValue, ""); err != nil {
+						err = fmt.Errorf("try to encrypt password type column:%s value:%s fail,%s  ", key, inputValue, err.Error())
+						return
+					}
+					valueObj.EntityData[key] = inputValue
+				}
+			}
 			if formParam.Task == nil && valueObj.EntityDataOp == "create" && valueObj.Id != "" {
 				if !strings.HasPrefix(valueObj.Id, "tmp") {
 					valueObj.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, valueObj.Id)

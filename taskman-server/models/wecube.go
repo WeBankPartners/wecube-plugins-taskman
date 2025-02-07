@@ -171,6 +171,7 @@ type AttrPermissionQueryObj struct {
 	CiType           string `json:"ciType"`
 	AttrName         string `json:"attrName"`
 	Guid             string `json:"guid"`
+	TmpId            string `json:"tmpId"`
 	QueryPermission  bool   `json:"queryPermission"`
 	UpdatePermission bool   `json:"updatePermission"`
 	Value            string `json:"value"`

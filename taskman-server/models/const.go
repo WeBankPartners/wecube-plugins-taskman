@@ -80,6 +80,7 @@ const (
 	FormItemElementTypeSelect       FormItemElementType = "select"
 	FormItemElementTypeCalculate    FormItemElementType = "calculate" //计算类型
 	FormItemElementTypeWeCMDBEntity FormItemElementType = "wecmdbEntity"
+	FormItemElementTypePassword     FormItemElementType = "password"
 )
 
 type CmdbDataType string

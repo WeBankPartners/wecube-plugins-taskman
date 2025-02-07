@@ -665,6 +665,7 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 									QueryPermission:  true,
 									UpdatePermission: true,
 									Value:            fmt.Sprintf("%+v", entityItem.EntityData[param.AttrName]),
+									TmpId:            param.TmpId,
 								})
 							}
 						}

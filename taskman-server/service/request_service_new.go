@@ -2306,8 +2306,8 @@ func SensitiveDataEncryption(formData []*models.RequestPreDataTableObj) (err err
 		for _, entityTreeObj := range entityData.Value {
 			entityDataMap := entityTreeObj.EntityData
 			if len(entityDataMap) > 0 {
-				for key, _ := range entityDataMap {
-					if cmdbAttrMap[key] {
+				for key, v := range entityDataMap {
+					if cmdbAttrMap[key] && v != "" {
 						entityTreeObj.EntityData[key] = models.SensitiveStyle
 					}
 				}

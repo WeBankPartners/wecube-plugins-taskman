@@ -3,6 +3,7 @@ package request
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/WeBankPartners/go-common-lib/cipher"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
@@ -109,6 +110,7 @@ func SaveRequestCache(c *gin.Context) {
 		for _, entityData := range param.Data {
 			sensitiveAttrMap := make(map[string]bool)
 			needReplaceAttrMap := make(map[string]bool)
+			passwordAttrMap := make(map[string]bool)
 			cmdbAttrModel := models.EntityAttributeObj{}
 			var response models.EntityResponse
 			for _, attr := range entityData.Title {
@@ -121,6 +123,9 @@ func SaveRequestCache(c *gin.Context) {
 				}
 				if strings.ToUpper(cmdbAttrModel.Sensitive) == "YES" || strings.ToUpper(cmdbAttrModel.Sensitive) == "Y" {
 					sensitiveAttrMap[attr.Name] = true
+				}
+				if attr.ElementType == string(models.FormItemElementTypePassword) {
+					passwordAttrMap[attr.Name] = true
 				}
 			}
 			for _, entityTreeObj := range entityData.Value {
@@ -148,6 +153,17 @@ func SaveRequestCache(c *gin.Context) {
 								}
 							}
 							break
+						}
+					}
+					// 密码处理,web传递原密码,需要加密处理
+					for key, value := range entityTreeObj.EntityData {
+						inputValue := fmt.Sprintf("%+v", value)
+						if passwordAttrMap[key] && !strings.HasPrefix(strings.ToLower(inputValue), "{cipher_a}") {
+							if inputValue, err = cipher.AesEnPasswordByGuid("", models.Config.EncryptSeed, inputValue, ""); err != nil {
+								err = fmt.Errorf("try to encrypt password type column:%s value:%s fail,%s  ", key, inputValue, err.Error())
+								return
+							}
+							entityTreeObj.EntityData[key] = inputValue
 						}
 					}
 				}

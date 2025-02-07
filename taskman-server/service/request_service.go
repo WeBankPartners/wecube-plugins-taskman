@@ -2876,7 +2876,7 @@ func HandleFormSensitiveData(originData []map[string]interface{}, entity, token 
 	for _, dataMap := range originData {
 		for _, v1 := range refAttributes {
 			if strings.ToUpper(v1.Sensitive) == "YES" || strings.ToUpper(v1.Sensitive) == "Y" {
-				if _, ok := dataMap[v1.PropertyName]; ok {
+				if v, ok := dataMap[v1.PropertyName]; ok && v != "" {
 					dataMap[v1.PropertyName] = models.SensitiveStyle
 				}
 			}

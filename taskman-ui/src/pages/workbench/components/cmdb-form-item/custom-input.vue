@@ -2,32 +2,30 @@
   <div class="taskman-custom-input">
     <!--敏感字段-->
     <div v-if="column.sensitive === 'yes'" class="flex-row">
-      <template v-if="operation === 'detail'">
-        <Input v-if="isShowReal" :value="initValue === attrs.value ? getRealValue : attrs.value" disabled placeholder="" style="width: 500px;" />
-        <Input v-else :value="initValue" disabled placeholder="" style="width: 500px;" />
-      </template>
-      <template v-if="operation === 'edit'">
-        <Input v-bind="attrs" placeholder="" style="width: 500px;" @input="handleInputChange"></Input>
-      </template>
+      <Input
+        v-if="isShowReal"
+        :value="originVal === attrs.value ? getRealValue : attrs.value"
+        disabled
+        placeholder=""
+        style="width: 500px;"
+      />
+      <Input v-else :value="!attrs.value ? '' : '******'" disabled placeholder="" style="width: 500px;" />
       <Button
         @click="handlePreviewData"
-        :disabled="getCmdbQueryPermission === false"
+        :disabled="getCmdbQueryPermission === false && originVal === attrs.value"
         :icon="isShowReal ? 'md-eye-off' : 'md-eye'"
-        size="small"
       ></Button>
       <Button
         @click="handleEditData"
         :disabled="attrs.disabled"
         type="primary"
         icon="md-create"
-        size="small"
       ></Button>
       <Button
         v-if="column.autofillable === 'yes' && column.autoFillType === 'suggest'"
         @click="$emit('input', 'suggest#')"
         :disabled="attrs.disabled"
         icon="md-checkmark"
-        size="small"
       ></Button>
     </div>
     <!--非敏感字段-->
@@ -38,13 +36,25 @@
         @click="$emit('input', 'suggest#')"
         :disabled="attrs.disabled"
         icon="md-checkmark"
-        size="small"
       ></Button>
     </div>
+    <!--敏感字段编辑弹框-->
+    <Modal v-model="isShowEditModal" :title="$t('edit')">
+      <Input
+        v-model="editValue"
+        placeholder=""
+        style="width: 450px;"
+      ></Input>
+      <div slot="footer">
+        <Button @click="isShowEditModal = false">{{ $t('cancel') }}</Button>
+        <Button @click="handleSave" type="primary">{{ $t('save') }}</Button>
+      </div>
+    </Modal>
   </div>
 </template>
 <script>
 export default {
+  inject: ['getOriginRequestData'],
   props: {
     // Input props属性
     attrs: {
@@ -61,43 +71,68 @@ export default {
       type: Array,
       default: () => []
     },
-    // 当前行数据ID
-    dataId: {
-      type: String,
-      default: ''
+    // 当前行数据
+    rowData: {
+      type: Object,
+      default: () => {}
     }
   },
   data () {
     return {
       isShowReal: false, // 是否显示原文
-      operation: 'detail', // 查看or编辑
-      initValue: '' // 初始值
+      originVal: '', // 初始值
+      editValue: '', // 编辑值
+      isShowEditModal: false
     }
   },
   computed: {
     getCmdbQueryPermission () {
-      const obj = this.allSensitiveData.find(item => item.attrName === this.column.inputKey && item.guid === this.dataId) || {}
+      const obj = this.allSensitiveData.find(item => {
+        if (this.rowData.dataId) {
+          return item.attrName === this.column.inputKey && item.guid === this.rowData.dataId
+        } else {
+          return item.attrName === this.column.inputKey && item.tmpId === this.rowData.id
+        }
+      }) || {}
       return obj.queryPermission
     },
     getRealValue () {
-      const obj = this.allSensitiveData.find(item => item.attrName === this.column.inputKey && item.guid === this.dataId) || {}
+      const obj = this.allSensitiveData.find(item => {
+        if (this.rowData.dataId) {
+          return item.attrName === this.column.inputKey && item.guid === this.rowData.dataId
+        } else {
+          return item.attrName === this.column.inputKey && item.tmpId === this.rowData.id
+        }
+      }) || {}
       return obj.value
     }
   },
   mounted () {
-    this.initValue = this.attrs.value
+    // 获取初始值
+    const originRequestData = this.getOriginRequestData().data
+    originRequestData.forEach(item => {
+      const obj = (item.value && item.value.find(v => {
+        return v.id === this.rowData.id
+      })) || {}
+      if (obj && Object.keys(obj).length > 0) {
+        this.originVal = obj.entityData[this.column.inputKey]
+      }
+    })
   },
   methods: {
     handleInputChange (val) {
       this.$emit('input', val)
     },
     handlePreviewData () {
-      this.operation = 'detail'
       this.isShowReal = !this.isShowReal
     },
     handleEditData () {
-      this.operation = 'edit'
-      this.isShowReal = true
+      this.editValue = ''
+      this.isShowEditModal = true
+    },
+    handleSave () {
+      this.$emit('input', this.editValue)
+      this.isShowEditModal = false
     }
   }
 }

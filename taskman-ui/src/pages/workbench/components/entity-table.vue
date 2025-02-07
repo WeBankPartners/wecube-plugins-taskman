@@ -49,7 +49,7 @@
                         :column="getCMDBColumn(i.name)"
                         :value="value"
                         :allSensitiveData="allSensitiveData"
-                        :dataId="getFormRowDataId(value)"
+                        :rowData="getRowValue(value)"
                         :disabled="formDisabled(i)"
                         style="width: calc(100% - 20px)"
                       />
@@ -178,6 +178,10 @@ export default {
     formDisable: {
       type: Boolean,
       default: false
+    },
+    originRequestData: {
+      type: Array,
+      default: () => []
     }
   },
   data () {
@@ -225,16 +229,11 @@ export default {
         return this.cmdbOptions.find(i => i.propertyName === attr) || {}
       }
     },
-    // 当前行数据dataId
-    getFormRowDataId () {
+    // 当前行数据(非entityData)
+    getRowValue () {
       return function (value) {
-        let dataId = ''
-        this.activeItem.value && this.activeItem.value.forEach(item => {
-          if (item.id === value._id) {
-            dataId = item.dataId
-          }
-        })
-        return dataId
+        const obj = (this.activeItem.value && this.activeItem.value.find(v => v.entityData._id === value._id)) || {}
+        return obj
       }
     }
   },
@@ -307,12 +306,14 @@ export default {
     async getCmdbFormPermission (ciType, guidArr) {
       let params = []
       this.cmdbSensitiveKeysArr.forEach(name => {
-        guidArr.forEach(guid => {
+        guidArr.forEach(item => {
           params.push(
             {
               attrName: name,
               ciType,
-              guid
+              guid: item.dataId,
+              requestId: this.requestId,
+              tmpId: item.tmpId
             }
           )
         })
@@ -327,8 +328,28 @@ export default {
       this.getRefOptions(titleObj, row, index, false)
     },
     // 保存当前表单组的数据
-    async saveCurrentTabData (item) {
-      await saveFormData(this.requestId, item)
+    async saveCurrentTabData (data) {
+      let sensitiveKeys = [] // 敏感字段类型
+      data.title.forEach(t => {
+        if (t.cmdbAttr) {
+          const cmdbAttr = JSON.parse(t.cmdbAttr)
+          if (cmdbAttr.sensitive === 'yes') {
+            sensitiveKeys.push(t.name)
+          }
+        }
+      })
+      // 敏感字段值不变, 删除属性，不传给后台
+      const originData = this.originRequestData.find(item => item.entity === this.activeTab || item.itemGroup === this.activeTab)
+      sensitiveKeys.forEach(key => {
+        for (let origin of originData.value) {
+          for (let current of data.value) {
+            if (origin.id === current.id && origin.entityData[key] === current.entityData[key]) {
+              delete current.entityData[key]
+            }
+          }
+        }
+      })
+      await saveFormData(this.requestId, data)
     },
     // 切换tab刷新表格数据，加上防抖避免切换过快显示异常问题
     handleTabChange: debounce(function (item) {
@@ -430,7 +451,12 @@ export default {
       }
       // cmdb表单权限初始化
       if (this.cmdbSensitiveKeysArr && this.cmdbSensitiveKeysArr.length > 0) {
-        const guidArr = (data.value && data.value.map(v => v.dataId)) || []
+        const guidArr = (data.value && data.value.map(v => {
+          return {
+            dataId: v.dataId,
+            tmpId: v.id
+          }
+        })) || []
         const ciType = data.entity
         if (guidArr && ciType) {
           this.getCmdbFormPermission(ciType, guidArr)

@@ -1524,32 +1524,7 @@ func getRequestForm(request *models.RequestTable, taskId, userToken, language st
 			return
 		}
 		form.FormData = cacheObj.Data
-		// 遇到6位*表示加密数据,需要从cmdb读取原始数据
-		for _, entityData := range form.FormData {
-			cmdbAttrMap := make(map[string]bool)
-			for _, attr := range entityData.Title {
-				if strings.TrimSpace(attr.CmdbAttr) == "" {
-					continue
-				}
-				cmdbAttrModel := models.EntityAttributeObj{}
-				if err = json.Unmarshal([]byte(attr.CmdbAttr), &cmdbAttrModel); err != nil {
-					return
-				}
-				if strings.ToUpper(cmdbAttrModel.Sensitive) == "YES" || strings.ToUpper(cmdbAttrModel.Sensitive) == "Y" {
-					cmdbAttrMap[attr.Name] = true
-				}
-			}
-			for _, entityTreeObj := range entityData.Value {
-				entityDataMap := entityTreeObj.EntityData
-				if len(entityDataMap) > 0 {
-					for key, _ := range entityDataMap {
-						if cmdbAttrMap[key] {
-							entityTreeObj.EntityData[key] = models.SensitiveStyle
-						}
-					}
-				}
-			}
-		}
+		SensitiveDataEncryption(form.FormData)
 		// 数据回显示
 		form.RootEntityId = cacheObj.RootEntityId
 		form.OperatorObj = cacheObj.EntityName
@@ -2310,4 +2285,35 @@ func calcShowRequestRevokeButton(requestId, requestStatus string) bool {
 	taskList, _ = GetTaskService().GetDoneTaskByRequestId(models.RequestTable{Id: requestId, Status: requestStatus})
 	// 只有一个任务完成,这个任务只能是任务提交,可以展示撤回按钮
 	return len(taskList) == 1
+}
+
+// SensitiveDataEncryption 敏感数据加密
+func SensitiveDataEncryption(formData []*models.RequestPreDataTableObj) (err error) {
+	for _, entityData := range formData {
+		cmdbAttrMap := make(map[string]bool)
+		for _, attr := range entityData.Title {
+			if strings.TrimSpace(attr.CmdbAttr) == "" {
+				continue
+			}
+			cmdbAttrModel := models.EntityAttributeObj{}
+			if err = json.Unmarshal([]byte(attr.CmdbAttr), &cmdbAttrModel); err != nil {
+				return
+			}
+			if strings.ToUpper(cmdbAttrModel.Sensitive) == "YES" || strings.ToUpper(cmdbAttrModel.Sensitive) == "Y" {
+				cmdbAttrMap[attr.Name] = true
+			}
+		}
+		for _, entityTreeObj := range entityData.Value {
+			entityDataMap := entityTreeObj.EntityData
+			if len(entityDataMap) > 0 {
+				for key, _ := range entityDataMap {
+					if cmdbAttrMap[key] {
+						entityTreeObj.EntityData[key] = models.SensitiveStyle
+					}
+				}
+			}
+		}
+
+	}
+	return
 }

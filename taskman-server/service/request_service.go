@@ -767,6 +767,7 @@ func GetRequestPreData(requestId, entityDataId, userToken, language string) (res
 		}
 		if cacheObj.RootEntityId == entityDataId {
 			result = cacheObj.Data
+			SensitiveDataEncryption(result)
 			return
 		}
 	}

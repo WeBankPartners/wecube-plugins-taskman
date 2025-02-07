@@ -111,8 +111,7 @@
                   type="button"
                   size="small"
                   style="margin-top:-2px;"
-                button-style="solid"
-
+                  button-style="solid"
                 >
                   <Radio v-for="(j, idx) in dateTypeList" :label="j.value" :key="idx">{{ j.label }}</Radio>
                 </RadioGroup>
@@ -339,7 +338,7 @@ export default {
     // color: #000;
   }
   .ivu-radio-wrapper-checked.ivu-radio-border {
-    background-color: #2d8cf0;
+    background-color: #5384FF;
     color: #fff;
   }
   .ivu-select-multiple .ivu-tag {

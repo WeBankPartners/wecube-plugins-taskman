@@ -100,10 +100,16 @@ export default {
       }
     }
   },
-  props: ['formData', 'panalData', 'allSensitiveData', 'dataId', 'disabled'],
+  props: ['formData', 'panalData', 'allSensitiveData', 'rowData', 'disabled'],
   computed: {
     getCmdbQueryPermission () {
-      const obj = this.allSensitiveData.find(item => item.attrName === this.formData.propertyName && item.guid === this.dataId) || {}
+      const obj = this.allSensitiveData.find(item => {
+        if (this.rowData.dataId) {
+          return item.attrName === this.formData.propertyName && item.guid === this.rowData.dataId
+        } else {
+          return item.attrName === this.formData.propertyName && item.tmpId === this.rowData.id
+        }
+      }) || {}
       return obj.queryPermission
     }
   },

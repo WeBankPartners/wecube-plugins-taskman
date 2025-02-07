@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-18 17:55:45
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2025-02-05 17:07:57
+ * @LastEditTime: 2025-02-07 14:18:13
 -->
 <template>
   <div class="cmdb-entity-table">
@@ -11,7 +11,7 @@
         :formData="column"
         :panalData="value"
         :allSensitiveData="allSensitiveData"
-        :dataId="dataId"
+        :rowData="rowData"
         :disabled="isGroupEditDisabled(column, value)"
         @input="(v) => {value[column.inputKey] = v}"
       />
@@ -74,7 +74,7 @@
         :attrs="getInputProps(column, value)"
         :column="column"
         :allSensitiveData="allSensitiveData"
-        :dataId="dataId"
+        :rowData="rowData"
         @input="(v) => {setValueHandler(v.trim(), column, value)}"
       ></CustomInput>
     </template>
@@ -197,9 +197,9 @@ export default {
       type: Array,
       default: () => []
     },
-    dataId: {
-      type: String,
-      default: ''
+    rowData: {
+      type: Object,
+      default: () => {}
     },
     disabled: {
       type: Boolean,

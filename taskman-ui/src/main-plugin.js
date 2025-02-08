@@ -1,6 +1,7 @@
 import 'regenerator-runtime/runtime'
 import router from './router-plugin'
 import routerP from './router-plugin-p'
+import './styles/index.less'
 
 // import './locale/i18n'
 import zhCN from '@/locale/i18n/zh-CN.json'

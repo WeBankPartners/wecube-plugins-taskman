@@ -106,6 +106,33 @@ func SaveRequestCache(c *gin.Context) {
 			middleware.ReturnReportRequestNotPermissionError(c)
 			return
 		}
+		// 数据填充,用户对于没有修改的敏感数据不提交,需要先从 request表中找到敏感数据的最新数据
+		if request.Cache != "" {
+			var cacheObj models.RequestPreDataDto
+			var originDataMap = make(map[string]map[string]interface{})
+			err = json.Unmarshal([]byte(request.Cache), &cacheObj)
+			if err != nil {
+				err = fmt.Errorf("try to json unmarshal cache data fail,%s ", err.Error())
+				middleware.ReturnError(c, err)
+				return
+			}
+			for _, datum := range cacheObj.Data {
+				for _, valueItem := range datum.Value {
+					originDataMap[valueItem.Id] = valueItem.EntityData
+				}
+			}
+			for _, entityData := range param.Data {
+				for _, entityItem := range entityData.Value {
+					if _, ok := originDataMap[entityItem.Id]; ok {
+						for key, value := range originDataMap {
+							if _, ok = entityItem.EntityData[key]; ok {
+								entityItem.EntityData[key] = value
+							}
+						}
+					}
+				}
+			}
+		}
 		// 遍历字段类型,如果是cmdb敏感字段,并且用户没有修改,没有修改的话web不传递数据,则替换成敏感字段原始值
 		for _, entityData := range param.Data {
 			if err = RestoreSensitiveData(entityData, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader)); err != nil {

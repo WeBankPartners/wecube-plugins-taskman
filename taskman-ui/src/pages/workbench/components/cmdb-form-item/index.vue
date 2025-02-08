@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-18 17:55:45
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2025-02-07 14:18:13
+ * @LastEditTime: 2025-02-07 19:59:55
 -->
 <template>
   <div class="cmdb-entity-table">
@@ -75,6 +75,7 @@
         :column="column"
         :allSensitiveData="allSensitiveData"
         :rowData="rowData"
+        :type="type"
         @input="(v) => {setValueHandler(v.trim(), column, value)}"
       ></CustomInput>
     </template>
@@ -200,6 +201,10 @@ export default {
     rowData: {
       type: Object,
       default: () => {}
+    },
+    type: {
+      type: String,
+      default: ''
     },
     disabled: {
       type: Boolean,

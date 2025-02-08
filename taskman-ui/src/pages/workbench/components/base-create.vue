@@ -127,6 +127,7 @@
               :data="requestData"
               :originRequestData="originRequestData"
               :requestId="requestId"
+              type="data_form"
               isAdd
               autoAddRow
             ></EntityTable>
@@ -379,15 +380,6 @@ export default {
     UploadFile,
     CustomForm,
     BaseProgress
-  },
-  provide () {
-    return {
-      getOriginRequestData: () => {
-        return {
-          data: this.originRequestData
-        }
-      }
-    }
   },
   props: {
     // 1发布,2请求(3问题,4事件,5变更)

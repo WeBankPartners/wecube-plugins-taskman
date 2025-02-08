@@ -162,7 +162,13 @@
                 }}</Option>
               </Select>
             </FormItem>
-            <EntityTable v-if="form.data.length" :data="form.data" :requestId="requestId" formDisable></EntityTable>
+            <EntityTable
+              v-if="form.data.length"
+              :data="form.data"
+              :requestId="requestId"
+              type="data_form"
+              formDisable
+            ></EntityTable>
             <div v-else class="no-data">{{ $t('tw_no_formConfig') }}</div>
           </div>
         </BaseHeaderTitle>

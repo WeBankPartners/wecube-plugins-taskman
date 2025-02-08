@@ -287,10 +287,10 @@ export default {
       },
       handleTypeColor: {
         check: '#ffa2d3',
-        approve: '#2d8cf0',
+        approve: '#5384ff',
         implement_process: '#cba43f',
         implement_custom: '#b886f8',
-        confirm: '#19be6b'
+        confirm: '#00CB91'
       }
     }
   },

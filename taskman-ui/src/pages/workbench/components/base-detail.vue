@@ -389,10 +389,10 @@ export default {
       },
       handleTypeColor: {
         check: '#ffa2d3',
-        approve: '#2d8cf0',
+        approve: '#5384ff',
         implement_process: '#cba43f',
         implement_custom: '#b886f8',
-        confirm: '#19be6b'
+        confirm: '#00CB91'
       },
       detailRouteMap: {
         '1': 'detailPublish',
@@ -418,7 +418,7 @@ export default {
           { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)', color: '#f26161' },
           { label: this.$t('status_faulted'), value: 'Faulted', color: '#e29836' },
           { label: this.$t('status_draft'), value: 'Draft', color: '#808695' },
-          { label: this.$t('tw_stop'), value: 'Stop', color: '#ed4014' }
+          { label: this.$t('tw_stop'), value: 'Stop', color: '#FF4D4F' }
         ]
         const item = list.find(i => i.value === val) || {}
         return item.label
@@ -570,7 +570,7 @@ export default {
       height: 24px;
       color: #fff;
       border-radius: 2px;
-      background: #2d8cf0;
+      background: #5384ff;
     }
     .name {
       font-size: 16px;
@@ -640,7 +640,7 @@ export default {
         .mode {
           font-size: 12px;
           display: inline-block;
-          color: #19be6b;
+          color: #00CB91;
           margin-top: 2px;
         }
       }

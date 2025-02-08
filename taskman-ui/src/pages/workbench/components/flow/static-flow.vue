@@ -127,7 +127,7 @@ export default {
               excution
                 ? statusColor[_.status] || '#7F8A96'
                 : isModelClick
-                  ? '#ff9900'
+                  ? '#F29360'
                   : _.nodeId === this.currentFlowNodeId
                     ? '#5DB400'
                     : '#7F8A96'

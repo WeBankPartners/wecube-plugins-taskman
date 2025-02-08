@@ -142,7 +142,7 @@ export default {
             if (params.row.role.displayName) {
               return <div>{params.row.role.displayName}</div>
             } else {
-              return <div style="color:#ed4014">{this.$t('tw_roleDelete')}</div>
+              return <div style="color:#FF4D4F">{this.$t('tw_roleDelete')}</div>
             }
           }
         },
@@ -162,7 +162,7 @@ export default {
                   <Icon
                     type="md-time"
                     size="24"
-                    color={params.row.status === 'expire' ? '#ed4014' : '#ff9900'}
+                    color={params.row.status === 'expire' ? '#FF4D4F' : '#F29360'}
                     style="cursor:pointer;margin-left:5px"
                     onClick={() => {
                       this.openTimeModal(params.row)
@@ -188,11 +188,11 @@ export default {
         let color = ''
         if (this.activeTab !== 'pending') {
           if (status === 'preExpired') {
-            color = '#ff9900'
+            color = '#F29360'
           } else if (status === 'expire') {
-            color = '#ed4014'
+            color = '#FF4D4F'
           } else {
-            color = '#19be6b'
+            color = '#00CB91'
           }
         }
         return { color: color, display: 'flex', alignItems: 'center' }

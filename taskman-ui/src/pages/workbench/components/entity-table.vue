@@ -110,7 +110,7 @@
           </Form>
         </div>
         <div v-if="!formDisable && tableData.length > 1 && isAdd" class="button">
-          <Icon type="md-trash" color="#ed4014" size="24" @click="handleDeleteRow(index)" />
+          <Icon type="md-trash" color="#FF4D4F" size="24" @click="handleDeleteRow(index)" />
         </div>
       </div>
     </div>
@@ -135,7 +135,7 @@
         @on-change="addRow"
       >
         <template #prefix>
-          <Icon type="md-add-circle" color="#2d8cf0" :size="24"></Icon>
+          <Icon type="md-add-circle" color="#5384ff" :size="24"></Icon>
         </template>
         <template v-for="i in addRowSourceOptions">
           <Option :key="i.id" :value="i.id">{{ i.displayName }}</Option>

@@ -31,7 +31,7 @@
           <div class="card-content">
             <span class="name">{{ i.name }}</span>
             <span class="person">
-              <Icon type="md-person" size="16" color="#ff9900" style="margin-right:2px;" />
+              <Icon type="md-person" size="16" color="#F29360" style="margin-right:2px;" />
               {{ i.createdBy }}
             </span>
           </div>

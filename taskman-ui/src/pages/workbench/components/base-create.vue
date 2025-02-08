@@ -147,8 +147,8 @@
                   {{ i.name }}
                   <Tag color="default">{{ approvalTypeName[i.handleMode] }}</Tag>
                   <span style="color:#808695;">{{ i.description }}</span>
-                  <Icon size="24" color="#19be6b" type="md-time" />
-                  <span style="color:#19be6b;">{{ `${i.expireDay}${$t('day')}` }}</span>
+                  <Icon size="24" color="#00CB91" type="md-time" />
+                  <span style="color:#00CB91;">{{ `${i.expireDay}${$t('day')}` }}</span>
                 </div>
                 <!--单人自定义、协同、并行-->
                 <div v-if="['custom', 'any', 'all'].includes(i.handleMode)" class="step-background">
@@ -246,8 +246,8 @@
                     i.nodeDefId ? $t('tw_workflow_task') : $t('tw_custom_task')
                   }}</Tag>
                   <span style="color:#808695;">{{ i.description }}</span>
-                  <Icon size="24" color="#19be6b" type="md-time" />
-                  <span style="color:#19be6b;">{{ `${i.expireDay}${$t('day')}` }}</span>
+                  <Icon size="24" color="#00CB91" type="md-time" />
+                  <span style="color:#00CB91;">{{ `${i.expireDay}${$t('day')}` }}</span>
                 </div>
                 <!--单人自定义-->
                 <div v-if="['custom', 'any', 'all'].includes(i.handleMode)" class="step-background">
@@ -958,7 +958,7 @@ export default {
       height: 24px;
       color: #fff;
       border-radius: 2px;
-      background: #2d8cf0;
+      background: #5384ff;
     }
     .name {
       font-size: 16px;

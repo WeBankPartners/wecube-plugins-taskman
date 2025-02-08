@@ -50,6 +50,7 @@
                         :value="value"
                         :allSensitiveData="allSensitiveData"
                         :rowData="getRowValue(value)"
+                        :type="type"
                         :disabled="formDisabled(i)"
                         style="width: calc(100% - 20px)"
                       />
@@ -174,6 +175,11 @@ export default {
     autoAddRow: {
       type: Boolean,
       default: false
+    },
+    // 表单类型[data_form 数据表单]
+    type: {
+      type: String,
+      default: ''
     },
     formDisable: {
       type: Boolean,
@@ -355,7 +361,7 @@ export default {
     handleTabChange: debounce(function (item) {
       // 切换表单组，保存当前表单组数据
       if (this.isAdd) {
-        const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
+        const data = deepClone(this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab))
         if (!this.requiredCheck(data)) {
           return this.$Message.warning(`【${data.itemGroup}】${this.$t('required_tip')}`)
         } else {
@@ -450,7 +456,7 @@ export default {
         this.getCMDBInitData(cmdbOptions)
       }
       // cmdb表单权限初始化
-      if (this.cmdbSensitiveKeysArr && this.cmdbSensitiveKeysArr.length > 0) {
+      if (this.cmdbSensitiveKeysArr && this.cmdbSensitiveKeysArr.length > 0 && this.type === 'data_form') {
         const guidArr = (data.value && data.value.map(v => {
           return {
             dataId: v.dataId,

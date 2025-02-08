@@ -5,9 +5,9 @@
         max-width="200"
         class="ci-password-cell-show-span"
         placement="bottom-start"
-        :content="isShowPassword ? realPassword : '******'"
+        :content="isShowPassword ? (originVal === panalData[formData.propertyName] ? realPassword : panalData[formData.propertyName]) : '******'"
       >
-        <div class="password-wrapper">{{ isShowPassword ? (realPassword || $t('tw_password_empty')) : '******' }}</div>
+        <div class="password-wrapper">{{ isShowPassword ? (originVal === panalData[formData.propertyName] ? realPassword : panalData[formData.propertyName]) : '******' }}</div>
       </Tooltip>
       <!-- <Icon :type="isShowPassword ? 'md-eye-off' : 'md-eye'" @click="showPassword" class="operation-icon-confirm" />
       <Icon type="ios-build-outline" v-if="!disabled" @click="resetPassword" class="operation-icon-confirm" /> -->
@@ -15,14 +15,12 @@
         @click="showPassword"
         :disabled="getCmdbQueryPermission === false"
         :icon="isShowPassword ? 'md-eye-off' : 'md-eye'"
-        size="small"
       ></Button>
       <Button
         @click="resetPassword"
         :disabled="disabled"
         type="primary"
         icon="md-create"
-        size="small"
       ></Button>
     </div>
     <!--密码编辑弹框-->
@@ -68,6 +66,7 @@ export default {
     return {
       encryptKey: '',
       realPassword: '',
+      originVal: '',
       useLocalValue: false,
       isShowPassword: false,
 
@@ -111,10 +110,20 @@ export default {
         }
       }) || {}
       return obj.queryPermission
+    },
+    getRealValue () {
+      const obj = this.allSensitiveData.find(item => {
+        if (this.rowData.dataId) {
+          return item.attrName === this.formData.propertyName && item.guid === this.rowData.dataId
+        } else {
+          return item.attrName === this.formData.propertyName && item.tmpId === this.rowData.id
+        }
+      }) || {}
+      return obj.value
     }
   },
   mounted () {
-    this.realPassword = this.panalData[this.formData.propertyName]
+    this.originVal = this.panalData[this.formData.propertyName]
   },
   methods: {
     resetPassword () {
@@ -156,20 +165,8 @@ export default {
       }
     },
     async showPassword () {
-      // if (this.useLocalValue || !this.panalData.guid) {
-      //   this.realPassword = this.panalData[this.formData.propertyName]
-      // } else {
-      //   const { statusCode, data } = await queryPassword(
-      //     this.formData.ciTypeId,
-      //     this.panalData.guid,
-      //     this.formData.propertyName,
-      //     {}
-      //   )
-      //   if (statusCode === 'OK') {
-      //     this.realPassword = data
-      //   }
-      // }
-      this.realPassword = this.panalData[this.formData.propertyName]
+      // this.realPassword = this.panalData[this.formData.propertyName]
+      this.realPassword = this.getRealValue
       this.isShowPassword = !this.isShowPassword
     }
     // async getEncryptKey () {

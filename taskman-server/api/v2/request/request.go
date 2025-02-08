@@ -3,15 +3,18 @@ package request
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/WeBankPartners/go-common-lib/cipher"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/try"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -99,10 +102,72 @@ func SaveRequestCache(c *gin.Context) {
 			middleware.ReturnParamValidateError(c, err)
 			return
 		}
-
 		if request.CreatedBy != user {
 			middleware.ReturnReportRequestNotPermissionError(c)
 			return
+		}
+		// 数据填充,用户对于没有修改的敏感数据不提交,需要先从 request表中找到敏感数据的最新数据
+		if request.Cache != "" {
+			var cacheObj models.RequestPreDataDto
+			var originDataMap = make(map[string]map[string]interface{})
+			err = json.Unmarshal([]byte(request.Cache), &cacheObj)
+			if err != nil {
+				err = fmt.Errorf("try to json unmarshal cache data fail,%s ", err.Error())
+				middleware.ReturnError(c, err)
+				return
+			}
+			for _, datum := range cacheObj.Data {
+				for _, valueItem := range datum.Value {
+					originDataMap[valueItem.Id] = valueItem.EntityData
+				}
+			}
+			for _, entityData := range param.Data {
+				for _, entityItem := range entityData.Value {
+					if valueMap, ok := originDataMap[entityItem.Id]; ok {
+						for key, value := range valueMap {
+							if _, ok = entityItem.EntityData[key]; !ok {
+								entityItem.EntityData[key] = value
+							}
+						}
+					}
+				}
+			}
+		}
+		// 遍历字段类型,如果是cmdb敏感字段,并且用户没有修改,没有修改的话web不传递数据,则替换成敏感字段原始值
+		for _, entityData := range param.Data {
+			if err = RestoreSensitiveData(entityData, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader)); err != nil {
+				middleware.ReturnServerHandleError(c, err)
+				return
+			}
+			passwordAttrMap := make(map[string]bool)
+			for _, title := range entityData.Title {
+				cmdbAttrModel := models.EntityAttributeObj{}
+				if strings.TrimSpace(title.CmdbAttr) == "" {
+					continue
+				}
+				if err = json.Unmarshal([]byte(title.CmdbAttr), &cmdbAttrModel); err != nil {
+					return
+				}
+				if cmdbAttrModel.InputType == string(models.FormItemElementTypePassword) {
+					passwordAttrMap[title.Name] = true
+				}
+			}
+			// 密码处理,web传递原密码,需要加密处理
+			for _, entityItem := range entityData.Value {
+				for key, value := range entityItem.EntityData {
+					inputValue := ""
+					if value != nil {
+						inputValue = fmt.Sprintf("%+v", value)
+					}
+					if passwordAttrMap[key] && !strings.HasPrefix(strings.ToLower(inputValue), models.EncryptPasswordPrefix) {
+						if inputValue, err = cipher.AesEnPasswordByGuid("", models.Config.EncryptSeed, inputValue, ""); err != nil {
+							err = fmt.Errorf("try to encrypt password type column:%s value:%s fail,%s  ", key, inputValue, err.Error())
+							return
+						}
+						entityItem.EntityData[key] = inputValue
+					}
+				}
+			}
 		}
 		err = service.SaveRequestCacheV2(requestId, user, c.GetHeader("Authorization"), &param)
 		if err != nil {
@@ -348,10 +413,81 @@ func SaveRequestFormData(c *gin.Context) {
 		middleware.ReturnReportRequestNotPermissionError(c)
 		return
 	}
+	if err = RestoreSensitiveData(&param, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader)); err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
 	err = service.SaveRequestForm(requestId, user, &param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
 		middleware.ReturnData(c, param)
 	}
+}
+
+// RestoreSensitiveData 还原敏感数据,敏感数据展示 ******,需要解析回原值
+func RestoreSensitiveData(entityData *models.RequestPreDataTableObj, token, language string) (err error) {
+	sensitiveAttrMap := make(map[string]bool)
+	needReplaceAttrMap := make(map[string]bool)
+	cmdbAttrModel := models.EntityAttributeObj{}
+	var response models.EntityResponse
+	for _, attr := range entityData.Title {
+		if strings.TrimSpace(attr.CmdbAttr) == "" {
+			continue
+		}
+		if err = json.Unmarshal([]byte(attr.CmdbAttr), &cmdbAttrModel); err != nil {
+			return
+		}
+		if strings.ToUpper(cmdbAttrModel.Sensitive) == "YES" || strings.ToUpper(cmdbAttrModel.Sensitive) == "Y" {
+			sensitiveAttrMap[attr.Name] = true
+		}
+	}
+	for _, entityTreeObj := range entityData.Value {
+		entityDataMap := entityTreeObj.EntityData
+		if len(entityDataMap) > 0 {
+			for key, _ := range sensitiveAttrMap {
+				if _, ok := entityDataMap[key]; !ok {
+					needReplaceAttrMap[key] = true
+				}
+			}
+		}
+	}
+	if len(needReplaceAttrMap) > 0 {
+		response, err = rpc.EntitiesQuery(models.EntityQueryParam{}, "wecmdb", entityData.Entity, token, language)
+		if err != nil {
+			return
+		}
+		for _, entityTreeObj := range entityData.Value {
+			for _, dataMap := range response.Data {
+				if dataMap["guid"] == entityTreeObj.DataId || dataMap["id"] == entityTreeObj.DataId {
+					for key, value := range dataMap {
+						if needReplaceAttrMap[key] {
+							entityTreeObj.EntityData[key] = value
+						}
+					}
+					break
+				}
+			}
+		}
+	}
+	return
+}
+
+func DecodeRequestFormDataPassword(c *gin.Context) {
+	encryptPwd := c.Query("encryptPwd")
+	var err error
+	var result string
+	if strings.TrimSpace(encryptPwd) == "" {
+		middleware.ReturnParamValidateError(c, fmt.Errorf("encryptPwd is empty"))
+		return
+	}
+	if !strings.HasPrefix(strings.ToLower(encryptPwd), models.EncryptPasswordPrefix) {
+		middleware.ReturnParamValidateError(c, fmt.Errorf("encryptPwd format is invalid"))
+		return
+	}
+	if result, err = cipher.AesDePasswordByGuid("", models.Config.EncryptSeed, encryptPwd); err != nil {
+		middleware.ReturnError(c, err)
+		return
+	}
+	middleware.ReturnData(c, result)
 }

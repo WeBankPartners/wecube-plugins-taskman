@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-18 17:55:45
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2025-01-23 10:30:22
+ * @LastEditTime: 2025-02-07 19:59:55
 -->
 <template>
   <div class="cmdb-entity-table">
@@ -10,6 +10,8 @@
       <WeCMDBCIPassword
         :formData="column"
         :panalData="value"
+        :allSensitiveData="allSensitiveData"
+        :rowData="rowData"
         :disabled="isGroupEditDisabled(column, value)"
         @input="(v) => {value[column.inputKey] = v}"
       />
@@ -63,7 +65,7 @@
           :precision="0"
           placeholder=""
           @input="(v) => {setValueHandler(v, column, value)}"
-          style="width:360px;"
+          style="width:500px;"
         />
       </div>
     </template>
@@ -71,6 +73,9 @@
       <CustomInput
         :attrs="getInputProps(column, value)"
         :column="column"
+        :allSensitiveData="allSensitiveData"
+        :rowData="rowData"
+        :type="type"
         @input="(v) => {setValueHandler(v.trim(), column, value)}"
       ></CustomInput>
     </template>
@@ -189,6 +194,18 @@ export default {
       type: Object,
       default: () => {}
     },
+    allSensitiveData: {
+      type: Array,
+      default: () => []
+    },
+    rowData: {
+      type: Object,
+      default: () => {}
+    },
+    type: {
+      type: String,
+      default: ''
+    },
     disabled: {
       type: Boolean,
       default: false
@@ -246,9 +263,10 @@ export default {
       return function (column, value) {
         return {
           ...column,
+          editable: column.editable === 'yes',
           type: column.inputType === 'int' ? 'number' : 'text',
           disabled: this.isGroupEditDisabled(column, value),
-          value: value[column.inputKey]
+          value: column.inputType === 'int' ? Number(value[column.inputKey]) : value[column.inputKey]
         }
       }
     },

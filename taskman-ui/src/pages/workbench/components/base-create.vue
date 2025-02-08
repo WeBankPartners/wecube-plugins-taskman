@@ -122,7 +122,15 @@
               </Select>
             </FormItem>
             <!--数据表单-->
-            <EntityTable ref="entityTable" :data="requestData" :requestId="requestId" isAdd autoAddRow></EntityTable>
+            <EntityTable
+              ref="entityTable"
+              :data="requestData"
+              :originRequestData="originRequestData"
+              :requestId="requestId"
+              type="data_form"
+              isAdd
+              autoAddRow
+            ></EntityTable>
             <div v-if="noRequestForm" class="no-data">{{ $t('tw_no_formConfig') }}</div>
           </div>
         </BaseHeaderTitle>
@@ -407,7 +415,8 @@ export default {
       initExpectTime: '', // 记录初始期望完成时间
       expireDay: '',
       rootEntityOptions: [],
-      requestData: [], // 发布目标对象表格数据
+      requestData: [], // 数据表单
+      originRequestData: [], // 数据表单初始值
       attachFiles: [], // 上传附件
       flowVisible: false,
       approvalList: [], // 审批流程
@@ -656,6 +665,7 @@ export default {
       const { statusCode, data } = await getEntityData(params)
       if (statusCode === 'OK') {
         this.requestData = data.data || []
+        this.originRequestData = deepClone(this.requestData)
         // 新建操作，默认值赋值逻辑
         if (this.jumpFrom !== 'draft') {
           this.requestData.forEach(i => {
@@ -672,13 +682,6 @@ export default {
             })
           })
         }
-        this.requestData.forEach(i => {
-          i.title.forEach(t => {
-            t.inputType = 'diffVariable'
-            t.autofillable = 'yes'
-            t.autoFillType = 'forced'
-          })
-        })
         if (this.requestData.length === 0) {
           this.noRequestForm = true
         } else {
@@ -774,56 +777,6 @@ export default {
     },
     // 保存草稿
     async handleDraft (noJump) {
-      // 请求表单
-      const requestData = deepClone((this.$refs.entityTable && this.$refs.entityTable.requestData) || [])
-      this.form.data =
-        requestData.map(item => {
-          let refKeys = []
-          item.title.forEach(t => {
-            if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
-              refKeys.push(t.name)
-            }
-          })
-          if (Array.isArray(item.value)) {
-            item.value.forEach(v => {
-              refKeys.forEach(ref => {
-                delete v.entityData[ref + 'Options']
-              })
-              // 前端添加一行的数据，删除相应属性
-              if (v.addFlag) {
-                delete v.addFlag
-              }
-              // 删除表单隐藏属性, 并清空值
-              for (const key in v.entityData) {
-                if (v.entityData[key + 'Hidden']) {
-                  v.entityData[key] = ''
-                }
-                delete v.entityData[key + 'Hidden']
-              }
-            })
-          }
-          return item
-        }) || []
-      // 信息表单
-      const customTitles = (this.$refs.customForm && this.$refs.customForm.formOptions) || []
-      customTitles.forEach(t => {
-        if (t.hidden) {
-          // 清空隐藏表单的值
-          this.form.customForm.value[t.name] = ''
-        }
-      })
-      // 审批列表
-      this.form.approvalList = [...this.approvalList, ...this.taskList]
-      // 发布目标对象名称
-      const item = this.rootEntityOptions.find(item => item.guid === this.form.rootEntityId) || {}
-      this.form.entityName = item.key_name
-      // 如果期望时间没有手动更改，提交时自动获取最新的
-      if (this.initExpectTime === this.form.expectTime) {
-        this.form.expectTime = dayjs()
-          .add(this.expireDay || 0, 'day')
-          .format('YYYY-MM-DD HH:mm:ss')
-        this.initExpectTime = this.form.expectTime
-      }
       // 名称必填校验
       if (!this.form.name) {
         this.$Message.warning(this.$t('request_name') + this.$t('can_not_be_empty'))
@@ -855,6 +808,81 @@ export default {
       // 任务流程角色和用户必填校验
       if (!approvalCheck(this.taskList)) {
         return this.$Message.warning(this.$t('tw_taskStep_valid'))
+      }
+      // 请求表单
+      const requestData = deepClone((this.$refs.entityTable && this.$refs.entityTable.requestData) || [])
+      this.form.data =
+        requestData.map(item => {
+          let refKeys = [] // 引用类型
+          let sensitiveKeys = [] // 敏感字段类型
+          item.title.forEach(t => {
+            if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
+              refKeys.push(t.name)
+            }
+            if (t.cmdbAttr) {
+              const cmdbAttr = JSON.parse(t.cmdbAttr)
+              if (cmdbAttr.sensitive === 'yes') {
+                sensitiveKeys.push(t.name)
+              }
+            }
+          })
+          if (Array.isArray(item.value)) {
+            item.value.forEach(v => {
+              refKeys.forEach(ref => {
+                delete v.entityData[ref + 'Options']
+              })
+              // 前端添加一行的数据，删除相应属性
+              if (v.addFlag) {
+                delete v.addFlag
+              }
+              // 删除表单隐藏属性, 并清空值
+              for (const key in v.entityData) {
+                if (v.entityData[key + 'Hidden']) {
+                  v.entityData[key] = ''
+                }
+                delete v.entityData[key + 'Hidden']
+              }
+              // 删除表单隐藏属性, 并清空值
+              for (const key in v.entityData) {
+                if (v.entityData[key + 'Hidden']) {
+                  v.entityData[key] = ''
+                }
+                delete v.entityData[key + 'Hidden']
+              }
+            })
+          }
+          // 敏感字段值不变, 删除属性，不传给后台
+          const originData = this.originRequestData.find(i => i.entity === item.entity || i.itemGroup === item.itemGroup)
+          sensitiveKeys.forEach(key => {
+            for (let origin of (originData.value || [])) {
+              for (let current of (item.value || [])) {
+                if (origin.id === current.id && origin.entityData[key] === current.entityData[key]) {
+                  delete current.entityData[key]
+                }
+              }
+            }
+          })
+          return item
+        }) || []
+      // 信息表单
+      const customTitles = (this.$refs.customForm && this.$refs.customForm.formOptions) || []
+      customTitles.forEach(t => {
+        if (t.hidden) {
+          // 清空隐藏表单的值
+          this.form.customForm.value[t.name] = ''
+        }
+      })
+      // 审批列表
+      this.form.approvalList = [...this.approvalList, ...this.taskList]
+      // 发布目标对象名称
+      const item = this.rootEntityOptions.find(item => item.guid === this.form.rootEntityId) || {}
+      this.form.entityName = item.key_name
+      // 如果期望时间没有手动更改，提交时自动获取最新的
+      if (this.initExpectTime === this.form.expectTime) {
+        this.form.expectTime = dayjs()
+          .add(this.expireDay || 0, 'day')
+          .format('YYYY-MM-DD HH:mm:ss')
+        this.initExpectTime = this.form.expectTime
       }
       const { statusCode } = await savePublishData(this.requestId, this.form)
       if (statusCode === 'OK') {

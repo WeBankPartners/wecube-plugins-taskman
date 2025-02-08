@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/WeBankPartners/go-common-lib/cipher"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"io"
@@ -517,14 +518,39 @@ func (s *RequestService) processTaskForm(formParam models.ProcessTaskFormParam) 
 	for _, tableForm := range formParam.FormData {
 		columnNameIdMap := make(map[string]string)
 		isColumnMultiMap := make(map[string]int)
+		passwordAttrMap := make(map[string]bool)
 		for _, title := range tableForm.Title {
 			columnNameIdMap[title.Name] = title.Id
+			cmdbAttrModel := models.EntityAttributeObj{}
 			if strings.EqualFold(title.Multiple, models.Yes) || strings.EqualFold(title.Multiple, models.Y) {
 				isColumnMultiMap[title.Name] = 1
+			}
+			if strings.TrimSpace(title.CmdbAttr) == "" {
+				continue
+			}
+			if err = json.Unmarshal([]byte(title.CmdbAttr), &cmdbAttrModel); err != nil {
+				return
+			}
+			if cmdbAttrModel.InputType == string(models.FormItemElementTypePassword) {
+				passwordAttrMap[title.Name] = true
 			}
 		}
 		poolForms := itemGroupFormMap[tableForm.ItemGroup]
 		for _, valueObj := range tableForm.Value {
+			// 密码处理,web传递原密码,需要加密处理
+			for key, value := range valueObj.EntityData {
+				inputValue := ""
+				if value != nil {
+					inputValue = fmt.Sprintf("%+v", value)
+				}
+				if passwordAttrMap[key] && !strings.HasPrefix(strings.ToLower(inputValue), models.EncryptPasswordPrefix) {
+					if inputValue, err = cipher.AesEnPasswordByGuid("", models.Config.EncryptSeed, inputValue, ""); err != nil {
+						err = fmt.Errorf("try to encrypt password type column:%s value:%s fail,%s  ", key, inputValue, err.Error())
+						return
+					}
+					valueObj.EntityData[key] = inputValue
+				}
+			}
 			if formParam.Task == nil && valueObj.EntityDataOp == "create" && valueObj.Id != "" {
 				if !strings.HasPrefix(valueObj.Id, "tmp") {
 					valueObj.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, valueObj.Id)
@@ -751,6 +777,7 @@ func GetRequestRootForm(requestId string) (result models.RequestTemplateFormStru
 
 func GetRequestPreData(requestId, entityDataId, userToken, language string) (result []*models.RequestPreDataTableObj, previewData *models.EntityTreeData, err error) {
 	var requestTables []*models.RequestTable
+	var targetData []map[string]interface{}
 	err = dao.X.SQL("select cache from request where id=?", requestId).Find(&requestTables)
 	if err != nil {
 		return
@@ -766,6 +793,7 @@ func GetRequestPreData(requestId, entityDataId, userToken, language string) (res
 		}
 		if cacheObj.RootEntityId == entityDataId {
 			result = cacheObj.Data
+			SensitiveDataEncryption(result)
 			return
 		}
 	}
@@ -785,6 +813,16 @@ func GetRequestPreData(requestId, entityDataId, userToken, language string) (res
 	if len(previewData.EntityTreeNodes) == 0 {
 		return
 	}
+	// 处理表单敏感数据
+	for _, entityData := range previewData.EntityTreeNodes {
+		if targetData, err = HandleFormSensitiveData([]map[string]interface{}{entityData.EntityData}, entityData.EntityName, userToken); err != nil {
+			return
+		}
+		if len(targetData) > 0 {
+			entityData.EntityData = targetData[0]
+		}
+	}
+
 	previewDataBytes, _ := json.Marshal(previewData)
 	_, err = dao.X.Exec("update request set preview_cache=? where id=?", string(previewDataBytes), requestId)
 	if err != nil {
@@ -1775,6 +1813,7 @@ func getAttrCat(catId, userToken string) (result []*models.EntityDataObj, err er
 }
 
 func BuildRequestProcessData(input models.RequestCacheData, preData *models.EntityTreeData) (result models.RequestProcessData) {
+	var err error
 	result.ProcDefId = input.ProcDefId
 	result.ProcDefKey = input.ProcDefKey
 	result.RootEntityOid = input.RootEntityValue.Oid
@@ -1813,6 +1852,23 @@ func BuildRequestProcessData(input models.RequestCacheData, preData *models.Enti
 			if !existFlag {
 				tmpEntity := models.RequestCacheEntityValue{Oid: preEntity.Id, PackageName: preEntity.PackageName, EntityName: preEntity.EntityName, BindFlag: "N", EntityDataId: preEntity.DataId, EntityDisplayName: preEntity.DisplayName, FullEntityDataId: preEntity.FullDataId, PreviousOids: preEntity.PreviousIds, SucceedingOids: preEntity.SucceedingIds}
 				result.Entities = append(result.Entities, &tmpEntity)
+			}
+		}
+	}
+	// 密码类型数据解密
+	for _, entity := range result.Entities {
+		for _, attr := range entity.AttrValues {
+			inputValue := ""
+			if attr.DataValue != nil {
+				inputValue = fmt.Sprintf("%+v", attr.DataValue)
+			}
+			if attr.DataType == "str" && strings.HasPrefix(strings.ToLower(inputValue), models.EncryptPasswordPrefix) {
+				if inputValue, err = cipher.AesDePasswordByGuid("", models.Config.EncryptSeed, inputValue); err != nil {
+					log.Logger.Error("try to decode password fail", log.String("attrName", attr.AttrName), log.String("value", inputValue), log.Error(err))
+					return
+				}
+				attr.DataValue = inputValue
+				log.Logger.Info("start workflow decode password success", log.String("attrName", attr.AttrName), log.String("value", inputValue))
 			}
 		}
 	}
@@ -2848,4 +2904,28 @@ func formDataDeepCopy(dataList []*models.RequestPreDataTableObj) []*models.Reque
 		})
 	}
 	return list
+}
+
+// HandleFormSensitiveData 处理表单敏感数据
+func HandleFormSensitiveData(originData []map[string]interface{}, entity, token string) (targetData []map[string]interface{}, err error) {
+	if len(originData) == 0 {
+		originData = make([]map[string]interface{}, 0)
+	}
+	targetData = make([]map[string]interface{}, 0)
+	var refAttributes []*models.EntityAttributeObj
+	if refAttributes, err = GetCMDBCiAttrDefs(entity, token); err != nil {
+		err = fmt.Errorf("query remote entity:%s attr fail:%s ", entity, err.Error())
+		return
+	}
+	for _, dataMap := range originData {
+		for _, v1 := range refAttributes {
+			if strings.ToUpper(v1.Sensitive) == "YES" || strings.ToUpper(v1.Sensitive) == "Y" {
+				if v, ok := dataMap[v1.PropertyName]; ok && v != "" {
+					dataMap[v1.PropertyName] = models.SensitiveStyle
+				}
+			}
+		}
+		targetData = append(targetData, dataMap)
+	}
+	return
 }

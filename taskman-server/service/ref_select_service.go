@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"io"
 	"net/http"
 	"strings"
@@ -702,7 +703,7 @@ func getSimpleFormItemTemplate(formItemTemplateId string) (formItemTemplateObj *
 	return
 }
 
-func getCMDBCiAttrDefs(ciTypeEntity, userToken string) (attributes []*models.EntityAttributeObj, err error) {
+func GetCMDBCiAttrDefs(ciTypeEntity, userToken string) (attributes []*models.EntityAttributeObj, err error) {
 	req, newReqErr := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/wecmdb/api/v1/ci-types-attr/%s/attributes", models.Config.Wecube.BaseUrl, ciTypeEntity), nil)
 	if newReqErr != nil {
 		err = fmt.Errorf("try to new http request fail,%s ", newReqErr.Error())
@@ -728,5 +729,26 @@ func getCMDBCiAttrDefs(ciTypeEntity, userToken string) (attributes []*models.Ent
 		return
 	}
 	attributes = attrQueryResp.Data
+	return
+}
+
+func GetCMDBCiAttrSensitiveData(paramList []*models.RequestFormSensitiveDataParam, userToken, language string) (result []*models.AttrPermissionQueryObj, err error) {
+	var byteArr []byte
+	var response models.CMDBSensitiveDataResponse
+	url := fmt.Sprintf("%s/wecmdb/api/v1/ci-data/sensitive-attr/query", models.Config.Wecube.BaseUrl)
+	postBytes, _ := json.Marshal(paramList)
+	if byteArr, err = rpc.HttpPost(url, userToken, language, postBytes); err != nil {
+		return
+	}
+	err = json.Unmarshal(byteArr, &response)
+	if err != nil {
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
+		return
+	}
+	if response.StatusCode != "OK" {
+		err = fmt.Errorf("query cmdb sensitive-attr err")
+		return
+	}
+	result = response.Data
 	return
 }

@@ -126,6 +126,7 @@ func init() {
 		{Url: "/request-status/:requestId/:status", Method: "POST", HandlerFunc: request.UpdateRequestStatus, ApiCode: "update-request-status"},
 		{Url: "/request-data/reference/query/:formItemTemplateId/:requestId/:attrName", Method: "POST", HandlerFunc: request.GetReferenceData, ApiCode: "query-reference-data"},
 		{Url: "/request-data/entity/expression/query/:formItemTemplateId/:rootDataId", Method: "GET", HandlerFunc: request.GetExpressionItemData, ApiCode: "query-expression-item-data"},
+		{Url: "/request-data/form/sensitive-attr/query", Method: "POST", HandlerFunc: request.AttrSensitiveDataQuery, ApiCode: "get-request-sensitive-data"},
 
 		{Url: "/user/platform/count", Method: "POST", HandlerFunc: request.CountPlatform, ApiCode: "count-platform"},
 		{Url: "/user/platform/filter-item", Method: "POST", HandlerFunc: request.FilterItem, ApiCode: "filter-item"},
@@ -175,6 +176,7 @@ func init() {
 		{Url: "/request/history/:requestId", Method: "GET", HandlerFunc: requestNew.GetRequestHistory, ApiCode: "request-history"},
 		{Url: "/plugin/request/create", Method: "POST", HandlerFunc: requestNew.PluginCreateRequest, ApiCode: "plugin-request-create"},
 		{Url: "/request-data/form/save/:requestId", Method: "POST", HandlerFunc: requestNew.SaveRequestFormData, ApiCode: "request-data-form-save"},
+		{Url: "/request-data/form/password/decode", Method: "GET", HandlerFunc: requestNew.DecodeRequestFormDataPassword, ApiCode: "request-data-form-password-decode"},
 		// 转发platform接口
 		{Url: "/platform/models", Method: "GET", HandlerFunc: requestNew.GetPlatformAllModels, ApiCode: "platform-models"},
 		{Url: "/platform/:package/entities/:entity/query", Method: "POST", HandlerFunc: requestNew.QueryPlatformEntityData, ApiCode: "platform-entity-query"},

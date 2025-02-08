@@ -1,22 +1,27 @@
 <template>
   <div class="cmdb-ci-password">
-    <div v-if="realPassword" style="display:flex;align-items:center;">
+    <div style="display:flex;align-items:center;">
       <Tooltip
         max-width="200"
         class="ci-password-cell-show-span"
         placement="bottom-start"
-        :content="isShowPassword ? realPassword : '******'"
+        :content="isShowPassword ? (originVal === panalData[formData.propertyName] ? realPassword : panalData[formData.propertyName]) : '******'"
       >
-        <div class="password-wrapper">{{ isShowPassword ? realPassword : '******' }}</div>
+        <div class="password-wrapper">{{ isShowPassword ? (originVal === panalData[formData.propertyName] ? realPassword : panalData[formData.propertyName]) : '******' }}</div>
       </Tooltip>
-      <div style="float: right; margin-right: 12px;">
-        <Icon :type="isShowPassword ? 'md-eye-off' : 'md-eye'" @click="showPassword" class="operation-icon-confirm" />
-        <Icon type="ios-build-outline" v-if="!disabled" @click="resetPassword" class="operation-icon-confirm" />
-      </div>
-    </div>
-    <div v-else class="no-data-wrap">
-      <span class="text">{{ $t('tw_password_empty') }}</span>
-      <Icon type="ios-build-outline" v-if="!disabled" @click="resetPassword" class="operation-icon-confirm" />
+      <!-- <Icon :type="isShowPassword ? 'md-eye-off' : 'md-eye'" @click="showPassword" class="operation-icon-confirm" />
+      <Icon type="ios-build-outline" v-if="!disabled" @click="resetPassword" class="operation-icon-confirm" /> -->
+      <Button
+        @click="showPassword"
+        :disabled="getCmdbQueryPermission === false"
+        :icon="isShowPassword ? 'md-eye-off' : 'md-eye'"
+      ></Button>
+      <Button
+        @click="resetPassword"
+        :disabled="disabled"
+        type="primary"
+        icon="md-create"
+      ></Button>
     </div>
     <!--密码编辑弹框-->
     <Modal v-model="isShowEditModal" :title="useLocalValue ? $t('tw_enter_password') : $t('tw_password_edit')">
@@ -53,14 +58,15 @@
 </template>
 
 <script>
-import { getEncryptKey } from '@/api/server'
-import CryptoJS from 'crypto-js'
+// import { getEncryptKey } from '@/api/server'
+// import CryptoJS from 'crypto-js'
 export default {
   name: '',
   data () {
     return {
       encryptKey: '',
       realPassword: '',
+      originVal: '',
       useLocalValue: false,
       isShowPassword: false,
 
@@ -93,9 +99,31 @@ export default {
       }
     }
   },
-  props: ['formData', 'panalData', 'disabled'],
+  props: ['formData', 'panalData', 'allSensitiveData', 'rowData', 'disabled'],
+  computed: {
+    getCmdbQueryPermission () {
+      const obj = this.allSensitiveData.find(item => {
+        if (this.rowData.dataId) {
+          return item.attrName === this.formData.propertyName && item.guid === this.rowData.dataId
+        } else {
+          return item.attrName === this.formData.propertyName && item.tmpId === this.rowData.id
+        }
+      }) || {}
+      return obj.queryPermission
+    },
+    getRealValue () {
+      const obj = this.allSensitiveData.find(item => {
+        if (this.rowData.dataId) {
+          return item.attrName === this.formData.propertyName && item.guid === this.rowData.dataId
+        } else {
+          return item.attrName === this.formData.propertyName && item.tmpId === this.rowData.id
+        }
+      }) || {}
+      return obj.value
+    }
+  },
   mounted () {
-    this.realPassword = this.panalData[this.formData.propertyName]
+    this.originVal = this.panalData[this.formData.propertyName]
   },
   methods: {
     resetPassword () {
@@ -110,16 +138,16 @@ export default {
       })
     },
     async handleInput () {
-      if (this.editFormData.newPassword) {
-        await this.getEncryptKey()
-        const key = CryptoJS.enc.Utf8.parse(this.encryptKey)
-        const config = {
-          iv: CryptoJS.enc.Utf8.parse(Math.trunc(new Date() / 100000) * 100000000),
-          mode: CryptoJS.mode.CBC
-          // padding: CryptoJS.pad.PKcs7
-        }
-        this.editFormData.newPassword = CryptoJS.AES.encrypt(this.editFormData.newPassword, key, config).toString()
-      }
+      // if (this.editFormData.newPassword) {
+      //   await this.getEncryptKey()
+      //   const key = CryptoJS.enc.Utf8.parse(this.encryptKey)
+      //   const config = {
+      //     iv: CryptoJS.enc.Utf8.parse(Math.trunc(new Date() / 100000) * 100000000),
+      //     mode: CryptoJS.mode.CBC
+      //     // padding: CryptoJS.pad.PKcs7
+      //   }
+      //   this.editFormData.newPassword = CryptoJS.AES.encrypt(this.editFormData.newPassword, key, config).toString()
+      // }
       // this.panalData[this.formData.propertyName] = this.editFormData.newPassword
       this.$emit('input', this.editFormData.newPassword)
       this.realPassword = this.editFormData.newPassword
@@ -137,28 +165,16 @@ export default {
       }
     },
     async showPassword () {
-      // if (this.useLocalValue || !this.panalData.guid) {
-      //   this.realPassword = this.panalData[this.formData.propertyName]
-      // } else {
-      //   const { statusCode, data } = await queryPassword(
-      //     this.formData.ciTypeId,
-      //     this.panalData.guid,
-      //     this.formData.propertyName,
-      //     {}
-      //   )
-      //   if (statusCode === 'OK') {
-      //     this.realPassword = data
-      //   }
-      // }
-      this.realPassword = this.panalData[this.formData.propertyName]
+      // this.realPassword = this.panalData[this.formData.propertyName]
+      this.realPassword = this.getRealValue
       this.isShowPassword = !this.isShowPassword
-    },
-    async getEncryptKey () {
-      const { statusCode, data } = await getEncryptKey()
-      if (statusCode === 'OK') {
-        this.encryptKey = data
-      }
     }
+    // async getEncryptKey () {
+    //   const { statusCode, data } = await getEncryptKey()
+    //   if (statusCode === 'OK') {
+    //     this.encryptKey = data
+    //   }
+    // }
   }
 }
 </script>
@@ -189,6 +205,9 @@ export default {
     font-size: 13px;
     color: #515a6e;
   }
+}
+Button {
+  margin-left: 5px;
 }
 </style>
 <style lang="scss">

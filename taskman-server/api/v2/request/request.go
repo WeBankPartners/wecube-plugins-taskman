@@ -123,8 +123,8 @@ func SaveRequestCache(c *gin.Context) {
 			}
 			for _, entityData := range param.Data {
 				for _, entityItem := range entityData.Value {
-					if _, ok := originDataMap[entityItem.Id]; ok {
-						for key, value := range originDataMap {
+					if valueMap, ok := originDataMap[entityItem.Id]; ok {
+						for key, value := range valueMap {
 							if _, ok = entityItem.EntityData[key]; !ok {
 								entityItem.EntityData[key] = value
 							}

@@ -16,9 +16,10 @@
       <TabPane :label="$t('fork')" name="5"></TabPane>
     </Tabs>
     <Search :options="searchOptions" v-model="form" @search="handleQuery"></Search>
-    <Button size="small" @click="handleExport" type="success" :loading="exportFlag" class="export">{{
-      $t('download')
-    }}</Button>
+    <Button @click="handleExport" :loading="exportFlag" class="export btn-upload">
+      <img src="@/styles/icon/DownloadOutlined.svg" class="upload-icon" />
+      {{ $t('download') }}
+    </Button>
     <Table
       size="small"
       :columns="tableColumns"
@@ -277,12 +278,9 @@ export default {
 .workbench-request-audit {
   width: 100%;
   .export {
-    width: auto;
-    height: 30px;
     position: absolute;
     right: 22px;
     top: 88px;
-    font-size: 14px;
   }
 }
 </style>

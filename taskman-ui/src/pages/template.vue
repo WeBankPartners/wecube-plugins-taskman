@@ -82,7 +82,10 @@
             :on-success="uploadSucess"
             :on-error="uploadFailed"
           >
-            <Button>{{ $t('upload') }}</Button>
+            <Button class="btn-upload">
+              <img src="@/styles/icon/DownloadOutlined.svg" class="upload-icon" />
+              {{ $t('upload') }}
+            </Button>
           </Upload>
         </div>
       </Row>

@@ -12,7 +12,10 @@
       :on-success="uploadSucess"
       :on-error="uploadFailed"
     >
-      <Button icon="md-cloud-upload" :disabled="formDisable">{{ $t('upload_attachment') }}</Button>
+      <Button class="btn-upload" :disabled="formDisable">
+        <img src="@/styles/icon/UploadOutlined.svg" class="upload-icon" />
+        {{ $t('upload_attachment') }}
+      </Button>
     </Upload>
     <div :style="{ marginTop: onlyShowFile ? '0px' : '10px', display: 'flex' }">
       <Tag

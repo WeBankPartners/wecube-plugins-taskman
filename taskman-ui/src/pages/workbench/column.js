@@ -47,14 +47,14 @@ export default {
           render: (h, params) => {
             const list = [
               { label: this.$t('status_pending'), value: 'Pending', color: '#b886f8' },
-              { label: this.$t('tw_inApproval'), value: 'InApproval', color: '#1990ff' },
-              { label: this.$t('status_inProgress'), value: 'InProgress', color: '#1990ff' },
+              { label: this.$t('tw_inApproval'), value: 'InApproval', color: '#5384FF' },
+              { label: this.$t('status_inProgress'), value: 'InProgress', color: '#5384FF' },
               { label: this.$t('tw_request_confirm'), value: 'Confirm', color: '#b886f8' },
               { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)', color: '#FF4D4F' },
-              { label: this.$t('status_termination'), value: 'Termination', color: '#e29836' },
-              { label: this.$t('status_complete'), value: 'Completed', color: '#7ac756' },
+              { label: this.$t('status_termination'), value: 'Termination', color: '#F29360' },
+              { label: this.$t('status_complete'), value: 'Completed', color: '#00CB91' },
               { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)', color: '#FF4D4F' },
-              { label: this.$t('status_faulted'), value: 'Faulted', color: '#e29836' },
+              { label: this.$t('status_faulted'), value: 'Faulted', color: '#F29360' },
               { label: this.$t('status_draft'), value: 'Draft', color: '#808695' },
               { label: this.$t('tw_stop'), value: 'Stop', color: '#FF4D4F' }
             ]
@@ -165,7 +165,7 @@ export default {
               totalTime = params.row.requestStayTimeTotal
             }
             const percent = (stayTime / totalTime) * 100
-            const color = percent > 50 ? (percent > 80 ? '#FF4D4F' : '#ffbf6b') : '#00CB91'
+            const color = percent > 50 ? (percent > 80 ? '#FF4D4F' : '#F29360') : '#00CB91'
             return (
               <div>
                 <Progress stroke-color={color} percent={percent > 100 ? 100 : percent}>

@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-18 17:55:45
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2025-02-07 19:59:55
+ * @LastEditTime: 2025-02-10 10:34:39
 -->
 <template>
   <div class="cmdb-entity-table">
@@ -12,6 +12,7 @@
         :panalData="value"
         :allSensitiveData="allSensitiveData"
         :rowData="rowData"
+        :type="type"
         :disabled="isGroupEditDisabled(column, value)"
         @input="(v) => {value[column.inputKey] = v}"
       />

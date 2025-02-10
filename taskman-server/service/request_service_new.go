@@ -1524,7 +1524,9 @@ func getRequestForm(request *models.RequestTable, taskId, userToken, language st
 			return
 		}
 		form.FormData = cacheObj.Data
-		SensitiveDataEncryption(form.FormData)
+		if request.Status == string(models.RequestStatusDraft) {
+			SensitiveDataEncryption(form.FormData)
+		}
 		// 数据回显示
 		form.RootEntityId = cacheObj.RootEntityId
 		form.OperatorObj = cacheObj.EntityName

@@ -1864,11 +1864,13 @@ func BuildRequestProcessData(input models.RequestCacheData, preData *models.Enti
 			}
 			if attr.DataType == "str" && strings.HasPrefix(strings.ToLower(inputValue), models.EncryptPasswordPrefix) {
 				if inputValue, err = cipher.AesDePasswordByGuid("", models.Config.EncryptSeed, inputValue); err != nil {
-					log.Logger.Error("try to decode password fail", log.String("attrName", attr.AttrName), log.String("value", inputValue), log.Error(err))
+					log.Logger.Error("try to decode password fail", log.String("attrName", attr.AttrName), log.String("encryptSeed", models.Config.EncryptSeed),
+						log.String("value", fmt.Sprintf("%+v", attr.DataValue)), log.Error(err))
 					return
 				}
 				attr.DataValue = inputValue
-				log.Logger.Info("start workflow decode password success", log.String("attrName", attr.AttrName), log.String("value", inputValue))
+				log.Logger.Info("start workflow decode password success", log.String("attrName", attr.AttrName), log.String("encryptSeed", models.Config.EncryptSeed),
+					log.String("value", inputValue))
 			}
 		}
 	}

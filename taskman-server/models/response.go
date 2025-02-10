@@ -16,6 +16,11 @@ type ResponseJson struct {
 	Data       interface{} `json:"data"`
 }
 
+type CmdbResponseJson struct {
+	Status string      `json:"status"`
+	Data   interface{} `json:"data"`
+}
+
 type ResponseErrorObj struct {
 	ErrorMessage string `json:"errorMessage"`
 }

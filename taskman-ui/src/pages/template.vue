@@ -83,7 +83,7 @@
             :on-error="uploadFailed"
           >
             <Button class="btn-upload">
-              <img src="@/styles/icon/UploadOutlined.svg" class="upload-icon" />
+              <img :src="require('@/styles/icon/UploadOutlined.svg')" class="upload-icon" />
               {{ $t('upload') }}
             </Button>
           </Upload>

@@ -58,7 +58,8 @@ func QueryPlatformEntityData(c *gin.Context) {
 				middleware.ReturnServerHandleError(c, err)
 				return
 			}
-			if newResponseBytes, err = json.Marshal(result); err != nil {
+			obj := models.ResponseJson{StatusCode: "OK", Data: result}
+			if newResponseBytes, err = json.Marshal(obj); err != nil {
 				middleware.ReturnServerHandleError(c, fmt.Errorf("json Marshal err,%s", err.Error()))
 				return
 			}

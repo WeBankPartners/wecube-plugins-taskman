@@ -127,7 +127,6 @@
               :data="requestData"
               :originRequestData="originRequestData"
               :requestId="requestId"
-              type="data_form"
               isAdd
               autoAddRow
             ></EntityTable>

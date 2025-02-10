@@ -13,7 +13,7 @@
       :on-error="uploadFailed"
     >
       <Button class="btn-upload" :disabled="formDisable">
-        <img src="@/styles/icon/UploadOutlined.svg" class="upload-icon" />
+        <img src="@/styles/icon/UploadOutlined.png" class="upload-icon" />
         {{ $t('upload_attachment') }}
       </Button>
     </Upload>

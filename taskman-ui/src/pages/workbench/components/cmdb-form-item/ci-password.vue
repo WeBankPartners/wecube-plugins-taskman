@@ -1,6 +1,6 @@
 <template>
   <div class="cmdb-ci-password">
-    <div v-if="formData.sensitive === 'yes' && type === 'data_form'" class="flex-center">
+    <div v-if="formData.sensitive === 'yes' && isAdd" class="flex-center">
       <Tooltip
         max-width="200"
         class="ci-password-cell-show-span"
@@ -15,8 +15,8 @@
         :icon="isShowPassword ? 'md-eye-off' : 'md-eye'"
       ></Button>
       <Button
+        v-if="disabled === false"
         @click="resetPassword"
-        :disabled="disabled"
         type="primary"
         icon="md-create"
       ></Button>
@@ -32,12 +32,11 @@
       </Tooltip>
       <Button
         @click="showPassword"
-        :disabled="disabled"
         :icon="isShowPassword ? 'md-eye-off' : 'md-eye'"
       ></Button>
       <Button
+        v-if="disabled === false"
         @click="resetPassword"
-        :disabled="disabled"
         type="primary"
         icon="md-create"
       ></Button>
@@ -118,7 +117,7 @@ export default {
       }
     }
   },
-  props: ['formData', 'panalData', 'allSensitiveData', 'rowData', 'disabled', 'type'],
+  props: ['formData', 'panalData', 'allSensitiveData', 'rowData', 'disabled', 'isAdd'],
   computed: {
     getCmdbQueryPermission () {
       const obj = this.allSensitiveData.find(item => {

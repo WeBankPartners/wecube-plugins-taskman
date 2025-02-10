@@ -50,8 +50,8 @@
                         :value="value"
                         :allSensitiveData="allSensitiveData"
                         :rowData="getRowValue(value)"
-                        :type="type"
                         :disabled="formDisabled(i)"
+                        :isAdd="isAdd"
                         style="width: calc(100% - 20px)"
                       />
                     </template>
@@ -175,11 +175,6 @@ export default {
     autoAddRow: {
       type: Boolean,
       default: false
-    },
-    // 表单类型[data_form 数据表单]
-    type: {
-      type: String,
-      default: ''
     },
     formDisable: {
       type: Boolean,
@@ -456,7 +451,7 @@ export default {
         this.getCMDBInitData(cmdbOptions)
       }
       // cmdb表单权限初始化
-      if (this.cmdbSensitiveKeysArr && this.cmdbSensitiveKeysArr.length > 0 && this.type === 'data_form') {
+      if (this.cmdbSensitiveKeysArr && this.cmdbSensitiveKeysArr.length > 0 && this.isAdd) {
         const guidArr = (data.value && data.value.map(v => {
           return {
             dataId: v.dataId,
@@ -464,7 +459,7 @@ export default {
           }
         })) || []
         const ciType = data.entity
-        if (guidArr && ciType) {
+        if (guidArr.length > 0 && ciType) {
           this.getCmdbFormPermission(ciType, guidArr)
         }
       }

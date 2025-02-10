@@ -17,7 +17,7 @@
     </Tabs>
     <Search :options="searchOptions" v-model="form" @search="handleQuery"></Search>
     <Button @click="handleExport" :loading="exportFlag" class="export btn-upload">
-      <img src="@/styles/icon/DownloadOutlined.svg" class="upload-icon" />
+      <img src="@/styles/icon/DownloadOutlined.png" class="upload-icon" />
       {{ $t('download') }}
     </Button>
     <Table

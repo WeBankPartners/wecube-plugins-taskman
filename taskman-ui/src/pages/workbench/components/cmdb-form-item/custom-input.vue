@@ -1,7 +1,7 @@
 <template>
   <div class="taskman-custom-input">
     <!--敏感字段-->
-    <div v-if="column.sensitive === 'yes' && type === 'data_form'" class="flex-row">
+    <div v-if="column.sensitive === 'yes' && isAdd" class="flex-row">
       <Input
         v-if="isShowReal"
         :value="originVal === attrs.value ? getRealValue : attrs.value"
@@ -16,8 +16,8 @@
         :icon="isShowReal ? 'md-eye-off' : 'md-eye'"
       ></Button>
       <Button
+        v-if="attrs.disabled === false"
         @click="handleEditData"
-        :disabled="attrs.disabled"
         type="primary"
         icon="md-create"
       ></Button>
@@ -75,10 +75,10 @@ export default {
       type: Object,
       default: () => {}
     },
-    // 表单类型 data_form:数据表单
-    type: {
-      type: String,
-      default: ''
+    // 是否创建页面
+    isAdd: {
+      type: Boolean,
+      default: false
     }
   },
   data () {

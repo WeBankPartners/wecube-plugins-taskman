@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-18 17:55:45
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2025-02-10 10:34:39
+ * @LastEditTime: 2025-02-10 16:03:06
 -->
 <template>
   <div class="cmdb-entity-table">
@@ -12,7 +12,7 @@
         :panalData="value"
         :allSensitiveData="allSensitiveData"
         :rowData="rowData"
-        :type="type"
+        :isAdd="isAdd"
         :disabled="isGroupEditDisabled(column, value)"
         @input="(v) => {value[column.inputKey] = v}"
       />
@@ -76,7 +76,7 @@
         :column="column"
         :allSensitiveData="allSensitiveData"
         :rowData="rowData"
-        :type="type"
+        :isAdd="isAdd"
         @input="(v) => {setValueHandler(v.trim(), column, value)}"
       ></CustomInput>
     </template>
@@ -203,9 +203,10 @@ export default {
       type: Object,
       default: () => {}
     },
-    type: {
-      type: String,
-      default: ''
+    // 是否创建页面
+    isAdd: {
+      type: Boolean,
+      default: false
     },
     disabled: {
       type: Boolean,

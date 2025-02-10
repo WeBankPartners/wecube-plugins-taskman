@@ -21,7 +21,7 @@ module.exports = {
     }
   },
   runtimeCompiler: true,
-  publicPath: '/taskman',
+  publicPath: '/',
   // publicPath: '/',
   chainWebpack: config => {
     if (process.env.PLUGIN !== 'plugin') {

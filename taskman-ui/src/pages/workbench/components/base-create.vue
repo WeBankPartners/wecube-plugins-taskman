@@ -777,38 +777,6 @@ export default {
     },
     // 保存草稿
     async handleDraft (noJump) {
-      // 名称必填校验
-      if (!this.form.name) {
-        this.$Message.warning(this.$t('request_name') + this.$t('can_not_be_empty'))
-        return
-      }
-      // 操作目标对象必填校验
-      if (!this.form.rootEntityId && this.detail.associationWorkflow) {
-        this.$Message.warning(this.$t('root_entity') + this.$t('can_not_be_empty'))
-        return
-      }
-      // 信息表单必填校验
-      if (!this.customFormValid()) {
-        return this.$Message.warning(this.$t('tw_infoForm_valid'))
-      }
-      // 数据表单必填项-校验提示
-      if (!requiredCheck(this.form.data, this.$refs.entityTable)) {
-        const tabName = this.$refs.entityTable.activeTab
-        return this.$Message.warning(`【${tabName}】${this.$t('required_tip')}`)
-      }
-      // 数据表单至少勾选一条数据校验
-      if (!noChooseCheck(this.form.data, this.$refs.entityTable)) {
-        const tabName = this.$refs.entityTable.activeTab
-        return this.$Message.warning(`【${tabName}】${this.$t('tw_table_noChoose_tips')}`)
-      }
-      // 审批流程角色和用户必填校验
-      if (!approvalCheck(this.approvalList)) {
-        return this.$Message.warning(this.$t('tw_approvalStep_valid'))
-      }
-      // 任务流程角色和用户必填校验
-      if (!approvalCheck(this.taskList)) {
-        return this.$Message.warning(this.$t('tw_taskStep_valid'))
-      }
       // 请求表单
       const requestData = deepClone((this.$refs.entityTable && this.$refs.entityTable.requestData) || [])
       this.form.data =
@@ -842,13 +810,6 @@ export default {
                 }
                 delete v.entityData[key + 'Hidden']
               }
-              // 删除表单隐藏属性, 并清空值
-              for (const key in v.entityData) {
-                if (v.entityData[key + 'Hidden']) {
-                  v.entityData[key] = ''
-                }
-                delete v.entityData[key + 'Hidden']
-              }
             })
           }
           // 敏感字段值不变, 删除属性，不传给后台
@@ -864,6 +825,38 @@ export default {
           })
           return item
         }) || []
+      // 名称必填校验
+      if (!this.form.name) {
+        this.$Message.warning(this.$t('request_name') + this.$t('can_not_be_empty'))
+        return
+      }
+      // 操作目标对象必填校验
+      if (!this.form.rootEntityId && this.detail.associationWorkflow) {
+        this.$Message.warning(this.$t('root_entity') + this.$t('can_not_be_empty'))
+        return
+      }
+      // 信息表单必填校验
+      if (!this.customFormValid()) {
+        return this.$Message.warning(this.$t('tw_infoForm_valid'))
+      }
+      // 数据表单必填项-校验提示
+      if (!requiredCheck(this.form.data, this.$refs.entityTable)) {
+        const tabName = this.$refs.entityTable.activeTab
+        return this.$Message.warning(`【${tabName}】${this.$t('required_tip')}`)
+      }
+      // 数据表单至少勾选一条数据校验
+      if (!noChooseCheck(this.form.data, this.$refs.entityTable)) {
+        const tabName = this.$refs.entityTable.activeTab
+        return this.$Message.warning(`【${tabName}】${this.$t('tw_table_noChoose_tips')}`)
+      }
+      // 审批流程角色和用户必填校验
+      if (!approvalCheck(this.approvalList)) {
+        return this.$Message.warning(this.$t('tw_approvalStep_valid'))
+      }
+      // 任务流程角色和用户必填校验
+      if (!approvalCheck(this.taskList)) {
+        return this.$Message.warning(this.$t('tw_taskStep_valid'))
+      }
       // 信息表单
       const customTitles = (this.$refs.customForm && this.$refs.customForm.formOptions) || []
       customTitles.forEach(t => {

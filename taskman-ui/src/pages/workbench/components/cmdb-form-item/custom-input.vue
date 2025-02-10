@@ -75,6 +75,7 @@ export default {
       type: Object,
       default: () => {}
     },
+    // 表单类型 data_form:数据表单
     type: {
       type: String,
       default: ''

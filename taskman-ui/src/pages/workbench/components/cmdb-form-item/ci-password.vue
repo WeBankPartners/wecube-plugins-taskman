@@ -1,19 +1,38 @@
 <template>
   <div class="cmdb-ci-password">
-    <div style="display:flex;align-items:center;">
+    <div v-if="formData.sensitive === 'yes' && type === 'data_form'" class="flex-center">
       <Tooltip
         max-width="200"
         class="ci-password-cell-show-span"
         placement="bottom-start"
-        :content="isShowPassword ? (originVal === panalData[formData.propertyName] ? realPassword : panalData[formData.propertyName]) : '******'"
+        :content="getDisplayValue"
       >
-        <div class="password-wrapper">{{ isShowPassword ? (originVal === panalData[formData.propertyName] ? realPassword : panalData[formData.propertyName]) : '******' }}</div>
+        <div class="password-wrapper">{{ getDisplayValue }}</div>
       </Tooltip>
-      <!-- <Icon :type="isShowPassword ? 'md-eye-off' : 'md-eye'" @click="showPassword" class="operation-icon-confirm" />
-      <Icon type="ios-build-outline" v-if="!disabled" @click="resetPassword" class="operation-icon-confirm" /> -->
       <Button
         @click="showPassword"
-        :disabled="getCmdbQueryPermission === false"
+        :disabled="getCmdbQueryPermission === false && panalData[formData.propertyName]"
+        :icon="isShowPassword ? 'md-eye-off' : 'md-eye'"
+      ></Button>
+      <Button
+        @click="resetPassword"
+        :disabled="disabled"
+        type="primary"
+        icon="md-create"
+      ></Button>
+    </div>
+    <div v-else class="flex-center">
+      <Tooltip
+        max-width="200"
+        class="ci-password-cell-show-span"
+        placement="bottom-start"
+        :content="panalData[formData.propertyName] || $t('tw_no_data')"
+      >
+        <div class="password-wrapper">{{ panalData[formData.propertyName] ? (isShowPassword ? panalData[formData.propertyName] : '******') : $t('tw_no_data') }}</div>
+      </Tooltip>
+      <Button
+        @click="showPassword"
+        :disabled="disabled"
         :icon="isShowPassword ? 'md-eye-off' : 'md-eye'"
       ></Button>
       <Button
@@ -99,7 +118,7 @@ export default {
       }
     }
   },
-  props: ['formData', 'panalData', 'allSensitiveData', 'rowData', 'disabled'],
+  props: ['formData', 'panalData', 'allSensitiveData', 'rowData', 'disabled', 'type'],
   computed: {
     getCmdbQueryPermission () {
       const obj = this.allSensitiveData.find(item => {
@@ -120,6 +139,18 @@ export default {
         }
       }) || {}
       return obj.value
+    },
+    getDisplayValue () {
+      if (!this.panalData[this.formData.propertyName]) return this.$t('tw_no_data')
+      if (this.isShowPassword) {
+        if (this.originVal === this.panalData[this.formData.propertyName]) {
+          return this.realPassword
+        } else {
+          return this.panalData[this.formData.propertyName]
+        }
+      } else {
+        return '******'
+      }
     }
   },
   mounted () {
@@ -180,6 +211,10 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.flex-center {
+  display: flex;
+  align-items: center;
+}
 .operation-icon-confirm {
   font-size: 16px;
   border: 1px solid #57a3f3;

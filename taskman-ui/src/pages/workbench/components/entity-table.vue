@@ -51,7 +51,6 @@
                         :allSensitiveData="allSensitiveData"
                         :rowData="getRowValue(value)"
                         :disabled="formDisabled(i)"
-                        :isAdd="isAdd"
                         style="width: calc(100% - 20px)"
                       />
                     </template>
@@ -304,13 +303,21 @@ export default {
   },
   methods: {
     // 获取cmdb表单权限
-    async getCmdbFormPermission (ciType, guidArr) {
+    async getCmdbFormPermission (ciType, values) {
       let params = []
+      const guidArr = (values && values.map(v => {
+        return {
+          dataId: v.dataId,
+          tmpId: v.id,
+          entityData: v.entityData
+        }
+      })) || []
       this.cmdbSensitiveKeysArr.forEach(name => {
         guidArr.forEach(item => {
           params.push(
             {
               attrName: name,
+              attrVal: item.entityData[name] || '',
               ciType,
               guid: item.dataId,
               requestId: this.requestId,
@@ -345,7 +352,7 @@ export default {
         for (let origin of originData.value) {
           for (let current of data.value) {
             if (origin.id === current.id && origin.entityData[key] === current.entityData[key]) {
-              delete current.entityData[key]
+              // delete current.entityData[key]
             }
           }
         }
@@ -451,16 +458,9 @@ export default {
         this.getCMDBInitData(cmdbOptions)
       }
       // cmdb表单权限初始化
-      if (this.cmdbSensitiveKeysArr && this.cmdbSensitiveKeysArr.length > 0 && this.isAdd) {
-        const guidArr = (data.value && data.value.map(v => {
-          return {
-            dataId: v.dataId,
-            tmpId: v.id
-          }
-        })) || []
-        const ciType = data.entity
-        if (guidArr.length > 0 && ciType) {
-          this.getCmdbFormPermission(ciType, guidArr)
+      if (Array.isArray(this.cmdbSensitiveKeysArr) && this.cmdbSensitiveKeysArr.length > 0) {
+        if (Array.isArray(data.value) && data.value.length > 0 && data.entity) {
+          this.getCmdbFormPermission(data.entity, data.value)
         }
       }
     },

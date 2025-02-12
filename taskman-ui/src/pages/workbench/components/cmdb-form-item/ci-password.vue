@@ -1,6 +1,6 @@
 <template>
   <div class="cmdb-ci-password">
-    <div v-if="formData.sensitive === 'yes' && isAdd" class="flex-center">
+    <div v-if="formData.sensitive === 'yes'" class="flex-center">
       <Tooltip
         max-width="200"
         class="ci-password-cell-show-span"
@@ -11,7 +11,7 @@
       </Tooltip>
       <Button
         @click="showPassword"
-        :disabled="getCmdbQueryPermission === false && panalData[formData.propertyName]"
+        :disabled="getCmdbQueryPermission === false && originVal === panalData[formData.propertyName]"
         :icon="isShowPassword ? 'md-eye-off' : 'md-eye'"
       ></Button>
       <Button
@@ -117,7 +117,7 @@ export default {
       }
     }
   },
-  props: ['formData', 'panalData', 'allSensitiveData', 'rowData', 'disabled', 'isAdd'],
+  props: ['formData', 'panalData', 'allSensitiveData', 'rowData', 'disabled'],
   computed: {
     getCmdbQueryPermission () {
       const obj = this.allSensitiveData.find(item => {

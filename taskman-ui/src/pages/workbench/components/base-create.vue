@@ -817,7 +817,7 @@ export default {
             for (let origin of (originData.value || [])) {
               for (let current of (item.value || [])) {
                 if (origin.id === current.id && origin.entityData[key] === current.entityData[key]) {
-                  delete current.entityData[key]
+                  // delete current.entityData[key]
                 }
               }
             }

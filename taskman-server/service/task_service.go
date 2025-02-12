@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/WeBankPartners/go-common-lib/cipher"
 	"strconv"
 	"strings"
 	"time"
@@ -157,8 +158,21 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 			newFormId, task.Request, task.Id, tmpFormTemplateId, formDataEntity.Oid, operator, operator, nowTime, nowTime,
 		}})
 		for _, formDataItem := range formDataEntity.FormItemValues {
+			var formItemTemplateTable models.FormItemTemplateTable
+			newValue := formDataItem.AttrValue
+			dao.X.SQL("select * from form_item_template where id=?", formDataItem.FormItemMetaId).Get(&formItemTemplateTable)
+			if strings.TrimSpace(formItemTemplateTable.CmdbAttr) != "" && newValue != nil && newValue != "" {
+				cmdbAttrModel := models.EntityAttributeObj{}
+				if err = json.Unmarshal([]byte(formItemTemplateTable.CmdbAttr), &cmdbAttrModel); err != nil {
+					return
+				}
+				if cmdbAttrModel.InputType == string(models.FormItemElementTypePassword) && !strings.HasPrefix(fmt.Sprintf("%v", newValue), models.EncryptPasswordPrefix) {
+					encodeVal, _ := cipher.AesEnPassword(cipher.Md5Encode(models.Config.EncryptSeed)[0:16], fmt.Sprintf("%v", newValue))
+					newValue = models.EncryptSensitivePrefix + encodeVal
+				}
+			}
 			actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time) values (?,?,?,?,?,?,?)", Param: []interface{}{
-				"item_" + guid.CreateGuid(), newFormId, formDataItem.FormItemMetaId, formDataItem.AttrName, formDataItem.AttrValue, task.Request, nowTime,
+				"item_" + guid.CreateGuid(), newFormId, formDataItem.FormItemMetaId, formDataItem.AttrName, newValue, task.Request, nowTime,
 			}})
 		}
 	}

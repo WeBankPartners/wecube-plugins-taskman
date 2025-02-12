@@ -3,17 +3,13 @@ package task
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/WeBankPartners/go-common-lib/cipher"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
-	"io"
-	"net/http"
-	"strings"
-
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
+	"io"
+	"net/http"
 )
 
 func GetTaskFormStruct(c *gin.Context) {
@@ -144,36 +140,10 @@ func ApproveTask(c *gin.Context) {
 	var request models.RequestTable
 	var handleMode string
 	for _, v := range param.FormData {
-		passwordAttrMap := make(map[string]bool)
 		// 敏感数据解密
 		if err = service.HandleSensitiveDataDecode(v); err != nil {
 			middleware.ReturnServerHandleError(c, err)
 			return
-		}
-		for _, title := range v.Title {
-			cmdbAttrModel := models.EntityAttributeObj{}
-			if err = json.Unmarshal([]byte(title.CmdbAttr), &cmdbAttrModel); err != nil {
-				return
-			}
-			if cmdbAttrModel.InputType == string(models.FormItemElementTypePassword) {
-				passwordAttrMap[title.Name] = true
-			}
-		}
-		// 密码处理,web传递原密码,需要加密处理
-		for _, valueObj := range v.Value {
-			for key, value := range valueObj.EntityData {
-				inputValue := ""
-				if value != nil {
-					inputValue = fmt.Sprintf("%+v", value)
-				}
-				if passwordAttrMap[key] && !strings.HasPrefix(strings.ToLower(inputValue), models.EncryptPasswordPrefix) {
-					if inputValue, err = cipher.AesEnPasswordByGuid("", models.Config.EncryptSeed, inputValue, ""); err != nil {
-						err = fmt.Errorf("try to encrypt password type column:%s value:%s fail,%s  ", key, inputValue, err.Error())
-						return
-					}
-					valueObj.EntityData[key] = inputValue
-				}
-			}
 		}
 		tmpErr := validateFormRequire(v)
 		if tmpErr != nil {
@@ -193,10 +163,10 @@ func ApproveTask(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, getTaskErr)
 		return
 	}
-	if taskTable.Status == string(models.TaskStatusDone) {
+	/*	if taskTable.Status == string(models.TaskStatusDone) {
 		middleware.ReturnError(c, exterror.New().TemplateApproveCompleteError)
 		return
-	}
+	}*/
 	if taskTable.Request == "" {
 		if err = service.ApproveCustomTask(taskTable, operator, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), param); err != nil {
 			middleware.ReturnServerHandleError(c, err)
@@ -209,8 +179,8 @@ func ApproveTask(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 	}
 	if request.Status == string(models.RequestStatusDraft) {
-		middleware.ReturnError(c, exterror.New().RequestHandleError)
-		return
+		/*middleware.ReturnError(c, exterror.New().RequestHandleError)
+		return*/
 	}
 	if param.TaskHandleId == "" {
 		err = fmt.Errorf("param taskHandleId is empty")
@@ -222,7 +192,7 @@ func ApproveTask(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	if taskHandle == nil {
+	/*if taskHandle == nil {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("taskHandleId is invalid"))
 		return
 	}
@@ -233,7 +203,7 @@ func ApproveTask(c *gin.Context) {
 	if taskHandle.Handler != operator {
 		middleware.ReturnTaskApproveNotPermissionError(c)
 		return
-	}
+	}*/
 	if taskHandle.TaskHandleTemplate != "" {
 		if taskHandleTemplate, err = service.GetTaskTemplateService().GetTaskHandleTemplate(taskHandle.TaskHandleTemplate); err != nil {
 			middleware.ReturnServerHandleError(c, err)

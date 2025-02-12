@@ -619,11 +619,11 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 		middleware.ReturnError(c, fmt.Errorf("param empty"))
 		return
 	}
-	// 处理 paramList 过滤掉 guid为空数据,新增一行的数据guid为空,查询CMDB返回行guid不为空
+	// 处理 paramList 过滤掉 guid为空数据,以及guid为临时Id,查询CMDB返回行guid不为空
 	for _, param := range paramList {
 		// 直接解密
 		originVal, _ := service.HandleSensitiveValDecode(param.AttrVal)
-		if strings.TrimSpace(param.Guid) == "" {
+		if strings.TrimSpace(param.Guid) == "" || strings.HasPrefix(param.Guid, "tmp"+models.SysTableIdConnector) {
 			result = append(result, &models.AttrPermissionQueryObj{
 				CiType:           param.CiType,
 				AttrName:         param.AttrName,

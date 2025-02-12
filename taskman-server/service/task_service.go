@@ -167,8 +167,10 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 					return
 				}
 				if cmdbAttrModel.InputType == string(models.FormItemElementTypePassword) && !strings.HasPrefix(fmt.Sprintf("%v", newValue), models.EncryptPasswordPrefix) {
-					encodeVal, _ := cipher.AesEnPassword(cipher.Md5Encode(models.Config.EncryptSeed)[0:16], fmt.Sprintf("%v", newValue))
-					newValue = models.EncryptSensitivePrefix + encodeVal
+					if newValue, err = cipher.AesEnPasswordByGuid("", models.Config.EncryptSeed, fmt.Sprintf("%v", newValue), ""); err != nil {
+						err = fmt.Errorf("try to encrypt password type column:%s value:%s fail,%s  ", formDataItem.AttrName, fmt.Sprintf("%v", newValue), err.Error())
+						return
+					}
 				}
 			}
 			actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time) values (?,?,?,?,?,?,?)", Param: []interface{}{

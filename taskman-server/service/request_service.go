@@ -815,7 +815,7 @@ func GetRequestPreData(requestId, entityDataId, userToken, language string) (res
 	}
 	// 处理表单敏感数据
 	for _, entityData := range previewData.EntityTreeNodes {
-		if targetData, err = HandleFormSensitiveData([]map[string]interface{}{entityData.EntityData}, entityData.EntityName, userToken); err != nil {
+		if targetData, err = HandleSensitiveDataEncode([]map[string]interface{}{entityData.EntityData}, entityData.EntityName, userToken); err != nil {
 			return
 		}
 		if len(targetData) > 0 {
@@ -2908,8 +2908,8 @@ func formDataDeepCopy(dataList []*models.RequestPreDataTableObj) []*models.Reque
 	return list
 }
 
-// HandleFormSensitiveData 处理表单敏感数据
-func HandleFormSensitiveData(originData []map[string]interface{}, entity, token string) (targetData []map[string]interface{}, err error) {
+// HandleSensitiveDataEncode 处理表单敏感数据,采用加密处理,密码不用加密
+func HandleSensitiveDataEncode(originData []map[string]interface{}, entity, token string) (targetData []map[string]interface{}, err error) {
 	if len(originData) == 0 {
 		originData = make([]map[string]interface{}, 0)
 	}
@@ -2921,13 +2921,64 @@ func HandleFormSensitiveData(originData []map[string]interface{}, entity, token 
 	}
 	for _, dataMap := range originData {
 		for _, v1 := range refAttributes {
-			if strings.ToUpper(v1.Sensitive) == "YES" || strings.ToUpper(v1.Sensitive) == "Y" {
-				if v, ok := dataMap[v1.PropertyName]; ok && v != "" {
-					dataMap[v1.PropertyName] = models.SensitiveStyle
+			if (strings.ToUpper(v1.Sensitive) == "YES" || strings.ToUpper(v1.Sensitive) == "Y") && v1.InputType != string(models.FormItemElementTypePassword) {
+				if v, ok := dataMap[v1.PropertyName]; ok && v != nil && v != "" {
+					encodeVal, _ := cipher.AesEnPassword(cipher.Md5Encode(models.Config.EncryptSeed)[0:16], fmt.Sprintf("%v", v))
+					dataMap[v1.PropertyName] = models.EncryptSensitivePrefix + encodeVal
 				}
 			}
 		}
 		targetData = append(targetData, dataMap)
+	}
+	return
+}
+
+// HandleSensitiveDataDecode 敏感数据解密
+func HandleSensitiveDataDecode(entityData *models.RequestPreDataTableObj) (err error) {
+	sensitiveAttrMap := make(map[string]bool)
+	cmdbAttrModel := models.EntityAttributeObj{}
+	for _, attr := range entityData.Title {
+		if strings.TrimSpace(attr.CmdbAttr) == "" {
+			continue
+		}
+		if err = json.Unmarshal([]byte(attr.CmdbAttr), &cmdbAttrModel); err != nil {
+			return
+		}
+		if strings.ToUpper(cmdbAttrModel.Sensitive) == "YES" || strings.ToUpper(cmdbAttrModel.Sensitive) == "Y" {
+			sensitiveAttrMap[attr.Name] = true
+		}
+	}
+	for _, entityTreeObj := range entityData.Value {
+		entityDataMap := entityTreeObj.EntityData
+		if len(entityDataMap) > 0 {
+			for key, _ := range sensitiveAttrMap {
+				if v, ok := entityDataMap[key]; ok {
+					if strings.HasPrefix(fmt.Sprintf("%+v", v), models.EncryptSensitivePrefix) {
+						val := fmt.Sprintf("%+v", v)[len(models.EncryptSensitivePrefix):]
+						if val, err = cipher.AesDePassword(cipher.Md5Encode(models.Config.EncryptSeed)[0:16], val); err != nil {
+							log.Logger.Error("AesDePassword err", log.String("key", key), log.String("value", fmt.Sprintf("%+v", v)), log.Error(err))
+						} else {
+							entityTreeObj.EntityData[key] = val
+						}
+					}
+				}
+			}
+		}
+	}
+	return
+}
+
+func HandleSensitiveValDecode(val string) (originVal string, err error) {
+	if val == "" {
+		return
+	}
+	if strings.HasPrefix(val, models.EncryptSensitivePrefix) {
+		val := val[len(models.EncryptSensitivePrefix):]
+		if val, err = cipher.AesDePassword(cipher.Md5Encode(models.Config.EncryptSeed)[0:16], val); err != nil {
+			log.Logger.Error("AesDePassword err", log.String("value", val), log.Error(err))
+		} else {
+			originVal = val
+		}
 	}
 	return
 }

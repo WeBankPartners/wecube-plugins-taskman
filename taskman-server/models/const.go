@@ -1,21 +1,22 @@
 package models
 
 const (
-	DateTimeFormat        = "2006-01-02 15:04:05"
-	NewDateTimeFormat     = "20060102150405"
-	SysTableIdConnector   = "__"
-	UrlPrefix             = "/taskman"
-	RowDataPermissionErr  = "row data permission deny "
-	AdminRole             = "SUPER_ADMIN"
-	UploadFileMaxSize     = 10485760
-	DefaultHttpErrorCode  = "ERROR"
-	WeCubeEmptySearch     = "WeCube-empty-search" //查询空数据
-	Yes                   = "yes"
-	Y                     = "y"
-	ContextApiCode        = "apiCode"
-	HomePage              = "HOME_PAGE"
-	SensitiveStyle        = "******"
-	EncryptPasswordPrefix = "{cipher_a}"
+	DateTimeFormat         = "2006-01-02 15:04:05"
+	NewDateTimeFormat      = "20060102150405"
+	SysTableIdConnector    = "__"
+	UrlPrefix              = "/taskman"
+	RowDataPermissionErr   = "row data permission deny "
+	AdminRole              = "SUPER_ADMIN"
+	UploadFileMaxSize      = 10485760
+	DefaultHttpErrorCode   = "ERROR"
+	WeCubeEmptySearch      = "WeCube-empty-search" //查询空数据
+	Yes                    = "yes"
+	Y                      = "y"
+	ContextApiCode         = "apiCode"
+	HomePage               = "HOME_PAGE"
+	SensitiveStyle         = "******"
+	EncryptPasswordPrefix  = "{cipher_a}"
+	EncryptSensitivePrefix = "{cipher_b}"
 )
 
 // RequestStatus 定义请求状态

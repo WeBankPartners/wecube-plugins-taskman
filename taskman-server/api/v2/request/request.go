@@ -10,7 +10,6 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/try"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -106,36 +105,8 @@ func SaveRequestCache(c *gin.Context) {
 			middleware.ReturnReportRequestNotPermissionError(c)
 			return
 		}
-		// 数据填充,用户对于没有修改的敏感数据不提交,需要先从 request表中找到敏感数据的最新数据
-		if request.Cache != "" {
-			var cacheObj models.RequestPreDataDto
-			var originDataMap = make(map[string]map[string]interface{})
-			err = json.Unmarshal([]byte(request.Cache), &cacheObj)
-			if err != nil {
-				err = fmt.Errorf("try to json unmarshal cache data fail,%s ", err.Error())
-				middleware.ReturnError(c, err)
-				return
-			}
-			for _, datum := range cacheObj.Data {
-				for _, valueItem := range datum.Value {
-					originDataMap[valueItem.Id] = valueItem.EntityData
-				}
-			}
-			for _, entityData := range param.Data {
-				for _, entityItem := range entityData.Value {
-					if valueMap, ok := originDataMap[entityItem.Id]; ok {
-						for key, value := range valueMap {
-							if _, ok = entityItem.EntityData[key]; !ok {
-								entityItem.EntityData[key] = value
-							}
-						}
-					}
-				}
-			}
-		}
-		// 遍历字段类型,如果是cmdb敏感字段,并且用户没有修改,没有修改的话web不传递数据,则替换成敏感字段原始值
 		for _, entityData := range param.Data {
-			if err = RestoreSensitiveData(entityData, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader)); err != nil {
+			if err = service.HandleSensitiveDataDecode(entityData); err != nil {
 				middleware.ReturnServerHandleError(c, err)
 				return
 			}
@@ -413,7 +384,7 @@ func SaveRequestFormData(c *gin.Context) {
 		middleware.ReturnReportRequestNotPermissionError(c)
 		return
 	}
-	if err = RestoreSensitiveData(&param, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader)); err != nil {
+	if err = service.HandleSensitiveDataDecode(&param); err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
@@ -423,54 +394,6 @@ func SaveRequestFormData(c *gin.Context) {
 	} else {
 		middleware.ReturnData(c, param)
 	}
-}
-
-// RestoreSensitiveData 还原敏感数据,敏感数据展示 ******,需要解析回原值
-func RestoreSensitiveData(entityData *models.RequestPreDataTableObj, token, language string) (err error) {
-	sensitiveAttrMap := make(map[string]bool)
-	needReplaceAttrMap := make(map[string]bool)
-	cmdbAttrModel := models.EntityAttributeObj{}
-	var response models.EntityResponse
-	for _, attr := range entityData.Title {
-		if strings.TrimSpace(attr.CmdbAttr) == "" {
-			continue
-		}
-		if err = json.Unmarshal([]byte(attr.CmdbAttr), &cmdbAttrModel); err != nil {
-			return
-		}
-		if strings.ToUpper(cmdbAttrModel.Sensitive) == "YES" || strings.ToUpper(cmdbAttrModel.Sensitive) == "Y" {
-			sensitiveAttrMap[attr.Name] = true
-		}
-	}
-	for _, entityTreeObj := range entityData.Value {
-		entityDataMap := entityTreeObj.EntityData
-		if len(entityDataMap) > 0 {
-			for key, _ := range sensitiveAttrMap {
-				if _, ok := entityDataMap[key]; !ok {
-					needReplaceAttrMap[key] = true
-				}
-			}
-		}
-	}
-	if len(needReplaceAttrMap) > 0 {
-		response, err = rpc.EntitiesQuery(models.EntityQueryParam{}, "wecmdb", entityData.Entity, token, language)
-		if err != nil {
-			return
-		}
-		for _, entityTreeObj := range entityData.Value {
-			for _, dataMap := range response.Data {
-				if dataMap["guid"] == entityTreeObj.DataId || dataMap["id"] == entityTreeObj.DataId {
-					for key, value := range dataMap {
-						if needReplaceAttrMap[key] {
-							entityTreeObj.EntityData[key] = value
-						}
-					}
-					break
-				}
-			}
-		}
-	}
-	return
 }
 
 func DecodeRequestFormDataPassword(c *gin.Context) {

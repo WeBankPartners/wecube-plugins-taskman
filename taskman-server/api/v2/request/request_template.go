@@ -54,7 +54,7 @@ func QueryPlatformEntityData(c *gin.Context) {
 			return
 		}
 		if response.Status == "OK" {
-			if result, err = service.HandleFormSensitiveData(response.Data, entity, c.GetHeader("Authorization")); err != nil {
+			if result, err = service.HandleSensitiveDataEncode(response.Data, entity, c.GetHeader("Authorization")); err != nil {
 				middleware.ReturnServerHandleError(c, err)
 				return
 			}

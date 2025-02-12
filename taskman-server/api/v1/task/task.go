@@ -142,6 +142,11 @@ func ApproveTask(c *gin.Context) {
 	var request models.RequestTable
 	var handleMode string
 	for _, v := range param.FormData {
+		// 敏感数据解密
+		if err = service.HandleSensitiveDataDecode(v); err != nil {
+			middleware.ReturnServerHandleError(c, err)
+			return
+		}
 		tmpErr := validateFormRequire(v)
 		if tmpErr != nil {
 			err = tmpErr

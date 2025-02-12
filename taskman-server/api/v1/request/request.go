@@ -1,7 +1,6 @@
 package request
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/try"
@@ -605,10 +604,12 @@ func Association(c *gin.Context) {
 	middleware.ReturnPageData(c, pageInfo, rowsData)
 }
 
+// AttrSensitiveDataQuery 1.整个itsm流程中 ，被提交人、审批人、定版人、任务人修改or新增过，这个表单的查看按钮不做权限控制——原因：这个改动value属于itsm表单，不需要权限控制
+// 2.整个itsm流程中 ，没有被提交人、审批人、定版人、任务人修改or新增过，这个表单的查看按钮使用对应人的cmdb查看权限做权限控制——原因：这个原value属于cmdb，不能在itsm里绕过cmdb的查看权限去查看数据库里的密码字段/**
 func AttrSensitiveDataQuery(c *gin.Context) {
-	var paramList, filterParamList []*models.RequestFormSensitiveDataParam
-	var result []*models.AttrPermissionQueryObj
-	var request models.RequestTable
+	var paramList, guidNotEmptyParamList []*models.RequestFormSensitiveDataParam
+	var result, subResult []*models.AttrPermissionQueryObj
+	var idValueMap = make(map[string]string)
 	var err error
 	if err = c.ShouldBindJSON(&paramList); err != nil {
 		middleware.ReturnParamValidateError(c, err)
@@ -620,67 +621,44 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 	}
 	// 处理 paramList 过滤掉 guid为空数据,新增一行的数据guid为空,查询CMDB返回行guid不为空
 	for _, param := range paramList {
-		if strings.TrimSpace(param.Guid) != "" {
-			filterParamList = append(filterParamList, param)
+		// 直接解密
+		originVal, _ := service.HandleSensitiveValDecode(param.AttVal)
+		if strings.TrimSpace(param.Guid) == "" {
+			result = append(result, &models.AttrPermissionQueryObj{
+				CiType:           param.CiType,
+				AttrName:         param.AttrName,
+				TmpId:            param.TmpId,
+				QueryPermission:  true,
+				UpdatePermission: true,
+				Value:            originVal,
+			})
+		} else {
+			guidNotEmptyParamList = append(guidNotEmptyParamList, param)
+			idValueMap[param.Guid] = originVal
 		}
 	}
-	if len(filterParamList) > 0 {
-		if result, err = service.GetCMDBCiAttrSensitiveData(filterParamList, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader)); err != nil {
+	// 从CMDB查询拿到初始化数据,跟taskMan数据比对
+	if len(guidNotEmptyParamList) > 0 {
+		if subResult, err = service.GetCMDBCiAttrSensitiveData(guidNotEmptyParamList, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader)); err != nil {
 			middleware.ReturnError(c, err)
 			return
 		}
-	}
-	// 从request表里面拿到最新cache数据,替换result,但是需要使用cmdb权限控制
-	if request, err = service.GetSimpleRequest(paramList[0].RequestId); err != nil {
-		middleware.ReturnError(c, err)
-		return
-	}
-	if request.Cache != "" {
-		var cacheObj models.RequestPreDataDto
-		err = json.Unmarshal([]byte(request.Cache), &cacheObj)
-		if err != nil {
-			err = fmt.Errorf("try to json unmarshal cache data fail,%s ", err.Error())
-			middleware.ReturnError(c, err)
-			return
-		}
-		for _, attrPermission := range result {
-			for _, item := range cacheObj.Data {
-				for _, entityItem := range item.Value {
-					if entityItem.DataId == attrPermission.Guid {
-						if v, ok := entityItem.EntityData[attrPermission.AttrName]; ok && v != nil {
-							attrPermission.Value = fmt.Sprintf("%+v", entityItem.EntityData[attrPermission.AttrName])
-						} else {
-							attrPermission.Value = ""
-						}
-					}
-				}
+		for _, item := range subResult {
+			// 敏感数据被修改了,直接展示
+			if v, ok := idValueMap[item.Guid]; ok && v != item.Value {
+				result = append(result, &models.AttrPermissionQueryObj{
+					CiType:           item.CiType,
+					AttrName:         item.AttrName,
+					Guid:             item.Guid,
+					TmpId:            item.TmpId,
+					QueryPermission:  true,
+					UpdatePermission: true,
+					Value:            v,
+				})
 			}
-		}
-		if len(result) == 0 {
-			result = make([]*models.AttrPermissionQueryObj, 0)
-			for _, param := range paramList {
-				if strings.TrimSpace(param.Guid) == "" {
-					for _, item := range cacheObj.Data {
-						for _, entityItem := range item.Value {
-							if entityItem.Id == param.TmpId {
-								value := ""
-								if v, ok := entityItem.EntityData[param.AttrName]; ok && v != nil {
-									value = fmt.Sprintf("%+v", entityItem.EntityData[param.AttrName])
-								}
-								result = append(result, &models.AttrPermissionQueryObj{
-									CiType:           param.CiType,
-									AttrName:         param.AttrName,
-									QueryPermission:  true,
-									UpdatePermission: true,
-									Value:            value,
-									TmpId:            param.TmpId,
-								})
-							}
-						}
-					}
-				}
-			}
+			result = append(result, item)
 		}
 	}
+
 	middleware.ReturnData(c, result)
 }

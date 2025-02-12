@@ -622,7 +622,7 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 	// 处理 paramList 过滤掉 guid为空数据,新增一行的数据guid为空,查询CMDB返回行guid不为空
 	for _, param := range paramList {
 		// 直接解密
-		originVal, _ := service.HandleSensitiveValDecode(param.AttVal)
+		originVal, _ := service.HandleSensitiveValDecode(param.AttrVal)
 		if strings.TrimSpace(param.Guid) == "" {
 			result = append(result, &models.AttrPermissionQueryObj{
 				CiType:           param.CiType,
@@ -634,7 +634,7 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 			})
 		} else {
 			guidNotEmptyParamList = append(guidNotEmptyParamList, param)
-			idValueMap[param.Guid] = originVal
+			idValueMap[param.Guid+param.AttrName] = originVal
 		}
 	}
 	// 从CMDB查询拿到初始化数据,跟taskMan数据比对
@@ -645,7 +645,7 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 		}
 		for _, item := range subResult {
 			// 敏感数据被修改了,直接展示
-			if v, ok := idValueMap[item.Guid]; ok && v != item.Value {
+			if v, ok := idValueMap[item.Guid+item.AttrName]; ok && v != item.Value {
 				item.QueryPermission = true
 				item.UpdatePermission = true
 				item.Value = v

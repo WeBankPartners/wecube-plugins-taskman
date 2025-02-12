@@ -192,7 +192,7 @@ type BatchExportRequestTemplateParam struct {
 type RequestFormSensitiveDataParam struct {
 	CiType   string `json:"ciType"`
 	AttrName string `json:"attrName"`
-	AttVal   string `json:"attVal"`
+	AttrVal  string `json:"attrVal"`
 	Guid     string `json:"guid"`
 	TmpId    string `json:"tmpId"`
 }

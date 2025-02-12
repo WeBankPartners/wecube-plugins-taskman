@@ -2979,6 +2979,8 @@ func HandleSensitiveValDecode(val string) (originVal string, err error) {
 		} else {
 			originVal = val
 		}
+	} else {
+		originVal = val
 	}
 	return
 }

@@ -646,15 +646,9 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 		for _, item := range subResult {
 			// 敏感数据被修改了,直接展示
 			if v, ok := idValueMap[item.Guid]; ok && v != item.Value {
-				result = append(result, &models.AttrPermissionQueryObj{
-					CiType:           item.CiType,
-					AttrName:         item.AttrName,
-					Guid:             item.Guid,
-					TmpId:            item.TmpId,
-					QueryPermission:  true,
-					UpdatePermission: true,
-					Value:            v,
-				})
+				item.QueryPermission = true
+				item.UpdatePermission = true
+				item.Value = v
 			}
 			result = append(result, item)
 		}

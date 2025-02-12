@@ -2344,9 +2344,18 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		}
 	}
 	result.Request.UncompletedTasks = uncompletedTasks
+	// 清空cache，bindCache 防止敏感数据展示出来
+	result.Request.Cache = ""
+	result.Request.BindCache = ""
 	// 请求详情表单,敏感数据加密
 	for _, task := range result.Task {
+		task.Cache = ""
+		// 任务表单数据加密
 		SensitiveDataEncryption(task.FormData)
+		// 任务处理人表单数据加密
+		for _, taskHandle := range task.TaskHandleList {
+			SensitiveDataEncryption(taskHandle.FormData)
+		}
 	}
 	return
 }

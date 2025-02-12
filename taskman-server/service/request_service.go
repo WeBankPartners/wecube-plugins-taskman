@@ -2344,6 +2344,10 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		}
 	}
 	result.Request.UncompletedTasks = uncompletedTasks
+	// 请求详情表单,敏感数据加密
+	for _, task := range result.Task {
+		SensitiveDataEncryption(task.FormData)
+	}
 	return
 }
 

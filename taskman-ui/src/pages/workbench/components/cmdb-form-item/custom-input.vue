@@ -1,7 +1,7 @@
 <template>
   <div class="taskman-custom-input">
     <!--敏感字段-->
-    <div v-if="column.sensitive === 'yes' && isAdd" class="flex-row">
+    <div v-if="column.sensitive === 'yes'" class="flex-row">
       <Input
         v-if="isShowReal"
         :value="originVal === attrs.value ? getRealValue : attrs.value"
@@ -74,11 +74,6 @@ export default {
     rowData: {
       type: Object,
       default: () => {}
-    },
-    // 是否创建页面
-    isAdd: {
-      type: Boolean,
-      default: false
     }
   },
   data () {
@@ -112,18 +107,6 @@ export default {
     }
   },
   mounted () {
-    // 获取初始值
-    // if (this.getOriginRequestData()) {
-    //   const originRequestData = this.getOriginRequestData().data
-    //   originRequestData.forEach(item => {
-    //     const obj = (item.value && item.value.find(v => {
-    //       return v.id === this.rowData.id
-    //     })) || {}
-    //     if (obj && Object.keys(obj).length > 0) {
-    //       this.originVal = obj.entityData[this.column.inputKey]
-    //     }
-    //   })
-    // }
     this.originVal = this.attrs.value
   },
   methods: {

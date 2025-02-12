@@ -3,12 +3,20 @@
     <div>
       <Row>
         <Col span="4">
-          <Input v-model="name" style="width:90%" type="text" :placeholder="$t('name')"> </Input>
+          <Input
+            v-model="name"
+            style="width:90%"
+            type="text"
+            :placeholder="$t('name')"
+            clearable
+            @on-change="handleInputChange"
+          />
         </Col>
         <Col span="4">
           <Select
             v-model="manageRole"
             @on-open-change="getInitRole"
+            @on-change="onSearch"
             clearable
             filterable
             :placeholder="$t('manageRole')"
@@ -50,6 +58,7 @@
 <script>
 import VVModel from '@/pages/components/vv-model.vue'
 import { getTempGroupList, getManagementRoles, createTempGroup, updateTempGroup, deleteTempGroup } from '@/api/server'
+import { debounce } from '@/pages/util'
 export default {
   name: '',
   data () {
@@ -132,47 +141,33 @@ export default {
         {
           title: this.$t('t_action'),
           key: 'action',
-          width: 160,
+          width: 120,
           align: 'center',
           render: (h, params) => {
-            return h('div', [
-              h(
-                'Button',
-                {
-                  props: {
-                    type: 'primary',
-                    size: 'small'
-                  },
-                  style: {
-                    'margin-left': '8px'
-                  },
-                  on: {
-                    click: () => {
-                      this.editTemp(params.row)
-                    }
-                  }
-                },
-                this.$t('edit')
-              ),
-              h(
-                'Button',
-                {
-                  props: {
-                    type: 'error',
-                    size: 'small'
-                  },
-                  style: {
-                    'margin-left': '8px'
-                  },
-                  on: {
-                    click: () => {
-                      this.deleteTemp(params.row)
-                    }
-                  }
-                },
-                this.$t('delete')
-              )
-            ])
+            return (
+              <div style="display:flex;align-items:center;justify-content:center;">
+                <Tooltip content={this.$t('edit')} placement="top">
+                  <Button
+                    size="small"
+                    type="primary"
+                    style="margin-right:5px;"
+                    onClick={() => this.editTemp(params.row)}
+                  >
+                    <Icon type="md-create" size="16"></Icon>
+                  </Button>
+                </Tooltip>
+                <Tooltip content={this.$t('delete')} placement="top">
+                  <Button
+                    size="small"
+                    type="error"
+                    style="margin-right:5px;"
+                    onClick={() => this.deleteTemp(params.row)}
+                  >
+                    <Icon type="md-trash" size="16"></Icon>
+                  </Button>
+                </Tooltip>
+              </div>
+            )
           }
         }
       ],
@@ -184,6 +179,9 @@ export default {
     this.getTempGroupList()
   },
   methods: {
+    handleInputChange: debounce(function () {
+      this.onSearch()
+    }, 300),
     sortTable (col) {
       const sorting = {
         asc: col.order === 'asc',

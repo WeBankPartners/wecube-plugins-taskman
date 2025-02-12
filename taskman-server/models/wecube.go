@@ -178,7 +178,8 @@ type AttrPermissionQueryObj struct {
 }
 
 type CMDBSensitiveDataResponse struct {
-	Code       int                       `json:"code"`
-	StatusCode string                    `json:"statusCode"`
-	Data       []*AttrPermissionQueryObj `json:"data"`
+	Code          int                       `json:"code"`
+	StatusCode    string                    `json:"statusCode"`
+	StatusMessage string                    `json:"statusMessage"`
+	Data          []*AttrPermissionQueryObj `json:"data"`
 }

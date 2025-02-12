@@ -746,7 +746,7 @@ func GetCMDBCiAttrSensitiveData(paramList []*models.RequestFormSensitiveDataPara
 		return
 	}
 	if response.StatusCode != "OK" {
-		err = fmt.Errorf("query cmdb sensitive-attr err")
+		err = fmt.Errorf("query cmdb sensitive-attr err:%s", response.StatusMessage)
 		return
 	}
 	result = response.Data

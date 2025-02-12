@@ -2286,34 +2286,3 @@ func calcShowRequestRevokeButton(requestId, requestStatus string) bool {
 	// 只有一个任务完成,这个任务只能是任务提交,可以展示撤回按钮
 	return len(taskList) == 1
 }
-
-// SensitiveDataEncryption 敏感数据加密
-func SensitiveDataEncryption(formData []*models.RequestPreDataTableObj) (err error) {
-	for _, entityData := range formData {
-		cmdbAttrMap := make(map[string]bool)
-		for _, attr := range entityData.Title {
-			if strings.TrimSpace(attr.CmdbAttr) == "" {
-				continue
-			}
-			cmdbAttrModel := models.EntityAttributeObj{}
-			if err = json.Unmarshal([]byte(attr.CmdbAttr), &cmdbAttrModel); err != nil {
-				return
-			}
-			if strings.ToUpper(cmdbAttrModel.Sensitive) == "YES" || strings.ToUpper(cmdbAttrModel.Sensitive) == "Y" {
-				cmdbAttrMap[attr.Name] = true
-			}
-		}
-		for _, entityTreeObj := range entityData.Value {
-			entityDataMap := entityTreeObj.EntityData
-			if len(entityDataMap) > 0 {
-				for key, v := range entityDataMap {
-					if cmdbAttrMap[key] && v != "" {
-						entityTreeObj.EntityData[key] = models.SensitiveStyle
-					}
-				}
-			}
-		}
-
-	}
-	return
-}

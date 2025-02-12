@@ -2908,6 +2908,37 @@ func formDataDeepCopy(dataList []*models.RequestPreDataTableObj) []*models.Reque
 	return list
 }
 
+// SensitiveDataEncryption 敏感数据加密
+func SensitiveDataEncryption(formData []*models.RequestPreDataTableObj) (err error) {
+	for _, entityData := range formData {
+		cmdbAttrMap := make(map[string]bool)
+		for _, attr := range entityData.Title {
+			if strings.TrimSpace(attr.CmdbAttr) == "" {
+				continue
+			}
+			cmdbAttrModel := models.EntityAttributeObj{}
+			if err = json.Unmarshal([]byte(attr.CmdbAttr), &cmdbAttrModel); err != nil {
+				return
+			}
+			if (strings.ToUpper(cmdbAttrModel.Sensitive) == "YES" || strings.ToUpper(cmdbAttrModel.Sensitive) == "Y") && cmdbAttrModel.InputType != string(models.FormItemElementTypePassword) {
+				cmdbAttrMap[attr.Name] = true
+			}
+		}
+		for _, entityTreeObj := range entityData.Value {
+			entityDataMap := entityTreeObj.EntityData
+			if len(entityDataMap) > 0 {
+				for key, v := range entityDataMap {
+					if cmdbAttrMap[key] && v != nil && v != "" {
+						encodeVal, _ := cipher.AesEnPassword(cipher.Md5Encode(models.Config.EncryptSeed)[0:16], fmt.Sprintf("%v", v))
+						entityTreeObj.EntityData[key] = models.EncryptSensitivePrefix + encodeVal
+					}
+				}
+			}
+		}
+	}
+	return
+}
+
 // HandleSensitiveDataEncode 处理表单敏感数据,采用加密处理,密码不用加密
 func HandleSensitiveDataEncode(originData []map[string]interface{}, entity, token string) (targetData []map[string]interface{}, err error) {
 	if len(originData) == 0 {

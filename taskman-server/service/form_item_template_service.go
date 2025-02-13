@@ -397,6 +397,7 @@ func (s *FormItemTemplateService) GetFormItemTemplate(formItemTemplateId string)
 func (s *FormItemTemplateService) SyncCmdbAttribute(requestTemplateId, userToken string) (err error) {
 	var formTemplateList []*models.FormTemplateTable
 	var existKeyMap = make(map[string]bool)
+	var refAttributesMap = make(map[string]*models.EntityAttributeObj)
 	if formTemplateList, err = s.formTemplateDao.QueryListByRequestTemplate(requestTemplateId); err != nil {
 		return
 	}
@@ -411,17 +412,18 @@ func (s *FormItemTemplateService) SyncCmdbAttribute(requestTemplateId, userToken
 					err = fmt.Errorf("query remote entity:%s attr fail:%s ", entity, err.Error())
 					return
 				}
+				for _, attribute := range refAttributes {
+					refAttributesMap[attribute.PropertyName] = attribute
+				}
 				if formItemTemplate, err = s.formItemTemplateDao.QueryByFormTemplate(formTemplate.Id); err != nil {
 					return
 				}
 				for _, itemTemplate := range formItemTemplate {
-					for _, attribute := range refAttributes {
-						if itemTemplate.Name == attribute.PropertyName {
-							cmdbAttr, _ := json.Marshal(attribute)
-							if err = s.formItemTemplateDao.UpdateCmdbAttribute(nil, itemTemplate.Id, string(cmdbAttr)); err != nil {
-								return
-							}
-							break
+					if v, ok := refAttributesMap[itemTemplate.Name]; ok {
+						cmdbAttr, _ := json.Marshal(v)
+						itemTemplate.CmdbAttr = string(cmdbAttr)
+						if err = s.formItemTemplateDao.UpdateCmdbAttribute(nil, itemTemplate); err != nil {
+							return
 						}
 					}
 				}

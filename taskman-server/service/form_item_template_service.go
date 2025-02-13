@@ -396,21 +396,26 @@ func (s *FormItemTemplateService) GetFormItemTemplate(formItemTemplateId string)
 // SyncCmdbAttribute 同步cmdb属性给表单项,方便请求表单属性读取控制
 func (s *FormItemTemplateService) SyncCmdbAttribute(requestTemplateId, userToken string) (err error) {
 	var formTemplateList []*models.FormTemplateTable
-	var existKeyMap = make(map[string]bool)
+	var existKeyMap = make(map[string][]*models.EntityAttributeObj)
 	var refAttributesMap = make(map[string]*models.EntityAttributeObj)
 	if formTemplateList, err = s.formTemplateDao.QueryListByRequestTemplate(requestTemplateId); err != nil {
 		return
 	}
 	if len(formTemplateList) > 0 {
 		for _, formTemplate := range formTemplateList {
-			if !existKeyMap[formTemplate.ItemGroup] && strings.HasPrefix(formTemplate.ItemGroup, "wecmdb:") {
+			var refAttributes []*models.EntityAttributeObj
+			if v, ok := existKeyMap[formTemplate.ItemGroup]; ok {
+				refAttributes = v
+			}
+			if strings.HasPrefix(formTemplate.ItemGroup, "wecmdb:") {
 				entity := formTemplate.ItemGroup[7:]
-				existKeyMap[formTemplate.ItemGroup] = true
-				var refAttributes []*models.EntityAttributeObj
 				var formItemTemplate []*models.FormItemTemplateTable
-				if refAttributes, err = GetCMDBCiAttrDefs(entity, userToken); err != nil {
-					err = fmt.Errorf("query remote entity:%s attr fail:%s ", entity, err.Error())
-					return
+				if len(refAttributes) == 0 {
+					if refAttributes, err = GetCMDBCiAttrDefs(entity, userToken); err != nil {
+						err = fmt.Errorf("query remote entity:%s attr fail:%s ", entity, err.Error())
+						return
+					}
+					existKeyMap[formTemplate.ItemGroup] = refAttributes
 				}
 				for _, attribute := range refAttributes {
 					refAttributesMap[attribute.PropertyName] = attribute

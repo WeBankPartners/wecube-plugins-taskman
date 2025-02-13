@@ -633,6 +633,10 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 				Value:            originVal,
 			})
 		} else {
+			// 审批任务时候, guid可能会拼接 wecmdb:前缀,需要截取掉
+			if len(param.Guid) > 7 && strings.HasPrefix(param.Guid, "wecmdb:") {
+				param.Guid = param.Guid[7:]
+			}
 			guidNotEmptyParamList = append(guidNotEmptyParamList, param)
 			idValueMap[param.Guid+param.AttrName] = originVal
 		}

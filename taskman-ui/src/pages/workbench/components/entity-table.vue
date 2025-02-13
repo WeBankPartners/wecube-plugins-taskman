@@ -18,11 +18,11 @@
       </div>
     </div>
     <div class="form-table">
-      <div v-for="(value, index) in tableData" :key="index" class="table-item">
+      <div v-for="(value, index) in tableData" :key="value._id" class="table-item">
         <div class="number">{{ index + 1 }}</div>
         <div class="form">
           <Form :model="value" ref="form" label-position="left" :label-width="100">
-            <Row type="flex" justify="start" :key="index">
+            <Row type="flex" justify="start" :key="value._id">
               <template v-for="i in formOptions">
                 <Col v-if="!value[i.name + 'Hidden']" :key="i.id" :span="i.width || 24">
                   <FormItem
@@ -616,6 +616,7 @@ export default {
               item.value.splice(index, 1)
             }
           })
+          // this.initTableData()
         },
         onCancel: () => {}
       })

@@ -392,3 +392,41 @@ func (s *FormItemTemplateService) GetFormItemTemplate(formItemTemplateId string)
 	result, err = s.formItemTemplateDao.Get(formItemTemplateId)
 	return
 }
+
+// SyncCmdbAttribute 同步cmdb属性给表单项,方便请求表单属性读取控制
+func (s *FormItemTemplateService) SyncCmdbAttribute(requestTemplateId, userToken string) (err error) {
+	var formTemplateList []*models.FormTemplateTable
+	var existKeyMap = make(map[string]bool)
+	if formTemplateList, err = s.formTemplateDao.QueryListByRequestTemplate(requestTemplateId); err != nil {
+		return
+	}
+	if len(formTemplateList) > 0 {
+		for _, formTemplate := range formTemplateList {
+			if !existKeyMap[formTemplate.ItemGroup] && strings.HasPrefix(formTemplate.ItemGroup, "wecmdb:") {
+				entity := formTemplate.ItemGroup[7:]
+				existKeyMap[formTemplate.ItemGroup] = true
+				var refAttributes []*models.EntityAttributeObj
+				var formItemTemplate []*models.FormItemTemplateTable
+				if refAttributes, err = GetCMDBCiAttrDefs(entity, userToken); err != nil {
+					err = fmt.Errorf("query remote entity:%s attr fail:%s ", entity, err.Error())
+					return
+				}
+				if formItemTemplate, err = s.formItemTemplateDao.QueryByFormTemplate(formTemplate.Id); err != nil {
+					return
+				}
+				for _, itemTemplate := range formItemTemplate {
+					for _, attribute := range refAttributes {
+						if itemTemplate.Name == attribute.PropertyName {
+							cmdbAttr, _ := json.Marshal(attribute)
+							if err = s.formItemTemplateDao.UpdateCmdbAttribute(nil, itemTemplate.Id, string(cmdbAttr)); err != nil {
+								return
+							}
+							break
+						}
+					}
+				}
+			}
+		}
+	}
+	return
+}

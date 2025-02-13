@@ -289,6 +289,9 @@ func CreateRequest(param *models.RequestTable, operatorRoles []string, userToken
 			return fmt.Errorf("try to sync proDefId fail,%s ", err.Error())
 		}
 	}
+	if err = GetFormItemTemplateService().SyncCmdbAttribute(param.RequestTemplate, userToken); err != nil {
+		log.Logger.Error("SyncCmdbAttribute fail", log.String("requestTemplateId", param.RequestTemplate), log.Error(err))
+	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	param.Id = newRequestId()
 	requestInsertAction := dao.ExecAction{Sql: "insert into request(id,name,request_template,reporter,emergency,report_role,status,expire_time," +

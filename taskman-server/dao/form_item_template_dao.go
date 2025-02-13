@@ -35,6 +35,21 @@ func (d *FormItemTemplateDao) Update(session *xorm.Session, formItemTemplate *mo
 	return
 }
 
+func (d *FormItemTemplateDao) UpdateCmdbAttribute(session *xorm.Session, formItemTemplateId, cmdbAttr string) (err error) {
+	var affected int64
+	if session == nil {
+		session = d.DB.NewSession()
+		defer session.Close()
+	}
+	if formItemTemplateId == "" {
+		return
+	}
+	affected, err = session.ID(formItemTemplateId).Cols("cmdb_attr").Update(cmdbAttr)
+	// 打印日志
+	logExecuteSql(session, "FormItemTemplateDao", "UpdateCmdbAttribute", formItemTemplateId, affected, err)
+	return
+}
+
 func (d *FormItemTemplateDao) UpdateByRefId(session *xorm.Session, formItemTemplate *models.FormItemTemplateTable, refId string) (err error) {
 	var affected int64
 	if session == nil {

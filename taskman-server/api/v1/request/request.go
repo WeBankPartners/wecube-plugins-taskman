@@ -626,6 +626,7 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 		originVal, _ := service.HandleSensitiveValDecode(param.AttrVal)
 		if strings.TrimSpace(param.Guid) == "" || strings.HasPrefix(param.Guid, "tmp"+models.SysTableIdConnector) {
 			result = append(result, &models.AttrPermissionQueryObj{
+				Guid:             param.Guid,
 				CiType:           param.CiType,
 				AttrName:         param.AttrName,
 				TmpId:            param.TmpId,

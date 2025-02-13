@@ -651,15 +651,15 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 			return
 		}
 		for _, item := range subResult {
-			// 返回给web的guid需要返回原值
-			if v, ok := finalIdMap[item.Guid]; ok {
-				item.Guid = v
-			}
 			// 敏感数据被修改了,直接展示
 			if v, ok := idValueMap[item.Guid+item.AttrName]; ok && v != item.Value {
 				item.QueryPermission = true
 				item.UpdatePermission = true
 				item.Value = v
+			}
+			// 返回给web的guid需要返回原值
+			if v, ok := finalIdMap[item.Guid]; ok {
+				item.Guid = v
 			}
 			result = append(result, item)
 		}

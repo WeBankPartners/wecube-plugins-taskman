@@ -610,6 +610,7 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 	var paramList, guidNotEmptyParamList []*models.RequestFormSensitiveDataParam
 	var result, subResult []*models.AttrPermissionQueryObj
 	var idValueMap = make(map[string]string)
+	var finalIdMap = make(map[string]string)
 	var err error
 	if err = c.ShouldBindJSON(&paramList); err != nil {
 		middleware.ReturnParamValidateError(c, err)
@@ -635,7 +636,9 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 		} else {
 			// 审批时候, guid可能会拼接 wecmdb:business_product:business_product_6241b387c3d04818b45ab 前缀,需要截取取最后一个:
 			if len(param.Guid) > 7 && strings.HasPrefix(param.Guid, "wecmdb:") {
+				tmp := param.Guid
 				param.Guid = param.Guid[strings.LastIndex(param.Guid, ":")+1:]
+				finalIdMap[param.Guid] = tmp
 			}
 			guidNotEmptyParamList = append(guidNotEmptyParamList, param)
 			idValueMap[param.Guid+param.AttrName] = originVal
@@ -648,6 +651,10 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 			return
 		}
 		for _, item := range subResult {
+			// 返回给web的guid需要返回原值
+			if v, ok := finalIdMap[item.Guid]; ok {
+				item.Guid = v
+			}
 			// 敏感数据被修改了,直接展示
 			if v, ok := idValueMap[item.Guid+item.AttrName]; ok && v != item.Value {
 				item.QueryPermission = true

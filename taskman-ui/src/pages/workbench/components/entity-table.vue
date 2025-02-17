@@ -225,8 +225,8 @@ export default {
       }
     },
     getCMDBColumn () {
-      return function (attr) {
-        return this.cmdbOptions.find(i => i.propertyName === attr) || {}
+      return function (name) {
+        return this.cmdbOptions.find(i => i.propertyName === name) || {}
       }
     },
     // 当前行数据(非entityData)

@@ -23,6 +23,8 @@
                   :options="cmdbOptions"
                   :column="getCMDBColumn(i.name)"
                   :value="value"
+                  :allSensitiveData="allSensitiveData"
+                  :rowData="rowData"
                   :disabled="i.isEdit === 'no' || disabled"
                   style="width: calc(100% - 20px)"
                 />
@@ -83,7 +85,7 @@
 
 <script>
 import LimitSelect from '@/pages/components/limit-select.vue'
-import { getRefOptions, getWeCmdbOptions } from '@/api/server'
+import { getRefOptions, getWeCmdbOptions, getCmdbFormPermission } from '@/api/server'
 import { evaluateCondition } from '../evaluate'
 import { components } from './cmdb-form-item/action.js'
 import { fixArrStrToJsonArray, deepClone } from '@/pages/util'
@@ -99,6 +101,10 @@ export default {
       default: () => []
     },
     value: {
+      type: Object,
+      default: () => {}
+    },
+    rowData: {
       type: Object,
       default: () => {}
     },
@@ -124,13 +130,15 @@ export default {
       refKeys: [],
       entityData: {},
       formOptions: [],
-      cmdbOptions: []
+      cmdbOptions: [],
+      cmdbSensitiveKeysArr: [], // cmdb表单敏感字段name集合
+      allSensitiveData: [] // 当前所有敏感字段数据
     }
   },
   computed: {
     getCMDBColumn () {
-      return function (attr) {
-        return this.cmdbOptions.find(i => i.propertyName === attr) || {}
+      return function (name) {
+        return this.cmdbOptions.find(i => i.propertyName === name) || {}
       }
     }
   },
@@ -174,6 +182,7 @@ export default {
             }
           })
           // cmdb表单属性初始化
+          this.cmdbSensitiveKeysArr = []
           const cmdbOptions = []
           const formOptions = deepClone(this.formOptions)
           formOptions.forEach(item => {
@@ -182,10 +191,17 @@ export default {
               item.cmdbAttr.editable = item.isEdit
               const cmdbObj = Object.assign({}, { ...item.cmdbAttr, titleObj: item })
               cmdbOptions.push(cmdbObj)
+              if (item.cmdbAttr.sensitive === 'yes') {
+                this.cmdbSensitiveKeysArr.push(item.name)
+              }
             }
           })
           if (cmdbOptions && cmdbOptions.length > 0) {
             this.getCMDBInitData(cmdbOptions)
+          }
+          // cmdb表单权限初始化
+          if (Array.isArray(this.cmdbSensitiveKeysArr) && this.cmdbSensitiveKeysArr.length > 0) {
+            this.getCmdbFormPermission()
           }
         }
       },
@@ -337,6 +353,37 @@ export default {
         }
       }
       this.cmdbOptions = columns
+    },
+    // 获取cmdb表单权限
+    async getCmdbFormPermission () {
+      const ciType = this.rowData.entityName
+      const values = [this.rowData]
+      let params = []
+      const guidArr = (values && values.map(v => {
+        return {
+          dataId: v.dataId,
+          tmpId: v.id,
+          entityData: v.entityData
+        }
+      })) || []
+      this.cmdbSensitiveKeysArr.forEach(name => {
+        guidArr.forEach(item => {
+          params.push(
+            {
+              attrName: name,
+              attrVal: item.entityData[name] || '',
+              ciType,
+              guid: item.dataId,
+              requestId: this.requestId,
+              tmpId: item.tmpId
+            }
+          )
+        })
+      })
+      const { statusCode, data } = await getCmdbFormPermission(params)
+      if (statusCode === 'OK') {
+        this.allSensitiveData = data || []
+      }
     }
   }
 }

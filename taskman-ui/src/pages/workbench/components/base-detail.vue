@@ -252,7 +252,7 @@
                           v-if="item.formData && item.formData.length"
                           :data="item.formData"
                           :requestId="requestId"
-                          :taskHandleId="taskHandleId"
+                          :taskHandleId="item.id"
                           formDisable
                         ></EntityTable>
                         <div v-else class="no-data">

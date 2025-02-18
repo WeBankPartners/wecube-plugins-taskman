@@ -14,7 +14,6 @@ const (
 	Y                      = "y"
 	ContextApiCode         = "apiCode"
 	HomePage               = "HOME_PAGE"
-	SensitiveStyle         = "******"
 	EncryptPasswordPrefix  = "{cipher_a}"
 	EncryptSensitivePrefix = "{cipher_b}"
 	ModifyPrefixConstant   = "modify_"

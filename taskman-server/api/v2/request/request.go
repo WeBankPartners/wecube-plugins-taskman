@@ -135,6 +135,7 @@ func SaveRequestCache(c *gin.Context) {
 							err = fmt.Errorf("try to encrypt password type column:%s value:%s fail,%s  ", key, inputValue, err.Error())
 							return
 						}
+						entityItem.EntityData[models.ModifyPrefixConstant+key] = 1
 						entityItem.EntityData[key] = inputValue
 					}
 				}

@@ -6,6 +6,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/try"
 	"io"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 
@@ -664,28 +665,22 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 		for _, item := range subResult {
 			// 没有数据查询权限,数据返回为空,需要对比表单数据
 			if item.Value == "" && !item.QueryPermission {
-				for _, formItem := range formItemList {
-					if strings.HasSuffix(formItem.RowDataId, item.Guid) && formItem.Name == item.AttrName && item.TaskHandleId == formItem.TaskHandle {
-						if formItem.ModifyFlag == 1 {
-							// 修改过
-							item.QueryPermission = true
-							item.UpdatePermission = true
-							item.Value = formItem.Value
-						}
-					}
+				if ok, v := checkHasModifyData(item, formItemList); ok {
+					// 修改过
+					item.QueryPermission = true
+					item.UpdatePermission = true
+					item.Value = v
 				}
 			} else {
 				// 敏感数据被修改了,直接展示
 				if v, ok := idValueMap[item.Guid+item.AttrName]; ok {
-					if v == item.Value && !item.QueryPermission {
-						// 没有查询权限,数据相等,也不能表示没有修改,需要查询表单数据数据确定是否修改过
-						for _, formItem := range formItemList {
-							if strings.HasSuffix(formItem.RowDataId, item.Guid) && formItem.Name == item.AttrName && item.TaskHandleId == formItem.TaskHandle {
-								if formItem.ModifyFlag == 1 {
-									// 修改过
-									item.QueryPermission = true
-									item.UpdatePermission = true
-								}
+					if v == item.Value {
+						if !item.QueryPermission {
+							// 没有查询权限,数据相等,也不能表示没有修改,需要查询表单数据数据确定是否修改过
+							if ok, _ := checkHasModifyData(item, formItemList); ok {
+								// 修改过
+								item.QueryPermission = true
+								item.UpdatePermission = true
 							}
 						}
 					} else {
@@ -705,4 +700,36 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 	}
 
 	middleware.ReturnData(c, result)
+}
+
+// checkHasModifyData 检查是否修改过数据,根据 taskHandleId,如果 formItemList中不存在 taskHandleId表示处理最新的任务,如果存在，则找小于该taskHanleId里面的数据如果有更新,后面都修改过
+func checkHasModifyData(item *models.AttrPermissionQueryObj, formItemList []*models.FormItemTable) (bool, string) {
+	var filterFormItemList []*models.FormItemTable
+	for _, formItem := range formItemList {
+		if strings.HasSuffix(formItem.RowDataId, item.Guid) && formItem.Name == item.AttrName {
+			filterFormItemList = append(filterFormItemList, formItem)
+		}
+	}
+	// 按Id 倒序
+	sort.Slice(filterFormItemList, func(i, j int) bool {
+		return filterFormItemList[i].Id > filterFormItemList[j].Id
+	})
+	var index int
+	var value string
+	for i, formItem := range filterFormItemList {
+		if formItem.TaskHandle == item.TaskHandleId {
+			index = i
+			value = formItem.Value
+			break
+		}
+	}
+	for i := index; i < len(filterFormItemList); i++ {
+		if filterFormItemList[i].ModifyFlag == 1 {
+			if value == "" {
+				value = filterFormItemList[i].Value
+			}
+			return true, value
+		}
+	}
+	return false, value
 }

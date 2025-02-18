@@ -551,6 +551,7 @@ func (s *RequestService) processTaskForm(formParam models.ProcessTaskFormParam) 
 						err = fmt.Errorf("try to encrypt password type column:%s value:%s fail,%s  ", key, inputValue, err.Error())
 						return
 					}
+					valueObj.EntityData[models.ModifyPrefixConstant+key] = 1
 					valueObj.EntityData[key] = inputValue
 				}
 			}
@@ -3012,7 +3013,9 @@ func HandleSensitiveDataDecode(entityData *models.RequestPreDataTableObj) (err e
 						}
 					} else {
 						// 没有加密,表示数据有改动
-						entityTreeObj.EntityData[models.ModifyPrefixConstant+key] = 1
+						if !strings.HasPrefix(fmt.Sprintf("%+v", v), models.EncryptPasswordPrefix) {
+							entityTreeObj.EntityData[models.ModifyPrefixConstant+key] = 1
+						}
 					}
 				}
 			}

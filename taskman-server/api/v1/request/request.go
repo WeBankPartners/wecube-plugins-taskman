@@ -665,11 +665,11 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 		for _, item := range subResult {
 			// 没有数据查询权限,数据返回为空,需要对比表单数据
 			if item.Value == "" && !item.QueryPermission {
-				if ok, v := checkHasModifyData(item, formItemList); ok {
+				if ok := checkHasModifyData(item, formItemList); ok {
 					// 修改过
 					item.QueryPermission = true
 					item.UpdatePermission = true
-					item.Value = v
+					item.Value = idValueMap[item.Guid+item.AttrName]
 				}
 			} else {
 				// 敏感数据被修改了,直接展示
@@ -677,7 +677,7 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 					if v == item.Value {
 						if !item.QueryPermission {
 							// 没有查询权限,数据相等,也不能表示没有修改,需要查询表单数据数据确定是否修改过
-							if ok, _ := checkHasModifyData(item, formItemList); ok {
+							if ok := checkHasModifyData(item, formItemList); ok {
 								// 修改过
 								item.QueryPermission = true
 								item.UpdatePermission = true
@@ -703,34 +703,16 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 }
 
 // checkHasModifyData 检查是否修改过数据,根据 taskHandleId,如果 formItemList中不存在 taskHandleId表示处理最新的任务,如果存在，则找小于该taskHanleId里面的数据如果有更新,后面都修改过
-func checkHasModifyData(item *models.AttrPermissionQueryObj, formItemList []*models.FormItemTable) (bool, string) {
+func checkHasModifyData(item *models.AttrPermissionQueryObj, formItemList []*models.FormItemTable) bool {
 	var filterFormItemList []*models.FormItemTable
-	var value string
 	if item.TaskHandleId != "" {
 		var formItemTimeEnd string
-		task, _ := service.GetTaskService().GetTaskByTaskHandleId(item.TaskHandleId)
-		if task != nil {
-			if task.Status == string(models.TaskStatusDone) {
-				// 当前任务完成就找一个任务的创建时间为终止时间
-				nextTask, _ := service.GetTaskService().GetNextTaskByCurTaskId(task.Id, task.Request)
-				if nextTask != nil {
-					t1, _ := time.Parse(models.DateTimeFormat, nextTask.CreatedTime)
-					formItemTimeEnd = t1.Format(models.DateTimeFormat)
-				} else {
-					// 表示当前最后一个任务,能看所有表单数据,终止时间为当前任务向后延迟一个月,肯定能看到所有表单
-					t1, _ := time.Parse(models.DateTimeFormat, task.CreatedTime)
-					t1.Add(time.Duration(30*24) * time.Hour)
-					formItemTimeEnd = t1.Format(models.DateTimeFormat)
-				}
-			} else {
-				// 处理中,看到的表单为小于当前任务的表单
-				formItemTimeEnd = task.CreatedTime
-			}
-		}
+		taskHandle, _ := service.GetTaskHandleService().Get(item.TaskHandleId)
+		formItemTimeEnd = taskHandle.UpdatedTime
 		for _, formItem := range formItemList {
 			t1, _ := time.Parse(models.DateTimeFormat, formItem.UpdatedTime)
 			t2, _ := time.Parse(models.DateTimeFormat, formItemTimeEnd)
-			if t1.Before(t2) && strings.HasSuffix(formItem.RowDataId, item.Guid) && formItem.Name == item.AttrName {
+			if t1.Compare(t2) <= 0 && strings.HasSuffix(formItem.RowDataId, item.Guid) && formItem.Name == item.AttrName {
 				filterFormItemList = append(filterFormItemList, formItem)
 			}
 		}
@@ -745,11 +727,10 @@ func checkHasModifyData(item *models.AttrPermissionQueryObj, formItemList []*mod
 	sort.Slice(filterFormItemList, func(i, j int) bool {
 		return filterFormItemList[i].Id > filterFormItemList[j].Id
 	})
-	value = filterFormItemList[0].Value
 	for i := 0; i < len(filterFormItemList); i++ {
 		if filterFormItemList[i].ModifyFlag == 1 {
-			return true, value
+			return true
 		}
 	}
-	return false, value
+	return false
 }

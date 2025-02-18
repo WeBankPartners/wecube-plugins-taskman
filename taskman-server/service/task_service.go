@@ -1245,3 +1245,31 @@ func (s *TaskService) GetLatestTaskListByRequestIdAndTaskTemplateId(requestId, t
 	}
 	return
 }
+
+func (s *TaskService) GetTaskByTaskHandleId(taskHandleId string) (task *models.TaskTable, err error) {
+	var taskList []*models.TaskTable
+	if err = dao.X.SQL("select * from task where id in (select task from task_handle where id = ?)", taskHandleId).Find(&taskList); err != nil {
+		return
+	}
+	if len(taskList) > 0 {
+		task = taskList[0]
+	}
+	return
+}
+
+func (s *TaskService) GetNextTaskByCurTaskId(curTaskId, requestId string) (task *models.TaskTable, err error) {
+	var taskList []*models.TaskTable
+	var index int
+	if err = dao.X.SQL("select * from task where request= ? order by id desc", requestId).Find(&taskList); err != nil {
+		return
+	}
+	for i, task := range taskList {
+		if task.Id == curTaskId {
+			index = i - 1
+		}
+	}
+	if index != -1 {
+		task = taskList[index]
+	}
+	return
+}

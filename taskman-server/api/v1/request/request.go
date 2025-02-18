@@ -705,29 +705,49 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 // checkHasModifyData 检查是否修改过数据,根据 taskHandleId,如果 formItemList中不存在 taskHandleId表示处理最新的任务,如果存在，则找小于该taskHanleId里面的数据如果有更新,后面都修改过
 func checkHasModifyData(item *models.AttrPermissionQueryObj, formItemList []*models.FormItemTable) (bool, string) {
 	var filterFormItemList []*models.FormItemTable
-	for _, formItem := range formItemList {
-		if strings.HasSuffix(formItem.RowDataId, item.Guid) && formItem.Name == item.AttrName {
-			filterFormItemList = append(filterFormItemList, formItem)
+	var value string
+	if item.TaskHandleId != "" {
+		var formItemTimeEnd string
+		task, _ := service.GetTaskService().GetTaskByTaskHandleId(item.TaskHandleId)
+		if task != nil {
+			if task.Status == string(models.TaskStatusDone) {
+				// 当前任务完成就找一个任务的创建时间为终止时间
+				nextTask, _ := service.GetTaskService().GetNextTaskByCurTaskId(task.Id, task.Request)
+				if nextTask != nil {
+					t1, _ := time.Parse(models.DateTimeFormat, nextTask.CreatedTime)
+					formItemTimeEnd = t1.Format(models.DateTimeFormat)
+				} else {
+					// 表示当前最后一个任务,能看所有表单数据,终止时间为当前任务向后延迟一个月,肯定能看到所有表单
+					t1, _ := time.Parse(models.DateTimeFormat, task.CreatedTime)
+					t1.Add(time.Duration(30*24) * time.Hour)
+					formItemTimeEnd = t1.Format(models.DateTimeFormat)
+				}
+			} else {
+				// 处理中,看到的表单为小于当前任务的表单
+				formItemTimeEnd = task.CreatedTime
+			}
+		}
+		for _, formItem := range formItemList {
+			t1, _ := time.Parse(models.DateTimeFormat, formItem.UpdatedTime)
+			t2, _ := time.Parse(models.DateTimeFormat, formItemTimeEnd)
+			if t1.Before(t2) && strings.HasSuffix(formItem.RowDataId, item.Guid) && formItem.Name == item.AttrName {
+				filterFormItemList = append(filterFormItemList, formItem)
+			}
+		}
+	} else {
+		for _, formItem := range formItemList {
+			if strings.HasSuffix(formItem.RowDataId, item.Guid) && formItem.Name == item.AttrName {
+				filterFormItemList = append(filterFormItemList, formItem)
+			}
 		}
 	}
 	// 按Id 倒序
 	sort.Slice(filterFormItemList, func(i, j int) bool {
 		return filterFormItemList[i].Id > filterFormItemList[j].Id
 	})
-	var index int
-	var value string
-	for i, formItem := range filterFormItemList {
-		if formItem.TaskHandle == item.TaskHandleId {
-			index = i
-			value = formItem.Value
-			break
-		}
-	}
-	for i := index; i < len(filterFormItemList); i++ {
+	value = filterFormItemList[0].Value
+	for i := 0; i < len(filterFormItemList); i++ {
 		if filterFormItemList[i].ModifyFlag == 1 {
-			if value == "" {
-				value = filterFormItemList[i].Value
-			}
 			return true, value
 		}
 	}

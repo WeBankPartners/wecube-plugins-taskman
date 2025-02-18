@@ -585,10 +585,15 @@ func (s *RequestService) processTaskForm(formParam models.ProcessTaskFormParam) 
 			// 判断数据行属性的变化
 			for k, v := range valueObj.EntityData {
 				var valueString string
+				var modifyFlag int
 				// 判断属性合不合法，是不是属性该表单的属性
 				formItemTemplateId, nameLegalCheck := columnNameIdMap[k]
 				if !nameLegalCheck {
 					continue
+				}
+				// 表示修改过
+				if _, ok := valueObj.EntityData[models.ModifyPrefixConstant+k]; ok {
+					modifyFlag = 1
 				}
 				// map需要特殊处理
 				if reflect.ValueOf(v).Kind() == reflect.Map {
@@ -658,22 +663,20 @@ func (s *RequestService) processTaskForm(formParam models.ProcessTaskFormParam) 
 				}
 				if latestPoolItem.FormItemId == "" {
 					// 没有在数据池里找到相关数据行的该属性
-					actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time,task_handle) values (?,?,?,?,?,?,?,?)", Param: []interface{}{
-						"item_" + guid.CreateGuid(), formId, formItemTemplateId, k, valueString, formParam.RequestId, nowTime, taskHandleId,
-					}})
+					actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time,task_handle,item_group,modify_flag) values (?,?,?,?,?,?,?,?,?,?)",
+						Param: []interface{}{"item_" + guid.CreateGuid(), formId, formItemTemplateId, k, valueString, formParam.RequestId, nowTime, taskHandleId, tableForm.ItemGroup, modifyFlag}})
 				} else {
 					if latestPoolItem.Value != valueString {
 						// 数据有更新
 						if formParam.Task != nil && latestPoolItem.Task == formParam.Task.Id {
 							// 属于该任务，更新数据值
-							actions = append(actions, &dao.ExecAction{Sql: "update form_item set value=?,updated_time=?,task_handle=? where id=?", Param: []interface{}{
-								valueString, nowTime, taskHandleId, latestPoolItem.FormItemId,
+							actions = append(actions, &dao.ExecAction{Sql: "update form_item set value=?,modify_flag=?,updated_time=?,task_handle=? where id=?", Param: []interface{}{
+								valueString, modifyFlag, nowTime, taskHandleId, latestPoolItem.FormItemId,
 							}})
 						} else {
 							// 不属于该任务，新增数据纪录
-							actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time,original_id,task_handle) values (?,?,?,?,?,?,?,?,?)", Param: []interface{}{
-								"item_" + guid.CreateGuid(), formId, formItemTemplateId, k, valueString, formParam.RequestId, nowTime, latestPoolItem.FormItemId, taskHandleId,
-							}})
+							actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time,original_id,task_handle,item_group,modify_flag) values (?,?,?,?,?,?,?,?,?,?,?)",
+								Param: []interface{}{"item_" + guid.CreateGuid(), formId, formItemTemplateId, k, valueString, formParam.RequestId, nowTime, latestPoolItem.FormItemId, taskHandleId, tableForm.ItemGroup, modifyFlag}})
 						}
 					}
 				}
@@ -3007,6 +3010,9 @@ func HandleSensitiveDataDecode(entityData *models.RequestPreDataTableObj) (err e
 						} else {
 							entityTreeObj.EntityData[key] = val
 						}
+					} else {
+						// 没有加密,表示数据有改动
+						entityTreeObj.EntityData[models.ModifyPrefixConstant+key] = 1
 					}
 				}
 			}

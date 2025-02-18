@@ -17,6 +17,7 @@ const (
 	SensitiveStyle         = "******"
 	EncryptPasswordPrefix  = "{cipher_a}"
 	EncryptSensitivePrefix = "{cipher_b}"
+	ModifyPrefixConstant   = "modify_"
 )
 
 // RequestStatus 定义请求状态

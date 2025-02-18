@@ -190,9 +190,11 @@ type BatchExportRequestTemplateParam struct {
 }
 
 type RequestFormSensitiveDataParam struct {
-	CiType   string `json:"ciType"`
-	AttrName string `json:"attrName"`
-	AttrVal  string `json:"attrVal"`
-	Guid     string `json:"guid"`
-	TmpId    string `json:"tmpId"`
+	RequestId    string `json:"requestId"`
+	CiType       string `json:"ciType"`
+	AttrName     string `json:"attrName"`
+	AttrVal      string `json:"attrVal"`
+	Guid         string `json:"guid"`
+	TmpId        string `json:"tmpId"`
+	TaskHandleId string `json:"taskHandleId"`
 }

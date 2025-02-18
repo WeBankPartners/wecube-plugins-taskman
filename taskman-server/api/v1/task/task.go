@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
@@ -163,10 +164,10 @@ func ApproveTask(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, getTaskErr)
 		return
 	}
-	/*	if taskTable.Status == string(models.TaskStatusDone) {
+	if taskTable.Status == string(models.TaskStatusDone) {
 		middleware.ReturnError(c, exterror.New().TemplateApproveCompleteError)
 		return
-	}*/
+	}
 	if taskTable.Request == "" {
 		if err = service.ApproveCustomTask(taskTable, operator, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), param); err != nil {
 			middleware.ReturnServerHandleError(c, err)
@@ -179,8 +180,8 @@ func ApproveTask(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 	}
 	if request.Status == string(models.RequestStatusDraft) {
-		/*middleware.ReturnError(c, exterror.New().RequestHandleError)
-		return*/
+		middleware.ReturnError(c, exterror.New().RequestHandleError)
+		return
 	}
 	if param.TaskHandleId == "" {
 		err = fmt.Errorf("param taskHandleId is empty")
@@ -192,7 +193,7 @@ func ApproveTask(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	/*if taskHandle == nil {
+	if taskHandle == nil {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("taskHandleId is invalid"))
 		return
 	}
@@ -203,7 +204,7 @@ func ApproveTask(c *gin.Context) {
 	if taskHandle.Handler != operator {
 		middleware.ReturnTaskApproveNotPermissionError(c)
 		return
-	}*/
+	}
 	if taskHandle.TaskHandleTemplate != "" {
 		if taskHandleTemplate, err = service.GetTaskTemplateService().GetTaskHandleTemplate(taskHandle.TaskHandleTemplate); err != nil {
 			middleware.ReturnServerHandleError(c, err)

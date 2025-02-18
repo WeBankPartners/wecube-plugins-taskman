@@ -612,12 +612,21 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 	var idValueMap = make(map[string]string)
 	var finalIdMap = make(map[string]string)
 	var err error
+	var formItemList []*models.FormItemTable
 	if err = c.ShouldBindJSON(&paramList); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
 	if len(paramList) == 0 {
 		middleware.ReturnError(c, fmt.Errorf("param empty"))
+		return
+	}
+	if strings.TrimSpace(paramList[0].RequestId) == "" {
+		middleware.ReturnError(c, fmt.Errorf("param requestId empty"))
+		return
+	}
+	if formItemList, err = service.GetFormService().QueryFormItemListByRequest(paramList[0].RequestId); err != nil {
+		middleware.ReturnError(c, err)
 		return
 	}
 	// 处理 paramList 过滤掉 guid为空数据,以及guid为临时Id,查询CMDB返回行guid不为空
@@ -633,6 +642,7 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 				QueryPermission:  true,
 				UpdatePermission: true,
 				Value:            originVal,
+				TaskHandleId:     param.TaskHandleId,
 			})
 		} else {
 			// 审批时候, guid可能会拼接 wecmdb:business_product:business_product_6241b387c3d04818b45ab 前缀,需要截取取最后一个:
@@ -652,11 +662,39 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 			return
 		}
 		for _, item := range subResult {
-			// 敏感数据被修改了,直接展示
-			if v, ok := idValueMap[item.Guid+item.AttrName]; ok && v != item.Value {
-				item.QueryPermission = true
-				item.UpdatePermission = true
-				item.Value = v
+			// 没有数据查询权限,数据返回为空,需要对比表单数据
+			if item.Value == "" && !item.QueryPermission {
+				for _, formItem := range formItemList {
+					if strings.HasSuffix(formItem.RowDataId, item.Guid) && formItem.Name == item.AttrName && item.TaskHandleId == formItem.TaskHandle {
+						if formItem.ModifyFlag == 1 {
+							// 修改过
+							item.QueryPermission = true
+							item.UpdatePermission = true
+							item.Value = formItem.Value
+						}
+					}
+				}
+			} else {
+				// 敏感数据被修改了,直接展示
+				if v, ok := idValueMap[item.Guid+item.AttrName]; ok {
+					if v == item.Value && !item.QueryPermission {
+						// 没有查询权限,数据相等,也不能表示没有修改,需要查询表单数据数据确定是否修改过
+						for _, formItem := range formItemList {
+							if strings.HasSuffix(formItem.RowDataId, item.Guid) && formItem.Name == item.AttrName && item.TaskHandleId == formItem.TaskHandle {
+								if formItem.ModifyFlag == 1 {
+									// 修改过
+									item.QueryPermission = true
+									item.UpdatePermission = true
+								}
+							}
+						}
+					} else {
+						// 不相等 一定是修改过
+						item.QueryPermission = true
+						item.UpdatePermission = true
+						item.Value = v
+					}
+				}
 			}
 			// 返回给web的guid需要返回原值
 			if v, ok := finalIdMap[item.Guid]; ok {

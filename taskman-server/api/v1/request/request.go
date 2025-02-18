@@ -712,7 +712,7 @@ func checkHasModifyData(item *models.AttrPermissionQueryObj, formItemList []*mod
 		for _, formItem := range formItemList {
 			t1, _ := time.Parse(models.DateTimeFormat, formItem.UpdatedTime)
 			t2, _ := time.Parse(models.DateTimeFormat, formItemTimeEnd)
-			if t1.Compare(t2) <= 0 && strings.HasSuffix(formItem.RowDataId, item.Guid) && formItem.Name == item.AttrName {
+			if (t1.Before(t2) || t1.Equal(t2)) && strings.HasSuffix(formItem.RowDataId, item.Guid) && formItem.Name == item.AttrName {
 				filterFormItemList = append(filterFormItemList, formItem)
 			}
 		}

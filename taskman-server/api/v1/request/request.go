@@ -736,7 +736,7 @@ func checkHasModifyData(item *models.AttrPermissionQueryObj, formItemList []*mod
 		}
 	} else {
 		for _, formItem := range formItemList {
-			if strings.HasSuffix(formItem.RowDataId, item.Guid) && formItem.Name == item.AttrName {
+			if strings.HasSuffix(formItem.RowDataId, item.Guid) && formItem.Name == item.AttrName && formItem.TaskHandle == "" {
 				filterFormItemList = append(filterFormItemList, formItem)
 			}
 		}

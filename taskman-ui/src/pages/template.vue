@@ -2,7 +2,7 @@
   <div class="taskman-template-list">
     <div>
       <Row>
-        <Tabs v-model="status" @on-click="onSearch">
+        <Tabs v-model="status" @on-click="onSearch" style="width: 100%;">
           <!--已发布-->
           <TabPane :label="$t('status_confirm')" name="confirm"></TabPane>
           <!--草稿-->
@@ -16,10 +16,10 @@
         </Tabs>
       </Row>
       <Row>
-        <Col span="4">
+        <Col :span="4">
           <Input
             v-model="name"
-            style="width: 90%"
+            style="width: 90%;"
             type="text"
             :placeholder="$t('name')"
             clearable
@@ -27,10 +27,10 @@
           >
           </Input>
         </Col>
-        <Col span="4">
+        <Col :span="4">
           <Input
             v-model="tags"
-            style="width: 90%"
+            style="width: 90%;"
             type="text"
             :placeholder="$t('tags')"
             clearable
@@ -38,7 +38,7 @@
           >
           </Input>
         </Col>
-        <Col span="4">
+        <Col :span="4">
           <Select
             v-model="mgmtRoles"
             @on-open-change="getInitRole"
@@ -47,37 +47,37 @@
             multiple
             :max-tag-count="3"
             :placeholder="$t('tw_template_owner_role')"
-            style="width: 90%"
+            style="width: 90%;"
             @on-change="onSearch"
           >
             <Option v-for="item in roleOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
           </Select>
         </Col>
-        <Col span="4">
+        <Col :span="4">
           <Select
             v-model="type"
             clearable
             filterable
             multiple
             :placeholder="$t('tw_useScene')"
-            style="width: 90%"
+            style="width: 90%;"
             @on-change="onSearch"
           >
             <Option v-for="item in typeList" :value="item.value" :key="item.value">{{ item.label }}</Option>
           </Select>
         </Col>
-        <Col span="4">
+        <Col :span="4">
           <Button @click="onSearch" type="primary">{{ $t('search') }}</Button>
-          <Button @click="handleReset" style="margin-left:8px;" type="default">{{ $t('reset') }}</Button>
+          <Button @click="handleReset" style="margin-left: 8px;" type="default">{{ $t('reset') }}</Button>
         </Col>
-        <div style="display:flex;float:right;">
+        <Col :span="4" style="display: flex;justify-content: flex-end;">
           <Button @click="addTemplate" type="success">{{ $t('add') }}</Button>
           <Upload
             :action="uploadUrl"
             :before-upload="handleUpload"
             :show-upload-list="false"
             with-credentials
-            style="margin-left:10px;"
+            style="margin-left: 10px;"
             :headers="headers"
             :on-success="uploadSucess"
             :on-error="uploadFailed"
@@ -87,12 +87,12 @@
               {{ $t('upload') }}
             </Button>
           </Upload>
-        </div>
+        </Col>
       </Row>
     </div>
     <Table
       ref="maxHeight"
-      style="margin:12px 0;"
+      style="margin: 12px 0;"
       @on-sort-change="sortTable"
       size="small"
       :loading="loading"
@@ -101,7 +101,7 @@
       :max-height="maxHeight"
     ></Table>
     <Page
-      style="text-align:right;"
+      style="text-align: right;"
       :total="pagination.total"
       @on-change="changPage"
       show-sizer

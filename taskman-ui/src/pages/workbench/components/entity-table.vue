@@ -161,7 +161,13 @@ export default {
       type: Array,
       default: () => []
     },
+    // 请求ID
     requestId: {
+      type: String,
+      default: ''
+    },
+    // 任务处理ID
+    taskHandleId: {
       type: String,
       default: ''
     },
@@ -170,7 +176,7 @@ export default {
       type: Boolean,
       default: false
     },
-    // 无数据时，是否默认添加一行
+    // 是否默认添加一行
     autoAddRow: {
       type: Boolean,
       default: false
@@ -179,6 +185,7 @@ export default {
       type: Boolean,
       default: false
     },
+    // 接口返回原始数据
     originRequestData: {
       type: Array,
       default: () => []
@@ -321,6 +328,7 @@ export default {
               ciType,
               guid: item.dataId,
               requestId: this.requestId,
+              taskHandleId: this.taskHandleId,
               tmpId: item.tmpId
             }
           )

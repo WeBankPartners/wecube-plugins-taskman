@@ -1,7 +1,7 @@
 <template>
   <div class="taskman-custom-input">
     <!--敏感字段-->
-    <div v-if="column.sensitive === 'yes'" class="flex-row">
+    <div v-if="column.sensitive && column.sensitive === 'yes'" class="flex-row">
       <Input
         v-if="isShowReal"
         :value="originVal === attrs.value ? getRealValue : attrs.value"

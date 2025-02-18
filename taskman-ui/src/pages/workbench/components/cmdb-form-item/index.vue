@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-10-18 17:55:45
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2025-02-17 20:27:31
+ * @LastEditTime: 2025-02-18 15:42:40
 -->
 <template>
   <div class="cmdb-entity-table">
@@ -58,15 +58,6 @@
     </template>
     <template v-else-if="column.component === 'Input' && column.inputType === 'int'">
       <div style="display:flex;">
-        <!-- <InputNumber
-          v-bind="getInputProps(column, value)"
-          :max="99999999"
-          :min="-99999999"
-          :precision="0"
-          placeholder=""
-          @input="(v) => {setValueHandler(v, column, value)}"
-          style="width:500px;"
-        /> -->
         <CustomInputNumber
           :attrs="getInputProps(column, value)"
           :column="column"
@@ -177,7 +168,7 @@ import WeCMDBSelect from './cmdb-select.vue'
 import WeCMDBRefSelect from './cmdb-ref-select/index'
 import Diffvariable from './diff-variable.vue'
 import CustomInput from './custom-input.vue'
-import customInputNumber from './custom-input-number.vue'
+import CustomInputNumber from './custom-input-number.vue'
 export default {
   components: {
     WeCMDBCIPassword,
@@ -187,7 +178,7 @@ export default {
     WeCMDBRefSelect,
     Diffvariable,
     CustomInput,
-    customInputNumber
+    CustomInputNumber
   },
   props: {
     options: {

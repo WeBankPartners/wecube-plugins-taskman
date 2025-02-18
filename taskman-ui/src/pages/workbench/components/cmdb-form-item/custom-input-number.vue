@@ -1,7 +1,7 @@
 <template>
-  <div class="taskman-custom-input">
+  <div class="taskman-custom-input-number">
     <!--敏感字段-->
-    <div v-if="column.sensitive === 'yes'" class="flex-row">
+    <div v-if="column.sensitive && column.sensitive === 'yes'" class="flex-row">
       <Input
         v-if="isShowReal"
         :value="originVal === attrs.value ? getRealValue : attrs.value"
@@ -24,7 +24,6 @@
     </div>
     <!--非敏感字段-->
     <div v-else class="flex-row">
-      <!-- <Input v-bind="attrs" placeholder="" style="width: 500px;" @input="handleInputChange"></Input> -->
       <InputNumber
         v-bind="attrs"
         :max="99999999"
@@ -37,11 +36,6 @@
     </div>
     <!--敏感字段编辑弹框-->
     <Modal v-model="isShowEditModal" :title="$t('edit')">
-      <!-- <Input
-        v-model="editValue"
-        placeholder=""
-        style="width: 450px;"
-      ></Input> -->
       <InputNumber
         v-model="editValue"
         :max="99999999"

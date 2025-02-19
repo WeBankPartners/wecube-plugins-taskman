@@ -709,7 +709,7 @@ func checkHasModifyData(item *models.AttrPermissionQueryObj, formItemList []*mod
 		filterFormItemList = mergeParallelFormData(item, formItemList)
 	} else {
 		for _, formItem := range formItemList {
-			if strings.HasSuffix(formItem.RowDataId, item.Guid) && formItem.Name == item.AttrName && formItem.TaskHandle == "" {
+			if (strings.HasSuffix(formItem.RowDataId, item.Guid) && strings.HasSuffix(formItem.RowDataId, item.TmpId)) && formItem.Name == item.AttrName && formItem.TaskHandle == "" {
 				filterFormItemList = append(filterFormItemList, formItem)
 			}
 		}
@@ -767,7 +767,7 @@ func mergeParallelFormData(item *models.AttrPermissionQueryObj, formItemList []*
 		t1, _ := time.Parse(models.DateTimeFormat, formItem.UpdatedTime)
 		t2, _ := time.Parse(models.DateTimeFormat, formItemTimeEnd)
 		// 如果有并行处理任务,只需要取最后处理的表单数据. 如果taskHandleId 等于并行处理form_item的taskHandleId则取这个表单数据
-		if (t1.Before(t2) || t1.Equal(t2)) && strings.HasSuffix(formItem.RowDataId, item.Guid) && formItem.Name == item.AttrName {
+		if (t1.Before(t2) || t1.Equal(t2)) && (strings.HasSuffix(formItem.RowDataId, item.Guid) && strings.HasSuffix(formItem.RowDataId, item.TmpId)) && formItem.Name == item.AttrName {
 			filterFormItemList = append(filterFormItemList, formItem)
 		}
 	}

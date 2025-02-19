@@ -126,10 +126,11 @@ func SaveRequestCache(c *gin.Context) {
 			// 密码处理,web传递原密码,需要加密处理
 			for _, entityItem := range entityData.Value {
 				for key, value := range entityItem.EntityData {
-					inputValue := ""
-					if value != nil {
-						inputValue = fmt.Sprintf("%+v", value)
+					// 空数据不用加密
+					if value == nil || fmt.Sprintf("%+v", value) == "" {
+						continue
 					}
+					inputValue := fmt.Sprintf("%+v", value)
 					if passwordAttrMap[key] && !strings.HasPrefix(strings.ToLower(inputValue), models.EncryptPasswordPrefix) {
 						if inputValue, err = cipher.AesEnPasswordByGuid("", models.Config.EncryptSeed, inputValue, ""); err != nil {
 							err = fmt.Errorf("try to encrypt password type column:%s value:%s fail,%s  ", key, inputValue, err.Error())

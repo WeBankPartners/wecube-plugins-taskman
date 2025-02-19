@@ -44,7 +44,7 @@ func (d *FormItemTemplateDao) UpdateCmdbAttribute(session *xorm.Session, formIte
 	if formItemTemplate.Id == "" {
 		return
 	}
-	affected, err = session.ID(formItemTemplate.Id).Cols("cmdb_attr").Update(formItemTemplate)
+	affected, err = session.ID(formItemTemplate.Id).Cols("cmdb_attr", "required", "is_edit").Update(formItemTemplate)
 	// 打印日志
 	logExecuteSql(session, "FormItemTemplateDao", "UpdateCmdbAttribute", formItemTemplate.Id, affected, err)
 	return

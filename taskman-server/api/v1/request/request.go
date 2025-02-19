@@ -632,17 +632,23 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 	}
 	// 处理 paramList 过滤掉 guid为空数据,以及guid为临时Id,查询CMDB返回行guid不为空
 	for _, param := range paramList {
+		item := &models.AttrPermissionQueryObj{
+			CiType:       param.CiType,
+			AttrName:     param.AttrName,
+			Guid:         param.Guid,
+			TmpId:        param.TmpId,
+			RequestId:    param.RequestId,
+			TaskHandleId: param.TaskHandleId,
+		}
+		// 原数据为空,直接展示有查看权限,value为空
+		if param.AttrVal == "" {
+			item.QueryPermission = true
+			item.Value = ""
+			result = append(result, item)
+		}
 		// 直接解密
 		originVal, _ := service.HandleSensitiveValDecode(param.AttrVal)
 		if strings.TrimSpace(param.Guid) == "" || strings.HasPrefix(param.Guid, "tmp"+models.SysTableIdConnector) {
-			item := &models.AttrPermissionQueryObj{
-				CiType:       param.CiType,
-				AttrName:     param.AttrName,
-				Guid:         param.Guid,
-				TmpId:        param.TmpId,
-				RequestId:    param.RequestId,
-				TaskHandleId: param.TaskHandleId,
-			}
 			// 临时Id，需要从表单数据里面查询
 			if strings.HasPrefix(param.Guid, "tmp"+models.SysTableIdConnector) {
 				if ok := checkHasModifyData(item, formItemList); ok {

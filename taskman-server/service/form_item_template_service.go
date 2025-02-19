@@ -424,9 +424,15 @@ func (s *FormItemTemplateService) SyncCmdbAttribute(requestTemplateId, userToken
 					return
 				}
 				for _, itemTemplate := range formItemTemplate {
+					required := "no"
 					if v, ok := refAttributesMap[itemTemplate.Name]; ok {
 						cmdbAttr, _ := json.Marshal(v)
 						itemTemplate.CmdbAttr = string(cmdbAttr)
+						if v.Nullable == "no" {
+							required = "yes"
+						}
+						itemTemplate.IsEdit = v.Editable
+						itemTemplate.Required = required
 						if err = s.formItemTemplateDao.UpdateCmdbAttribute(nil, itemTemplate); err != nil {
 							return
 						}

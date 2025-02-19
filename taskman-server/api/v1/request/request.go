@@ -635,34 +635,28 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 		// 直接解密
 		originVal, _ := service.HandleSensitiveValDecode(param.AttrVal)
 		if strings.TrimSpace(param.Guid) == "" || strings.HasPrefix(param.Guid, "tmp"+models.SysTableIdConnector) {
+			item := &models.AttrPermissionQueryObj{
+				CiType:       param.CiType,
+				AttrName:     param.AttrName,
+				Guid:         param.Guid,
+				TmpId:        param.TmpId,
+				RequestId:    param.RequestId,
+				TaskHandleId: param.TaskHandleId,
+			}
 			// 临时Id，需要从表单数据里面查询
 			if strings.HasPrefix(param.Guid, "tmp"+models.SysTableIdConnector) {
-				item := &models.AttrPermissionQueryObj{
-					CiType:       param.CiType,
-					AttrName:     param.AttrName,
-					Guid:         param.Guid,
-					TmpId:        param.TmpId,
-					RequestId:    param.RequestId,
-					TaskHandleId: param.TaskHandleId,
-				}
 				if ok := checkHasModifyData(item, formItemList); ok {
 					// 修改过
 					item.QueryPermission = true
 					item.UpdatePermission = true
 					item.Value = originVal
 				}
-				continue
+			} else {
+				item.QueryPermission = true
+				item.UpdatePermission = true
+				item.Value = originVal
 			}
-			result = append(result, &models.AttrPermissionQueryObj{
-				Guid:             param.Guid,
-				CiType:           param.CiType,
-				AttrName:         param.AttrName,
-				TmpId:            param.TmpId,
-				QueryPermission:  true,
-				UpdatePermission: true,
-				Value:            originVal,
-				TaskHandleId:     param.TaskHandleId,
-			})
+			result = append(result, item)
 		} else {
 			// 审批时候, guid可能会拼接 wecmdb:business_product:business_product_6241b387c3d04818b45ab 前缀,需要截取取最后一个:
 			if len(param.Guid) > 7 && strings.HasPrefix(param.Guid, "wecmdb:") {

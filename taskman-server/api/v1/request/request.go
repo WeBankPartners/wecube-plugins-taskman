@@ -706,16 +706,7 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 func checkHasModifyData(item *models.AttrPermissionQueryObj, formItemList []*models.FormItemTable) bool {
 	var filterFormItemList []*models.FormItemTable
 	if item.TaskHandleId != "" {
-		var formItemTimeEnd string
-		taskHandle, _ := service.GetTaskHandleService().Get(item.TaskHandleId)
-		formItemTimeEnd = taskHandle.UpdatedTime
-		for _, formItem := range formItemList {
-			t1, _ := time.Parse(models.DateTimeFormat, formItem.UpdatedTime)
-			t2, _ := time.Parse(models.DateTimeFormat, formItemTimeEnd)
-			if (t1.Before(t2) || t1.Equal(t2)) && strings.HasSuffix(formItem.RowDataId, item.Guid) && formItem.Name == item.AttrName {
-				filterFormItemList = append(filterFormItemList, formItem)
-			}
-		}
+		filterFormItemList = mergeParallelFormData(item, formItemList)
 	} else {
 		for _, formItem := range formItemList {
 			if strings.HasSuffix(formItem.RowDataId, item.Guid) && formItem.Name == item.AttrName && formItem.TaskHandle == "" {
@@ -733,4 +724,52 @@ func checkHasModifyData(item *models.AttrPermissionQueryObj, formItemList []*mod
 		}
 	}
 	return false
+}
+
+// mergeParallelFormData 合并并行审批表单数据
+func mergeParallelFormData(item *models.AttrPermissionQueryObj, formItemList []*models.FormItemTable) (filterFormItemList []*models.FormItemTable) {
+	var formItemTimeEnd string
+	taskList, _ := service.GetTaskService().QueryListByRequestId(item.RequestId)
+	filterFormItemList = []*models.FormItemTable{}
+	for _, task := range taskList {
+		taskTemplate, _ := service.GetTaskTemplateService().Get(task.TaskTemplate)
+		// 审批任务有并行处理,就需要过滤数据
+		if taskTemplate != nil && taskTemplate.HandleMode == string(models.TaskTemplateHandleModeAll) {
+			taskHandleList, _ := service.GetTaskHandleService().GetTaskHandleListByTaskIdAndTimeDesc(task.Id)
+			var taskHandleExist bool
+			var delTaskHandleMap = make(map[string]bool)
+			for _, taskHandle := range taskHandleList {
+				if taskHandle.Id == item.TaskHandleId {
+					taskHandleExist = true
+				} else {
+					delTaskHandleMap[taskHandle.Id] = true
+				}
+			}
+			// 传递的taskHandleId 不在该task 处理里面,则取最新taskHandle数据保留,其他taskHandle的表单处理需要过滤掉
+			if !taskHandleExist && len(taskHandleList) > 1 {
+				for _, taskHandle := range taskHandleList[1:] {
+					delTaskHandleMap[taskHandle.Id] = true
+				}
+			}
+			var tmpFormItemList []*models.FormItemTable
+			for _, formItem := range formItemList {
+				if delTaskHandleMap[formItem.TaskHandle] {
+					continue
+				}
+				tmpFormItemList = append(tmpFormItemList, formItem)
+			}
+			formItemList = tmpFormItemList
+		}
+	}
+	taskHandle, _ := service.GetTaskHandleService().Get(item.TaskHandleId)
+	formItemTimeEnd = taskHandle.UpdatedTime
+	for _, formItem := range formItemList {
+		t1, _ := time.Parse(models.DateTimeFormat, formItem.UpdatedTime)
+		t2, _ := time.Parse(models.DateTimeFormat, formItemTimeEnd)
+		// 如果有并行处理任务,只需要取最后处理的表单数据. 如果taskHandleId 等于并行处理form_item的taskHandleId则取这个表单数据
+		if (t1.Before(t2) || t1.Equal(t2)) && strings.HasSuffix(formItem.RowDataId, item.Guid) && formItem.Name == item.AttrName {
+			filterFormItemList = append(filterFormItemList, formItem)
+		}
+	}
+	return
 }

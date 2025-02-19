@@ -106,6 +106,11 @@ func (s *TaskHandleService) GetTaskHandleListByTaskId(taskId string) (taskHandle
 	return
 }
 
+func (s *TaskHandleService) GetTaskHandleListByTaskIdAndTimeDesc(taskId string) (taskHandleList []*models.TaskHandleTable, err error) {
+	err = dao.X.SQL("select * from task_handle where task = ? and latest_flag = 1 order by updated_time desc", taskId).Find(&taskHandleList)
+	return
+}
+
 func (s *TaskHandleService) Get(id string) (taskHandle *models.TaskHandleTable, err error) {
 	var taskHandleList []*models.TaskHandleTable
 	err = dao.X.SQL("select * from task_handle where id = ? and latest_flag = 1", id).Find(&taskHandleList)

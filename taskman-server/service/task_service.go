@@ -1273,3 +1273,7 @@ func (s *TaskService) GetNextTaskByCurTaskId(curTaskId, requestId string) (task 
 	}
 	return
 }
+
+func (s *TaskService) QueryListByRequestId(requestId string) (taskList []*models.TaskTable, err error) {
+	return s.taskDao.QueryByRequest(requestId)
+}

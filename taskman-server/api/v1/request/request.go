@@ -635,6 +635,24 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 		// 直接解密
 		originVal, _ := service.HandleSensitiveValDecode(param.AttrVal)
 		if strings.TrimSpace(param.Guid) == "" || strings.HasPrefix(param.Guid, "tmp"+models.SysTableIdConnector) {
+			// 临时Id，需要从表单数据里面查询
+			if strings.HasPrefix(param.Guid, "tmp"+models.SysTableIdConnector) {
+				item := &models.AttrPermissionQueryObj{
+					CiType:       param.CiType,
+					AttrName:     param.AttrName,
+					Guid:         param.Guid,
+					TmpId:        param.TmpId,
+					RequestId:    param.RequestId,
+					TaskHandleId: param.TaskHandleId,
+				}
+				if ok := checkHasModifyData(item, formItemList); ok {
+					// 修改过
+					item.QueryPermission = true
+					item.UpdatePermission = true
+					item.Value = originVal
+				}
+				continue
+			}
 			result = append(result, &models.AttrPermissionQueryObj{
 				Guid:             param.Guid,
 				CiType:           param.CiType,

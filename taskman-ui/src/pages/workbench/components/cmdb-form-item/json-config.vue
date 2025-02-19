@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-11-19 10:23:32
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2025-01-06 16:36:18
+ * @LastEditTime: 2025-02-19 16:06:27
 -->
 <template>
   <div class="taskman-cmdb-json-config">
@@ -10,7 +10,12 @@
     <Tooltip v-if="disabled" max-width="350" style="width: 100%" placement="bottom-start" :content="jsonDataString">
       <div class="inline">
         <span class="text">{{ jsonDataString || $t('tw_no_data') }}</span>
-        <Icon type="md-eye" @click="showDetail = true" class="operation-icon-confirm" />
+        <Button
+          @click="showDetail = true"
+          type="primary"
+          ghost
+          icon="md-eye"
+        ></Button>
       </div>
     </Tooltip>
     <!--编辑-->
@@ -110,20 +115,11 @@ export default {
       font-size: 13px;
       color:#515a6e;
       display: block;
-      max-width: 380px;
+      max-width: 450px;
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
-    }
-    .operation-icon-confirm {
-      font-size: 16px;
-      border: 1px solid #57a3f3;
-      color: #57a3f3;
-      border-radius: 4px;
-      width: 32px;
-      line-height: 28px;
-      cursor: pointer;
-      margin-left: 5px;
+      margin-right: 6px;
     }
   }
 }

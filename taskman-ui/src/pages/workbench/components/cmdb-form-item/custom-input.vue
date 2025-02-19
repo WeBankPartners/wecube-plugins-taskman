@@ -7,34 +7,40 @@
         :value="originVal === attrs.value ? getRealValue : attrs.value"
         disabled
         placeholder=""
-        style="width: 500px;"
       />
-      <Input v-else :value="!attrs.value ? '' : '******'" disabled placeholder="" style="width: 500px;" />
+      <Input v-else :value="!attrs.value ? '' : '******'" disabled placeholder="" />
       <Button
         @click="handlePreviewData"
         :disabled="getCmdbQueryPermission === false && originVal === attrs.value"
+        type="primary"
+        ghost
         :icon="isShowReal ? 'md-eye-off' : 'md-eye'"
       ></Button>
       <Button
         v-if="attrs.disabled === false"
         @click="handleEditData"
         type="primary"
-        icon="md-create"
+        ghost
+        icon="md-build"
       ></Button>
       <Button
         v-if="column.autofillable === 'yes' && column.autoFillType === 'suggest'"
         @click="$emit('input', 'suggest#')"
         :disabled="attrs.disabled"
+        type="primary"
+        ghost
         icon="md-checkmark"
       ></Button>
     </div>
     <!--非敏感字段-->
     <div v-else class="flex-row">
-      <Input v-bind="attrs" placeholder="" style="width: 500px;" @input="handleInputChange"></Input>
+      <Input v-bind="attrs" placeholder="" @input="handleInputChange"></Input>
       <Button
         v-if="column.autofillable === 'yes' && column.autoFillType === 'suggest'"
         @click="$emit('input', 'suggest#')"
         :disabled="attrs.disabled"
+        type="primary"
+        ghost
         icon="md-checkmark"
       ></Button>
     </div>

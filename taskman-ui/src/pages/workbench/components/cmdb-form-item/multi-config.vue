@@ -10,7 +10,13 @@
     >
       <div class="inline">
         <span class="text">{{ type === 'json' ? originData : (formaMultiData && formaMultiData.length === 0 ? $t('tw_no_data') :  formaMultiData) }}</span>
-        <Icon v-if="type === 'json'" type="md-eye" @click="showDetail = true" class="operation-icon-confirm" />
+        <Button
+          v-if="type === 'json'"
+          @click="showDetail = true"
+          type="primary"
+          ghost
+          icon="md-eye"
+        ></Button>
       </div>
     </Tooltip>
     <!--编辑-->
@@ -24,11 +30,11 @@
               v-if="type === 'number'"
               :max="99999999"
               :min="-99999999"
-              style="width:360px"
+              style="width:400px"
               :precision="0"
               v-model="item.value"
             />
-            <Input v-else v-model="item.value" :maxlength="255" show-word-limit style="width:360px"></Input>
+            <Input v-else v-model="item.value" :maxlength="255" show-word-limit style="width:400px"></Input>
             <Button @click="addItem" type="primary" size="small" icon="ios-add" style="margin:0 4px"></Button>
             <Button @click="deleteItem(itemIndex)" v-if="multiData.length !== 1" size="small" type="error" icon="ios-trash"></Button>
           </div>
@@ -178,20 +184,11 @@ export default {
       font-size: 13px;
       color:#515a6e;
       display: block;
-      max-width: 400px;
+      max-width: 450px;
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
-    }
-    .operation-icon-confirm {
-      font-size: 16px;
-      border: 1px solid #57a3f3;
-      color: #57a3f3;
-      border-radius: 4px;
-      width: 32px;
-      line-height: 28px;
-      cursor: pointer;
-      margin-left: 5px;
+      margin-right: 6px;
     }
   }
 }

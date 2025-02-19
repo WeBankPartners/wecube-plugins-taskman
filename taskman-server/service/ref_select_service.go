@@ -754,6 +754,7 @@ func GetCMDBCiAttrSensitiveData(paramList []*models.RequestFormSensitiveDataPara
 		for i, param := range paramList {
 			result[i].TaskHandleId = param.TaskHandleId
 			result[i].RequestId = param.RequestId
+			result[i].TmpId = param.TmpId
 		}
 	}
 	return

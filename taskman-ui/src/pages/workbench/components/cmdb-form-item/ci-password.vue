@@ -1,49 +1,45 @@
 <template>
   <div class="cmdb-ci-password">
     <div v-if="formData.sensitive === 'yes'" class="flex-center">
-      <Tooltip
-        max-width="200"
-        class="ci-password-cell-show-span"
-        placement="bottom-start"
-        :content="getDisplayValue"
-      >
-        <div class="password-wrapper">{{ getDisplayValue }}</div>
-      </Tooltip>
+      <Input :value="getDisplayValue" disabled placeholder="" />
       <Button
         @click="showPassword"
         :disabled="getCmdbQueryPermission === false && originVal === panalData[formData.propertyName]"
+        type="primary"
+        ghost
         :icon="isShowPassword ? 'md-eye-off' : 'md-eye'"
       ></Button>
       <Button
         v-if="disabled === false"
         @click="resetPassword"
         type="primary"
-        icon="md-create"
+        ghost
+        icon="md-build"
       ></Button>
     </div>
     <div v-else class="flex-center">
-      <Tooltip
-        max-width="200"
-        class="ci-password-cell-show-span"
-        placement="bottom-start"
-        :content="panalData[formData.propertyName] || $t('tw_no_data')"
-      >
-        <div class="password-wrapper">{{ panalData[formData.propertyName] ? (isShowPassword ? panalData[formData.propertyName] : '******') : $t('tw_no_data') }}</div>
-      </Tooltip>
+      <Input
+        :value="panalData[formData.propertyName] ? (isShowPassword ? panalData[formData.propertyName] : '******') : $t('tw_no_data')"
+        disabled
+        placeholder=""
+      />
       <Button
         @click="showPassword"
+        type="primary"
+        ghost
         :icon="isShowPassword ? 'md-eye-off' : 'md-eye'"
       ></Button>
       <Button
         v-if="disabled === false"
         @click="resetPassword"
         type="primary"
-        icon="md-create"
+        ghost
+        icon="md-build"
       ></Button>
     </div>
     <!--密码编辑弹框-->
     <Modal v-model="isShowEditModal" :title="useLocalValue ? $t('tw_enter_password') : $t('tw_password_edit')">
-      <Form ref="form" :model="editFormData" :rules="rules" label-position="right" :label-width="120">
+      <Form ref="form" :model="editFormData" :rules="rules" label-position="right" :label-width="100">
         <FormItem :label="useLocalValue ? $t('tw_password') : $t('tw_new_password')" prop="newPassword">
           <Input
             class="encrypt-password"

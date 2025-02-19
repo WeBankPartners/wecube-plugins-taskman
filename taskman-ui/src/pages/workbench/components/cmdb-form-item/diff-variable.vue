@@ -1,8 +1,14 @@
 <template>
   <div class="taskman-cmdb-diff-variable">
     <div class="inline">
-      <span class="text">{{ data || $t('tw_no_data') }}</span>
-      <Icon v-if="data" type="md-eye" @click="showDetail = true" class="operation-icon-confirm" />
+      <div class="text">{{ data || $t('tw_no_data') }}</div>
+      <Button
+        v-if="data"
+        @click="showDetail = true"
+        type="primary"
+        ghost
+        icon="md-eye"
+      ></Button>
     </div>
     <!--详情弹框-->
     <Modal :z-index="2000" v-model="showDetail" :title="$t('tw_diff_variable')" @on-ok="showDetail = false" width="1100">
@@ -90,20 +96,11 @@ export default {
       font-size: 13px;
       color:#515a6e;
       display: block;
-      max-width: 380px;
+      max-width: 450px;
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
-    }
-    .operation-icon-confirm {
-      font-size: 16px;
-      border: 1px solid #57a3f3;
-      color: #57a3f3;
-      border-radius: 4px;
-      width: 32px;
-      line-height: 28px;
-      cursor: pointer;
-      margin-left: 5px;
+      margin-right: 6px;
     }
   }
 }

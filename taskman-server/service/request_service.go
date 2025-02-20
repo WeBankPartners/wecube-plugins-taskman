@@ -374,8 +374,11 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 				value.EntityDataOp = "create"
 				value.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, guid.CreateGuid())
 				value.DisplayName = concatItemDisplayName(value.EntityData, nameList)
-			} else if value.EntityDataOp == "create" {
-				if !strings.HasPrefix(value.Id, "tmp") {
+			} else {
+				// CMDB 下拉框包括默认带过来的数据都需要用 dataId
+				if strings.TrimSpace(value.DataId) != "" && strings.TrimSpace(value.PackageName) != "" && strings.TrimSpace(value.EntityName) != "" {
+					value.Id = value.PackageName + ":" + value.EntityName + ":" + value.DataId
+				} else if value.EntityDataOp == "create" && !strings.HasPrefix(value.Id, "tmp") {
 					value.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, value.Id)
 				}
 			}

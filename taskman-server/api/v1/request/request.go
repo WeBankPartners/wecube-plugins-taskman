@@ -614,6 +614,8 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 	var finalIdMap = make(map[string]string)
 	var err error
 	var formItemList []*models.FormItemTable
+	token := c.GetHeader("Authorization")
+	language := c.GetHeader(middleware.AcceptLanguageHeader)
 	if err = c.ShouldBindJSON(&paramList); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
@@ -651,7 +653,7 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 		if strings.TrimSpace(param.Guid) == "" || strings.HasPrefix(param.Guid, "tmp"+models.SysTableIdConnector) {
 			// 临时Id，需要从表单数据里面查询
 			if strings.HasPrefix(param.Guid, "tmp"+models.SysTableIdConnector) {
-				if ok := checkHasModifyData(item, formItemList); ok {
+				if ok := checkHasModifyData(item, formItemList, token, language); ok {
 					// 修改过
 					item.QueryPermission = true
 					item.UpdatePermission = true
@@ -676,14 +678,14 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 	}
 	// 从CMDB查询拿到初始化数据,跟taskMan数据比对
 	if len(guidNotEmptyParamList) > 0 {
-		if subResult, err = service.GetCMDBCiAttrSensitiveData(guidNotEmptyParamList, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader)); err != nil {
+		if subResult, err = service.GetCMDBCiAttrSensitiveData(guidNotEmptyParamList, token, language); err != nil {
 			middleware.ReturnError(c, err)
 			return
 		}
 		for _, item := range subResult {
 			// 没有数据查询权限,数据返回为空,需要对比表单数据
 			if item.Value == "" && !item.QueryPermission {
-				if ok := checkHasModifyData(item, formItemList); ok {
+				if ok := checkHasModifyData(item, formItemList, token, language); ok {
 					// 修改过
 					item.QueryPermission = true
 					item.UpdatePermission = true
@@ -695,7 +697,7 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 					if v == item.Value {
 						if !item.QueryPermission {
 							// 没有查询权限,数据相等,也不能表示没有修改,需要查询表单数据数据确定是否修改过
-							if ok := checkHasModifyData(item, formItemList); ok {
+							if ok := checkHasModifyData(item, formItemList, token, language); ok {
 								// 修改过
 								item.QueryPermission = true
 								item.UpdatePermission = true
@@ -721,7 +723,7 @@ func AttrSensitiveDataQuery(c *gin.Context) {
 }
 
 // checkHasModifyData 检查是否修改过数据,根据 taskHandleId,如果 formItemList中不存在 taskHandleId表示处理最新的任务,如果存在，则找小于该taskHanleId里面的数据如果有更新,后面都修改过
-func checkHasModifyData(item *models.AttrPermissionQueryObj, formItemList []*models.FormItemTable) bool {
+func checkHasModifyData(item *models.AttrPermissionQueryObj, formItemList []*models.FormItemTable, token, language string) bool {
 	var filterFormItemList []*models.FormItemTable
 	if item.TaskHandleId != "" {
 		filterFormItemList = mergeParallelFormData(item, formItemList)
@@ -739,6 +741,23 @@ func checkHasModifyData(item *models.AttrPermissionQueryObj, formItemList []*mod
 	for i := 0; i < len(filterFormItemList); i++ {
 		if filterFormItemList[i].ModifyFlag == 1 {
 			return true
+		}
+	}
+	// 可能提交请求时候 guid是cmdb的,到了审批时候提交表单重新生成taskman的行guid,需要从之前表单里面去取cmdb的guid
+	if !strings.HasPrefix(item.Guid, "wecmdb:") {
+		for _, formItem := range formItemList {
+			if strings.HasPrefix(formItem.RowDataId, "wecmdb:") {
+				if subResult, _ := service.GetCMDBCiAttrSensitiveData([]*models.RequestFormSensitiveDataParam{
+					{
+						CiType:    item.CiType,
+						AttrName:  item.AttrName,
+						Guid:      formItem.RowDataId,
+						RequestId: item.RequestId,
+					},
+				}, token, language); len(subResult) > 0 {
+					return subResult[0].QueryPermission
+				}
+			}
 		}
 	}
 	return false

@@ -606,8 +606,8 @@ func UpdateTaskHandle(param models.TaskHandleUpdateParam, operator, userToken, l
 	}
 	var actions []*dao.ExecAction
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,handler=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked",
-		operator, operator, nowTime, param.TaskId}})
+	actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,handler=?,updated_by=? where id=?", Param: []interface{}{"marked",
+		operator, operator, param.TaskId}})
 	//添加认领记录
 	if taskHandleList[0].TaskHandleTemplate != "" {
 		actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle(id,task_handle_template,task,role,handler,handler_type,parent_id,created_time," +

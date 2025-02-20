@@ -676,7 +676,7 @@ export default {
         displayName: '',
         entityData: { ...entityData, _id: '' },
         entityName: data.entity,
-        entityDataOp: source ? 'create' : '',
+        entityDataOp: source ? '' : 'create',
         fullDataId: '',
         id: idStr,
         packageName: data.packageName,

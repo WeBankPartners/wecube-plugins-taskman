@@ -765,20 +765,9 @@ func checkHasModifyData(item *models.AttrPermissionQueryObj, formItemList []*mod
 
 // mergeParallelFormData 合并并行审批表单数据
 func mergeParallelFormData(item *models.AttrPermissionQueryObj, formItemList []*models.FormItemTable) (filterFormItemList []*models.FormItemTable) {
-	if item.AttrName != "deploy_user" && item.TaskHandleId != "67b6f93b67160cb8" {
-		return
-	}
 	var formItemTimeEnd string
 	taskList, _ := service.GetTaskService().QueryListByRequestId(item.RequestId)
 	filterFormItemList = []*models.FormItemTable{}
-	var tempformItemList []*models.FormItemTable
-	for _, formItem := range formItemList {
-		if formItem.Name == "deploy_user" {
-			tempformItemList = append(tempformItemList, formItem)
-		}
-	}
-	formItemList = tempformItemList
-	log.Logger.Info("", log.String("guid", item.Guid), log.String("taskHandleId", item.TaskHandleId), log.JsonObj("formItemList", formItemList))
 	for _, task := range taskList {
 		taskTemplate, _ := service.GetTaskTemplateService().Get(task.TaskTemplate)
 		// 审批任务有并行处理,就需要过滤数据
@@ -793,14 +782,14 @@ func mergeParallelFormData(item *models.AttrPermissionQueryObj, formItemList []*
 					delTaskHandleMap[taskHandle.Id] = true
 				}
 			}
-			log.Logger.Info("", log.String("guid", item.Guid), log.String("taskHandleId", item.TaskHandleId), log.JsonObj("taskHandleList", taskHandleList))
 			// 传递的taskHandleId 不在该task 处理里面,则取最新taskHandle数据保留,其他taskHandle的表单处理需要过滤掉
 			if !taskHandleExist && len(taskHandleList) > 1 {
+				// 重置 delTaskHandleMap
+				delTaskHandleMap = make(map[string]bool)
 				for _, taskHandle := range taskHandleList[1:] {
 					delTaskHandleMap[taskHandle.Id] = true
 				}
 			}
-			log.Logger.Info("", log.String("guid", item.Guid), log.String("taskHandleId", item.TaskHandleId), log.JsonObj("delTaskHandleMap", delTaskHandleMap))
 			var tmpFormItemList []*models.FormItemTable
 			for _, formItem := range formItemList {
 				if delTaskHandleMap[formItem.TaskHandle] {
@@ -808,16 +797,12 @@ func mergeParallelFormData(item *models.AttrPermissionQueryObj, formItemList []*
 				}
 				tmpFormItemList = append(tmpFormItemList, formItem)
 			}
-			log.Logger.Info("", log.String("guid", item.Guid), log.String("taskHandleId", item.TaskHandleId), log.JsonObj("filterFormItemList", formItemList))
 			formItemList = tmpFormItemList
 		}
 	}
 	taskHandle, _ := service.GetTaskHandleService().Get(item.TaskHandleId)
 	formItemTimeEnd = taskHandle.UpdatedTime
 	for _, formItem := range formItemList {
-		if ((item.Guid != "" && strings.HasSuffix(formItem.RowDataId, item.Guid)) || (item.TmpId != "" && strings.HasSuffix(formItem.RowDataId, item.TmpId))) && formItem.Name == item.AttrName && item.AttrName == "deploy_user" {
-			log.Logger.Info("mergeParallelFormData formItem", log.String("guid", item.Guid), log.String("formItemTimeEnd", formItemTimeEnd), log.String("taskHandleId", item.TaskHandleId), log.JsonObj("formItem", formItem))
-		}
 		t1, _ := time.Parse(models.DateTimeFormat, formItem.UpdatedTime)
 		t2, _ := time.Parse(models.DateTimeFormat, formItemTimeEnd)
 		// 如果有并行处理任务,只需要取最后处理的表单数据. 如果taskHandleId 等于并行处理form_item的taskHandleId则取这个表单数据
@@ -825,6 +810,5 @@ func mergeParallelFormData(item *models.AttrPermissionQueryObj, formItemList []*
 			filterFormItemList = append(filterFormItemList, formItem)
 		}
 	}
-	log.Logger.Info("mergeParallelFormData ", log.String("guid", item.Guid), log.String("taskHandleId", item.TaskHandleId), log.JsonObj("filterFormItemList", filterFormItemList))
 	return
 }

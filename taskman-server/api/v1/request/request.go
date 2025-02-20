@@ -801,7 +801,9 @@ func mergeParallelFormData(item *models.AttrPermissionQueryObj, formItemList []*
 	taskHandle, _ := service.GetTaskHandleService().Get(item.TaskHandleId)
 	formItemTimeEnd = taskHandle.UpdatedTime
 	for _, formItem := range formItemList {
-		log.Logger.Info("mergeParallelFormData formItem", log.String("guid", item.Guid), log.String("formItemTimeEnd", formItemTimeEnd), log.String("taskHandleId", item.TaskHandleId), log.JsonObj("formItem", formItem))
+		if ((item.Guid != "" && strings.HasSuffix(formItem.RowDataId, item.Guid)) || (item.TmpId != "" && strings.HasSuffix(formItem.RowDataId, item.TmpId))) && formItem.Name == item.AttrName {
+			log.Logger.Info("mergeParallelFormData formItem", log.String("guid", item.Guid), log.String("formItemTimeEnd", formItemTimeEnd), log.String("taskHandleId", item.TaskHandleId), log.JsonObj("formItem", formItem))
+		}
 		t1, _ := time.Parse(models.DateTimeFormat, formItem.UpdatedTime)
 		t2, _ := time.Parse(models.DateTimeFormat, formItemTimeEnd)
 		// 如果有并行处理任务,只需要取最后处理的表单数据. 如果taskHandleId 等于并行处理form_item的taskHandleId则取这个表单数据

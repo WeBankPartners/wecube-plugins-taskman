@@ -2502,6 +2502,8 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 
 	var formIdMapInfo = make(map[string]*models.FormTable)
 	var formTemplateIdMapInfo = make(map[string]*models.FormTemplateTable)
+	// row data_id sort map
+	var rowDataIdSortMap = make(map[string]int)
 	if formIdMapInfo, formTemplateIdMapInfo, err = getFormAndTemplateMapInfo(taskFormItems); err != nil {
 		err = fmt.Errorf("get form and form template map info failed: %s", err.Error())
 		return
@@ -2510,13 +2512,14 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 	sort.Slice(taskFormItems, func(i, j int) bool {
 		return taskFormItems[i].Form < taskFormItems[j].Form
 	})
+	for _, formInfo := range formIdMapInfo {
+		rowDataIdSortMap[formInfo.DataId] = formInfo.RowSort
+	}
 
 	// itemGroup map data_ids
 	itemRowMap := make(map[string][]string)
 	// data_id map item
 	rowItemMap := make(map[string][]*models.FormItemTable)
-	// row data_id sort map
-	rowDataIdSortMap := make(map[string]int)
 	for _, item := range taskFormItems {
 		itemGroup := ""
 		itemDataId := ""
@@ -2528,7 +2531,6 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 				log.Logger.Debug(fmt.Sprintf("can not find itemGroup for formItem: %s", item.Id))
 				continue
 			}
-			rowDataIdSortMap[itemDataId] = tmpForm.RowSort
 		} else {
 			log.Logger.Debug(fmt.Sprintf("can not find itemDataId for formItem: %s", item.Id))
 			continue
@@ -2918,6 +2920,7 @@ func formDataDeepCopy(dataList []*models.RequestPreDataTableObj) []*models.Reque
 					PreviousIds:   obj.PreviousIds,
 					SucceedingIds: obj.SucceedingIds,
 					EntityDataOp:  obj.EntityDataOp,
+					RowSort:       obj.RowSort,
 				})
 			}
 		}

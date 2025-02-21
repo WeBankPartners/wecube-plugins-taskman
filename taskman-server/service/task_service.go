@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/WeBankPartners/go-common-lib/cipher"
 	"strconv"
 	"strings"
 	"time"
@@ -166,8 +165,8 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 				if err = json.Unmarshal([]byte(formItemTemplateTable.CmdbAttr), &cmdbAttrModel); err != nil {
 					return
 				}
-				if cmdbAttrModel.InputType == string(models.FormItemElementTypePassword) && !strings.HasPrefix(fmt.Sprintf("%v", newValue), models.EncryptPasswordPrefix) {
-					if newValue, err = cipher.AesEnPasswordByGuid("", models.Config.EncryptSeed, fmt.Sprintf("%v", newValue), ""); err != nil {
+				if cmdbAttrModel.InputType == string(models.FormItemElementTypePassword) && !strings.HasPrefix(fmt.Sprintf("%v", newValue), models.EncryptPasswordPrefix) && !strings.HasPrefix(fmt.Sprintf("%v", newValue), models.EncryptPasswordPrefixC) {
+					if newValue, err = AesEnPasswordByGuid("", models.Config.EncryptSeed, fmt.Sprintf("%v", newValue), DEFALT_CIPHER_C); err != nil {
 						err = fmt.Errorf("try to encrypt password type column:%s value:%s fail,%s  ", formDataItem.AttrName, fmt.Sprintf("%v", newValue), err.Error())
 						return
 					}

@@ -3,7 +3,6 @@ package request
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/WeBankPartners/go-common-lib/cipher"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
@@ -131,8 +130,8 @@ func SaveRequestCache(c *gin.Context) {
 						continue
 					}
 					inputValue := fmt.Sprintf("%+v", value)
-					if passwordAttrMap[key] && !strings.HasPrefix(strings.ToLower(inputValue), models.EncryptPasswordPrefix) {
-						if inputValue, err = cipher.AesEnPasswordByGuid("", models.Config.EncryptSeed, inputValue, ""); err != nil {
+					if passwordAttrMap[key] && !strings.HasPrefix(strings.ToLower(inputValue), models.EncryptPasswordPrefix) && !strings.HasPrefix(strings.ToLower(inputValue), models.EncryptPasswordPrefixC) {
+						if inputValue, err = service.AesEnPasswordByGuid("", models.Config.EncryptSeed, inputValue, service.DEFALT_CIPHER_C); err != nil {
 							err = fmt.Errorf("try to encrypt password type column:%s value:%s fail,%s  ", key, inputValue, err.Error())
 							return
 						}
@@ -406,11 +405,12 @@ func DecodeRequestFormDataPassword(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("encryptPwd is empty"))
 		return
 	}
-	if !strings.HasPrefix(strings.ToLower(encryptPwd), models.EncryptPasswordPrefix) {
+	// {cipher_a} 表示cmdb密码加密,{cipher_b} 表示taskman密码加密
+	if !strings.HasPrefix(strings.ToLower(encryptPwd), models.EncryptSensitivePrefix) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("encryptPwd format is invalid"))
 		return
 	}
-	if result, err = cipher.AesDePasswordByGuid("", models.Config.EncryptSeed, encryptPwd); err != nil {
+	if result, err = service.AesDePasswordByGuid("", models.Config.EncryptSeed, encryptPwd); err != nil {
 		middleware.ReturnError(c, err)
 		return
 	}

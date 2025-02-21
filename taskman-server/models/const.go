@@ -16,6 +16,7 @@ const (
 	HomePage               = "HOME_PAGE"
 	EncryptPasswordPrefix  = "{cipher_a}"
 	EncryptSensitivePrefix = "{cipher_b}"
+	EncryptPasswordPrefixC = "{cipher_c}"
 	ModifyPrefixConstant   = "modify_"
 )
 

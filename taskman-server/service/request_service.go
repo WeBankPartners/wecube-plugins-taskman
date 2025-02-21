@@ -542,7 +542,7 @@ func (s *RequestService) processTaskForm(formParam models.ProcessTaskFormParam) 
 			}
 		}
 		poolForms := itemGroupFormMap[tableForm.ItemGroup]
-		for _, valueObj := range tableForm.Value {
+		for index, valueObj := range tableForm.Value {
 			// 密码处理,web传递原密码,需要加密处理
 			for key, value := range valueObj.EntityData {
 				// 空数据不用加密
@@ -583,8 +583,8 @@ func (s *RequestService) processTaskForm(formParam models.ProcessTaskFormParam) 
 				if formParam.Task != nil {
 					taskId = sql.NullString{String: formParam.Task.Id, Valid: true}
 				}
-				actions = append(actions, &dao.ExecAction{Sql: "insert into form(id,request,task,form_template,data_id,created_by,updated_by,created_time,updated_time) values (?,?,?,?,?,?,?,?,?)", Param: []interface{}{
-					formId, formParam.RequestId, taskId, tableForm.FormTemplateId, valueObj.Id, formParam.Operator, formParam.Operator, nowTime, nowTime,
+				actions = append(actions, &dao.ExecAction{Sql: "insert into form(id,request,task,form_template,data_id,created_by,updated_by,created_time,updated_time,row_sort) values (?,?,?,?,?,?,?,?,?,?)", Param: []interface{}{
+					formId, formParam.RequestId, taskId, tableForm.FormTemplateId, valueObj.Id, formParam.Operator, formParam.Operator, nowTime, nowTime, index + 1,
 				}})
 			}
 			// 判断数据行属性的变化
@@ -2515,6 +2515,8 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 	itemRowMap := make(map[string][]string)
 	// data_id map item
 	rowItemMap := make(map[string][]*models.FormItemTable)
+	// row data_id sort map
+	rowDataIdSortMap := make(map[string]int)
 	for _, item := range taskFormItems {
 		itemGroup := ""
 		itemDataId := ""
@@ -2526,6 +2528,7 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 				log.Logger.Debug(fmt.Sprintf("can not find itemGroup for formItem: %s", item.Id))
 				continue
 			}
+			rowDataIdSortMap[itemDataId] = tmpForm.RowSort
 		} else {
 			log.Logger.Debug(fmt.Sprintf("can not find itemDataId for formItem: %s", item.Id))
 			continue
@@ -2591,6 +2594,9 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 					if _, ok := tmpRowObj.EntityData[formItemTemp.Name]; !ok {
 						tmpRowObj.EntityData[formItemTemp.Name] = formItemTemp.DefaultValue
 					}
+				}
+				if v, ok := rowDataIdSortMap[row]; ok {
+					tmpRowObj.RowSort = v
 				}
 				formTable.Value = append(formTable.Value, &tmpRowObj)
 			}

@@ -1,7 +1,6 @@
 package models
 
 import (
-	"strings"
 	"time"
 )
 
@@ -115,6 +114,7 @@ type EntityTreeObj struct {
 	PreviousIds   []string               `json:"previousIds"`
 	SucceedingIds []string               `json:"succeedingIds"`
 	EntityDataOp  string                 `json:"entityDataOp"`
+	RowSort       int                    `json:"rowSort"`
 }
 
 type PluginPackageDataModel struct {
@@ -185,5 +185,5 @@ func (s EntityTreeObjSort) Swap(i, j int) {
 }
 
 func (s EntityTreeObjSort) Less(i, j int) bool {
-	return strings.Compare(s[i].Id, s[j].Id) < 0
+	return s[i].RowSort < s[j].RowSort
 }

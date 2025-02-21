@@ -622,8 +622,8 @@ alter table form_item_template_library add column cmdb_attr mediumtext default n
 #@v1.3.1-begin@;
 ALTER TABLE task_handle MODIFY COLUMN form_data MEDIUMTEXT;
 #@v1.3.1-end@;
-#@v1.4.0-begin@;
+#@v1.5.0-begin@;
 alter table form_item add column modify_flag tinyint DEFAULT 0 COMMENT '是否修改过,与cmdb值比较';
 alter table form_item change  del_falg  del_flag tinyint(2) DEFAULT '0' COMMENT '删除标识';
 alter table form add column row_sort int DEFAULT 0 COMMENT '表单行排序';
-#@v1.4.0-begin@;
+#@v1.5.0-begin@;

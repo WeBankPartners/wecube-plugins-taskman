@@ -3,6 +3,7 @@ package rpc
 import (
 	"encoding/json"
 	"fmt"
+	"go.uber.org/zap"
 
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
@@ -12,7 +13,7 @@ func RemoteLogin(reqParam *models.LoginReq, userToken, language string) (result 
 	var byteArr []byte
 	var response models.RemoteLoginResp
 	postBytes, _ := json.Marshal(reqParam)
-	log.Logger.Info("Start request", log.String("param", string(postBytes)))
+	log.Info(nil, log.LOGGER_APP, "Start request", zap.String("param", string(postBytes)))
 	byteArr, err = HttpPost(models.Config.Wecube.BaseUrl+"/auth/v1/api/taskLogin", userToken, language, postBytes)
 	if err != nil {
 		return

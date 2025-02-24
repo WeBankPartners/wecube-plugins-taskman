@@ -3,6 +3,7 @@ package middleware
 import (
 	"errors"
 	"fmt"
+	"go.uber.org/zap"
 	"strconv"
 
 	"encoding/json"
@@ -55,7 +56,7 @@ func ReturnError(c *gin.Context, err error) {
 		err = exterror.Catch(exterror.New().ServerHandleError, err)
 	}
 	errorCode, errorKey, errorMessage := exterror.GetErrorResult(c.GetHeader(AcceptLanguageHeader), err)
-	log.Logger.Error("Handle error", log.String("statusCode", errorKey), log.String("message", errorMessage))
+	log.Error(nil, log.LOGGER_APP, "Handle error", zap.String("statusCode", errorKey), zap.String("message", errorMessage))
 	obj := models.ResponseErrorJson{StatusCode: strconv.Itoa(errorCode), StatusMessage: errorMessage}
 	bodyBytes, _ := json.Marshal(obj)
 	c.Writer.Header().Add("Error-Code", strconv.Itoa(errorCode))
@@ -151,6 +152,6 @@ func ReturnDealWithAtTheSameTimeError(c *gin.Context) {
 func InitHttpError() {
 	err := exterror.InitErrorTemplateList(models.Config.HttpServer.ErrorTemplateDir, models.Config.HttpServer.ErrorDetailReturn)
 	if err != nil {
-		log.Logger.Error("Init error template list fail", log.Error(err))
+		log.Error(nil, log.LOGGER_APP, "Init error template list fail", zap.Error(err))
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"go.uber.org/zap"
 	"time"
 )
 
@@ -16,7 +17,7 @@ func (s *OperationLogService) RecordRequestTemplateLog(requestTemplateId, reques
 	_, err := dao.X.Exec("insert into operation_log(id,request_template,request_template_name,operation,uri,content,operator,op_time) values (?,?,?,?,?,?,?,?)",
 		guid.CreateGuid(), requestTemplateId, requestTemplateName, operation, uri, content, operator, time.Now().Format(models.DateTimeFormat))
 	if err != nil {
-		log.Logger.Error("Record request operation log fail", log.Error(err))
+		log.Error(nil, log.LOGGER_APP, "Record request operation log fail", zap.Error(err))
 	}
 }
 
@@ -24,7 +25,7 @@ func (s *OperationLogService) RecordRequestLog(requestId, requestName, operator,
 	_, err := dao.X.Exec("insert into operation_log(id,request,request_name,operation,uri,content,operator,op_time) values (?,?,?,?,?,?,?,?)",
 		guid.CreateGuid(), requestId, requestName, operation, uri, content, operator, time.Now().Format(models.DateTimeFormat))
 	if err != nil {
-		log.Logger.Error("Record request operation log fail", log.Error(err))
+		log.Error(nil, log.LOGGER_APP, "Record request operation log fail", zap.Error(err))
 	}
 }
 
@@ -32,6 +33,6 @@ func (s *OperationLogService) RecordTaskLog(taskId, taskName, operator, operatio
 	_, err := dao.X.Exec("insert into operation_log(id,task,task_name,operation,uri,content,operator,op_time) values (?,?,?,?,?,?,?,?)",
 		guid.CreateGuid(), taskId, taskName, operation, uri, content, operator, time.Now().Format(models.DateTimeFormat))
 	if err != nil {
-		log.Logger.Error("Record request operation log fail", log.Error(err))
+		log.Error(nil, log.LOGGER_APP, "Record request operation log fail", zap.Error(err))
 	}
 }

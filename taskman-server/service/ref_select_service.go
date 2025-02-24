@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
+	"go.uber.org/zap"
 	"io"
 	"net/http"
 	"strings"
@@ -28,7 +29,7 @@ func GetCMDBRefSelectResult(input *models.RefSelectParam) (result []*models.Enti
 	input.AttrId = fmt.Sprintf("%s%s%s", formItemTemplateObj.Entity, models.SysTableIdConnector, formItemTemplateObj.Name)
 	// if param map data have no new data -> get rpc data + same entity new data
 	refFlag, options, tmpErr := checkIfNeedAnalyze(input)
-	log.Logger.Info("isContainNewMap", log.String("isContainNewMap", fmt.Sprintf("%d", refFlag)))
+	log.Info(nil, log.LOGGER_APP, "isContainNewMap", zap.String("isContainNewMap", fmt.Sprintf("%d", refFlag)))
 	if refFlag == -1 {
 		return result, fmt.Errorf("AttrId:%s illegal ", input.AttrId)
 	}
@@ -132,7 +133,7 @@ func getCMDBRefFilter(attrId, userToken string) (filterString string, err error)
 }
 
 func getRefDataWithoutFilter(input *models.RefSelectParam) (result []*models.EntityDataObj, err error) {
-	log.Logger.Info("getRefDataWithoutFilter", log.JsonObj("input", input))
+	log.Info(nil, log.LOGGER_APP, "getRefDataWithoutFilter", log.JsonObj("input", input))
 	result = []*models.EntityDataObj{}
 	remoteRefData, refErr := getCMDBRefData(input)
 	if refErr != nil {
@@ -247,7 +248,7 @@ func getRequestCacheNewDataNew(requestId string, formItemTemplate *models.FormIt
 }
 
 func analyzeFilterData(input *models.RefSelectParam) (result []*models.EntityDataObj, err error) {
-	log.Logger.Debug("analyzeFilterData", log.JsonObj("input", input))
+	log.Debug(nil, log.LOGGER_APP, "analyzeFilterData", log.JsonObj("input", input))
 	var filters []map[string]models.CiDataRefFilterObj
 	err = json.Unmarshal([]byte(input.Filter), &filters)
 	if err != nil {
@@ -439,8 +440,8 @@ func getExpressResultList(param *models.GetExpressResultParam) (result []string,
 	tmpRows = append(tmpRows, startRow)
 	tmpLength := len(expressionSqlList) - 1
 	for i, v := range expressionSqlList {
-		log.Logger.Info("expressionSqlList", log.Int("index", i), log.JsonObj("v", v))
-		log.Logger.Info("tmpRows", log.Int("len", len(tmpRows)), log.JsonObj("data", tmpRows))
+		log.Info(nil, log.LOGGER_APP, "expressionSqlList", zap.Int("index", i), log.JsonObj("v", v))
+		log.Info(nil, log.LOGGER_APP, "tmpRows", zap.Int("len", len(tmpRows)), log.JsonObj("data", tmpRows))
 		tmpGuidList := []string{}
 		tmpParam := models.EntityQueryParam{}
 		if len(v.Filters) > 0 {
@@ -485,7 +486,7 @@ func getCiData(param models.EntityQueryParam, ciType, userToken string, newData 
 		err = fmt.Errorf("json marshal param data fail,%s ", tmpErr.Error())
 		return
 	}
-	log.Logger.Info("getCiData", log.String("ciType", ciType), log.String("param", string(paramBytes)))
+	log.Info(nil, log.LOGGER_APP, "getCiData", zap.String("ciType", ciType), zap.String("param", string(paramBytes)))
 	req, newReqErr := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/wecmdb/entities/%s/query", models.Config.Wecube.BaseUrl, ciType), bytes.NewReader(paramBytes))
 	if newReqErr != nil {
 		err = fmt.Errorf("try to new http request fail,%s ", newReqErr.Error())
@@ -505,7 +506,7 @@ func getCiData(param models.EntityQueryParam, ciType, userToken string, newData 
 	var response models.EntityResponse
 	responseBody, _ := io.ReadAll(resp.Body)
 	resp.Body.Close()
-	log.Logger.Info("getCiDataRemote", log.String("ciType", ciType), log.String("response", string(responseBody)))
+	log.Info(nil, log.LOGGER_APP, "getCiDataRemote", zap.String("ciType", ciType), zap.String("response", string(responseBody)))
 	json.Unmarshal(responseBody, &response)
 	result = response.Data
 	newGuidList := checkQueryParamContainNewData(param)
@@ -516,7 +517,7 @@ func getCiData(param models.EntityQueryParam, ciType, userToken string, newData 
 			}
 		}
 	}
-	log.Logger.Info("getCiDataResult", log.StringList("newGuid", newGuidList), log.JsonObj("result", result))
+	log.Info(nil, log.LOGGER_APP, "getCiDataResult", zap.Strings("newGuid", newGuidList), log.JsonObj("result", result))
 	return
 }
 
@@ -572,7 +573,7 @@ func getRequestNewData(requestId string) (result map[string]map[string]interface
 				continue
 			}
 			result[valueObj.Id] = valueObj.EntityData
-			log.Logger.Info("getRequestNewData", log.String("id", valueObj.Id))
+			log.Info(nil, log.LOGGER_APP, "getRequestNewData", zap.String("id", valueObj.Id))
 		}
 	}
 	return
@@ -592,7 +593,7 @@ func FilterInSideData(input []*models.EntityDataObj, formItemTemplate *models.Fo
 	//dao.X.SQL("select distinct row_data_id from form_item where form in (select form from request where id=?)", requestId).Find(&formItems)
 	err := dao.X.SQL("select distinct data_id from form where request=?", requestId).Find(&formRows)
 	if err != nil {
-		log.Logger.Error("FilterInSideData query form data fail", log.Error(err))
+		log.Error(nil, log.LOGGER_APP, "FilterInSideData query form data fail", zap.Error(err))
 		return
 	}
 	rowDataMap := make(map[string]int)
@@ -661,7 +662,7 @@ func getRemoteEntityOptions(url, userToken string, inputMap map[string]string) (
 		reqParam = url[strings.Index(url, "=")+1:]
 		url = url[:strings.Index(url, "?")]
 	}
-	log.Logger.Info("curl rpc entity options", log.String("url", url), log.String("method", method), log.String("param", reqParam))
+	log.Info(nil, log.LOGGER_APP, "curl rpc entity options", zap.String("url", url), zap.String("method", method), zap.String("param", reqParam))
 	req, reqErr := http.NewRequest(method, url, strings.NewReader(reqParam))
 	if reqErr != nil {
 		err = fmt.Errorf("try to new request fail,%s ", reqErr.Error())

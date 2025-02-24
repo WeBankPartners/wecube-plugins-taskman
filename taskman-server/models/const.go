@@ -18,6 +18,8 @@ const (
 	EncryptSensitivePrefix = "{cipher_b}"
 	EncryptPasswordPrefixC = "{cipher_c}"
 	ModifyPrefixConstant   = "modify_"
+	HEADER_BUSINESS_ID     = "BusinessId" // 业务流水号
+	HEADER_REQUEST_ID      = "RequestId"  // 交易流水号
 )
 
 // RequestStatus 定义请求状态

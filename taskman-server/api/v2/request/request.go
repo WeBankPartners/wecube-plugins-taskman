@@ -11,6 +11,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"net/http"
 	"strings"
 	"time"
@@ -250,7 +251,7 @@ func GetRequestHistory(c *gin.Context) {
 	defer try.ExceptionStack(func(e interface{}, err interface{}) {
 		retErr := fmt.Errorf("%v", err)
 		middleware.ReturnError(c, exterror.Catch(exterror.New().ServerHandleError, retErr))
-		log.Logger.Error(e.(string))
+		log.Error(nil, log.LOGGER_APP, e.(string))
 	})
 
 	requestId := c.Param("requestId")
@@ -269,7 +270,7 @@ func PluginCreateRequest(c *gin.Context) {
 	var exist bool
 	defer func() {
 		if err != nil {
-			log.Logger.Error("Plugin request create handle fail", log.Error(err))
+			log.Error(nil, log.LOGGER_APP, "Plugin request create handle fail", zap.Error(err))
 			response.ResultCode = "1"
 			response.ResultMessage = err.Error()
 		}

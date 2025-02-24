@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"go.uber.org/zap"
 )
 
 const (
@@ -292,7 +293,7 @@ func StartProcDefInstances(param models.RequestProcessData, userToken, language 
 	var byteArr []byte
 	var response models.StartInstanceResponse
 	postBytes, _ := json.Marshal(param)
-	log.Logger.Info("Start request", log.String("param", string(postBytes)))
+	log.Info(nil, log.LOGGER_APP, "Start request", zap.String("param", string(postBytes)))
 	byteArr, err = HttpPost(models.Config.Wecube.BaseUrl+pathStartProcDefInstance, userToken, language, postBytes)
 	if err != nil {
 		return

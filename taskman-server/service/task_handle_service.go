@@ -7,6 +7,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
+	"go.uber.org/zap"
 	"math/rand"
 	"time"
 )
@@ -57,12 +58,12 @@ func (s *TaskHandleService) CreateTaskHandleByTemplate(taskId, userToken, langua
 								//将 roleName =>roleId
 								roleMap, err := GetRoleService().GetRoleMap(userToken, language)
 								if err != nil {
-									log.Logger.Error("QueryRoleList fail", log.Error(err))
+									log.Error(nil, log.LOGGER_APP, "QueryRoleList fail", zap.Error(err))
 								}
 								if len(roleMap) > 0 && roleMap[handleTemplate.Role] != nil {
 									userList, err := rpc.QueryRolesUsers(roleMap[handleTemplate.Role].CoreId, userToken, language)
 									if err != nil {
-										log.Logger.Error("rpcQueryRolesUsers fail", log.Error(err))
+										log.Error(nil, log.LOGGER_APP, "rpcQueryRolesUsers fail", zap.Error(err))
 									}
 									if len(userList) > 0 {
 										rand.Seed(time.Now().UnixNano())
@@ -70,7 +71,7 @@ func (s *TaskHandleService) CreateTaskHandleByTemplate(taskId, userToken, langua
 									}
 									go NotifyTaskAssignMail(request.Name, taskTemplate.Name, calcExpireTime(now, taskTemplate.ExpireDay), handleTemplate.Handler, userToken, language)
 								} else {
-									log.Logger.Error("not find taskHandle role", log.String("handleTemplateId", handleTemplate.Id), log.String("role", handleTemplate.Role), log.JsonObj("roleMap", roleMap))
+									log.Error(nil, log.LOGGER_APP, "not find taskHandle role", zap.String("handleTemplateId", handleTemplate.Id), zap.String("role", handleTemplate.Role), log.JsonObj("roleMap", roleMap))
 								}
 							}
 						} else if handleTemplate.HandlerType == string(models.TaskHandleTemplateHandlerTypeClaim) {

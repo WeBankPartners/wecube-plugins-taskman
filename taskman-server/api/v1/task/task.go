@@ -9,6 +9,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"io"
 	"net/http"
 )
@@ -21,7 +22,7 @@ func GetTaskFormStruct(c *gin.Context) {
 		result.Status = "ERROR"
 		result.Message = err.Error()
 	}
-	log.Logger.Info("task form struct", log.JsonObj("response", result))
+	log.Info(nil, log.LOGGER_APP, "task form struct", log.JsonObj("response", result))
 	c.JSON(http.StatusOK, result)
 }
 
@@ -30,7 +31,7 @@ func CreateTask(c *gin.Context) {
 	var err error
 	defer func() {
 		if err != nil {
-			log.Logger.Error("Task create handle fail", log.Error(err))
+			log.Error(nil, log.LOGGER_APP, "Task create handle fail", zap.Error(err))
 			response.ResultCode = "1"
 			response.ResultMessage = err.Error()
 		}

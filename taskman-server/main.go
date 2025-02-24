@@ -19,7 +19,11 @@ func main() {
 		fmt.Printf("Init config file error,%s \n", initConfigMessage)
 		return
 	}
-	log.InitLogger()
+	if err := log.InitLogger(); err != nil {
+		fmt.Printf("Server  init loggers failed, err: %v\n", err)
+		return
+	}
+	defer log.SyncLoggers()
 	if err := service.New(); err != nil {
 		panic(fmt.Errorf("service new err:%+v", err))
 	}

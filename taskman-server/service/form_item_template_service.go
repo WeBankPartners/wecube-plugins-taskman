@@ -7,6 +7,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"go.uber.org/zap"
 	"strings"
 	"time"
 	"xorm.io/xorm"
@@ -215,7 +216,7 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 		newHiddenCondition = []*models.QueryRequestFilterObj{}
 		if strings.TrimSpace(formItem.HiddenCondition) != "" {
 			if err = json.Unmarshal([]byte(formItem.HiddenCondition), &hiddenCondition); err != nil {
-				log.Logger.Error("hiddenCondition json Unmarshal err", log.Error(err))
+				log.Error(nil, log.LOGGER_APP, "hiddenCondition json Unmarshal err", zap.Error(err))
 				return
 			}
 			for _, cond := range hiddenCondition {
@@ -241,7 +242,7 @@ func (s *FormItemTemplateService) CalcItemGroupSort(requestTemplateId, taskTempl
 	// 如果任务模板ID,则只查询数据模板
 	list, err := s.formTemplateDao.QueryListByRequestTemplateAndTaskTemplate(requestTemplateId, taskTemplateId, string(models.RequestFormTypeData))
 	if err != nil {
-		log.Logger.Error("CalcItemGroupSort err", log.Error(err))
+		log.Error(nil, log.LOGGER_APP, "CalcItemGroupSort err", zap.Error(err))
 		return 0
 	}
 	if len(list) > 0 {

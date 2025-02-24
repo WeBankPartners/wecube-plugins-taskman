@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"fmt"
+	"go.uber.org/zap"
 	"io"
 	"time"
 
@@ -263,6 +264,6 @@ func httpLogHandle() gin.HandlerFunc {
 		c.Writer.Header().Add("Api-Code", apiCode)
 		c.Set(models.ContextApiCode, apiCode)
 		c.Next()
-		log.AccessLogger.Info("request", log.String("url", c.Request.RequestURI), log.String("method", c.Request.Method), log.Int("code", c.Writer.Status()), log.String("operator", c.GetString("user")), log.String("ip", middleware.GetRemoteIp(c)), log.Float64("cost_ms", time.Since(start).Seconds()*1000), log.String("body", string(bodyBytes)))
+		log.Info(c, log.LOGGER_ACCESS, zap.String("url", c.Request.RequestURI), zap.String("method", c.Request.Method), zap.Int("code", c.Writer.Status()), zap.String("operator", c.GetString("user")), zap.String("ip", middleware.GetRemoteIp(c)), zap.Float64("cost_ms", time.Since(start).Seconds()*1000), zap.String("body", string(bodyBytes)))
 	}
 }

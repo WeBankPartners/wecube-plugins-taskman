@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"go.uber.org/zap"
 	"strconv"
 	"strings"
 	"time"
@@ -54,7 +55,7 @@ func GetTaskFormStruct(procInstId, nodeDefId string) (result models.TaskMetaResu
 }
 
 func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId, dueDate string, nextOptions []string, userToken, language string) (result *models.PluginTaskCreateOutputObj, task models.TaskTable, err error) {
-	log.Logger.Debug("task create", log.JsonObj("input", input))
+	log.Debug(nil, log.LOGGER_APP, "task create", log.JsonObj("input", input))
 	result = &models.PluginTaskCreateOutputObj{CallbackParameter: input.CallbackParameter, ErrorCode: "0", ErrorMessage: "", Comment: ""}
 	var requestTable []*models.RequestTable
 	err = dao.X.SQL("select * from request where proc_instance_id=?", input.ProcInstId).Find(&requestTable)
@@ -119,7 +120,7 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 		task.ReportTime = nowTime
 		task.Handler = taskTemplateTable[0].Handler
 	} else {
-		log.Logger.Warn("can not find any taskTemplate", log.String("requestTemplate", requestTable[0].RequestTemplate), log.String("nodeDefId", taskFormInput.TaskNodeDefId))
+		log.Warn(nil, log.LOGGER_APP, "can not find any taskTemplate", zap.String("requestTemplate", requestTable[0].RequestTemplate), zap.String("nodeDefId", taskFormInput.TaskNodeDefId))
 		err = fmt.Errorf("can not find any taskTemplate in request:%s with nodeDefId:%s ", task.Request, taskFormInput.TaskNodeDefId)
 		return
 	}
@@ -149,7 +150,7 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 			}
 		}
 		if tmpFormTemplateId == "" {
-			log.Logger.Warn("form data entity can not find form template", log.String("task", task.Id), log.JsonObj("formDataEntity", formDataEntity))
+			log.Warn(nil, log.LOGGER_APP, "form data entity can not find form template", zap.String("task", task.Id), log.JsonObj("formDataEntity", formDataEntity))
 			continue
 		}
 		newFormId := "form_" + guid.CreateGuid()
@@ -255,7 +256,7 @@ func ApproveCustomTask(task models.TaskTable, operator, userToken, language stri
 	var respResult models.CallbackResult
 	requestBytes, _ := json.Marshal(requestParam)
 	b, _ := rpc.HttpPost(models.Config.Wecube.BaseUrl+callbackUrl, userToken, language, requestBytes)
-	log.Logger.Info("Custom Callback response", log.String("body", string(b)))
+	log.Info(nil, log.LOGGER_APP, "Custom Callback response", zap.String("body", string(b)))
 	err = json.Unmarshal(b, &respResult)
 	if err != nil {
 		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
@@ -483,7 +484,7 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken, formData str
 func callbackWorkflow(requestBytes []byte, callbackUrl, userToken string) (err error) {
 	var respResult models.CallbackResult
 	b, _ := rpc.HttpPost(models.Config.Wecube.BaseUrl+callbackUrl, userToken, "", requestBytes)
-	log.Logger.Info("Callback response", log.String("body", string(b)))
+	log.Info(nil, log.LOGGER_APP, "Callback response", zap.String("body", string(b)))
 	err = json.Unmarshal(b, &respResult)
 	if err != nil {
 		return fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())

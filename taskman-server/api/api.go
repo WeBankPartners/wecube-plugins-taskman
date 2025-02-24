@@ -264,6 +264,6 @@ func httpLogHandle() gin.HandlerFunc {
 		c.Writer.Header().Add("Api-Code", apiCode)
 		c.Set(models.ContextApiCode, apiCode)
 		c.Next()
-		log.Info(c, log.LOGGER_ACCESS, zap.String("url", c.Request.RequestURI), zap.String("method", c.Request.Method), zap.Int("code", c.Writer.Status()), zap.String("operator", c.GetString("user")), zap.String("ip", middleware.GetRemoteIp(c)), zap.Float64("cost_ms", time.Since(start).Seconds()*1000), zap.String("body", string(bodyBytes)))
+		log.Info(nil, log.LOGGER_ACCESS, zap.String("url", c.Request.RequestURI), zap.String("method", c.Request.Method), zap.Int("code", c.Writer.Status()), zap.String("operator", c.GetString("user")), zap.String("ip", middleware.GetRemoteIp(c)), zap.Float64("cost_ms", time.Since(start).Seconds()*1000), zap.String("body", string(bodyBytes)))
 	}
 }

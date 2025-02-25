@@ -1,4 +1,6 @@
 import dayjs from 'dayjs'
+import { getPlatformFilter } from '@/api/server'
+
 export default {
   data () {
     return {
@@ -283,7 +285,7 @@ export default {
       const pre = dayjs()
         .subtract(12, 'month')
         .format('YYYY-MM-DD')
-      import('@/api/server').then(async ({ getPlatformFilter }) => {
+      // import('@/api/server').then(async ({ getPlatformFilter }) => {
         const { statusCode, data } = await getPlatformFilter({ startTime: pre })
         if (statusCode === 'OK') {
           const keys = Object.keys(this.baseSearch)
@@ -380,7 +382,7 @@ export default {
             }
           }
         }
-      })
+      // })
     }
   }
 }

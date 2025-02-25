@@ -48,6 +48,11 @@
         "method": "post"
       },
       {
+        "key": "getPlatformFilter",
+        "url": "/taskman/api/v1/user/platform/filter-item",
+        "method": "post"
+      },
+      {
         "key": "getTemplateTree",
         "url": "/taskman/api/v2/user/request-template",
         "method": "get"
@@ -323,6 +328,11 @@
         "method": "get"
       },
       {
+        "key": "copyItemGroup",
+        "url": "/taskman/api/v1/form-template/item-group/copy",
+        "method": "post"
+      },
+      {
         "key": "removeEmptyDataForm",
         "url": "/taskman/api/v1/request-template/${tmpId}/data-form-clean",
         "method": "post"
@@ -391,6 +401,11 @@
         "key": "saveRequestGroupForm",
         "url": "/taskman/api/v1/form-template/item-group-config",
         "method": "post"
+      },
+      {
+        "key": "getRequestGroupForm",
+        "url": "/taskman/api/v1/form-template/item-group-config",
+        "method": "get"
       },
       {
         "key": "getTargetOptions",
@@ -524,6 +539,11 @@
       },
       {
         "url": "/taskman/api/v1/request/export",
+        "method": "post"
+      },
+      {
+        "key": "getPlatformFilter",
+        "url": "/taskman/api/v1/user/platform/filter-item",
         "method": "post"
       }
     ]

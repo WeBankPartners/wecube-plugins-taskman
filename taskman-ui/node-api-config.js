@@ -5,7 +5,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2025-02-21 11:05:22
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2025-02-25 16:47:02
+ * @LastEditTime: 2025-02-25 20:16:30
  *
  * 备注：采用该脚本生成API权限JSON，需注意以下几点：
  * 1. 页面中用到的API必须在server.js中定义
@@ -153,7 +153,7 @@ Object.entries(menuPathMap).forEach(([menu, pathArr]) => {
         if (fs.existsSync(absolutePath)) {
           parseComponent(absolutePath)
         } else {
-          console.error(`文件不存在: ${absolutePath}`)
+          // console.error(`文件不存在: ${absolutePath}`)
         }
       }
     }
@@ -217,11 +217,12 @@ const getApiConfigArr = () => {
     const apiDefinition = match[1].trim()
     apiArray.push(apiDefinition)
   }
-
   apiArray.forEach(apiStr => {
     // 使用正则表达式匹配 key、method 和 url
     const keyMatch = apiStr.match(/(\w+)\s*=/)
-    const methodUrlMatch = apiStr.match(/req\.(\w+)\(['"`]([^'"`]+)['"`]/)
+    // const methodUrlMatch = apiStr.match(/req\.(\w+)\(['"`]([^'"`]+)['"`]/)
+    // 优化正则，可以识别req.post()里面内容换行的情况
+    const methodUrlMatch = apiStr.match(/req\.(\w+)\(\s*['"`]([^'"`]*?)['"`]/)
     if (keyMatch && methodUrlMatch) {
       const key = keyMatch[1] // 函数名称
       const method = methodUrlMatch[1].toLowerCase() // 请求方法名

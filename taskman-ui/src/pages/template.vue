@@ -130,6 +130,18 @@ import {
   templateConfirmCount
 } from '@/api/server'
 import { debounce } from '@/pages/util'
+
+export const custom_api_enum = [
+  {
+    "url": "/taskman/api/v1/request-template/export/${row.id}",
+    "method": "get"
+  },
+  {
+    "url": "/taskman/api/v1/request-template/import",
+    "method": "post"
+  }
+]
+
 export default {
   name: '',
   data () {

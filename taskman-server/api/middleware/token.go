@@ -32,8 +32,11 @@ var (
 	whitePathMap = map[string]bool{
 		models.UrlPrefix + "/entities/${model}/query": true,
 	}
-	ApiMenuMap         = make(map[string][]string) // key -> apiCode  value -> menuList
-	HomePageApiCodeMap = make(map[string]bool)
+	whiteCodeList = []string{
+		"request-template-export-batch-post", "form-template-library-export-data", "form-template-library-import", "request-template-import-batch-post",
+		"request-template-all-get", "auth-roles-users", "auth-roles-users-revoke", "auth-roles-apply-byhandler", "auth-roles-apply-byapplier", "auth-roles-users", "auth-roles",
+	}
+	ApiMenuMap = make(map[string][]string) // key -> apiCode  value -> menuList
 )
 
 func isWhiteListUrl(url string) (result bool) {
@@ -72,11 +75,13 @@ func AuthCoreRequestToken() gin.HandlerFunc {
 						return
 					}
 				}
+				// 白名单code 直接放行
 				contextApiCode := c.GetString(models.ContextApiCode)
-				// 首页菜单直接放行
-				if HomePageApiCodeMap[contextApiCode] {
-					c.Next()
-					return
+				for _, code := range whiteCodeList {
+					if code == contextApiCode {
+						c.Next()
+						return
+					}
 				}
 				if strings.HasPrefix(contextApiCode, "plugin-") {
 					c.Next()
@@ -185,9 +190,6 @@ func InitApiMenuMap(apiMenuCodeMap map[string]string) {
 						ApiMenuMap[code] = append(existList, menuApi.Menu)
 					} else {
 						ApiMenuMap[code] = []string{menuApi.Menu}
-					}
-					if menuApi.Menu == models.HomePage {
-						HomePageApiCodeMap[code] = true
 					}
 					matchUrlMap[item.Method+"_"+item.Url] = 1
 				}

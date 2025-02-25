@@ -48,6 +48,14 @@ import { deepClone } from '@/pages/util/index'
 import { getCookie } from '@/pages/util/cookie'
 import column from './column'
 import search from './search'
+
+export const custom_api_enum = [
+  {
+    "url": "/taskman/api/v1/request/export",
+    "method": "post"
+  }
+]
+
 export default {
   components: {
     Search

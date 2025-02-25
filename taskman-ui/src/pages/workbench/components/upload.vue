@@ -38,6 +38,22 @@
 import axios from 'axios'
 import { deleteAttach } from '@/api/server'
 import { getCookie } from '@/pages/util/cookie'
+
+export const custom_api_enum = [
+  {
+    "url": "/taskman/api/v1/request/attach-file/download/${file.id}",
+    "method": "get"
+  },
+  {
+    "url": "/taskman/api/v1/request/attach-file/upload/${val}",
+    "method": "post"
+  },
+  {
+    "url": "/taskman/api/v1/task/attach-file/${val}/upload/${this.taskHandleId}",
+    "method": "post"
+  }
+]
+
 export default {
   props: {
     // request请求，task任务

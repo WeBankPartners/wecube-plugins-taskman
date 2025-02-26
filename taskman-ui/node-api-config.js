@@ -5,7 +5,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2025-02-21 11:05:22
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2025-02-25 20:16:30
+ * @LastEditTime: 2025-02-26 21:33:54
  *
  * 备注：采用该脚本生成API权限JSON，需注意以下几点：
  * 1. 页面中用到的API必须在server.js中定义
@@ -21,6 +21,9 @@ const fs = require('fs')
 const path = require('path')
 const compiler = require('vue-template-compiler')
 const glob = require('glob')
+
+const API_SERVER_PATH = 'src/api/server.js' // api入口文件
+const GLOBAL_COMPONENT_PATH = 'src/main.js' // 全局组件入口文件
 
 // -------------------------------------------------生成组件对应api的引用关系--------------------------------------------------------------
 
@@ -99,6 +102,50 @@ const menuPathMap = {
     'src/pages/workbench/request-audit.vue'
   ]
 }
+
+// 全局注册组件特殊匹配--start
+const getGlobalComponetMap = filePath => {
+  const fileContent = fs.readFileSync(filePath, 'utf-8')
+  // 使用正则表达式匹配Vue.component和import语句
+  const vueComponentRegex = /Vue\.component\('([^']*)',\s*([^)]*)\)/g
+  const importRegex = /import\s+[^ ]+\s+from\s+['"]([^'"]+)['"]/g
+
+  // 提取Vue.component中的组件名和对应的变量名
+  const vueComponents = []
+  let vueComponentMatch
+  while ((vueComponentMatch = vueComponentRegex.exec(fileContent)) !== null) {
+    vueComponents.push({
+      componentName: vueComponentMatch[1],
+      variableName: vueComponentMatch[2].trim()
+    })
+  }
+
+  // 提取import语句中的变量名和路径
+  const imports = {}
+  let importMatch
+  while ((importMatch = importRegex.exec(fileContent)) !== null) {
+    const importStatement = importMatch[0]
+    const importPath = importMatch[1]
+    const variableName = importStatement.match(/import\s+([^ ]+)/)[1]
+    imports[variableName] = importPath
+  }
+
+  // 构建最终的对象
+  const result = {}
+  vueComponents.forEach(component => {
+    if (imports[component.variableName]) {
+      imports[component.variableName] = path.resolve(
+        path.dirname(GLOBAL_COMPONENT_PATH),
+        imports[component.variableName]
+      )
+      result[component.componentName] = imports[component.variableName]
+    }
+  })
+  return result
+}
+const globalComponetMap = getGlobalComponetMap(GLOBAL_COMPONENT_PATH)
+// 全局注册组件特殊匹配--end
+
 const menuKeysMap = {}
 Object.entries(menuPathMap).forEach(([menu, pathArr]) => {
   // 存储同一菜单下的所有组件path
@@ -124,12 +171,15 @@ Object.entries(menuPathMap).forEach(([menu, pathArr]) => {
       if (parsedComponents.has(filePath)) return
       parsedComponents.add(filePath)
       let scriptContent = ''
+      let templateContent = ''
       if (filePath.endsWith('.vue')) {
         const content = fs.readFileSync(filePath, 'utf-8')
         const parsed = compiler.parseComponent(content)
         scriptContent = parsed.script.content
+        templateContent = parsed.template.content
       } else if (filePath.endsWith('.js')) {
         scriptContent = fs.readFileSync(filePath, 'utf-8')
+        templateContent = fs.readFileSync(filePath, 'utf-8')
       }
       allPath.push(filePath)
 
@@ -155,6 +205,20 @@ Object.entries(menuPathMap).forEach(([menu, pathArr]) => {
         } else {
           // console.error(`文件不存在: ${absolutePath}`)
         }
+      }
+
+      // 通过window.component注册的全局组件
+      if (globalComponetMap && Object.keys(globalComponetMap).length > 0) {
+        const globalComponetNames = Object.keys(globalComponetMap)
+        const usedComponentNames = globalComponetNames.filter(name => templateContent.indexOf(`<${name}`) > -1) || []
+        usedComponentNames.forEach(name => {
+          const componentPath = globalComponetMap[name]
+          if (fs.existsSync(componentPath)) {
+            parseComponent(componentPath)
+          } else {
+            // console.error(`文件不存在: ${componentPath}`)
+          }
+        })
       }
     }
 
@@ -203,7 +267,7 @@ for (const [key, values] of Object.entries(menuKeysMap)) {
 // -------------------------------------------------将api转换成key、method、url组成的对象-----------------------------------------
 
 // 读取代码文件
-const filePath = path.join(__dirname, 'src/api/server.js')
+const filePath = path.join(__dirname, API_SERVER_PATH)
 const code = fs.readFileSync(filePath, 'utf-8')
 
 const apiConfigArr = []

@@ -5,7 +5,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2025-02-21 11:05:22
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2025-02-26 21:33:54
+ * @LastEditTime: 2025-02-27 16:41:52
  *
  * 备注：采用该脚本生成API权限JSON，需注意以下几点：
  * 1. 页面中用到的API必须在server.js中定义
@@ -22,22 +22,28 @@ const path = require('path')
 const compiler = require('vue-template-compiler')
 const glob = require('glob')
 
-const API_SERVER_PATH = 'src/api/server.js' // api入口文件
-const GLOBAL_COMPONENT_PATH = 'src/main.js' // 全局组件入口文件
+const API_SERVER_PATH = 'src/api/server.js' // 全局api文件入口
+const GLOBAL_COMPONENT_PATH = 'src/main.js' // 定义了Vue.component全局组件方法的入口
+const WRITE_API_PATH = path.resolve(path.resolve('..'), 'taskman-server/conf') // api-menu-config.json文件写入的路径
 
 // -------------------------------------------------生成组件对应api的引用关系--------------------------------------------------------------
 
 // 根据import语句返回对应API函数列表
-function extractApiImports (content) {
+function extractApiImports(content) {
   // 匹配 import { *** } from '***server(.js)?' 这种形式的导入语句
-  const importRegex = /import\s+\{([^}]+)\}\s+from\s+['"](?:[^'"]*?)server(\.js)?['"]/
-  const match = importRegex.exec(content)
-  if (match) {
-    const apiList = match[1].trim().split(',').map((item) => item.trim())
-    return apiList
-  } else {
-    return []
+  const importRegex = /import\s+\{([^}]+)\}\s+from\s+['"](?:[^'"]*?)server(\.js)?['"]/g;
+  let match;
+  const apiLists = [];
+  // 使用全局匹配，循环提取所有匹配的导入语句
+  while ((match = importRegex.exec(content))) {
+    const apiList = match[1]
+      .trim()
+      .split(',')
+      .map(item => item.trim());
+    apiLists.push(apiList);
   }
+  // 将所有 API 列表合并为一个数组
+  return apiLists.flat();
 }
 
 // 提取 custom_api_enum 内容
@@ -332,5 +338,5 @@ Object.keys(newMenuKeysMap).forEach(key => {
   finalResult.push(menuUrlsObj)
 })
 
-const menuApiMapPath = path.join(__dirname, 'menu-api-map.json')
+const menuApiMapPath = path.join(WRITE_API_PATH, 'menu-api-map.json')
 fs.writeFileSync(menuApiMapPath, JSON.stringify(finalResult, null, 2))

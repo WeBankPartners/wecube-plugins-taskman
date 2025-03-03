@@ -1,7 +1,7 @@
 const CompressionPlugin = require('compression-webpack-plugin')
 const postcssWrap = require('postcss-wrap')
 const path = require('path')
-const baseUrl = process.env.VUE_APP_API || 'http://127.0.0.1/'
+const baseUrl = process.env.BASE_URL
 module.exports = {
   devServer: {
     // hot: true,

@@ -18,11 +18,11 @@
       </div>
     </div>
     <div class="form-table">
-      <div v-for="(value, index) in tableData" :key="index" class="table-item">
+      <div v-for="(value, index) in tableData" :key="value._id" class="table-item">
         <div class="number">{{ index + 1 }}</div>
         <div class="form">
           <Form :model="value" ref="form" label-position="left" :label-width="100">
-            <Row type="flex" justify="start" :key="index">
+            <Row type="flex" justify="start" :key="value._id">
               <template v-for="i in formOptions">
                 <Col v-if="!value[i.name + 'Hidden']" :key="i.id" :span="i.width || 24">
                   <FormItem
@@ -48,6 +48,8 @@
                         :options="cmdbOptions"
                         :column="getCMDBColumn(i.name)"
                         :value="value"
+                        :allSensitiveData="allSensitiveData"
+                        :rowData="getRowValue(value)"
                         :disabled="formDisabled(i)"
                         style="width: calc(100% - 20px)"
                       />
@@ -107,7 +109,7 @@
           </Form>
         </div>
         <div v-if="!formDisable && tableData.length > 1 && isAdd" class="button">
-          <Icon type="md-trash" color="#ed4014" size="24" @click="handleDeleteRow(index)" />
+          <Icon type="md-trash" color="#FF4D4F" size="24" @click="handleDeleteRow(index)" />
         </div>
       </div>
     </div>
@@ -132,7 +134,7 @@
         @on-change="addRow"
       >
         <template #prefix>
-          <Icon type="md-add-circle" color="#2d8cf0" :size="24"></Icon>
+          <Icon type="md-add-circle" color="#5384ff" :size="24"></Icon>
         </template>
         <template v-for="i in addRowSourceOptions">
           <Option :key="i.id" :value="i.id">{{ i.displayName }}</Option>
@@ -144,7 +146,7 @@
 
 <script>
 import LimitSelect from '@/pages/components/limit-select.vue'
-import { getRefOptions, getWeCmdbOptions, saveFormData, getExpressionData } from '@/api/server'
+import { getRefOptions, getWeCmdbOptions, saveFormData, getExpressionData, getCmdbFormPermission } from '@/api/server'
 import { debounce, deepClone, fixArrStrToJsonArray } from '@/pages/util'
 import { evaluateCondition } from '../evaluate'
 import CMDBFormItem from './cmdb-form-item/index.vue'
@@ -159,7 +161,13 @@ export default {
       type: Array,
       default: () => []
     },
+    // 请求ID
     requestId: {
+      type: String,
+      default: ''
+    },
+    // 任务处理ID
+    taskHandleId: {
       type: String,
       default: ''
     },
@@ -168,7 +176,7 @@ export default {
       type: Boolean,
       default: false
     },
-    // 无数据时，是否默认添加一行
+    // 是否默认添加一行
     autoAddRow: {
       type: Boolean,
       default: false
@@ -176,6 +184,11 @@ export default {
     formDisable: {
       type: Boolean,
       default: false
+    },
+    // 接口返回原始数据
+    originRequestData: {
+      type: Array,
+      default: () => []
     }
   },
   data () {
@@ -190,8 +203,9 @@ export default {
       addRowSource: '',
       addRowSourceOptions: [],
       worklfowDataIdsObj: {}, // 编排类表单默认下发数据dataId集合
-      cmdbOptions: [] // cmdb属性集合
-
+      cmdbOptions: [], // cmdb表单集合
+      cmdbSensitiveKeysArr: [], // cmdb表单敏感字段name集合
+      allSensitiveData: [] // 当前所有敏感字段数据
     }
   },
   computed: {
@@ -218,8 +232,15 @@ export default {
       }
     },
     getCMDBColumn () {
-      return function (attr) {
-        return this.cmdbOptions.find(i => i.propertyName === attr) || {}
+      return function (name) {
+        return this.cmdbOptions.find(i => i.propertyName === name) || {}
+      }
+    },
+    // 当前行数据(非entityData)
+    getRowValue () {
+      return function (value) {
+        const obj = (this.activeItem.value && this.activeItem.value.find(v => v.entityData._id === value._id)) || {}
+        return obj
       }
     }
   },
@@ -288,19 +309,69 @@ export default {
     }
   },
   methods: {
+    // 获取cmdb表单权限
+    async getCmdbFormPermission (ciType, values) {
+      let params = []
+      const guidArr = (values && values.map(v => {
+        return {
+          dataId: v.dataId,
+          tmpId: v.id,
+          entityData: v.entityData
+        }
+      })) || []
+      this.cmdbSensitiveKeysArr.forEach(name => {
+        guidArr.forEach(item => {
+          params.push(
+            {
+              attrName: name,
+              attrVal: item.entityData[name] || '',
+              ciType,
+              guid: item.dataId,
+              requestId: this.requestId,
+              taskHandleId: this.taskHandleId,
+              tmpId: item.tmpId
+            }
+          )
+        })
+      })
+      const { statusCode, data } = await getCmdbFormPermission(params)
+      if (statusCode === 'OK') {
+        this.allSensitiveData = data || []
+      }
+    },
     // ref类型下拉框每次展开调用接口
     handleRefOpenChange (titleObj, row, index) {
       this.getRefOptions(titleObj, row, index, false)
     },
     // 保存当前表单组的数据
-    async saveCurrentTabData (item) {
-      await saveFormData(this.requestId, item)
+    async saveCurrentTabData (data) {
+      let sensitiveKeys = [] // 敏感字段类型
+      data.title.forEach(t => {
+        if (t.cmdbAttr) {
+          const cmdbAttr = JSON.parse(t.cmdbAttr)
+          if (cmdbAttr.sensitive === 'yes') {
+            sensitiveKeys.push(t.name)
+          }
+        }
+      })
+      // 敏感字段值不变, 删除属性，不传给后台
+      const originData = this.originRequestData.find(item => item.entity === this.activeTab || item.itemGroup === this.activeTab)
+      sensitiveKeys.forEach(key => {
+        for (let origin of originData.value) {
+          for (let current of data.value) {
+            if (origin.id === current.id && origin.entityData[key] === current.entityData[key]) {
+              // delete current.entityData[key]
+            }
+          }
+        }
+      })
+      await saveFormData(this.requestId, data)
     },
     // 切换tab刷新表格数据，加上防抖避免切换过快显示异常问题
     handleTabChange: debounce(function (item) {
       // 切换表单组，保存当前表单组数据
       if (this.isAdd) {
-        const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
+        const data = deepClone(this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab))
         if (!this.requiredCheck(data)) {
           return this.$Message.warning(`【${data.itemGroup}】${this.$t('required_tip')}`)
         } else {
@@ -319,6 +390,8 @@ export default {
       const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
       this.refKeys = []
       this.calculateKeys = []
+      let cmdbOptions = []
+      this.cmdbSensitiveKeysArr = []
       data.title.forEach(t => {
         // 非cmdb下发的下拉类型
         if ((t.elementType === 'select' || t.elementType === 'wecmdbEntity') && !t.cmdbAttr) {
@@ -328,26 +401,20 @@ export default {
         if (t.elementType === 'calculate') {
           this.calculateKeys.push(t.name)
         }
-      })
-
-      // taskman表单属性初始化
-      this.formOptions = data.title
-
-      // cmdb表单属性初始化
-      const cmdbOptions = []
-      const formOptions = deepClone(this.formOptions)
-      formOptions.forEach(item => {
-        if (item.cmdbAttr) {
-          item.cmdbAttr = JSON.parse(item.cmdbAttr)
-          item.cmdbAttr.editable = item.isEdit
-          const cmdbObj = Object.assign({}, { ...item.cmdbAttr, titleObj: item })
+        // cmdb表单类型
+        if (t.cmdbAttr) {
+          const cloneObj = deepClone(t)
+          cloneObj.cmdbAttr = JSON.parse(cloneObj.cmdbAttr)
+          cloneObj.cmdbAttr.editable = cloneObj.isEdit // 以taskman表单可编辑为主
+          const cmdbObj = Object.assign({}, { ...cloneObj.cmdbAttr, titleObj: cloneObj })
           cmdbOptions.push(cmdbObj)
+          if (cloneObj.cmdbAttr.sensitive === 'yes') {
+            this.cmdbSensitiveKeysArr.push(cloneObj.name)
+          }
         }
       })
-      if (cmdbOptions && cmdbOptions.length > 0) {
-        this.getCMDBInitData(cmdbOptions)
-      }
-
+      // taskman表单属性初始化
+      this.formOptions = data.title
       // table数据初始化
       this.tableData = data.value.map(v => {
         // 缓存RefOptions数据，不需要每次调用
@@ -394,6 +461,16 @@ export default {
           }
         })
       })
+      // cmdb表单数据初始化
+      if (cmdbOptions && cmdbOptions.length > 0) {
+        this.getCMDBInitData(cmdbOptions)
+      }
+      // cmdb表单权限初始化
+      if (Array.isArray(this.cmdbSensitiveKeysArr) && this.cmdbSensitiveKeysArr.length > 0) {
+        if (Array.isArray(data.value) && data.value.length > 0 && data.entity) {
+          this.getCmdbFormPermission(data.entity, data.value)
+        }
+      }
     },
     // cmdb表单属性初始化
     getCMDBInitData (data) {
@@ -547,6 +624,7 @@ export default {
               item.value.splice(index, 1)
             }
           })
+          // this.initTableData()
         },
         onCancel: () => {}
       })
@@ -598,7 +676,7 @@ export default {
         displayName: '',
         entityData: { ...entityData, _id: '' },
         entityName: data.entity,
-        entityDataOp: 'create',
+        entityDataOp: source ? '' : 'create',
         fullDataId: '',
         id: idStr,
         packageName: data.packageName,
@@ -622,11 +700,13 @@ export default {
             return item.dataId
           })
         }
+        // 编排类表单，下拉框只能选择系统下发的数据
         if (this.activeItem.itemGroupType === 'workflow') {
           this.addRowSourceOptions = this.addRowSourceOptions.filter(item =>
             this.worklfowDataIdsObj[this.activeItem.formTemplateId].includes(item.id)
           )
         }
+        // 下拉框数据和表单已存在的数据做ID去重
         this.addRowSourceOptions = this.addRowSourceOptions.filter(item => !ids.includes(item.id))
       }
     },

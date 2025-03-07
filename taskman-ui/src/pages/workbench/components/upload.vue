@@ -12,7 +12,10 @@
       :on-success="uploadSucess"
       :on-error="uploadFailed"
     >
-      <Button icon="md-cloud-upload" :disabled="formDisable">{{ $t('upload_attachment') }}</Button>
+      <Button class="btn-upload" :disabled="formDisable">
+        <img src="@/images/icon/UploadOutlined.png" class="upload-icon" />
+        {{ $t('upload_attachment') }}
+      </Button>
     </Upload>
     <div :style="{ marginTop: onlyShowFile ? '0px' : '10px', display: 'flex' }">
       <Tag
@@ -35,6 +38,22 @@
 import axios from 'axios'
 import { deleteAttach } from '@/api/server'
 import { getCookie } from '@/pages/util/cookie'
+
+export const custom_api_enum = [
+  {
+    "url": "/taskman/api/v1/request/attach-file/download/${file.id}",
+    "method": "get"
+  },
+  {
+    "url": "/taskman/api/v1/request/attach-file/upload/${val}",
+    "method": "post"
+  },
+  {
+    "url": "/taskman/api/v1/task/attach-file/${val}/upload/${this.taskHandleId}",
+    "method": "post"
+  }
+]
+
 export default {
   props: {
     // request请求，task任务

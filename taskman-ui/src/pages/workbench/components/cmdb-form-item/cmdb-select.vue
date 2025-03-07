@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2024-12-10 17:20:25
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2024-12-11 18:09:12
+ * @LastEditTime: 2025-01-22 19:48:28
 -->
 <template>
   <div class="cmdb-select">
@@ -12,6 +12,7 @@
       :disabled="disabled"
       filterable
       clearable
+      placeholder=""
       @on-change="changeValue"
     >
       <Option v-for="item in opts" :value="item.value || ''" :key="item.value">{{ item.label }}</Option>

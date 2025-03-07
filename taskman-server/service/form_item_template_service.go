@@ -7,6 +7,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"go.uber.org/zap"
 	"strings"
 	"time"
 	"xorm.io/xorm"
@@ -40,7 +41,7 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 		newItemGroupId = guid.CreateGuid()
 		if len(param.SystemItems) > 0 {
 			for _, systemItem := range param.SystemItems {
-				refAttributes, tmpErr := getCMDBCiAttrDefs(systemItem.EntityName, userToken)
+				refAttributes, tmpErr := GetCMDBCiAttrDefs(systemItem.EntityName, userToken)
 				if tmpErr != nil {
 					err = fmt.Errorf("query remote entity:%s attr fail:%s ", systemItem.EntityName, tmpErr.Error())
 					return
@@ -81,7 +82,7 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 				}
 			}
 			if !systemItemExist {
-				refAttributes, tmpErr := getCMDBCiAttrDefs(systemItem.EntityName, userToken)
+				refAttributes, tmpErr := GetCMDBCiAttrDefs(systemItem.EntityName, userToken)
 				if tmpErr != nil {
 					err = fmt.Errorf("query remote entity:%s attr fail:%s ", systemItem.EntityName, tmpErr.Error())
 					return
@@ -215,7 +216,7 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 		newHiddenCondition = []*models.QueryRequestFilterObj{}
 		if strings.TrimSpace(formItem.HiddenCondition) != "" {
 			if err = json.Unmarshal([]byte(formItem.HiddenCondition), &hiddenCondition); err != nil {
-				log.Logger.Error("hiddenCondition json Unmarshal err", log.Error(err))
+				log.Error(nil, log.LOGGER_APP, "hiddenCondition json Unmarshal err", zap.Error(err))
 				return
 			}
 			for _, cond := range hiddenCondition {
@@ -241,7 +242,7 @@ func (s *FormItemTemplateService) CalcItemGroupSort(requestTemplateId, taskTempl
 	// 如果任务模板ID,则只查询数据模板
 	list, err := s.formTemplateDao.QueryListByRequestTemplateAndTaskTemplate(requestTemplateId, taskTemplateId, string(models.RequestFormTypeData))
 	if err != nil {
-		log.Logger.Error("CalcItemGroupSort err", log.Error(err))
+		log.Error(nil, log.LOGGER_APP, "CalcItemGroupSort err", zap.Error(err))
 		return 0
 	}
 	if len(list) > 0 {
@@ -390,5 +391,56 @@ func (s *FormItemTemplateService) CopyDataFormTemplateItemGroup(requestTemplateI
 
 func (s *FormItemTemplateService) GetFormItemTemplate(formItemTemplateId string) (result *models.FormItemTemplateTable, err error) {
 	result, err = s.formItemTemplateDao.Get(formItemTemplateId)
+	return
+}
+
+// SyncCmdbAttribute 同步cmdb属性给表单项,方便请求表单属性读取控制
+func (s *FormItemTemplateService) SyncCmdbAttribute(requestTemplateId, userToken string) (err error) {
+	var formTemplateList []*models.FormTemplateTable
+	var existKeyMap = make(map[string][]*models.EntityAttributeObj)
+	var refAttributesMap = make(map[string]*models.EntityAttributeObj)
+	if formTemplateList, err = s.formTemplateDao.QueryListByRequestTemplate(requestTemplateId); err != nil {
+		return
+	}
+	if len(formTemplateList) > 0 {
+		for _, formTemplate := range formTemplateList {
+			var refAttributes []*models.EntityAttributeObj
+			if v, ok := existKeyMap[formTemplate.ItemGroup]; ok {
+				refAttributes = v
+			}
+			if strings.HasPrefix(formTemplate.ItemGroup, "wecmdb:") {
+				entity := formTemplate.ItemGroup[7:]
+				var formItemTemplate []*models.FormItemTemplateTable
+				if len(refAttributes) == 0 {
+					if refAttributes, err = GetCMDBCiAttrDefs(entity, userToken); err != nil {
+						err = fmt.Errorf("query remote entity:%s attr fail:%s ", entity, err.Error())
+						return
+					}
+					existKeyMap[formTemplate.ItemGroup] = refAttributes
+				}
+				for _, attribute := range refAttributes {
+					refAttributesMap[attribute.PropertyName] = attribute
+				}
+				if formItemTemplate, err = s.formItemTemplateDao.QueryByFormTemplate(formTemplate.Id); err != nil {
+					return
+				}
+				for _, itemTemplate := range formItemTemplate {
+					required := "no"
+					if v, ok := refAttributesMap[itemTemplate.Name]; ok {
+						cmdbAttr, _ := json.Marshal(v)
+						itemTemplate.CmdbAttr = string(cmdbAttr)
+						if v.Nullable == "no" {
+							required = "yes"
+						}
+						itemTemplate.IsEdit = v.Editable
+						itemTemplate.Required = required
+						if err = s.formItemTemplateDao.UpdateCmdbAttribute(nil, itemTemplate); err != nil {
+							return
+						}
+					}
+				}
+			}
+		}
+	}
 	return
 }

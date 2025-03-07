@@ -179,9 +179,9 @@ export default {
           key: 'status',
           render: (h, params) => {
             const list = [
-              { label: this.$t('tw_template_status_use'), value: 1, color: '#19be6b' },
+              { label: this.$t('tw_template_status_use'), value: 1, color: '#00CB91' },
               { label: this.$t('tw_template_status_disable'), value: 2, color: '#c5c8ce' },
-              { label: this.$t('tw_template_status_role'), value: 3, color: '#ed4014' }
+              { label: this.$t('tw_template_status_role'), value: 3, color: '#FF4D4F' }
             ]
             const item = list.find(i => i.value === params.row.status)
             return item && <Tag color={item.color}>{item.label}</Tag>
@@ -245,7 +245,7 @@ export default {
             return (
               params.row.workNode &&
               params.row.workNode.map(i => {
-                return <Tag color="#2d8cf0">{i}</Tag>
+                return <Tag color="#5384ff">{i}</Tag>
               })
             )
           }

@@ -1,26 +1,45 @@
 <template>
   <div class="cmdb-ci-password">
-    <div v-if="realPassword" style="display:flex;align-items:center;">
-      <Tooltip
-        max-width="200"
-        class="ci-password-cell-show-span"
-        placement="bottom-start"
-        :content="isShowPassword ? realPassword : '******'"
-      >
-        <div class="password-wrapper">{{ isShowPassword ? realPassword : '******' }}</div>
-      </Tooltip>
-      <div style="float: right; margin-right: 12px;">
-        <Icon :type="isShowPassword ? 'md-eye-off' : 'md-eye'" @click="showPassword" class="operation-icon-confirm" />
-        <Icon type="ios-build-outline" v-if="!disabled" @click="resetPassword" class="operation-icon-confirm" />
-      </div>
+    <div v-if="formData.sensitive === 'yes'" class="flex-center">
+      <Input :value="getDisplayValue" disabled placeholder="" />
+      <Button
+        @click="showPassword"
+        :disabled="getCmdbQueryPermission === false && originVal === panalData[formData.propertyName]"
+        type="primary"
+        ghost
+        :icon="isShowPassword ? 'md-eye-off' : 'md-eye'"
+      ></Button>
+      <Button
+        v-if="disabled === false"
+        @click="resetPassword"
+        type="primary"
+        ghost
+        icon="md-build"
+      ></Button>
     </div>
-    <div v-else class="no-data-wrap">
-      <span class="text">{{ $t('tw_password_empty') }}</span>
-      <Icon type="ios-build-outline" v-if="!disabled" @click="resetPassword" class="operation-icon-confirm" />
+    <div v-else class="flex-center">
+      <Input
+        :value="panalData[formData.propertyName] ? (isShowPassword ? panalData[formData.propertyName] : '******') : $t('tw_no_data')"
+        disabled
+        placeholder=""
+      />
+      <Button
+        @click="showPassword"
+        type="primary"
+        ghost
+        :icon="isShowPassword ? 'md-eye-off' : 'md-eye'"
+      ></Button>
+      <Button
+        v-if="disabled === false"
+        @click="resetPassword"
+        type="primary"
+        ghost
+        icon="md-build"
+      ></Button>
     </div>
     <!--密码编辑弹框-->
     <Modal v-model="isShowEditModal" :title="useLocalValue ? $t('tw_enter_password') : $t('tw_password_edit')">
-      <Form ref="form" :model="editFormData" :rules="rules" label-position="right" :label-width="120">
+      <Form ref="form" :model="editFormData" :rules="rules" label-position="right" :label-width="100">
         <FormItem :label="useLocalValue ? $t('tw_password') : $t('tw_new_password')" prop="newPassword">
           <Input
             class="encrypt-password"
@@ -53,14 +72,15 @@
 </template>
 
 <script>
-import { getEncryptKey } from '@/api/server'
-import CryptoJS from 'crypto-js'
+// import { getEncryptKey } from '@/api/server'
+// import CryptoJS from 'crypto-js'
 export default {
   name: '',
   data () {
     return {
       encryptKey: '',
       realPassword: '',
+      originVal: '',
       useLocalValue: false,
       isShowPassword: false,
 
@@ -93,9 +113,43 @@ export default {
       }
     }
   },
-  props: ['formData', 'panalData', 'disabled'],
+  props: ['formData', 'panalData', 'allSensitiveData', 'rowData', 'disabled'],
+  computed: {
+    getCmdbQueryPermission () {
+      const obj = this.allSensitiveData.find(item => {
+        if (this.rowData.dataId) {
+          return item.attrName === this.formData.propertyName && item.guid === this.rowData.dataId
+        } else {
+          return item.attrName === this.formData.propertyName && item.tmpId === this.rowData.id
+        }
+      }) || {}
+      return obj.queryPermission
+    },
+    getRealValue () {
+      const obj = this.allSensitiveData.find(item => {
+        if (this.rowData.dataId) {
+          return item.attrName === this.formData.propertyName && item.guid === this.rowData.dataId
+        } else {
+          return item.attrName === this.formData.propertyName && item.tmpId === this.rowData.id
+        }
+      }) || {}
+      return obj.value
+    },
+    getDisplayValue () {
+      if (!this.panalData[this.formData.propertyName]) return this.$t('tw_no_data')
+      if (this.isShowPassword) {
+        if (this.originVal === this.panalData[this.formData.propertyName]) {
+          return this.realPassword
+        } else {
+          return this.panalData[this.formData.propertyName]
+        }
+      } else {
+        return '******'
+      }
+    }
+  },
   mounted () {
-    this.realPassword = this.panalData[this.formData.propertyName]
+    this.originVal = this.panalData[this.formData.propertyName]
   },
   methods: {
     resetPassword () {
@@ -110,16 +164,16 @@ export default {
       })
     },
     async handleInput () {
-      if (this.editFormData.newPassword) {
-        await this.getEncryptKey()
-        const key = CryptoJS.enc.Utf8.parse(this.encryptKey)
-        const config = {
-          iv: CryptoJS.enc.Utf8.parse(Math.trunc(new Date() / 100000) * 100000000),
-          mode: CryptoJS.mode.CBC
-          // padding: CryptoJS.pad.PKcs7
-        }
-        this.editFormData.newPassword = CryptoJS.AES.encrypt(this.editFormData.newPassword, key, config).toString()
-      }
+      // if (this.editFormData.newPassword) {
+      //   await this.getEncryptKey()
+      //   const key = CryptoJS.enc.Utf8.parse(this.encryptKey)
+      //   const config = {
+      //     iv: CryptoJS.enc.Utf8.parse(Math.trunc(new Date() / 100000) * 100000000),
+      //     mode: CryptoJS.mode.CBC
+      //     // padding: CryptoJS.pad.PKcs7
+      //   }
+      //   this.editFormData.newPassword = CryptoJS.AES.encrypt(this.editFormData.newPassword, key, config).toString()
+      // }
       // this.panalData[this.formData.propertyName] = this.editFormData.newPassword
       this.$emit('input', this.editFormData.newPassword)
       this.realPassword = this.editFormData.newPassword
@@ -137,33 +191,25 @@ export default {
       }
     },
     async showPassword () {
-      // if (this.useLocalValue || !this.panalData.guid) {
-      //   this.realPassword = this.panalData[this.formData.propertyName]
-      // } else {
-      //   const { statusCode, data } = await queryPassword(
-      //     this.formData.ciTypeId,
-      //     this.panalData.guid,
-      //     this.formData.propertyName,
-      //     {}
-      //   )
-      //   if (statusCode === 'OK') {
-      //     this.realPassword = data
-      //   }
-      // }
-      this.realPassword = this.panalData[this.formData.propertyName]
+      // this.realPassword = this.panalData[this.formData.propertyName]
+      this.realPassword = this.getRealValue
       this.isShowPassword = !this.isShowPassword
-    },
-    async getEncryptKey () {
-      const { statusCode, data } = await getEncryptKey()
-      if (statusCode === 'OK') {
-        this.encryptKey = data
-      }
     }
+    // async getEncryptKey () {
+    //   const { statusCode, data } = await getEncryptKey()
+    //   if (statusCode === 'OK') {
+    //     this.encryptKey = data
+    //   }
+    // }
   }
 }
 </script>
 
 <style scoped lang="scss">
+.flex-center {
+  display: flex;
+  align-items: center;
+}
 .operation-icon-confirm {
   font-size: 16px;
   border: 1px solid #57a3f3;
@@ -189,6 +235,9 @@ export default {
     font-size: 13px;
     color: #515a6e;
   }
+}
+Button {
+  margin-left: 5px;
 }
 </style>
 <style lang="scss">

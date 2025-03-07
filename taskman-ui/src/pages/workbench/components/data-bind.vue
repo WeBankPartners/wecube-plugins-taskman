@@ -65,6 +65,7 @@
       v-model="viewVisible"
       width="800"
       :mask-closable="true"
+      :lock-scroll="true"
       @on-close="viewVisible = false"
     >
       <div class="content" :style="{ maxHeight: maxHeight + 'px' }">
@@ -72,6 +73,7 @@
           v-if="viewVisible"
           v-model="formValue"
           :options="formOptions"
+          :rowData="currentRowData"
           :requestId="requestId"
           disabled
         ></CustomForm>
@@ -115,6 +117,7 @@ export default {
       viewVisible: false,
       formValue: {},
       formOptions: [],
+      currentRowData: {},
       maxHeight: 500,
       columns: [
         {
@@ -195,6 +198,7 @@ export default {
         if (`${data.packageName}:${data.entity}` === `${item.packageName}:${item.entityName}`) {
           this.formOptions = data.title || []
           this.formValue = item.entityData
+          this.currentRowData = item
           // data.value &&
           //   data.value.forEach(value => {
           //     if (value.id === item.dataId) {

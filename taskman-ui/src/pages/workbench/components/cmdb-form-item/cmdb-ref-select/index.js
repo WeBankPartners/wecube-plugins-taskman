@@ -200,6 +200,7 @@ export default {
             style="width:100%"
             filterable
             clearable
+            placeholder=""
             on-on-change={this.selectChangeHandler}
             on-on-open-change={this.getFilterRulesOptions}
             max-tag-count={2}

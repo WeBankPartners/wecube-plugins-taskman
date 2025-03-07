@@ -100,3 +100,9 @@ func (d *FormTemplateDao) QueryListByTaskTemplate(taskTemplateId string) (list [
 	err = d.DB.Where("task_template_id=?", taskTemplateId).Find(&list)
 	return
 }
+
+func (d *FormTemplateDao) QueryListByRequestTemplate(requestTemplateId string) (list []*models.FormTemplateTable, err error) {
+	list = []*models.FormTemplateTable{}
+	err = d.DB.Where("request_template=? and del_flag = 0", requestTemplateId).Find(&list)
+	return
+}

@@ -5,8 +5,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/WeBankPartners/go-common-lib/cipher"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
+	"go.uber.org/zap"
 	"io"
 	"net/http"
 	"reflect"
@@ -132,7 +134,7 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 		if len(actions) > 0 {
 			updateStatusErr := dao.Transaction(actions)
 			if updateStatusErr != nil {
-				log.Logger.Error("Try to update request status fail", log.Error(updateStatusErr))
+				log.Error(nil, log.LOGGER_APP, "Try to update request status fail", zap.Error(updateStatusErr))
 			}
 		}
 	}
@@ -288,6 +290,9 @@ func CreateRequest(param *models.RequestTable, operatorRoles []string, userToken
 			return fmt.Errorf("try to sync proDefId fail,%s ", err.Error())
 		}
 	}
+	if err = GetFormItemTemplateService().SyncCmdbAttribute(param.RequestTemplate, userToken); err != nil {
+		log.Error(nil, log.LOGGER_APP, "SyncCmdbAttribute fail", zap.String("requestTemplateId", param.RequestTemplate), zap.Error(err))
+	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	param.Id = newRequestId()
 	requestInsertAction := dao.ExecAction{Sql: "insert into request(id,name,request_template,reporter,emergency,report_role,status,expire_time," +
@@ -370,8 +375,11 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 				value.EntityDataOp = "create"
 				value.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, guid.CreateGuid())
 				value.DisplayName = concatItemDisplayName(value.EntityData, nameList)
-			} else if value.EntityDataOp == "create" {
-				if !strings.HasPrefix(value.Id, "tmp") {
+			} else {
+				// CMDB 下拉框包括默认带过来的数据都需要用 dataId
+				if strings.TrimSpace(value.DataId) != "" && strings.TrimSpace(value.PackageName) != "" && strings.TrimSpace(value.EntityName) != "" {
+					value.Id = value.PackageName + ":" + value.EntityName + ":" + value.DataId
+				} else if value.EntityDataOp == "create" && !strings.HasPrefix(value.Id, "tmp") {
 					value.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, value.Id)
 				}
 			}
@@ -517,14 +525,41 @@ func (s *RequestService) processTaskForm(formParam models.ProcessTaskFormParam) 
 	for _, tableForm := range formParam.FormData {
 		columnNameIdMap := make(map[string]string)
 		isColumnMultiMap := make(map[string]int)
+		passwordAttrMap := make(map[string]bool)
 		for _, title := range tableForm.Title {
 			columnNameIdMap[title.Name] = title.Id
+			cmdbAttrModel := models.EntityAttributeObj{}
 			if strings.EqualFold(title.Multiple, models.Yes) || strings.EqualFold(title.Multiple, models.Y) {
 				isColumnMultiMap[title.Name] = 1
 			}
+			if strings.TrimSpace(title.CmdbAttr) == "" {
+				continue
+			}
+			if err = json.Unmarshal([]byte(title.CmdbAttr), &cmdbAttrModel); err != nil {
+				return
+			}
+			if cmdbAttrModel.InputType == string(models.FormItemElementTypePassword) {
+				passwordAttrMap[title.Name] = true
+			}
 		}
 		poolForms := itemGroupFormMap[tableForm.ItemGroup]
-		for _, valueObj := range tableForm.Value {
+		for index, valueObj := range tableForm.Value {
+			// 密码处理,web传递原密码,需要加密处理
+			for key, value := range valueObj.EntityData {
+				// 空数据不用加密
+				if value == nil || fmt.Sprintf("%+v", value) == "" {
+					continue
+				}
+				inputValue := fmt.Sprintf("%+v", value)
+				if passwordAttrMap[key] && !strings.HasPrefix(strings.ToLower(inputValue), models.EncryptPasswordPrefix) && !strings.HasPrefix(strings.ToLower(inputValue), models.EncryptPasswordPrefixC) {
+					if inputValue, err = AesEnPasswordByGuid("", models.Config.EncryptSeed, inputValue, DEFALT_CIPHER_C); err != nil {
+						err = fmt.Errorf("try to encrypt password type column:%s value:%s fail,%s  ", key, inputValue, err.Error())
+						return
+					}
+					valueObj.EntityData[models.ModifyPrefixConstant+key] = 1
+					valueObj.EntityData[key] = inputValue
+				}
+			}
 			if formParam.Task == nil && valueObj.EntityDataOp == "create" && valueObj.Id != "" {
 				if !strings.HasPrefix(valueObj.Id, "tmp") {
 					valueObj.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, valueObj.Id)
@@ -549,17 +584,22 @@ func (s *RequestService) processTaskForm(formParam models.ProcessTaskFormParam) 
 				if formParam.Task != nil {
 					taskId = sql.NullString{String: formParam.Task.Id, Valid: true}
 				}
-				actions = append(actions, &dao.ExecAction{Sql: "insert into form(id,request,task,form_template,data_id,created_by,updated_by,created_time,updated_time) values (?,?,?,?,?,?,?,?,?)", Param: []interface{}{
-					formId, formParam.RequestId, taskId, tableForm.FormTemplateId, valueObj.Id, formParam.Operator, formParam.Operator, nowTime, nowTime,
+				actions = append(actions, &dao.ExecAction{Sql: "insert into form(id,request,task,form_template,data_id,created_by,updated_by,created_time,updated_time,row_sort) values (?,?,?,?,?,?,?,?,?,?)", Param: []interface{}{
+					formId, formParam.RequestId, taskId, tableForm.FormTemplateId, valueObj.Id, formParam.Operator, formParam.Operator, nowTime, nowTime, index + 1,
 				}})
 			}
 			// 判断数据行属性的变化
 			for k, v := range valueObj.EntityData {
 				var valueString string
+				var modifyFlag int
 				// 判断属性合不合法，是不是属性该表单的属性
 				formItemTemplateId, nameLegalCheck := columnNameIdMap[k]
 				if !nameLegalCheck {
 					continue
+				}
+				// 表示修改过
+				if _, ok := valueObj.EntityData[models.ModifyPrefixConstant+k]; ok {
+					modifyFlag = 1
 				}
 				// map需要特殊处理
 				if reflect.ValueOf(v).Kind() == reflect.Map {
@@ -629,22 +669,20 @@ func (s *RequestService) processTaskForm(formParam models.ProcessTaskFormParam) 
 				}
 				if latestPoolItem.FormItemId == "" {
 					// 没有在数据池里找到相关数据行的该属性
-					actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time,task_handle) values (?,?,?,?,?,?,?,?)", Param: []interface{}{
-						"item_" + guid.CreateGuid(), formId, formItemTemplateId, k, valueString, formParam.RequestId, nowTime, taskHandleId,
-					}})
+					actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time,task_handle,item_group,modify_flag) values (?,?,?,?,?,?,?,?,?,?)",
+						Param: []interface{}{"item_" + guid.CreateGuid(), formId, formItemTemplateId, k, valueString, formParam.RequestId, nowTime, taskHandleId, tableForm.ItemGroup, modifyFlag}})
 				} else {
 					if latestPoolItem.Value != valueString {
 						// 数据有更新
 						if formParam.Task != nil && latestPoolItem.Task == formParam.Task.Id {
 							// 属于该任务，更新数据值
-							actions = append(actions, &dao.ExecAction{Sql: "update form_item set value=?,updated_time=?,task_handle=? where id=?", Param: []interface{}{
-								valueString, nowTime, taskHandleId, latestPoolItem.FormItemId,
+							actions = append(actions, &dao.ExecAction{Sql: "update form_item set value=?,modify_flag=?,updated_time=?,task_handle=? where id=?", Param: []interface{}{
+								valueString, modifyFlag, nowTime, taskHandleId, latestPoolItem.FormItemId,
 							}})
 						} else {
 							// 不属于该任务，新增数据纪录
-							actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time,original_id,task_handle) values (?,?,?,?,?,?,?,?,?)", Param: []interface{}{
-								"item_" + guid.CreateGuid(), formId, formItemTemplateId, k, valueString, formParam.RequestId, nowTime, latestPoolItem.FormItemId, taskHandleId,
-							}})
+							actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time,original_id,task_handle,item_group,modify_flag) values (?,?,?,?,?,?,?,?,?,?,?)",
+								Param: []interface{}{"item_" + guid.CreateGuid(), formId, formItemTemplateId, k, valueString, formParam.RequestId, nowTime, latestPoolItem.FormItemId, taskHandleId, tableForm.ItemGroup, modifyFlag}})
 						}
 					}
 				}
@@ -751,6 +789,7 @@ func GetRequestRootForm(requestId string) (result models.RequestTemplateFormStru
 
 func GetRequestPreData(requestId, entityDataId, userToken, language string) (result []*models.RequestPreDataTableObj, previewData *models.EntityTreeData, err error) {
 	var requestTables []*models.RequestTable
+	var targetData []map[string]interface{}
 	err = dao.X.SQL("select cache from request where id=?", requestId).Find(&requestTables)
 	if err != nil {
 		return
@@ -766,6 +805,7 @@ func GetRequestPreData(requestId, entityDataId, userToken, language string) (res
 		}
 		if cacheObj.RootEntityId == entityDataId {
 			result = cacheObj.Data
+			SensitiveDataEncryption(result)
 			return
 		}
 	}
@@ -785,6 +825,16 @@ func GetRequestPreData(requestId, entityDataId, userToken, language string) (res
 	if len(previewData.EntityTreeNodes) == 0 {
 		return
 	}
+	// 处理表单敏感数据
+	for _, entityData := range previewData.EntityTreeNodes {
+		if targetData, err = HandleSensitiveDataEncode([]map[string]interface{}{entityData.EntityData}, entityData.EntityName, userToken); err != nil {
+			return
+		}
+		if len(targetData) > 0 {
+			entityData.EntityData = targetData[0]
+		}
+	}
+
 	previewDataBytes, _ := json.Marshal(previewData)
 	_, err = dao.X.Exec("update request set preview_cache=? where id=?", string(previewDataBytes), requestId)
 	if err != nil {
@@ -941,7 +991,7 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 		filterSql, filterParam := dao.CreateListParams(formTemplateIdList, "")
 		err := dao.X.SQL("select id,item_group_type,item_group_rule,item_group_sort from form_template where id in ("+filterSql+")", filterParam...).Find(&formTemplateRows)
 		if err != nil {
-			log.Logger.Error("query for template table fail", log.Error(err))
+			log.Error(nil, log.LOGGER_APP, "query for template table fail", zap.Error(err))
 		} else {
 			formTemplateMap := make(map[string]*models.FormTemplateTable)
 			for _, row := range formTemplateRows {
@@ -1106,7 +1156,7 @@ func StartRequest(request models.RequestTable, operator, userToken, language str
 	}
 	fillBindingWithRequestData(request.Id, userToken, language, &cacheData, entityDepMap)
 	cacheBytes, _ := json.Marshal(cacheData)
-	log.Logger.Info("cacheByte", log.String("cacheBytes", string(cacheBytes)))
+	log.Info(nil, log.LOGGER_APP, "cacheByte", zap.String("cacheBytes", string(cacheBytes)))
 	startParam := BuildRequestProcessData(cacheData, preData)
 	startParam.SimpleRequestDto = &models.SimpleRequestDto{
 		Id:              request.Id,
@@ -1132,7 +1182,7 @@ func StartRequest(request models.RequestTable, operator, userToken, language str
 }
 
 func StartRequestNew(request models.RequestTable, userToken, language string, cacheData models.RequestCacheData) (actions []*dao.ExecAction, err error) {
-	log.Logger.Debug("StartRequestNew", log.JsonObj("request", request))
+	log.Debug(nil, log.LOGGER_APP, "StartRequestNew", log.JsonObj("request", request))
 	var requestTemplateTable []*models.RequestTemplateTable
 	var result *models.StartInstanceResultData
 	actions = []*dao.ExecAction{}
@@ -1166,7 +1216,7 @@ func StartRequestNew(request models.RequestTable, userToken, language string, ca
 		CreatedTime:     request.CreatedTime,
 		Type:            request.Type,
 	}
-	log.Logger.Debug("start proc instance", log.JsonObj("startParam", startParam))
+	log.Debug(nil, log.LOGGER_APP, "start proc instance", log.JsonObj("startParam", startParam))
 	result, err = GetProcDefService().StartProcDefInstances(startParam, userToken, language)
 	if err != nil {
 		return
@@ -1319,11 +1369,11 @@ func fillBindingWithRequestData(requestId, userToken, language string, cacheData
 	}
 	// itemMap -> entity:[refEntity]
 	for k, v := range itemMap {
-		log.Logger.Info("itemMap", log.String("key", k), log.StringList("value", v))
+		log.Info(nil, log.LOGGER_APP, "itemMap", zap.String("key", k), zap.Strings("value", v))
 	}
 	entityNewMap := make(map[string][]string)
 	for k, v := range existDepMap {
-		log.Logger.Info("existDepMap", log.String("k", k), log.StringList("v", v))
+		log.Info(nil, log.LOGGER_APP, "existDepMap", zap.String("k", k), zap.Strings("v", v))
 		if k != "" && len(v) > 0 {
 			entityNewMap[k] = v
 		}
@@ -1349,7 +1399,7 @@ func fillBindingWithRequestData(requestId, userToken, language string, cacheData
 		}
 	}
 	for k, v := range dataIdOidMap {
-		log.Logger.Debug("dataIdOidMap", log.String("k", k), log.String("v", v))
+		log.Debug(nil, log.LOGGER_APP, "dataIdOidMap", zap.String("k", k), zap.String("v", v))
 	}
 	for k, v := range entityNewMap {
 		tmpRefOidList := []string{}
@@ -1361,7 +1411,7 @@ func fillBindingWithRequestData(requestId, userToken, language string, cacheData
 			}
 		}
 		entityNewMap[k] = tmpRefOidList
-		log.Logger.Info("entityNewMap", log.String("key", k), log.StringList("value", tmpRefOidList))
+		log.Info(nil, log.LOGGER_APP, "entityNewMap", zap.String("key", k), zap.Strings("value", tmpRefOidList))
 	}
 	if len(entityNewMap) > 0 {
 		rebuildEntityRefOids(&cacheData.RootEntityValue, entityNewMap, entityOidMap)
@@ -1394,7 +1444,7 @@ func rebuildEntityRefOids(entityValue *models.RequestCacheEntityValue, entityNew
 
 func findEntityRefByItemRef(entityValue *models.RequestCacheEntityValue, entityRefs []string, entityNewMap map[string][]string, dataIdOidMap map[string]string) {
 	if entityValue.EntityDataOp == "create" {
-		log.Logger.Debug("findEntityRefByItemRef create", log.String("oid", entityValue.Oid))
+		log.Debug(nil, log.LOGGER_APP, "findEntityRefByItemRef create", zap.String("oid", entityValue.Oid))
 		tmpRefOidList := []string{}
 		for _, attrValueObj := range entityValue.AttrValues {
 			tmpAttrEntity := getEntityNameFromAttrDefId(attrValueObj.AttrDefId, attrValueObj.AttrName)
@@ -1411,7 +1461,7 @@ func findEntityRefByItemRef(entityValue *models.RequestCacheEntityValue, entityR
 		}
 		entityNewMap[entityValue.Oid] = tmpRefOidList
 	} else {
-		log.Logger.Debug("findEntityRefByItemRef exist", log.String("oid", entityValue.Oid), log.String("EntityDataId", entityValue.EntityDataId))
+		log.Debug(nil, log.LOGGER_APP, "findEntityRefByItemRef exist", zap.String("oid", entityValue.Oid), zap.String("EntityDataId", entityValue.EntityDataId))
 		dataIdOidMap[entityValue.EntityDataId] = entityValue.Oid
 		tmpRefOidList := []string{}
 		for _, attrValueObj := range entityValue.AttrValues {
@@ -1419,7 +1469,7 @@ func findEntityRefByItemRef(entityValue *models.RequestCacheEntityValue, entityR
 			for _, entityRef := range entityRefs {
 				if tmpAttrEntity == entityRef && attrValueObj.DataType == "ref" {
 					valueString := fmt.Sprintf("%s", attrValueObj.DataValue)
-					log.Logger.Debug("findEntityRefByItemRef ref", log.String("oid", entityValue.Oid), log.String("valueString", valueString))
+					log.Debug(nil, log.LOGGER_APP, "findEntityRefByItemRef ref", zap.String("oid", entityValue.Oid), zap.String("valueString", valueString))
 					if strings.Contains(valueString, ",") {
 						for _, tmpV := range strings.Split(valueString, ",") {
 							if strings.HasPrefix(tmpV, "tmp") {
@@ -1475,7 +1525,7 @@ func matchEntityRoot(requestId, userToken, language string, cacheData *models.Re
 	if cacheData.RootEntityValue.Oid != "" && cacheData.RootEntityValue.EntityName == "" {
 		entityQueryResult, entityQueryErr := GetEntityData(requestId, userToken, language)
 		if entityQueryErr != nil {
-			log.Logger.Error("Try to fill root entity data fail", log.Error(entityQueryErr))
+			log.Error(nil, log.LOGGER_APP, "Try to fill root entity data fail", zap.Error(entityQueryErr))
 		} else {
 			for _, v := range entityQueryResult.Data {
 				if cacheData.RootEntityValue.Oid == v.Id {
@@ -1698,7 +1748,7 @@ func GetRequestDetailV2(requestId, taskId, userToken, language string) (result m
 		if len(actions) > 0 {
 			updateRequestErr := dao.Transaction(actions)
 			if updateRequestErr != nil {
-				log.Logger.Error("Try to update request status fail", log.Error(updateRequestErr))
+				log.Error(nil, log.LOGGER_APP, "Try to update request status fail", zap.Error(updateRequestErr))
 			}
 		}
 	}
@@ -1775,6 +1825,7 @@ func getAttrCat(catId, userToken string) (result []*models.EntityDataObj, err er
 }
 
 func BuildRequestProcessData(input models.RequestCacheData, preData *models.EntityTreeData) (result models.RequestProcessData) {
+	var err error
 	result.ProcDefId = input.ProcDefId
 	result.ProcDefKey = input.ProcDefKey
 	result.RootEntityOid = input.RootEntityValue.Oid
@@ -1813,6 +1864,25 @@ func BuildRequestProcessData(input models.RequestCacheData, preData *models.Enti
 			if !existFlag {
 				tmpEntity := models.RequestCacheEntityValue{Oid: preEntity.Id, PackageName: preEntity.PackageName, EntityName: preEntity.EntityName, BindFlag: "N", EntityDataId: preEntity.DataId, EntityDisplayName: preEntity.DisplayName, FullEntityDataId: preEntity.FullDataId, PreviousOids: preEntity.PreviousIds, SucceedingOids: preEntity.SucceedingIds}
 				result.Entities = append(result.Entities, &tmpEntity)
+			}
+		}
+	}
+	// 密码类型数据解密
+	for _, entity := range result.Entities {
+		for _, attr := range entity.AttrValues {
+			inputValue := ""
+			if attr.DataValue != nil {
+				inputValue = fmt.Sprintf("%+v", attr.DataValue)
+			}
+			if attr.DataType == "str" && strings.HasPrefix(strings.ToLower(inputValue), models.EncryptPasswordPrefixC) {
+				if inputValue, err = AesDePasswordByGuid("", models.Config.EncryptSeed, inputValue); err != nil {
+					log.Error(nil, log.LOGGER_APP, "try to decode password fail", zap.String("attrName", attr.AttrName), zap.String("encryptSeed", models.Config.EncryptSeed),
+						zap.String("value", fmt.Sprintf("%+v", attr.DataValue)), zap.Error(err))
+					return
+				}
+				attr.DataValue = inputValue
+				log.Info(nil, log.LOGGER_APP, "start workflow decode password success", zap.String("attrName", attr.AttrName), zap.String("encryptSeed", models.Config.EncryptSeed),
+					zap.String("value", inputValue))
 			}
 		}
 	}
@@ -1878,7 +1948,7 @@ func AppendUselessEntity(requestTemplateId, userToken, language string, cacheDat
 		return entityDepMap, preData, nil
 	}
 	dependEntityMap := make(map[string]*models.RequestCacheEntityAttrValue)
-	log.Logger.Info("getDependEntity", log.StringList("rootSucceeding", rootSucceeding), log.Int("preLen", len(preEntityList)), log.Int("entityLen", len(entityList)))
+	log.Info(nil, log.LOGGER_APP, "getDependEntity", zap.Strings("rootSucceeding", rootSucceeding), zap.Int("preLen", len(preEntityList)), zap.Int("entityLen", len(entityList)))
 	// entityList -> in boundValue entity
 	getDependEntity(rootSucceeding, rootParent, preEntityList, entityList, dependEntityMap)
 	for k, refAttr := range dependEntityMap {
@@ -1888,7 +1958,7 @@ func AppendUselessEntity(requestTemplateId, userToken, language string, cacheDat
 		} else {
 			entityDepMap[k] = []string{refDataValue}
 		}
-		log.Logger.Info("dependEntityMap", log.String("id", k), log.String("refValue", refDataValue))
+		log.Info(nil, log.LOGGER_APP, "dependEntityMap", zap.String("id", k), zap.String("refValue", refDataValue))
 	}
 	if len(dependEntityMap) > 0 {
 		newNode := models.RequestCacheTaskNodeBindObj{NodeId: "", NodeDefId: "", BoundEntityValues: []*models.RequestCacheEntityValue{}}
@@ -2044,7 +2114,7 @@ func newRequestId() (requestId string) {
 	defer requestIdLock.Unlock()
 	result, err := dao.X.QueryString(fmt.Sprintf("select count(1) as num from request where created_time>='%s 00:00:00'", dateString))
 	if err != nil {
-		log.Logger.Error("try to new request id fail with count table num", log.Error(err))
+		log.Error(nil, log.LOGGER_APP, "try to new request id fail with count table num", zap.Error(err))
 		requestId = fmt.Sprintf("%s-%s", requestId, guid.CreateGuid())
 		return
 	}
@@ -2081,7 +2151,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 		return
 	}
-	log.Logger.Info("history task", log.Int("taskLen", len(tasks)))
+	log.Info(nil, log.LOGGER_APP, "history task", zap.Int("taskLen", len(tasks)))
 
 	if len(tasks) == 0 {
 		return
@@ -2172,7 +2242,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 			}
 			if strings.TrimSpace(taskHandleTemplate.FilterRule) != "" {
 				if err = json.Unmarshal([]byte(taskHandleTemplate.FilterRule), &curTaskHandleForHistory.FilterRule); err != nil {
-					log.Logger.Error("GetRequestHistory json Unmarshal err", log.Error(err))
+					log.Error(nil, log.LOGGER_APP, "GetRequestHistory json Unmarshal err", zap.Error(err))
 					return
 				}
 			}
@@ -2254,7 +2324,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 
 		formData, err = getTaskFormData(curTaskForHistory)
 		if err != nil {
-			log.Logger.Error(fmt.Sprintf("get task form data for task: %s error", task.Id), log.Error(err))
+			log.Error(nil, log.LOGGER_APP, fmt.Sprintf("get task form data for task: %s error", task.Id), zap.Error(err))
 			return
 		}
 		curTaskForHistory.FormData = formData
@@ -2286,6 +2356,19 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		}
 	}
 	result.Request.UncompletedTasks = uncompletedTasks
+	// 清空cache，bindCache 防止敏感数据展示出来
+	result.Request.Cache = ""
+	result.Request.BindCache = ""
+	// 请求详情表单,敏感数据加密
+	for _, task := range result.Task {
+		task.Cache = ""
+		// 任务表单数据加密
+		SensitiveDataEncryption(task.FormData)
+		// 任务处理人表单数据加密
+		for _, taskHandle := range task.TaskHandleList {
+			SensitiveDataEncryption(taskHandle.FormData)
+		}
+	}
 	return
 }
 
@@ -2300,7 +2383,7 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 		return
 	}
 	if len(formTemplates) == 0 {
-		log.Logger.Debug(fmt.Sprintf("can not find any form templates with taskTemplate: %s", taskObj.TaskTemplate))
+		log.Debug(nil, log.LOGGER_APP, fmt.Sprintf("can not find any form templates with taskTemplate: %s", taskObj.TaskTemplate))
 		return
 	}
 
@@ -2330,7 +2413,7 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 			return
 		}
 		if len(actualFormTemplates) == 0 {
-			log.Logger.Debug(fmt.Sprintf("can not find any form templates with actualFormTemplateIds: [%s]", strings.Join(actualFormTemplateIds, ",")))
+			log.Debug(nil, log.LOGGER_APP, fmt.Sprintf("can not find any form templates with actualFormTemplateIds: [%s]", strings.Join(actualFormTemplateIds, ",")))
 			return
 		}
 	} else {
@@ -2353,7 +2436,7 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 			return
 		}
 		if len(actualFormTemplates) == 0 {
-			log.Logger.Debug(fmt.Sprintf("can not find any form templates with actualFormTemplateIds: [%s]", strings.Join(actualFormTemplateIds, ",")))
+			log.Debug(nil, log.LOGGER_APP, fmt.Sprintf("can not find any form templates with actualFormTemplateIds: [%s]", strings.Join(actualFormTemplateIds, ",")))
 			return
 		}
 	}
@@ -2369,7 +2452,7 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 		return
 	}
 	if len(taskForms) == 0 {
-		log.Logger.Info(fmt.Sprintf("can not find any forms with request: %s and formTemplates: [%s]",
+		log.Info(nil, log.LOGGER_APP, fmt.Sprintf("can not find any forms with request: %s and formTemplates: [%s]",
 			taskObj.Request, strings.Join(actualFormTemplateIds, ",")))
 		return
 	}
@@ -2386,7 +2469,7 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 		return
 	}
 	if len(requestFormItems) == 0 {
-		log.Logger.Info(fmt.Sprintf("can not find any form items with request: %s and updatedTime <= %s",
+		log.Info(nil, log.LOGGER_APP, fmt.Sprintf("can not find any form items with request: %s and updatedTime <= %s",
 			taskObj.Request, taskUpdatedTime))
 		return
 	}
@@ -2401,7 +2484,7 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 		return
 	}
 	if len(itemTemplates) == 0 {
-		log.Logger.Info(fmt.Sprintf("can not find any form item templates with formTemplates: [%s]",
+		log.Info(nil, log.LOGGER_APP, fmt.Sprintf("can not find any form item templates with formTemplates: [%s]",
 			strings.Join(formTemplateIds, ",")))
 		return
 	}
@@ -2414,12 +2497,14 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 	// 通过筛选 requestFormItems 获取当前 task 的 form items
 	taskFormItems := getTaskFormItems(requestFormItems, taskForms)
 	if len(taskFormItems) == 0 {
-		log.Logger.Info(fmt.Sprintf("can not find any form item for task: %s", taskObj.Id))
+		log.Info(nil, log.LOGGER_APP, fmt.Sprintf("can not find any form item for task: %s", taskObj.Id))
 		return
 	}
 
 	var formIdMapInfo = make(map[string]*models.FormTable)
 	var formTemplateIdMapInfo = make(map[string]*models.FormTemplateTable)
+	// row data_id sort map
+	var rowDataIdSortMap = make(map[string]int)
 	if formIdMapInfo, formTemplateIdMapInfo, err = getFormAndTemplateMapInfo(taskFormItems); err != nil {
 		err = fmt.Errorf("get form and form template map info failed: %s", err.Error())
 		return
@@ -2428,6 +2513,9 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 	sort.Slice(taskFormItems, func(i, j int) bool {
 		return taskFormItems[i].Form < taskFormItems[j].Form
 	})
+	for _, formInfo := range formIdMapInfo {
+		rowDataIdSortMap[formInfo.DataId] = formInfo.RowSort
+	}
 
 	// itemGroup map data_ids
 	itemRowMap := make(map[string][]string)
@@ -2441,11 +2529,11 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 			if tmpFormTemplate, isExisted2 := formTemplateIdMapInfo[tmpForm.FormTemplate]; isExisted2 {
 				itemGroup = tmpFormTemplate.ItemGroup
 			} else {
-				log.Logger.Debug(fmt.Sprintf("can not find itemGroup for formItem: %s", item.Id))
+				log.Debug(nil, log.LOGGER_APP, fmt.Sprintf("can not find itemGroup for formItem: %s", item.Id))
 				continue
 			}
 		} else {
-			log.Logger.Debug(fmt.Sprintf("can not find itemDataId for formItem: %s", item.Id))
+			log.Debug(nil, log.LOGGER_APP, fmt.Sprintf("can not find itemDataId for formItem: %s", item.Id))
 			continue
 		}
 
@@ -2509,6 +2597,9 @@ func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPr
 					if _, ok := tmpRowObj.EntityData[formItemTemp.Name]; !ok {
 						tmpRowObj.EntityData[formItemTemp.Name] = formItemTemp.DefaultValue
 					}
+				}
+				if v, ok := rowDataIdSortMap[row]; ok {
+					tmpRowObj.RowSort = v
 				}
 				formTable.Value = append(formTable.Value, &tmpRowObj)
 			}
@@ -2691,7 +2782,7 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 													exist := false
 													filterArr, ok1 := value.([]interface{})
 													if !ok1 {
-														log.Logger.Error("data value  is not array", log.JsonObj("data", data))
+														log.Error(nil, log.LOGGER_APP, "data value  is not array", log.JsonObj("data", data))
 														continue
 													}
 													if len(filterArr) == 0 {
@@ -2702,7 +2793,7 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 													if !ok2 {
 														str, ok3 := entity.EntityData[name].(string)
 														if !ok3 {
-															log.Logger.Error("entity.EntityData value is not string", log.JsonObj("data", entity.EntityData[name]))
+															log.Error(nil, log.LOGGER_APP, "entity.EntityData value is not string", log.JsonObj("data", entity.EntityData[name]))
 															continue
 														}
 														entityArr = strings.Split(str, ",")
@@ -2762,7 +2853,7 @@ func filterFormRowByHandleTemplate(taskHistoryList []*models.TaskForHistory) []*
 							if strings.TrimSpace(taskHandle.HandleFormData) != "" {
 								err := json.Unmarshal([]byte(taskHandle.HandleFormData), &taskHandle.FormData)
 								if err != nil {
-									log.Logger.Error("json Unmarshal err:%+v", log.Error(err))
+									log.Error(nil, log.LOGGER_APP, "json Unmarshal err:%+v", zap.Error(err))
 								}
 							}
 						}
@@ -2830,6 +2921,7 @@ func formDataDeepCopy(dataList []*models.RequestPreDataTableObj) []*models.Reque
 					PreviousIds:   obj.PreviousIds,
 					SucceedingIds: obj.SucceedingIds,
 					EntityDataOp:  obj.EntityDataOp,
+					RowSort:       obj.RowSort,
 				})
 			}
 		}
@@ -2848,4 +2940,117 @@ func formDataDeepCopy(dataList []*models.RequestPreDataTableObj) []*models.Reque
 		})
 	}
 	return list
+}
+
+// SensitiveDataEncryption 敏感数据加密
+func SensitiveDataEncryption(formData []*models.RequestPreDataTableObj) (err error) {
+	for _, entityData := range formData {
+		cmdbAttrMap := make(map[string]bool)
+		for _, attr := range entityData.Title {
+			if strings.TrimSpace(attr.CmdbAttr) == "" {
+				continue
+			}
+			cmdbAttrModel := models.EntityAttributeObj{}
+			if err = json.Unmarshal([]byte(attr.CmdbAttr), &cmdbAttrModel); err != nil {
+				return
+			}
+			if (strings.ToUpper(cmdbAttrModel.Sensitive) == "YES" || strings.ToUpper(cmdbAttrModel.Sensitive) == "Y") && cmdbAttrModel.InputType != string(models.FormItemElementTypePassword) {
+				cmdbAttrMap[attr.Name] = true
+			}
+		}
+		for _, entityTreeObj := range entityData.Value {
+			entityDataMap := entityTreeObj.EntityData
+			if len(entityDataMap) > 0 {
+				for key, v := range entityDataMap {
+					if cmdbAttrMap[key] && v != nil && v != "" {
+						encodeVal, _ := cipher.AesEnPassword(cipher.Md5Encode(models.Config.EncryptSeed)[0:16], fmt.Sprintf("%v", v))
+						entityTreeObj.EntityData[key] = models.EncryptSensitivePrefix + encodeVal
+					}
+				}
+			}
+		}
+	}
+	return
+}
+
+// HandleSensitiveDataEncode 处理表单敏感数据,采用加密处理,密码不用加密
+func HandleSensitiveDataEncode(originData []map[string]interface{}, entity, token string) (targetData []map[string]interface{}, err error) {
+	if len(originData) == 0 {
+		originData = make([]map[string]interface{}, 0)
+	}
+	targetData = make([]map[string]interface{}, 0)
+	var refAttributes []*models.EntityAttributeObj
+	if refAttributes, err = GetCMDBCiAttrDefs(entity, token); err != nil {
+		err = fmt.Errorf("query remote entity:%s attr fail:%s ", entity, err.Error())
+		return
+	}
+	for _, dataMap := range originData {
+		for _, v1 := range refAttributes {
+			if (strings.ToUpper(v1.Sensitive) == "YES" || strings.ToUpper(v1.Sensitive) == "Y") && v1.InputType != string(models.FormItemElementTypePassword) {
+				if v, ok := dataMap[v1.PropertyName]; ok && v != nil && v != "" {
+					encodeVal, _ := cipher.AesEnPassword(cipher.Md5Encode(models.Config.EncryptSeed)[0:16], fmt.Sprintf("%v", v))
+					dataMap[v1.PropertyName] = models.EncryptSensitivePrefix + encodeVal
+				}
+			}
+		}
+		targetData = append(targetData, dataMap)
+	}
+	return
+}
+
+// HandleSensitiveDataDecode 敏感数据解密
+func HandleSensitiveDataDecode(entityData *models.RequestPreDataTableObj) (err error) {
+	sensitiveAttrMap := make(map[string]bool)
+	cmdbAttrModel := models.EntityAttributeObj{}
+	for _, attr := range entityData.Title {
+		if strings.TrimSpace(attr.CmdbAttr) == "" {
+			continue
+		}
+		if err = json.Unmarshal([]byte(attr.CmdbAttr), &cmdbAttrModel); err != nil {
+			return
+		}
+		if strings.ToUpper(cmdbAttrModel.Sensitive) == "YES" || strings.ToUpper(cmdbAttrModel.Sensitive) == "Y" {
+			sensitiveAttrMap[attr.Name] = true
+		}
+	}
+	for _, entityTreeObj := range entityData.Value {
+		entityDataMap := entityTreeObj.EntityData
+		if len(entityDataMap) > 0 {
+			for key, _ := range sensitiveAttrMap {
+				if v, ok := entityDataMap[key]; ok {
+					if strings.HasPrefix(fmt.Sprintf("%+v", v), models.EncryptSensitivePrefix) {
+						val := fmt.Sprintf("%+v", v)[len(models.EncryptSensitivePrefix):]
+						if val, err = cipher.AesDePassword(cipher.Md5Encode(models.Config.EncryptSeed)[0:16], val); err != nil {
+							log.Error(nil, log.LOGGER_APP, "AesDePassword err", zap.String("key", key), zap.String("value", fmt.Sprintf("%+v", v)), zap.Error(err))
+						} else {
+							entityTreeObj.EntityData[key] = val
+						}
+					} else {
+						// 没有加密,表示数据有改动
+						if !strings.HasPrefix(fmt.Sprintf("%+v", v), models.EncryptPasswordPrefix) {
+							entityTreeObj.EntityData[models.ModifyPrefixConstant+key] = 1
+						}
+					}
+				}
+			}
+		}
+	}
+	return
+}
+
+func HandleSensitiveValDecode(val string) (originVal string, err error) {
+	if val == "" {
+		return
+	}
+	if strings.HasPrefix(val, models.EncryptSensitivePrefix) {
+		val := val[len(models.EncryptSensitivePrefix):]
+		if val, err = cipher.AesDePassword(cipher.Md5Encode(models.Config.EncryptSeed)[0:16], val); err != nil {
+			log.Error(nil, log.LOGGER_APP, "AesDePassword err", zap.String("value", val), zap.Error(err))
+		} else {
+			originVal = val
+		}
+	} else {
+		originVal = val
+	}
+	return
 }

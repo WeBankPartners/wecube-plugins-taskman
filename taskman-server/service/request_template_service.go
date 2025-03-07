@@ -10,6 +10,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
+	"go.uber.org/zap"
 	"sort"
 	"strconv"
 	"strings"
@@ -33,7 +34,7 @@ func (s *RequestTemplateService) GetDtoByRequestTemplate(requestTemplate *models
 	requestTemplateDto = models.ConvertRequestTemplateModel2Dto(requestTemplate)
 	err = s.taskTemplateDao.DB.SQL("select * from task_template where request_template=?", requestTemplate.Id).Find(&taskTemplateList)
 	if err != nil {
-		log.Logger.Error("query task_template error", log.Error(err))
+		log.Error(nil, log.LOGGER_APP, "query task_template error", zap.Error(err))
 		return
 	}
 	if len(taskTemplateList) > 0 {
@@ -43,7 +44,7 @@ func (s *RequestTemplateService) GetDtoByRequestTemplate(requestTemplate *models
 				requestTemplateDto.CheckExpireDay = taskTemplate.ExpireDay
 				err = s.taskTemplateDao.DB.SQL("select * from task_handle_template where task_template = ?", taskTemplate.Id).Find(&checkTaskHandleTemplateList)
 				if err != nil {
-					log.Logger.Error("query task_handle_template error", log.Error(err))
+					log.Error(nil, log.LOGGER_APP, "query task_handle_template error", zap.Error(err))
 					return
 				}
 				if len(checkTaskHandleTemplateList) > 0 {
@@ -528,7 +529,7 @@ func (s *RequestTemplateService) getUpdateNodeDefIdActions(requestTemplateId, us
 }
 
 func (s *RequestTemplateService) SyncProcDefId(requestTemplateId, proDefId, proDefName, proDefKey, userToken, language string) error {
-	log.Logger.Info("Start sync process def id")
+	log.Info(nil, log.LOGGER_APP, "Start sync process def id")
 	proExistFlag, newProDefId, err := GetProcDefService().CheckProDefId(proDefId, proDefName, proDefKey, userToken, language)
 	if err != nil {
 		return err
@@ -544,7 +545,7 @@ func (s *RequestTemplateService) SyncProcDefId(requestTemplateId, proDefId, proD
 		if err != nil {
 			return fmt.Errorf("update requestTemplate procDefId fail,%s ", err.Error())
 		}
-		log.Logger.Info("Update requestTemplate proDefId done")
+		log.Info(nil, log.LOGGER_APP, "Update requestTemplate proDefId done")
 	}
 	tmpActions := s.getUpdateNodeDefIdActions(requestTemplateId, userToken, language)
 	if len(tmpActions) > 0 {
@@ -552,7 +553,7 @@ func (s *RequestTemplateService) SyncProcDefId(requestTemplateId, proDefId, proD
 		if err != nil {
 			return fmt.Errorf("update template node def id fail,%s ", err.Error())
 		}
-		log.Logger.Info("Update taskTemplate nodeDefId done")
+		log.Info(nil, log.LOGGER_APP, "Update taskTemplate nodeDefId done")
 	}
 	return nil
 }
@@ -849,7 +850,7 @@ func (s *RequestTemplateService) GetRequestTemplateManageRole(id string) (role s
 	var roleList []string
 	err := dao.X.SQL("select role from request_template_role where request_template=? and role_type='MGMT'", id).Find(&roleList)
 	if err != nil {
-		log.Logger.Error("try to query database fail ", log.Error(err))
+		log.Error(nil, log.LOGGER_APP, "try to query database fail ", zap.Error(err))
 		return
 	}
 	if len(roleList) > 0 {
@@ -1429,7 +1430,7 @@ func (s *RequestTemplateService) getLatestVersionTemplate(requestTemplateList, a
 		}
 		if latestTemplate == nil {
 			// 找不到兜底默认值
-			log.Logger.Warn("latestTemplate is empty", log.String("requestTemplateId", requestTemplate.Id))
+			log.Warn(nil, log.LOGGER_APP, "latestTemplate is empty", zap.String("requestTemplateId", requestTemplate.Id))
 			latestTemplate = requestTemplate
 		}
 		resultMap[requestTemplate.Id] = latestTemplate
@@ -1932,7 +1933,7 @@ func (s *RequestTemplateService) UpdateRequestTemplateParentId(requestTemplate *
 	if len(actions) > 0 {
 		updateErr := dao.Transaction(actions)
 		if updateErr != nil {
-			log.Logger.Error("Try to update request_template parent_id fail", log.Error(updateErr))
+			log.Error(nil, log.LOGGER_APP, "Try to update request_template parent_id fail", zap.Error(updateErr))
 		}
 	}
 	return
@@ -1944,7 +1945,7 @@ func (s *RequestTemplateService) UpdateRequestTemplateParentIdById(templateId, p
 	if len(actions) > 0 {
 		err = dao.Transaction(actions)
 		if err != nil {
-			log.Logger.Error("Try to update request_template parent_id fail", log.Error(err))
+			log.Error(nil, log.LOGGER_APP, "Try to update request_template parent_id fail", zap.Error(err))
 		}
 	}
 	return

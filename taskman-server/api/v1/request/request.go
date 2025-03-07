@@ -6,6 +6,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/try"
 	"io"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 
@@ -345,7 +346,7 @@ func UpdateRequestStatus(c *gin.Context) {
 	defer try.ExceptionStack(func(e interface{}, err interface{}) {
 		retErr := fmt.Errorf("%v", err)
 		middleware.ReturnError(c, exterror.Catch(exterror.New().ServerHandleError, retErr))
-		log.Logger.Error(e.(string))
+		log.Error(nil, log.LOGGER_APP, e.(string))
 	})
 	requestId := c.Param("requestId")
 	status := c.Param("status")
@@ -602,4 +603,212 @@ func Association(c *gin.Context) {
 		return
 	}
 	middleware.ReturnPageData(c, pageInfo, rowsData)
+}
+
+// AttrSensitiveDataQuery 1.整个itsm流程中 ，被提交人、审批人、定版人、任务人修改or新增过，这个表单的查看按钮不做权限控制——原因：这个改动value属于itsm表单，不需要权限控制
+// 2.整个itsm流程中 ，没有被提交人、审批人、定版人、任务人修改or新增过，这个表单的查看按钮使用对应人的cmdb查看权限做权限控制——原因：这个原value属于cmdb，不能在itsm里绕过cmdb的查看权限去查看数据库里的密码字段/**
+func AttrSensitiveDataQuery(c *gin.Context) {
+	var paramList, guidNotEmptyParamList []*models.RequestFormSensitiveDataParam
+	var result, subResult []*models.AttrPermissionQueryObj
+	var idValueMap = make(map[string]string)
+	var finalIdMap = make(map[string]string)
+	var err error
+	var formItemList []*models.FormItemTable
+	token := c.GetHeader("Authorization")
+	language := c.GetHeader(middleware.AcceptLanguageHeader)
+	if err = c.ShouldBindJSON(&paramList); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	if len(paramList) == 0 {
+		middleware.ReturnError(c, fmt.Errorf("param empty"))
+		return
+	}
+	if strings.TrimSpace(paramList[0].RequestId) == "" {
+		middleware.ReturnError(c, fmt.Errorf("param requestId empty"))
+		return
+	}
+	if formItemList, err = service.GetFormService().QueryFormItemListByRequest(paramList[0].RequestId); err != nil {
+		middleware.ReturnError(c, err)
+		return
+	}
+	// 处理 paramList 过滤掉 guid为空数据,以及guid为临时Id,查询CMDB返回行guid不为空
+	for _, param := range paramList {
+		item := &models.AttrPermissionQueryObj{
+			CiType:       param.CiType,
+			AttrName:     param.AttrName,
+			Guid:         param.Guid,
+			TmpId:        param.TmpId,
+			RequestId:    param.RequestId,
+			TaskHandleId: param.TaskHandleId,
+		}
+		// 原数据为空,直接展示有查看权限,value为空
+		if param.AttrVal == "" {
+			item.QueryPermission = true
+			item.Value = ""
+			result = append(result, item)
+		}
+		// 直接解密
+		originVal, _ := service.HandleSensitiveValDecode(param.AttrVal)
+		if strings.TrimSpace(param.Guid) == "" || strings.HasPrefix(param.Guid, "tmp"+models.SysTableIdConnector) {
+			// 临时Id，需要从表单数据里面查询
+			if strings.HasPrefix(param.Guid, "tmp"+models.SysTableIdConnector) {
+				if ok := checkHasModifyData(item, formItemList, token, language); ok {
+					// 修改过
+					item.QueryPermission = true
+					item.UpdatePermission = true
+					item.Value = originVal
+				}
+			} else {
+				item.QueryPermission = true
+				item.UpdatePermission = true
+				item.Value = originVal
+			}
+			result = append(result, item)
+		} else {
+			// 审批时候, guid可能会拼接 wecmdb:business_product:business_product_6241b387c3d04818b45ab 前缀,需要截取取最后一个:
+			if len(param.Guid) > 7 && strings.HasPrefix(param.Guid, "wecmdb:") {
+				tmp := param.Guid
+				param.Guid = param.Guid[strings.LastIndex(param.Guid, ":")+1:]
+				finalIdMap[param.Guid] = tmp
+			}
+			guidNotEmptyParamList = append(guidNotEmptyParamList, param)
+			idValueMap[param.Guid+param.AttrName] = originVal
+		}
+	}
+	// 从CMDB查询拿到初始化数据,跟taskMan数据比对
+	if len(guidNotEmptyParamList) > 0 {
+		if subResult, err = service.GetCMDBCiAttrSensitiveData(guidNotEmptyParamList, token, language); err != nil {
+			middleware.ReturnError(c, err)
+			return
+		}
+		for _, item := range subResult {
+			// 没有数据查询权限,数据返回为空,需要对比表单数据
+			if item.Value == "" && !item.QueryPermission {
+				if ok := checkHasModifyData(item, formItemList, token, language); ok {
+					// 修改过
+					item.QueryPermission = true
+					item.UpdatePermission = true
+					item.Value = idValueMap[item.Guid+item.AttrName]
+				}
+			} else {
+				// 敏感数据被修改了,直接展示
+				if v, ok := idValueMap[item.Guid+item.AttrName]; ok {
+					if v == item.Value {
+						if !item.QueryPermission {
+							// 没有查询权限,数据相等,也不能表示没有修改,需要查询表单数据数据确定是否修改过
+							if ok := checkHasModifyData(item, formItemList, token, language); ok {
+								// 修改过
+								item.QueryPermission = true
+								item.UpdatePermission = true
+							}
+						}
+					} else {
+						// 不相等 一定是修改过
+						item.QueryPermission = true
+						item.UpdatePermission = true
+						item.Value = v
+					}
+				}
+			}
+			// 返回给web的guid需要返回原值
+			if v, ok := finalIdMap[item.Guid]; ok {
+				item.Guid = v
+			}
+			result = append(result, item)
+		}
+	}
+
+	middleware.ReturnData(c, result)
+}
+
+// checkHasModifyData 检查是否修改过数据,根据 taskHandleId,如果 formItemList中不存在 taskHandleId表示处理最新的任务,如果存在，则找小于该taskHanleId里面的数据如果有更新,后面都修改过
+func checkHasModifyData(item *models.AttrPermissionQueryObj, formItemList []*models.FormItemTable, token, language string) bool {
+	var filterFormItemList []*models.FormItemTable
+	if item.TaskHandleId != "" {
+		filterFormItemList = mergeParallelFormData(item, formItemList)
+	} else {
+		for _, formItem := range formItemList {
+			if ((item.Guid != "" && strings.HasSuffix(formItem.RowDataId, item.Guid)) || (item.TmpId != "" && strings.HasSuffix(formItem.RowDataId, item.TmpId))) && formItem.Name == item.AttrName && formItem.TaskHandle == "" {
+				filterFormItemList = append(filterFormItemList, formItem)
+			}
+		}
+	}
+	// 按Id 倒序
+	sort.Slice(filterFormItemList, func(i, j int) bool {
+		return filterFormItemList[i].Id > filterFormItemList[j].Id
+	})
+	for i := 0; i < len(filterFormItemList); i++ {
+		if filterFormItemList[i].ModifyFlag == 1 {
+			return true
+		}
+	}
+	// 可能提交请求时候 guid是cmdb的,到了审批时候提交表单重新生成taskman的行guid,需要从之前表单里面去取cmdb的guid
+	if !strings.HasPrefix(item.Guid, "wecmdb:") {
+		for _, formItem := range formItemList {
+			if strings.HasPrefix(formItem.RowDataId, "wecmdb:") {
+				if subResult, _ := service.GetCMDBCiAttrSensitiveData([]*models.RequestFormSensitiveDataParam{
+					{
+						CiType:    item.CiType,
+						AttrName:  item.AttrName,
+						Guid:      formItem.RowDataId,
+						RequestId: item.RequestId,
+					},
+				}, token, language); len(subResult) > 0 {
+					return subResult[0].QueryPermission
+				}
+			}
+		}
+	}
+	return false
+}
+
+// mergeParallelFormData 合并并行审批表单数据
+func mergeParallelFormData(item *models.AttrPermissionQueryObj, formItemList []*models.FormItemTable) (filterFormItemList []*models.FormItemTable) {
+	var formItemTimeEnd string
+	taskList, _ := service.GetTaskService().QueryListByRequestId(item.RequestId)
+	filterFormItemList = []*models.FormItemTable{}
+	for _, task := range taskList {
+		taskTemplate, _ := service.GetTaskTemplateService().Get(task.TaskTemplate)
+		// 审批任务有并行处理,就需要过滤数据
+		if taskTemplate != nil && taskTemplate.HandleMode == string(models.TaskTemplateHandleModeAll) {
+			taskHandleList, _ := service.GetTaskHandleService().GetTaskHandleListByTaskIdAndTimeDesc(task.Id)
+			var taskHandleExist bool
+			var delTaskHandleMap = make(map[string]bool)
+			for _, taskHandle := range taskHandleList {
+				if taskHandle.Id == item.TaskHandleId {
+					taskHandleExist = true
+				} else {
+					delTaskHandleMap[taskHandle.Id] = true
+				}
+			}
+			// 传递的taskHandleId 不在该task 处理里面,则取最新taskHandle数据保留,其他taskHandle的表单处理需要过滤掉
+			if !taskHandleExist && len(taskHandleList) > 1 {
+				// 重置 delTaskHandleMap
+				delTaskHandleMap = make(map[string]bool)
+				for _, taskHandle := range taskHandleList[1:] {
+					delTaskHandleMap[taskHandle.Id] = true
+				}
+			}
+			var tmpFormItemList []*models.FormItemTable
+			for _, formItem := range formItemList {
+				if delTaskHandleMap[formItem.TaskHandle] {
+					continue
+				}
+				tmpFormItemList = append(tmpFormItemList, formItem)
+			}
+			formItemList = tmpFormItemList
+		}
+	}
+	taskHandle, _ := service.GetTaskHandleService().Get(item.TaskHandleId)
+	formItemTimeEnd = taskHandle.UpdatedTime
+	for _, formItem := range formItemList {
+		t1, _ := time.Parse(models.DateTimeFormat, formItem.UpdatedTime)
+		t2, _ := time.Parse(models.DateTimeFormat, formItemTimeEnd)
+		// 如果有并行处理任务,只需要取最后处理的表单数据. 如果taskHandleId 等于并行处理form_item的taskHandleId则取这个表单数据
+		if (t1.Before(t2) || t1.Equal(t2)) && ((item.Guid != "" && strings.HasSuffix(formItem.RowDataId, item.Guid)) || (item.TmpId != "" && strings.HasSuffix(formItem.RowDataId, item.TmpId))) && formItem.Name == item.AttrName {
+			filterFormItemList = append(filterFormItemList, formItem)
+		}
+	}
+	return
 }

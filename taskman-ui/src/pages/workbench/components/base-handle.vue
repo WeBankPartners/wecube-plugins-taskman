@@ -65,7 +65,12 @@
             <span>{{ $t('tw_approval_step1_tips') }}</span>
           </div>
           <div class="content">
-            <EntityTable ref="entityTable" :data="handleData.formData" :requestId="requestId"></EntityTable>
+            <EntityTable
+              ref="entityTable"
+              :data="handleData.formData"
+              :requestId="requestId"
+              :taskHandleId="taskHandleId"
+            ></EntityTable>
             <div v-if="handleData.formData && handleData.formData.length === 0" class="no-data">
               {{ $t('tw_no_formConfig') }}
             </div>
@@ -287,10 +292,10 @@ export default {
       },
       handleTypeColor: {
         check: '#ffa2d3',
-        approve: '#2d8cf0',
+        approve: '#5384ff',
         implement_process: '#cba43f',
         implement_custom: '#b886f8',
-        confirm: '#19be6b'
+        confirm: '#00CB91'
       }
     }
   },

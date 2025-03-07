@@ -162,7 +162,12 @@
                 }}</Option>
               </Select>
             </FormItem>
-            <EntityTable v-if="form.data.length" :data="form.data" :requestId="requestId" formDisable></EntityTable>
+            <EntityTable
+              v-if="form.data.length"
+              :data="form.data"
+              :requestId="requestId"
+              formDisable
+            ></EntityTable>
             <div v-else class="no-data">{{ $t('tw_no_formConfig') }}</div>
           </div>
         </BaseHeaderTitle>
@@ -247,6 +252,7 @@
                           v-if="item.formData && item.formData.length"
                           :data="item.formData"
                           :requestId="requestId"
+                          :taskHandleId="item.id"
                           formDisable
                         ></EntityTable>
                         <div v-else class="no-data">
@@ -383,10 +389,10 @@ export default {
       },
       handleTypeColor: {
         check: '#ffa2d3',
-        approve: '#2d8cf0',
-        implement_process: '#cba43f',
+        approve: '#5384ff',
+        implement_process: '#F29360',
         implement_custom: '#b886f8',
-        confirm: '#19be6b'
+        confirm: '#00CB91'
       },
       detailRouteMap: {
         '1': 'detailPublish',
@@ -403,16 +409,16 @@ export default {
       return function (val) {
         const list = [
           { label: this.$t('status_pending'), value: 'Pending', color: '#b886f8' },
-          { label: this.$t('tw_inApproval'), value: 'InApproval', color: '#1990ff' },
-          { label: this.$t('status_inProgress'), value: 'InProgress', color: '#1990ff' },
+          { label: this.$t('tw_inApproval'), value: 'InApproval', color: '#5384FF' },
+          { label: this.$t('status_inProgress'), value: 'InProgress', color: '#5384FF' },
           { label: this.$t('tw_request_confirm'), value: 'Confirm', color: '#b886f8' },
-          { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)', color: '#f26161' },
-          { label: this.$t('status_termination'), value: 'Termination', color: '#e29836' },
-          { label: this.$t('status_complete'), value: 'Completed', color: '#7ac756' },
-          { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)', color: '#f26161' },
-          { label: this.$t('status_faulted'), value: 'Faulted', color: '#e29836' },
+          { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)', color: '#FF4D4F' },
+          { label: this.$t('status_termination'), value: 'Termination', color: '#F29360' },
+          { label: this.$t('status_complete'), value: 'Completed', color: '#00CB91' },
+          { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)', color: '#FF4D4F' },
+          { label: this.$t('status_faulted'), value: 'Faulted', color: '#F29360' },
           { label: this.$t('status_draft'), value: 'Draft', color: '#808695' },
-          { label: this.$t('tw_stop'), value: 'Stop', color: '#ed4014' }
+          { label: this.$t('tw_stop'), value: 'Stop', color: '#FF4D4F' }
         ]
         const item = list.find(i => i.value === val) || {}
         return item.label
@@ -564,7 +570,7 @@ export default {
       height: 24px;
       color: #fff;
       border-radius: 2px;
-      background: #2d8cf0;
+      background: #5384ff;
     }
     .name {
       font-size: 16px;
@@ -634,7 +640,7 @@ export default {
         .mode {
           font-size: 12px;
           display: inline-block;
-          color: #19be6b;
+          color: #00CB91;
           margin-top: 2px;
         }
       }
@@ -693,7 +699,7 @@ export default {
     line-height: 20px;
   }
   .required {
-    color: red;
+    color: #FF4D4F;
   }
   .ivu-collapse {
     border: none !important;

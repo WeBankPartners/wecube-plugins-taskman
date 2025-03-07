@@ -103,10 +103,10 @@ const statusIcon = {
 const statusColor = {
   1: '#ffa500',
   2: '#8189a5',
-  3: '#19be6b',
-  4: '#ed4014',
-  5: '#ed4014',
-  6: '#ed4014'
+  3: '#00CB91',
+  4: '#FF4D4F',
+  5: '#FF4D4F',
+  6: '#FF4D4F'
 }
 export default {
   props: {
@@ -285,7 +285,7 @@ export default {
     }
     .mode {
       font-size: 12px;
-      color: #2d8cf0;
+      color: #5384ff;
       display: inline-block;
       margin-top: -5px;
     }
@@ -301,7 +301,7 @@ export default {
     }
     .expand-btn {
       font-size: 14px;
-      color: #2d8cf0 !important;
+      color: #5384ff !important;
       cursor: pointer;
     }
   }

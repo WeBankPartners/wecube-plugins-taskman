@@ -4,6 +4,7 @@
 .vscode
 .DS_Store
 
+.env
 # ignore file
 taskman-server/taskman-server
 taskman-server/logs

@@ -16,7 +16,7 @@
               v-if="isCheck !== 'Y' && approvalNodes.length > 1"
               @click.stop="removeNode(approval)"
               type="md-close"
-              color="#ed4014"
+              color="#FF4D4F"
               style="vertical-align: sub;margin-left: 4px;"
               :size="18"
             />
@@ -88,7 +88,7 @@
                       }"
                       :style="activeStyle(groupItem)"
                     >
-                      <Icon @click="editGroupItem(groupItem)" type="md-create" color="#2d8cf0" :size="20" />
+                      <Icon @click="editGroupItem(groupItem)" type="md-create" color="#5384ff" :size="20" />
                       <span @click="editGroupCustomItems(groupItem)">
                         {{ `${groupItem.itemGroupName}` }}
                       </span>
@@ -96,7 +96,7 @@
                         v-if="isCheck !== 'Y'"
                         @click="removeGroupItem(groupItem)"
                         type="md-close"
-                        color="#ed4014"
+                        color="#FF4D4F"
                         :size="20"
                       />
                     </div>
@@ -1504,7 +1504,7 @@ fieldset[disabled] .ivu-input {
     line-height: 32px;
     display: inline-block;
     border-radius: 3px;
-    background: #2d8cf0;
+    background: #5384ff;
     font-size: 12px;
     vertical-align: middle;
     opacity: 1;
@@ -1529,7 +1529,7 @@ fieldset[disabled] .ivu-input {
     padding: 10px; /* 可根据需求调整内容与边框的间距 */
   }
   .require {
-    color: #ed4014;
+    color: #FF4D4F;
     width: 6px;
     display: flex;
     align-items: center;

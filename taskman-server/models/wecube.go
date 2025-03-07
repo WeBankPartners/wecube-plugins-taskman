@@ -146,6 +146,7 @@ type EntityAttributeObj struct {
 	EditGroupValues         string `json:"editGroupValues"`
 	ExtRefEntity            string `json:"extRefEntity"`
 	ConfirmNullable         string `json:"confirmNullable"`
+	Sensitive               string `json:"sensitive"`
 }
 
 type EntityAttributeQueryResponse struct {
@@ -163,4 +164,24 @@ type CMDBCategoriesObj struct {
 type CMDBCategoriesResponse struct {
 	StatusCode string               `json:"statusCode"`
 	Data       []*CMDBCategoriesObj `json:"data"`
+}
+
+type AttrPermissionQueryObj struct {
+	HistoryId        int    `json:"historyId"`
+	CiType           string `json:"ciType"`
+	AttrName         string `json:"attrName"`
+	Guid             string `json:"guid"`
+	TmpId            string `json:"tmpId"`
+	RequestId        string `json:"requestId"`
+	TaskHandleId     string `json:"taskHandleId"`
+	QueryPermission  bool   `json:"queryPermission"`
+	UpdatePermission bool   `json:"updatePermission"`
+	Value            string `json:"value"`
+}
+
+type CMDBSensitiveDataResponse struct {
+	Code          int                       `json:"code"`
+	StatusCode    string                    `json:"statusCode"`
+	StatusMessage string                    `json:"statusMessage"`
+	Data          []*AttrPermissionQueryObj `json:"data"`
 }

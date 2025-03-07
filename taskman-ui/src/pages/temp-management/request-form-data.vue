@@ -48,7 +48,7 @@
                 }"
                 :style="activeStyle(groupItem)"
               >
-                <Icon @click="editGroupItem(groupItem)" type="md-create" color="#2d8cf0" :size="20" />
+                <Icon @click="editGroupItem(groupItem)" type="md-create" color="#5384ff" :size="20" />
                 <span @click="editGroupCustomItems(groupItem)">
                   {{ `${groupItem.itemGroupName}` }}
                 </span>
@@ -56,7 +56,7 @@
                   v-if="isCheck !== 'Y'"
                   @click="removeGroupItem(groupItem)"
                   type="md-close"
-                  color="#ed4014"
+                  color="#FF4D4F"
                   :size="20"
                 />
               </div>
@@ -1318,7 +1318,7 @@ fieldset[disabled] .ivu-input {
 }
 
 .require {
-  color: #ed4014;
+  color: #FF4D4F;
   width: 6px;
   display: flex;
   align-items: center;

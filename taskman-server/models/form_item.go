@@ -12,7 +12,8 @@ type FormItemTable struct {
 	UpdatedTime      string `json:"updatedTime" xorm:"updated_time"`
 	OriginalId       string `json:"originalId" xorm:"original_id"`
 	TaskHandle       string `json:"taskHandle" xorm:"task_handle"`
-	DelFlag          bool   `json:"delFlag" xorm:"del_flag"`
+	DelFlag          int    `json:"delFlag" xorm:"del_flag"`
+	ModifyFlag       int    `json:"modifyFlag" xorm:"modify_flag"`
 	Multiple         string `json:"multiple" xorm:"-"`
 }
 

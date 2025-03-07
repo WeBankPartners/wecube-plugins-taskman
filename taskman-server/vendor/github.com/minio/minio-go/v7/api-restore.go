@@ -110,7 +110,7 @@ func (r *RestoreRequest) SetDays(v int) {
 	r.Days = &v
 }
 
-// SetDays sets the GlacierJobParameters of the restore request
+// SetGlacierJobParameters sets the GlacierJobParameters of the restore request
 func (r *RestoreRequest) SetGlacierJobParameters(v GlacierJobParameters) {
 	r.GlacierJobParameters = &v
 }
@@ -175,7 +175,7 @@ func (c *Client) RestoreObject(ctx context.Context, bucketName, objectName, vers
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode != http.StatusAccepted {
+	if resp.StatusCode != http.StatusAccepted && resp.StatusCode != http.StatusOK {
 		return httpRespToErrorResponse(resp, bucketName, "")
 	}
 	return nil

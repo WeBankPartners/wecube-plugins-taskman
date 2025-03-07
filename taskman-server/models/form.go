@@ -11,6 +11,7 @@ type FormTable struct {
 	CreatedTime  string `json:"createdTime" xorm:"created_time"`
 	UpdatedBy    string `json:"updatedBy" xorm:"updated_by"`
 	UpdatedTime  string `json:"updatedTime" xorm:"updated_time"`
+	RowSort      int    `json:"rowSort" xorm:"row_sort"`
 }
 
 func (FormTable) TableName() string {

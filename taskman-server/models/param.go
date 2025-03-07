@@ -188,3 +188,13 @@ type RequestAssociationParam struct {
 type BatchExportRequestTemplateParam struct {
 	RequestTemplateIds []string `json:"requestTemplateIds"`
 }
+
+type RequestFormSensitiveDataParam struct {
+	RequestId    string `json:"requestId"`
+	CiType       string `json:"ciType"`
+	AttrName     string `json:"attrName"`
+	AttrVal      string `json:"attrVal"`
+	Guid         string `json:"guid"`
+	TmpId        string `json:"tmpId"`
+	TaskHandleId string `json:"taskHandleId"`
+}

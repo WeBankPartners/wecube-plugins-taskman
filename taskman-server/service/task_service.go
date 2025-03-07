@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"go.uber.org/zap"
 	"strconv"
 	"strings"
 	"time"
@@ -54,7 +55,7 @@ func GetTaskFormStruct(procInstId, nodeDefId string) (result models.TaskMetaResu
 }
 
 func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId, dueDate string, nextOptions []string, userToken, language string) (result *models.PluginTaskCreateOutputObj, task models.TaskTable, err error) {
-	log.Logger.Debug("task create", log.JsonObj("input", input))
+	log.Debug(nil, log.LOGGER_APP, "task create", log.JsonObj("input", input))
 	result = &models.PluginTaskCreateOutputObj{CallbackParameter: input.CallbackParameter, ErrorCode: "0", ErrorMessage: "", Comment: ""}
 	var requestTable []*models.RequestTable
 	err = dao.X.SQL("select * from request where proc_instance_id=?", input.ProcInstId).Find(&requestTable)
@@ -119,7 +120,7 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 		task.ReportTime = nowTime
 		task.Handler = taskTemplateTable[0].Handler
 	} else {
-		log.Logger.Warn("can not find any taskTemplate", log.String("requestTemplate", requestTable[0].RequestTemplate), log.String("nodeDefId", taskFormInput.TaskNodeDefId))
+		log.Warn(nil, log.LOGGER_APP, "can not find any taskTemplate", zap.String("requestTemplate", requestTable[0].RequestTemplate), zap.String("nodeDefId", taskFormInput.TaskNodeDefId))
 		err = fmt.Errorf("can not find any taskTemplate in request:%s with nodeDefId:%s ", task.Request, taskFormInput.TaskNodeDefId)
 		return
 	}
@@ -149,7 +150,7 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 			}
 		}
 		if tmpFormTemplateId == "" {
-			log.Logger.Warn("form data entity can not find form template", log.String("task", task.Id), log.JsonObj("formDataEntity", formDataEntity))
+			log.Warn(nil, log.LOGGER_APP, "form data entity can not find form template", zap.String("task", task.Id), log.JsonObj("formDataEntity", formDataEntity))
 			continue
 		}
 		newFormId := "form_" + guid.CreateGuid()
@@ -157,8 +158,23 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 			newFormId, task.Request, task.Id, tmpFormTemplateId, formDataEntity.Oid, operator, operator, nowTime, nowTime,
 		}})
 		for _, formDataItem := range formDataEntity.FormItemValues {
+			var formItemTemplateTable models.FormItemTemplateTable
+			newValue := formDataItem.AttrValue
+			dao.X.SQL("select * from form_item_template where id=?", formDataItem.FormItemMetaId).Get(&formItemTemplateTable)
+			if strings.TrimSpace(formItemTemplateTable.CmdbAttr) != "" && newValue != nil && newValue != "" {
+				cmdbAttrModel := models.EntityAttributeObj{}
+				if err = json.Unmarshal([]byte(formItemTemplateTable.CmdbAttr), &cmdbAttrModel); err != nil {
+					return
+				}
+				if cmdbAttrModel.InputType == string(models.FormItemElementTypePassword) && !strings.HasPrefix(fmt.Sprintf("%v", newValue), models.EncryptPasswordPrefix) && !strings.HasPrefix(fmt.Sprintf("%v", newValue), models.EncryptPasswordPrefixC) {
+					if newValue, err = AesEnPasswordByGuid("", models.Config.EncryptSeed, fmt.Sprintf("%v", newValue), DEFALT_CIPHER_C); err != nil {
+						err = fmt.Errorf("try to encrypt password type column:%s value:%s fail,%s  ", formDataItem.AttrName, fmt.Sprintf("%v", newValue), err.Error())
+						return
+					}
+				}
+			}
 			actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time) values (?,?,?,?,?,?,?)", Param: []interface{}{
-				"item_" + guid.CreateGuid(), newFormId, formDataItem.FormItemMetaId, formDataItem.AttrName, formDataItem.AttrValue, task.Request, nowTime,
+				"item_" + guid.CreateGuid(), newFormId, formDataItem.FormItemMetaId, formDataItem.AttrName, newValue, task.Request, nowTime,
 			}})
 		}
 	}
@@ -240,7 +256,7 @@ func ApproveCustomTask(task models.TaskTable, operator, userToken, language stri
 	var respResult models.CallbackResult
 	requestBytes, _ := json.Marshal(requestParam)
 	b, _ := rpc.HttpPost(models.Config.Wecube.BaseUrl+callbackUrl, userToken, language, requestBytes)
-	log.Logger.Info("Custom Callback response", log.String("body", string(b)))
+	log.Info(nil, log.LOGGER_APP, "Custom Callback response", zap.String("body", string(b)))
 	err = json.Unmarshal(b, &respResult)
 	if err != nil {
 		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
@@ -468,7 +484,7 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken, formData str
 func callbackWorkflow(requestBytes []byte, callbackUrl, userToken string) (err error) {
 	var respResult models.CallbackResult
 	b, _ := rpc.HttpPost(models.Config.Wecube.BaseUrl+callbackUrl, userToken, "", requestBytes)
-	log.Logger.Info("Callback response", log.String("body", string(b)))
+	log.Info(nil, log.LOGGER_APP, "Callback response", zap.String("body", string(b)))
 	err = json.Unmarshal(b, &respResult)
 	if err != nil {
 		return fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
@@ -590,8 +606,8 @@ func UpdateTaskHandle(param models.TaskHandleUpdateParam, operator, userToken, l
 	}
 	var actions []*dao.ExecAction
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,handler=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked",
-		operator, operator, nowTime, param.TaskId}})
+	actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,handler=?,updated_by=? where id=?", Param: []interface{}{"marked",
+		operator, operator, param.TaskId}})
 	//添加认领记录
 	if taskHandleList[0].TaskHandleTemplate != "" {
 		actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle(id,task_handle_template,task,role,handler,handler_type,parent_id,created_time," +
@@ -1228,4 +1244,36 @@ func (s *TaskService) GetLatestTaskListByRequestIdAndTaskTemplateId(requestId, t
 		}
 	}
 	return
+}
+
+func (s *TaskService) GetTaskByTaskHandleId(taskHandleId string) (task *models.TaskTable, err error) {
+	var taskList []*models.TaskTable
+	if err = dao.X.SQL("select * from task where id in (select task from task_handle where id = ?)", taskHandleId).Find(&taskList); err != nil {
+		return
+	}
+	if len(taskList) > 0 {
+		task = taskList[0]
+	}
+	return
+}
+
+func (s *TaskService) GetNextTaskByCurTaskId(curTaskId, requestId string) (task *models.TaskTable, err error) {
+	var taskList []*models.TaskTable
+	var index int
+	if err = dao.X.SQL("select * from task where request= ? order by id desc", requestId).Find(&taskList); err != nil {
+		return
+	}
+	for i, task := range taskList {
+		if task.Id == curTaskId {
+			index = i - 1
+		}
+	}
+	if index != -1 {
+		task = taskList[index]
+	}
+	return
+}
+
+func (s *TaskService) QueryListByRequestId(requestId string) (taskList []*models.TaskTable, err error) {
+	return s.taskDao.QueryByRequest(requestId)
 }

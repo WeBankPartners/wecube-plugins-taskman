@@ -81,7 +81,13 @@ module.exports = {
             // selector: '.taskman-wrap'
           })
         ] : []
+      },
+      less: {
+        lessOptions: { // 将 javascriptEnabled 放在 lessOptions 内部
+          javascriptEnabled: true
+        }
       }
     }
   }
+
 }

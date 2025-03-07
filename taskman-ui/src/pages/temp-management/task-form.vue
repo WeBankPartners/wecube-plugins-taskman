@@ -1410,7 +1410,7 @@ export default {
               desc: this.$t('successful')
             })
             this.$router.push({
-              path: '/template-mgmt',
+              path: '/taskman/template-mgmt',
               query: {
                 status: 'pending'
               }

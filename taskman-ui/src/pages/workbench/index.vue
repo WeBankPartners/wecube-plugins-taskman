@@ -492,7 +492,7 @@ export default {
     // 表格操作-查看
     hanldeView (row) {
       const path = this.detailRouteMap[this.actionName]
-      const url = `/workbench/${path}`
+      const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,
         query: {
@@ -514,7 +514,7 @@ export default {
     // 表格操作-处理(任务、审批、定版、请求确认)
     async handleEdit (row) {
       const path = this.detailRouteMap[this.actionName]
-      const url = `/workbench/${path}`
+      const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,
         query: {
@@ -559,7 +559,7 @@ export default {
       const { statusCode, data } = await reRequest(row.id)
       if (statusCode === 'OK') {
         const path = this.createRouteMap[this.actionName]
-        const url = `/workbench/${path}`
+        const url = `/taskman/workbench/${path}`
         this.$router.push({
           path: url,
           query: {
@@ -597,7 +597,7 @@ export default {
     // 表格操作-草稿去发起
     hanldeLaunch (row) {
       const path = this.createRouteMap[this.actionName]
-      const url = `/workbench/${path}`
+      const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,
         query: {

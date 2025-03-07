@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "vue-cli-service build",
-    "plugin": "vue-cli-service build --mode plugin",
+    "plugin": "vue-cli-service build",
     "start": "vue-cli-service serve",
     "dev": "node ./scripts/run.js dev"
   },

@@ -215,7 +215,7 @@ export default {
     },
     checkHistory () {
       this.$router.push({
-        path: '/requestCheck',
+        path: '/taskman/requestCheck',
         query: {
           requestId: this.requestHistory,
           requestTemplate: null,
@@ -279,7 +279,7 @@ export default {
                 desc: this.$t('successful')
               })
               this.$router.push({
-                path: `/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=1`
+                path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=1`
               })
             }
           }
@@ -351,7 +351,7 @@ export default {
                   desc: this.$t('successful')
                 })
                 this.$router.push({
-                  path: `/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=1`
+                  path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=1`
                 })
               }
             }

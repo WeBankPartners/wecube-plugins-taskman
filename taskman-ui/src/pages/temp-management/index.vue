@@ -69,7 +69,7 @@ export default {
     backToTemplate () {
       if (this.isCheck === 'Y') {
         this.$router.push({
-          path: '/template-mgmt',
+          path: '/taskman/template-mgmt',
           query: {
             status: this.parentStatus,
             needCache: 'yes'
@@ -84,7 +84,7 @@ export default {
           cancelText: this.$t('cancel'),
           onOk: async () => {
             this.$router.push({
-              path: '/template-mgmt',
+              path: '/taskman/template-mgmt',
               query: {
                 status: 'created',
                 needCache: 'yes'

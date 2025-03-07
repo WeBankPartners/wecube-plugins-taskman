@@ -22,7 +22,7 @@ module.exports = {
     }
   },
   runtimeCompiler: true,
-  // publicPath: '/taskman/',
+  publicPath: '/taskman/',
   chainWebpack: config => {
     if (process.env.PLUGIN !== 'plugin') {
       // remove the old loader
@@ -51,24 +51,6 @@ module.exports = {
     })
   },
   productionSourceMap: process.env.PLUGIN !== 'plugin',
-  // configureWebpack: config => {
-  //   if (process.env.PLUGIN === 'plugin') {
-  //     config.optimization.splitChunks = {}
-  //     return
-  //   }
-  //   if (process.env.NODE_ENV === 'production') {
-  //     return {
-  //       plugins: [
-  //         new CompressionPlugin({
-  //           algorithm: 'gzip',
-  //           test: /\.js$|\.html$|.\css/, // 匹配文件名
-  //           threshold: 10240, // 对超过10k的数据压缩
-  //           deleteOriginalAssets: false // 不删除源文件
-  //         })
-  //       ]
-  //     }
-  //   }
-  // },
   configureWebpack: {
     output: {
       library: `${packageName}-[name]`,

@@ -82,7 +82,7 @@ export default {
     },
     homePageClickHandler () {
       window.needReLoad = false
-      this.$router.push('/workbench')
+      this.$router.push('/taskman/workbench')
     }
   }
 }

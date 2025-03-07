@@ -154,7 +154,7 @@ export default {
       this.$router.push({ path: path })
     },
     goHome () {
-      this.$router.push({ path: '/workbench' })
+      this.$router.push({ path: '/taskman/workbench' })
     },
     userMgmt () {
       this.$refs.userMgmtRef.openModal()

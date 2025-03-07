@@ -36,7 +36,7 @@ export const dynaticRoutes = [
       // 工作台
       {
         path: '/taskman/workbench',
-        name: '/taskman//workbench',
+        name: '/taskman/workbench',
         component: () => import('@/pages/workbench.vue'),
         redirect: '/taskman/workbench/dashboard',
         meta: { en: 'Dashboard', zh: '工作台' },

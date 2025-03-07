@@ -2,7 +2,7 @@
  * @Author: wanghao7717 792974788@qq.com
  * @Date: 2023-10-12 17:16:35
  * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2025-03-06 19:44:15
+ * @LastEditTime: 2025-03-07 18:00:19
  */
 /* eslint-disable camelcase */
 import 'regenerator-runtime/runtime'
@@ -90,6 +90,7 @@ export async function mount (props) {
 }
 // 应用每次切除/注销会调用的方法，在这里会注销微应用的应用实例
 export async function unmount () {
+  Vue.prototype.$qiankunProps.setGlobalState({ expand: false })
   instance.$destroy()
   instance.$el.innerHTML = ''
   instance = null

@@ -1,6 +1,6 @@
 <template>
   <div id="taskman">
-    <template v-if="qiankunFlag">
+    <template v-if="isLauchByQianKun">
       <transition name="fade" mode="out-in">
         <router-view></router-view>
       </transition>
@@ -40,7 +40,7 @@ export default {
       childBreadcrumb: '',
       breadcrumbList: [],
       isSetting: this.$route.path.startsWith('/setting'),
-      qiankunFlag: window.__POWERED_BY_QIANKUN__
+      isLauchByQianKun: window.__POWERED_BY_QIANKUN__
     }
   },
   computed: {
@@ -64,6 +64,9 @@ export default {
     this.$bus &&
       this.$bus.$on('expand-menu', val => {
         this.expandSideMenu = val
+        if (window.__POWERED_BY_QIANKUN__) {
+          this.$qiankunProps.setGlobalState({ expand: this.expandSideMenu })
+        }
       })
   },
   methods: {

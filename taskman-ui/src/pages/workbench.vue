@@ -78,9 +78,6 @@ export default {
   created () {
     this.$bus.$on('expand-menu', val => {
       this.expand = val
-      if (window.__POWERED_BY_QIANKUN__) {
-        this.$qiankunProps.setGlobalState({ expand: this.expand })
-      }
     })
   },
   methods: {

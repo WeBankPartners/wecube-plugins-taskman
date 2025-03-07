@@ -48,7 +48,7 @@ let router = null
 function render (props = {}) {
   const { container } = props
   router = new VueRouter({
-    base: window.__POWERED_BY_QIANKUN__ ? process.env.MICRO_APP_URL : '/',
+    base: window.__POWERED_BY_QIANKUN__ ? '/taskman' : '/',
     mode: 'hash',
     routes
   })

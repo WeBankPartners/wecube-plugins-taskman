@@ -22,7 +22,7 @@ module.exports = {
     }
   },
   runtimeCompiler: true,
-  publicPath: '/taskman/',
+  publicPath: '/',
   chainWebpack: config => {
     if (process.env.PLUGIN !== 'plugin') {
       // remove the old loader

@@ -22,7 +22,7 @@ module.exports = {
     }
   },
   runtimeCompiler: true,
-  publicPath: '/ui-resources/taskman/v1.4.1.65/plugin/',
+  publicPath: process.env.PLUGIN === 'plugin' ? '/ui-resources/taskman/v1.4.1.66/plugin/' : '/',
   chainWebpack: config => {
     if (process.env.PLUGIN !== 'plugin') {
       // remove the old loader
@@ -41,7 +41,7 @@ module.exports = {
       config
         .entry('app')
         .clear()
-        .add('./src/main-plugin.js') // 作为插件时
+        .add('./src/main.js') // 作为插件时
     })
     config.when(!process.env.PLUGIN, config => {
       config

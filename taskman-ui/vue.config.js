@@ -22,7 +22,7 @@ module.exports = {
     }
   },
   runtimeCompiler: true,
-  publicPath: process.env.PLUGIN === 'plugin' ? '/ui-resources/taskman/v1.4.1.66/plugin/' : '/',
+  publicPath: process.env.PLUGIN === 'plugin' ? '/ui-resources/taskman/' : '/',
   chainWebpack: config => {
     if (process.env.PLUGIN !== 'plugin') {
       // remove the old loader

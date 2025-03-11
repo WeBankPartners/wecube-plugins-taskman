@@ -1,9 +1,3 @@
-/*
- * @Author: wanghao7717 792974788@qq.com
- * @Date: 2023-10-12 17:16:35
- * @LastEditors: wanghao7717 792974788@qq.com
- * @LastEditTime: 2025-03-07 18:00:19
- */
 /* eslint-disable camelcase */
 import 'regenerator-runtime/runtime'
 import Vue from 'vue'
@@ -45,10 +39,34 @@ if (window.__POWERED_BY_QIANKUN__) {
 
 let instance = null
 let router = null
-function render (props = {}) {
+const renderByQiankun = (props = {}) => {
   const { container } = props
   router = new VueRouter({
-    base: window.__POWERED_BY_QIANKUN__ ? '/taskman' : '/',
+    base: '/taskman',
+    mode: 'hash',
+    routes
+  })
+  instance = new Vue({
+    router,
+    render: h => h(App),
+    i18n
+  }).$mount(container.querySelector('#app'), true)
+  // 给主应用传参
+  Vue.prototype.$qiankunProps = props
+  Vue.prototype.$qiankunProps.setGlobalState({
+    implicitRoute: implicitRoute,
+    childRouters: routerP,
+    routes: dynaticRoutes
+  })
+  // 不需要权限校验的路由传给主应用
+  window.addRoutersWithoutPermission && window.addRoutersWithoutPermission(routerP)
+  // 路由配置传给主应用
+  window.addRoutes && window.addRoutes(dynaticRoutes)
+}
+
+const render = () => {
+  router = new VueRouter({
+    base: '/',
     mode: 'hash',
     routes
   })
@@ -60,21 +78,14 @@ function render (props = {}) {
       next('/login')
     }
   })
-  instance = new Vue({
+  new Vue({
     router,
     render: h => h(App),
     i18n
-  }).$mount(container ? container.querySelector('#app') : '#app', true)
-  Vue.prototype.$qiankunProps = props
-  Vue.prototype.$qiankunProps.setGlobalState({
-    implicitRoute: implicitRoute,
-    childRouters: routerP,
-    routes: dynaticRoutes
-  })
+  }).$mount('#app', true)
 }
 
 if (!window.__POWERED_BY_QIANKUN__) {
-  console.log('独立运行')
   render()
 }
 
@@ -86,7 +97,7 @@ export async function bootstrap () {
 export async function mount (props) {
   // 接受主应用参数
   console.log('[vue] props from main framework', props)
-  render(props)
+  renderByQiankun(props)
 }
 // 应用每次切除/注销会调用的方法，在这里会注销微应用的应用实例
 export async function unmount () {

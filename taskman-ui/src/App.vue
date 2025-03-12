@@ -28,7 +28,6 @@ export default {
 </script>
 <style lang="scss">
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #0F1222; // Fes字体颜色规范

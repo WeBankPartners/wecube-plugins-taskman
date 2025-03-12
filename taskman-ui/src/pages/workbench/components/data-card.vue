@@ -299,7 +299,6 @@ export default {
       span {
         color: #17233d;
         font-size: 14px;
-        font-family: PingFangSC-regular;
         font-weight: bold;
       }
       .total {
@@ -321,7 +320,6 @@ export default {
         padding: 0 5px;
         span {
           font-size: 12px;
-          font-family: PingFangSC-regular;
         }
         .number {
           position: relative;

@@ -1,19 +1,25 @@
 package models
 
 const (
-	DateTimeFormat       = "2006-01-02 15:04:05"
-	NewDateTimeFormat    = "20060102150405"
-	SysTableIdConnector  = "__"
-	UrlPrefix            = "/taskman"
-	RowDataPermissionErr = "row data permission deny "
-	AdminRole            = "SUPER_ADMIN"
-	UploadFileMaxSize    = 10485760
-	DefaultHttpErrorCode = "ERROR"
-	WeCubeEmptySearch    = "WeCube-empty-search" //查询空数据
-	Yes                  = "yes"
-	Y                    = "y"
-	ContextApiCode       = "apiCode"
-	HomePage             = "HOME_PAGE"
+	DateTimeFormat         = "2006-01-02 15:04:05"
+	NewDateTimeFormat      = "20060102150405"
+	SysTableIdConnector    = "__"
+	UrlPrefix              = "/taskman"
+	RowDataPermissionErr   = "row data permission deny "
+	AdminRole              = "SUPER_ADMIN"
+	UploadFileMaxSize      = 10485760
+	DefaultHttpErrorCode   = "ERROR"
+	WeCubeEmptySearch      = "WeCube-empty-search" //查询空数据
+	Yes                    = "yes"
+	Y                      = "y"
+	ContextApiCode         = "apiCode"
+	HomePage               = "HOME_PAGE"
+	EncryptPasswordPrefix  = "{cipher_a}"
+	EncryptSensitivePrefix = "{cipher_b}"
+	EncryptPasswordPrefixC = "{cipher_c}"
+	ModifyPrefixConstant   = "modify_"
+	HEADER_BUSINESS_ID     = "BusinessId" // 业务流水号
+	HEADER_REQUEST_ID      = "RequestId"  // 交易流水号
 )
 
 // RequestStatus 定义请求状态
@@ -79,6 +85,7 @@ const (
 	FormItemElementTypeSelect       FormItemElementType = "select"
 	FormItemElementTypeCalculate    FormItemElementType = "calculate" //计算类型
 	FormItemElementTypeWeCMDBEntity FormItemElementType = "wecmdbEntity"
+	FormItemElementTypePassword     FormItemElementType = "password"
 )
 
 type CmdbDataType string

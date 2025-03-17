@@ -224,7 +224,14 @@ export default {
       }
       this.visible = true
       // 表单项下拉列表
-      this.nameList = this.finalElement[0].attrs.filter(i => i.name !== this.editElement.name)
+      this.nameList = this.finalElement[0].attrs.filter(i => {
+        if (i.cmdbAttr) {
+          const cmdbAttr = JSON.parse(i.cmdbAttr)
+          return i.name !== this.editElement.name && cmdbAttr.sensitive !== 'yes'
+        } else {
+          return i.name !== this.editElement.name
+        }
+      })
       // 刷新符号下拉列表
       this.refreshSelectAttrs(true)
       // 获取值为select类型下拉列表

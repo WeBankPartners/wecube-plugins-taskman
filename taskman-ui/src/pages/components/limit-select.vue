@@ -21,7 +21,7 @@
             <div style="width:100%;height:30px;" @click.stop>
               <Icon
                 type="ios-more"
-                color="#2d8cf0"
+                color="#5384ff"
                 size="24"
                 style="margin-right:12px;float:right"
                 @click="handleLoadMore()"

@@ -55,7 +55,7 @@ export default {
           label: this.$t('tw_my_pending'),
           icon: 'ios-person',
           size: '28',
-          color: '#ed4014',
+          color: '#FF4D4F',
           total: 0,
           '1': 0,
           '2': 0,
@@ -68,7 +68,7 @@ export default {
           label: this.$t('tw_group_pending'),
           icon: 'ios-people',
           size: '28',
-          color: '#ff9900',
+          color: '#F29360',
           total: 0,
           '1': 0,
           '2': 0,
@@ -94,7 +94,7 @@ export default {
           label: this.$t('tw_submit'),
           icon: 'ios-send',
           size: '28',
-          color: '#19be6b',
+          color: '#00CB91',
           total: 0,
           '1': 0,
           '2': 0,
@@ -299,7 +299,6 @@ export default {
       span {
         color: #17233d;
         font-size: 14px;
-        font-family: PingFangSC-regular;
         font-weight: bold;
       }
       .total {
@@ -321,7 +320,6 @@ export default {
         padding: 0 5px;
         span {
           font-size: 12px;
-          font-family: PingFangSC-regular;
         }
         .number {
           position: relative;

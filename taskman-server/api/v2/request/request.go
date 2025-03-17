@@ -11,7 +11,9 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -99,10 +101,46 @@ func SaveRequestCache(c *gin.Context) {
 			middleware.ReturnParamValidateError(c, err)
 			return
 		}
-
 		if request.CreatedBy != user {
 			middleware.ReturnReportRequestNotPermissionError(c)
 			return
+		}
+		for _, entityData := range param.Data {
+			if err = service.HandleSensitiveDataDecode(entityData); err != nil {
+				middleware.ReturnServerHandleError(c, err)
+				return
+			}
+			passwordAttrMap := make(map[string]bool)
+			for _, title := range entityData.Title {
+				cmdbAttrModel := models.EntityAttributeObj{}
+				if strings.TrimSpace(title.CmdbAttr) == "" {
+					continue
+				}
+				if err = json.Unmarshal([]byte(title.CmdbAttr), &cmdbAttrModel); err != nil {
+					return
+				}
+				if cmdbAttrModel.InputType == string(models.FormItemElementTypePassword) {
+					passwordAttrMap[title.Name] = true
+				}
+			}
+			// 密码处理,web传递原密码,需要加密处理
+			for _, entityItem := range entityData.Value {
+				for key, value := range entityItem.EntityData {
+					// 空数据不用加密
+					if value == nil || fmt.Sprintf("%+v", value) == "" {
+						continue
+					}
+					inputValue := fmt.Sprintf("%+v", value)
+					if passwordAttrMap[key] && !strings.HasPrefix(strings.ToLower(inputValue), models.EncryptPasswordPrefix) && !strings.HasPrefix(strings.ToLower(inputValue), models.EncryptPasswordPrefixC) {
+						if inputValue, err = service.AesEnPasswordByGuid("", models.Config.EncryptSeed, inputValue, service.DEFALT_CIPHER_C); err != nil {
+							err = fmt.Errorf("try to encrypt password type column:%s value:%s fail,%s  ", key, inputValue, err.Error())
+							return
+						}
+						entityItem.EntityData[models.ModifyPrefixConstant+key] = 1
+						entityItem.EntityData[key] = inputValue
+					}
+				}
+			}
 		}
 		err = service.SaveRequestCacheV2(requestId, user, c.GetHeader("Authorization"), &param)
 		if err != nil {
@@ -213,7 +251,7 @@ func GetRequestHistory(c *gin.Context) {
 	defer try.ExceptionStack(func(e interface{}, err interface{}) {
 		retErr := fmt.Errorf("%v", err)
 		middleware.ReturnError(c, exterror.Catch(exterror.New().ServerHandleError, retErr))
-		log.Logger.Error(e.(string))
+		log.Error(nil, log.LOGGER_APP, e.(string))
 	})
 
 	requestId := c.Param("requestId")
@@ -232,7 +270,7 @@ func PluginCreateRequest(c *gin.Context) {
 	var exist bool
 	defer func() {
 		if err != nil {
-			log.Logger.Error("Plugin request create handle fail", log.Error(err))
+			log.Error(nil, log.LOGGER_APP, "Plugin request create handle fail", zap.Error(err))
 			response.ResultCode = "1"
 			response.ResultMessage = err.Error()
 		}
@@ -348,10 +386,34 @@ func SaveRequestFormData(c *gin.Context) {
 		middleware.ReturnReportRequestNotPermissionError(c)
 		return
 	}
+	if err = service.HandleSensitiveDataDecode(&param); err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
 	err = service.SaveRequestForm(requestId, user, &param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
 		middleware.ReturnData(c, param)
 	}
+}
+
+func DecodeRequestFormDataPassword(c *gin.Context) {
+	encryptPwd := c.Query("encryptPwd")
+	var err error
+	var result string
+	if strings.TrimSpace(encryptPwd) == "" {
+		middleware.ReturnParamValidateError(c, fmt.Errorf("encryptPwd is empty"))
+		return
+	}
+	// {cipher_a} 表示cmdb密码加密,{cipher_b} 表示taskman密码加密
+	if !strings.HasPrefix(strings.ToLower(encryptPwd), models.EncryptSensitivePrefix) {
+		middleware.ReturnParamValidateError(c, fmt.Errorf("encryptPwd format is invalid"))
+		return
+	}
+	if result, err = service.AesDePasswordByGuid("", models.Config.EncryptSeed, encryptPwd); err != nil {
+		middleware.ReturnError(c, err)
+		return
+	}
+	middleware.ReturnData(c, result)
 }

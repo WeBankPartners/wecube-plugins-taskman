@@ -5,6 +5,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"go.uber.org/zap"
 	"regexp"
 	"strings"
 )
@@ -95,7 +96,7 @@ func getFormItemTemplateNameMap(idList []string) map[string]*models.FormItemTemp
 func validateRegular(input, regular string) bool {
 	regObj, err := regexp.Compile(regular)
 	if err != nil {
-		log.Logger.Error("validate regular regexp compile fail", log.String("regular", regular), log.Error(err))
+		log.Error(nil, log.LOGGER_APP, "validate regular regexp compile fail", zap.String("regular", regular), zap.Error(err))
 		return false
 	}
 	return regObj.MatchString(input)

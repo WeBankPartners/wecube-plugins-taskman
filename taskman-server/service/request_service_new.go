@@ -9,6 +9,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"github.com/tealeg/xlsx"
+	"go.uber.org/zap"
 	"math"
 	"net/http"
 	"sort"
@@ -518,19 +519,19 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 	}
 	reportTime, err = time.ParseInLocation(models.DateTimeFormat, dataObject.ReportTime, loc)
 	if err != nil {
-		log.Logger.Error("getRequestRemainDays ReportTime err", log.Error(err))
+		log.Error(nil, log.LOGGER_APP, "getRequestRemainDays ReportTime err", zap.Error(err))
 		return
 	}
 	requestExpectTime, err = time.ParseInLocation(models.DateTimeFormat, dataObject.ExpectTime, loc)
 	if err != nil {
-		log.Logger.Error("getRequestRemainDays ExpectTime err", log.Error(err))
+		log.Error(nil, log.LOGGER_APP, "getRequestRemainDays ExpectTime err", zap.Error(err))
 		return
 	}
 	// 计算请求停留时长
 	if dataObject.Status == string(models.RequestStatusCompleted) || dataObject.Status == string(models.RequestStatusTermination) || dataObject.Status == string(models.RequestStatusFaulted) {
 		updateTime, err := time.ParseInLocation(models.DateTimeFormat, dataObject.UpdatedTime, loc)
 		if err != nil {
-			log.Logger.Error("getRequestRemainDays UpdatedTime err", log.Error(err))
+			log.Error(nil, log.LOGGER_APP, "getRequestRemainDays UpdatedTime err", zap.Error(err))
 			return
 		}
 
@@ -719,7 +720,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 		if len(actions) > 0 {
 			updateRequestErr := dao.Transaction(actions)
 			if updateRequestErr != nil {
-				log.Logger.Error("Try to update request status fail", log.Error(updateRequestErr))
+				log.Error(nil, log.LOGGER_APP, "Try to update request status fail", zap.Error(updateRequestErr))
 			}
 		}
 		if len(emptyOperatorObjTypeTemplateMap) > 0 {
@@ -729,7 +730,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 				for templateId, procDefKey := range emptyOperatorObjTypeTemplateMap {
 					err2 := GetRequestTemplateService().UpdateOperatorObjType(templateId, operatorObjTypeMap[procDefKey])
 					if err2 != nil {
-						log.Logger.Error("UpdateOperatorObjType err", log.Error(err))
+						log.Error(nil, log.LOGGER_APP, "UpdateOperatorObjType err", zap.Error(err))
 					}
 				}
 			}()
@@ -862,7 +863,7 @@ func CalcRequestProgressAndCurNode(requestId, taskId, instanceId, userToken, lan
 					return
 				}
 			}
-			log.Logger.Error("filterNode list is empty fail,instanceId", log.String("instanceId", instanceId))
+			log.Error(nil, log.LOGGER_APP, "filterNode list is empty fail,instanceId", zap.String("instanceId", instanceId))
 			return
 		}
 		// 按 orderNo排序,将有 orderNo的节点按小到大排序,查找第一个非完成的节点状态返回
@@ -1289,7 +1290,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 		if request.ProcInstanceId != "" && request.Status != string(models.RequestStatusCompleted) && request.Status != string(models.RequestStatusFaulted) {
 			response, err := rpc.GetProcessInstance(userToken, language, request.ProcInstanceId)
 			if err != nil {
-				log.Logger.Error("http getProcessInstances error", log.Error(err))
+				log.Error(nil, log.LOGGER_APP, "http getProcessInstances error", zap.Error(err))
 			}
 			if response != nil {
 				if response.Status == InternallyTerminated {
@@ -1463,7 +1464,7 @@ func getRequestForm(request *models.RequestTable, taskId, userToken, language st
 		return
 	}
 	if len(tmpTemplate) == 0 {
-		log.Logger.Error("can not find request_template with id", log.String("id", request.Id))
+		log.Error(nil, log.LOGGER_APP, "can not find request_template with id", zap.String("id", request.Id))
 		return
 	}
 	roleDisplayMap, err = GetRoleService().GetRoleDisplayName(userToken, language)
@@ -1504,7 +1505,7 @@ func getRequestForm(request *models.RequestTable, taskId, userToken, language st
 	_, form.Handler = getRequestHandler(*request, taskId)
 	if request.CustomFormCache != "" {
 		if err = json.Unmarshal([]byte(request.CustomFormCache), &customForm); err != nil {
-			log.Logger.Error("json Unmarshal", log.Error(err), log.String("CustomFormCache", request.CustomFormCache))
+			log.Error(nil, log.LOGGER_APP, "json Unmarshal", zap.Error(err), zap.String("CustomFormCache", request.CustomFormCache))
 			return
 		}
 	} else {
@@ -1520,10 +1521,12 @@ func getRequestForm(request *models.RequestTable, taskId, userToken, language st
 		var cacheObj models.RequestPreDataDto
 		err = json.Unmarshal([]byte(request.Cache), &cacheObj)
 		if err != nil {
-			log.Logger.Error("try to json unmarshal cache data fail ", log.Error(err))
+			log.Error(nil, log.LOGGER_APP, "try to json unmarshal cache data fail ", zap.Error(err))
 			return
 		}
 		form.FormData = cacheObj.Data
+		SensitiveDataEncryption(form.FormData)
+		// 数据回显示
 		form.RootEntityId = cacheObj.RootEntityId
 		form.OperatorObj = cacheObj.EntityName
 	}
@@ -1960,7 +1963,7 @@ func (s *RequestService) AutoExecTaskHandle(request models.RequestTable, userTok
 		return
 	}
 	if err = json.Unmarshal([]byte(request.CustomFormCache), &customForm); err != nil {
-		log.Logger.Error("json Unmarshal", log.Error(err), log.String("CustomFormCache", request.CustomFormCache))
+		log.Error(nil, log.LOGGER_APP, "json Unmarshal", zap.Error(err), zap.String("CustomFormCache", request.CustomFormCache))
 		return
 	}
 	if len(customForm.Title) == 0 || len(customForm.Value) == 0 {
@@ -1984,7 +1987,7 @@ func (s *RequestService) AutoExecTaskHandle(request models.RequestTable, userTok
 				if strings.TrimSpace(taskHandleTemplate.AssignRule) != "" {
 					assignRuleMap := map[string]interface{}{}
 					if err = json.Unmarshal([]byte(taskHandleTemplate.AssignRule), &assignRuleMap); err != nil {
-						log.Logger.Error("AutoExecTaskHandle AssignRule Unmarshal err", log.Error(err))
+						log.Error(nil, log.LOGGER_APP, "AutoExecTaskHandle AssignRule Unmarshal err", zap.Error(err))
 						continue
 					}
 					if len(assignRuleMap) == 0 {
@@ -1993,14 +1996,14 @@ func (s *RequestService) AutoExecTaskHandle(request models.RequestTable, userTok
 					for assignKey, assignValue := range assignRuleMap {
 						formItemValue = []interface{}{}
 						if formItemDtoTemp, ok = formItemDtoMap[assignKey]; !ok {
-							log.Logger.Error("formItemDtoMap is not match", log.String("assignKey", assignKey))
+							log.Error(nil, log.LOGGER_APP, "formItemDtoMap is not match", zap.String("assignKey", assignKey))
 							continue
 						}
 						// 多选,有一个匹配上即可
 						match = false
 						assignArr, ok1 := assignValue.([]interface{})
 						if !ok1 {
-							log.Logger.Error(" assignValue  value  is not array", log.JsonObj("assignValue", assignValue))
+							log.Error(nil, log.LOGGER_APP, " assignValue  value  is not array", log.JsonObj("assignValue", assignValue))
 							continue
 						}
 						if len(assignArr) == 0 {
@@ -2012,7 +2015,7 @@ func (s *RequestService) AutoExecTaskHandle(request models.RequestTable, userTok
 						} else {
 							valArr, ok2 := formItemDtoTemp.Value.([]interface{})
 							if !ok2 {
-								log.Logger.Error(" form_item value  is not array", log.JsonObj("value", formItemDtoTemp.Value))
+								log.Error(nil, log.LOGGER_APP, " form_item value  is not array", log.JsonObj("value", formItemDtoTemp.Value))
 								continue
 							}
 							formItemValue = append(formItemValue, valArr...)
@@ -2041,7 +2044,7 @@ func (s *RequestService) AutoExecTaskHandle(request models.RequestTable, userTok
 
 // CreateRequestTask 创建任务
 func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskId, userToken, language string, taskSort int) (actions []*dao.ExecAction, err error) {
-	log.Logger.Debug("CreateRequestTask", log.String("taskId", curTaskId))
+	log.Debug(nil, log.LOGGER_APP, "CreateRequestTask", zap.String("taskId", curTaskId))
 	var taskTemplateList []*models.TaskTemplateTable
 	var requestTemplate *models.RequestTemplateTable
 	var taskList []*models.TaskTable
@@ -2155,7 +2158,7 @@ func (s *RequestService) CreateRequestConfirm(request models.RequestTable, taskS
 }
 
 func (s *RequestService) CreateProcessTask(request models.RequestTable, task *models.TaskTable, userToken, language string) (actions []*dao.ExecAction, err error) {
-	log.Logger.Debug("CreateProcessTask", log.String("taskId", task.Id))
+	log.Debug(nil, log.LOGGER_APP, "CreateProcessTask", zap.String("taskId", task.Id))
 	var workflowActions []*dao.ExecAction
 	var requestTemplate *models.RequestTemplateTable
 	actions = []*dao.ExecAction{}
@@ -2204,7 +2207,7 @@ func (s *RequestService) TaskHandleAutoPass(request models.RequestTable, task *m
 			curTaskHandle = taskHandle
 			// 当前处理人已处理,直接return
 			if taskHandle.HandleStatus == string(models.TaskHandleResultTypeComplete) {
-				log.Logger.Info("taskHandle:%s repeat doing", log.String("taskHandleId", taskHandle.Id))
+				log.Info(nil, log.LOGGER_APP, "taskHandle:%s repeat doing", zap.String("taskHandleId", taskHandle.Id))
 				return
 			}
 		} else if taskHandle.HandleStatus == string(models.TaskHandleResultTypeUncompleted) {

@@ -75,6 +75,14 @@
 import axios from 'axios'
 import { getCookie } from '@/pages/util/cookie'
 import dayjs from 'dayjs'
+
+export const custom_api_enum = [
+  {
+    "url": "/taskman/api/v1/request/attach-file/download/${file.id}",
+    "method": "get"
+  }
+]
+
 export default {
   props: {
     data: {

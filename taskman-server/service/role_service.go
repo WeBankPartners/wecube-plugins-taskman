@@ -4,6 +4,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
+	"go.uber.org/zap"
 	"sort"
 	"strings"
 )
@@ -55,7 +56,7 @@ func (s *RoleService) GetRoleMail(roleList []*models.RoleTable, userToken, langu
 		return
 	}
 	if roleMap, err = rpc.QueryAllRoles("N", userToken, language); err != nil {
-		log.Logger.Error("QueryAllRoles err:%+v", log.Error(err))
+		log.Error(nil, log.LOGGER_APP, "QueryAllRoles err:%+v", zap.Error(err))
 		return
 	}
 	for _, v := range roleList {
@@ -77,7 +78,7 @@ func (s *RoleService) GetRoleList(ids []string, userToken, language string) (res
 	var roleMap map[string]*models.SimpleLocalRoleDto
 	result = []*models.RoleTable{}
 	if roleMap, err = rpc.QueryAllRoles("N", userToken, language); err != nil {
-		log.Logger.Error("QueryAllRoles err:%+v", log.Error(err))
+		log.Error(nil, log.LOGGER_APP, "QueryAllRoles err:%+v", zap.Error(err))
 		return
 	}
 	if len(ids) == 0 {
@@ -115,7 +116,7 @@ func (s *RoleService) QueryUserByRoles(roles []string, userToken, language strin
 	var roleMap map[string]*models.SimpleLocalRoleDto
 	var list []*models.SimpleLocalRoleDto
 	if roleMap, err = rpc.QueryAllRoles("N", userToken, language); err != nil {
-		log.Logger.Error("QueryAllRoles err:%+v", log.Error(err))
+		log.Error(nil, log.LOGGER_APP, "QueryAllRoles err:%+v", zap.Error(err))
 		return
 	}
 	if len(roles) > 0 {
@@ -164,7 +165,7 @@ func (s *RoleService) GetRoleDisplayName(userToken, language string) (displayNam
 	displayNameMap = make(map[string]string)
 	var roleMap map[string]*models.SimpleLocalRoleDto
 	if roleMap, err = rpc.QueryAllRoles("Y", userToken, language); err != nil {
-		log.Logger.Error("QueryAllRoles err:%+v", log.Error(err))
+		log.Error(nil, log.LOGGER_APP, "QueryAllRoles err:%+v", zap.Error(err))
 		return
 	}
 	for key, value := range roleMap {

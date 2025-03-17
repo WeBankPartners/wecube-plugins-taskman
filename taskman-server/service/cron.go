@@ -5,6 +5,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"go.uber.org/zap"
 	"time"
 )
 
@@ -25,7 +26,7 @@ func startNotifyCronJob() {
 }
 
 func notifyAction() {
-	log.Logger.Info("Start notify action")
+	log.Info(nil, log.LOGGER_APP, "Start notify action")
 	var taskTable []*models.TaskTable
 	var actions []*dao.ExecAction
 	var taskNotifyList []*models.TaskNotifyTable
@@ -35,7 +36,7 @@ func notifyAction() {
 	var beforeEightDay = time.Now().AddDate(0, 0, -8)
 	err := dao.X.SQL("select id,name,created_time,expire_time,notify_count,type,request from task where status<>'done' and created_time >= ? and created_time <= ?", beforeEightDay.Format(models.DateTimeFormat), now).Find(&taskTable)
 	if err != nil {
-		log.Logger.Error("notify action fail,query task error", log.Error(err))
+		log.Error(nil, log.LOGGER_APP, "notify action fail,query task error", zap.Error(err))
 		return
 	}
 	if len(taskTable) == 0 {
@@ -95,7 +96,7 @@ func notifyAction() {
 			var errMsg string
 			if tmpErr != nil {
 				errMsg = tmpErr.Error()
-				log.Logger.Error("notify task mail fail", log.String("taskId", v.Id), log.Error(tmpErr))
+				log.Error(nil, log.LOGGER_APP, "notify task mail fail", zap.String("taskId", v.Id), zap.Error(tmpErr))
 			}
 			if len(taskNotifyList) > 0 {
 				actions = append(actions, &dao.ExecAction{Sql: "update task_notify set doing_notify_count = ?,timeout_notify_count = ?,err_msg = ?,updated_time = ? where id=?", Param: []interface{}{tmpExpireObj.DoingNotifyCount, tmpExpireObj.TimeoutNotifyCount, errMsg, time.Now().Format(models.DateTimeFormat), taskNotifyList[0].Id}})
@@ -107,7 +108,7 @@ func notifyAction() {
 	if len(actions) > 0 {
 		err = dao.Transaction(actions)
 		if err != nil {
-			log.Logger.Error("notify action error", log.Error(err))
+			log.Error(nil, log.LOGGER_APP, "notify action error", zap.Error(err))
 		}
 	}
 }
@@ -123,7 +124,7 @@ func notifyAndUpdateWorkflowResult() {
 	err = dao.X.SQL("select id,name,proc_instance_id,request_template,created_by from request where status = ? and proc_instance_id is not null and created_time >= ? and created_time <= ?",
 		models.RequestStatusInProgress, yesterday.Format(models.DateTimeFormat), time.Now().Format(models.DateTimeFormat)).Find(&requestList)
 	if err != nil {
-		log.Logger.Error("notifyAndUpdateWorkflowResult fail,query request error", log.Error(err))
+		log.Error(nil, log.LOGGER_APP, "notifyAndUpdateWorkflowResult fail,query request error", zap.Error(err))
 		return
 	}
 	if len(requestList) > 0 {
@@ -146,7 +147,7 @@ func notifyAndUpdateWorkflowResult() {
 	}
 	if len(actions) > 0 {
 		if err = dao.Transaction(actions); err != nil {
-			log.Logger.Error("notifyAndUpdateWorkflowResult  error", log.Error(err))
+			log.Error(nil, log.LOGGER_APP, "notifyAndUpdateWorkflowResult  error", zap.Error(err))
 		}
 	}
 }

@@ -382,7 +382,7 @@ func (s *FormTemplateService) GetDataFormConfig(requestTemplateId, taskTemplateI
 			var attributes []*models.EntityAttributeObj
 			// cmdb属性,需要特殊调用下CMDB接口,平台接口CMDB属性名称没有存储,需要用title存储
 			if len(entity) > 7 && strings.HasPrefix(entity, "wecmdb:") {
-				if attributes, err = getCMDBCiAttrDefs(entity[7:], userToken); err != nil {
+				if attributes, err = GetCMDBCiAttrDefs(entity[7:], userToken); err != nil {
 					return
 				}
 				for _, attr := range attributes {

@@ -91,7 +91,7 @@ export default {
 }
 .tab-active {
   @extend .tab;
-  color: #2d8cf0;
-  border-bottom: 2px solid #2d8cf0;
+  color: #5384ff;
+  border-bottom: 2px solid #5384ff;
 }
 </style>

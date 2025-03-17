@@ -806,7 +806,7 @@ export default {
 }
 
 .require {
-  color: #ed4014;
+  color: #FF4D4F;
   width: 6px;
   display: flex;
   align-items: center;

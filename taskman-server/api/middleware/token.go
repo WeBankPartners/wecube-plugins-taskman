@@ -6,6 +6,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"io"
 	"net/http"
 	"regexp"
@@ -31,8 +32,11 @@ var (
 	whitePathMap = map[string]bool{
 		models.UrlPrefix + "/entities/${model}/query": true,
 	}
-	ApiMenuMap         = make(map[string][]string) // key -> apiCode  value -> menuList
-	HomePageApiCodeMap = make(map[string]bool)
+	whiteCodeList = []string{
+		"request-template-export-batch-post", "form-template-library-export-data", "form-template-library-import", "request-template-import-batch-post",
+		"request-template-all-get", "auth-roles-users", "auth-roles-users-revoke", "auth-roles-apply-byhandler", "auth-roles-apply-byapplier", "auth-roles-users", "auth-roles",
+	}
+	ApiMenuMap = make(map[string][]string) // key -> apiCode  value -> menuList
 )
 
 func isWhiteListUrl(url string) (result bool) {
@@ -59,7 +63,7 @@ func AuthCoreRequestToken() gin.HandlerFunc {
 			}
 			err := authCoreRequest(c)
 			if err != nil {
-				log.Logger.Error("Validate core token fail", log.Error(err))
+				log.Error(nil, log.LOGGER_APP, "Validate core token fail", zap.Error(err))
 				c.JSON(http.StatusUnauthorized, models.EntityResponse{Status: "ERROR", Message: "Core token validate fail "})
 				c.Abort()
 			} else {
@@ -71,11 +75,13 @@ func AuthCoreRequestToken() gin.HandlerFunc {
 						return
 					}
 				}
+				// 白名单code 直接放行
 				contextApiCode := c.GetString(models.ContextApiCode)
-				// 首页菜单直接放行
-				if HomePageApiCodeMap[contextApiCode] {
-					c.Next()
-					return
+				for _, code := range whiteCodeList {
+					if code == contextApiCode {
+						c.Next()
+						return
+					}
 				}
 				if strings.HasPrefix(contextApiCode, "plugin-") {
 					c.Next()
@@ -185,21 +191,18 @@ func InitApiMenuMap(apiMenuCodeMap map[string]string) {
 					} else {
 						ApiMenuMap[code] = []string{menuApi.Menu}
 					}
-					if menuApi.Menu == models.HomePage {
-						HomePageApiCodeMap[code] = true
-					}
 					matchUrlMap[item.Method+"_"+item.Url] = 1
 				}
 			}
 		}
 		if !exist {
-			log.Logger.Info("", log.String("path", k), log.String("code", code))
+			log.Info(nil, log.LOGGER_APP, "", zap.String("path", k), zap.String("code", code))
 		}
 	}
 	for _, menuApi := range models.MenuApiGlobalList {
 		for _, item := range menuApi.Urls {
 			if _, ok := matchUrlMap[item.Method+"_"+item.Url]; !ok {
-				//log.Logger.Info("InitApiMenuMap can not match menuUrl", log.String("menu", menuApi.Menu), log.String("method", item.Method), log.String("url", item.Url))
+				//log.Info(nil, log.LOGGER_APP, "InitApiMenuMap can not match menuUrl", zap.String("menu", menuApi.Menu), zap.String("method", item.Method), zap.String("url", item.Url))
 			}
 		}
 	}
@@ -208,7 +211,7 @@ func InitApiMenuMap(apiMenuCodeMap map[string]string) {
 			ApiMenuMap[k] = DistinctStringList(v, []string{})
 		}
 	}
-	log.Logger.Debug("InitApiMenuMap done", log.JsonObj("ApiMenuMap", ApiMenuMap))
+	log.Debug(nil, log.LOGGER_APP, "InitApiMenuMap done", log.JsonObj("ApiMenuMap", ApiMenuMap))
 }
 
 func DistinctStringList(input, excludeList []string) (output []string) {

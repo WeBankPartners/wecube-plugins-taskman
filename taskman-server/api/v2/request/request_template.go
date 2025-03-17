@@ -1,6 +1,7 @@
 package request
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
@@ -33,12 +34,35 @@ func GetPlatformAllModels(c *gin.Context) {
 // QueryPlatformEntityData 转发platform entity数据查询
 func QueryPlatformEntityData(c *gin.Context) {
 	bodyString := c.GetString("requestBody")
-	responseBytes, err := rpc.HttpPost(fmt.Sprintf("%s/%s/entities/%s/query", models.Config.Wecube.BaseUrl, c.Param("package"), c.Param("entity")),
+	plugin := c.Param("package")
+	entity := c.Param("entity")
+	var responseBytes, newResponseBytes []byte
+	var err error
+	var result = make([]map[string]interface{}, 0)
+	responseBytes, err = rpc.HttpPost(fmt.Sprintf("%s/%s/entities/%s/query", models.Config.Wecube.BaseUrl, plugin, entity),
 		c.GetHeader("Authorization"),
 		c.GetHeader(middleware.AcceptLanguageHeader), []byte(bodyString))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		c.Data(http.StatusOK, "application/json; charset=utf-8", responseBytes)
+		return
 	}
+	// cmdb 涉及到敏感数据需要隐藏显示
+	if plugin == "wecmdb" {
+		var response models.EntityResponse
+		if err = json.Unmarshal(responseBytes, &response); err != nil {
+			middleware.ReturnServerHandleError(c, fmt.Errorf("json Unmarshal err,%s", err.Error()))
+			return
+		}
+		if response.Status == "OK" {
+			if result, err = service.HandleSensitiveDataEncode(response.Data, entity, c.GetHeader("Authorization")); err != nil {
+				middleware.ReturnServerHandleError(c, err)
+				return
+			}
+			if newResponseBytes, err = json.Marshal(models.CmdbResponseJson{Status: "OK", Data: result}); err != nil {
+				middleware.ReturnServerHandleError(c, fmt.Errorf("json Marshal err,%s", err.Error()))
+				return
+			}
+		}
+	}
+	c.Data(http.StatusOK, "application/json; charset=utf-8", newResponseBytes)
 }

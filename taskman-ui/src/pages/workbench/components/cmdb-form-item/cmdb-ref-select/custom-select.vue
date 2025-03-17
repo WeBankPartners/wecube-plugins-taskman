@@ -65,7 +65,7 @@
             @click="handleSelectItem(i)"
           >
             <span>{{ i.key_name }}</span>
-            <Icon v-if="i.checked" type="ios-checkmark" size="24" color="#2d8cf0e6" />
+            <Icon v-if="i.checked" type="ios-checkmark" size="24" color="#5384FF" />
           </div>
         </div>
         <div v-else class="no-data">{{ $t('tw_no_data') }}</div>
@@ -294,7 +294,7 @@ export default {
           }
         }
         &-item-active {
-          color: #2d8cf0e6;
+          color: #5384FF;
         }
       }
     }

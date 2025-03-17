@@ -14,6 +14,11 @@ func (d *FormDao) Delete(formId string) (err error) {
 	return
 }
 
+func (d *FormDao) Get(formId string) (form models.FormTable, err error) {
+	_, err = d.DB.Where("id = ?", formId).Get(&form)
+	return
+}
+
 func (d *FormDao) DeleteByFormItemTemplate(session *xorm.Session, formItemTemplate string) (err error) {
 	if session == nil {
 		session = d.DB.NewSession()

@@ -25,19 +25,21 @@ export const requiredCheck = (data, entityTable) => {
     })
     requestData.value.forEach(v => {
       requiredName.forEach(key => {
-        let val = v.entityData[key]
-        if (Array.isArray(val)) {
-          if (val.length === 0) {
-            result = false
-            if (tabIndex === '') {
-              tabIndex = index
+        if (v.entityData.hasOwnProperty(key)) {
+          let val = v.entityData[key]
+          if (Array.isArray(val)) {
+            if (val.length === 0) {
+              result = false
+              if (tabIndex === '') {
+                tabIndex = index
+              }
             }
-          }
-        } else {
-          if (val === '' || val === undefined) {
-            result = false
-            if (tabIndex === '') {
-              tabIndex = index
+          } else {
+            if (val === '' || val === undefined) {
+              result = false
+              if (tabIndex === '') {
+                tabIndex = index
+              }
             }
           }
         }

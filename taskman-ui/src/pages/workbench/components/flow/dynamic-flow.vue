@@ -102,7 +102,7 @@ export default {
                         <Icon
                           type="md-search"
                           onClick={() => this.handleClick(key, value)}
-                          style="cursor:pointer;color:#2d8cf0"
+                          style="cursor:pointer;color:#5384ff"
                         />
                         {key}: <span style="color:#42b983;">{value}</span>
                       </div>
@@ -275,7 +275,7 @@ export default {
               excution
                 ? statusColor[_.status] || '#7F8A96'
                 : isModelClick
-                  ? '#ff9900'
+                  ? '#F29360'
                   : _.nodeId === this.currentFlowNodeId
                     ? '#5DB400'
                     : '#7F8A96'

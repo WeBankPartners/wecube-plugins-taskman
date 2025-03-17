@@ -1,7 +1,7 @@
 const CompressionPlugin = require('compression-webpack-plugin')
 const postcssWrap = require('postcss-wrap')
 const path = require('path')
-const baseUrl = process.env.VUE_APP_API || 'http://127.0.0.1/'
+const baseUrl = process.env.BASE_URL
 module.exports = {
   devServer: {
     // hot: true,
@@ -21,8 +21,8 @@ module.exports = {
     }
   },
   runtimeCompiler: true,
-  // publicPath: '/taskman/',
   publicPath: '/',
+  // publicPath: '/',
   chainWebpack: config => {
     if (process.env.PLUGIN !== 'plugin') {
       // remove the old loader
@@ -104,7 +104,13 @@ module.exports = {
             // selector: '.taskman-wrap'
           })
         ] : []
+      },
+      less: {
+        lessOptions: { // 将 javascriptEnabled 放在 lessOptions 内部
+          javascriptEnabled: true
+        }
       }
     }
   }
+
 }

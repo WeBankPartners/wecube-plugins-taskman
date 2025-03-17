@@ -98,8 +98,9 @@
                 v-model="value[i.key]"
                 @on-change="handleSearch"
                 style="margin-right:32px;"
+                button-style="solid"
               >
-                <Radio v-for="(j, idx) in i.list" :label="j.value" :key="idx" border>{{ j.label }}</Radio>
+                <Radio v-for="(j, idx) in i.list" :label="j.value" :key="idx">{{ j.label }}</Radio>
               </RadioGroup>
               <!--自定义时间选择器-->
               <div v-else-if="i.component === 'custom-time'" class="custom-time">
@@ -110,8 +111,9 @@
                   type="button"
                   size="small"
                   style="margin-top:-2px;"
+                  button-style="solid"
                 >
-                  <Radio v-for="(j, idx) in dateTypeList" :label="j.value" :key="idx" border>{{ j.label }}</Radio>
+                  <Radio v-for="(j, idx) in dateTypeList" :label="j.value" :key="idx">{{ j.label }}</Radio>
                 </RadioGroup>
                 <div v-else>
                   <DatePicker
@@ -148,7 +150,7 @@
         v-show="!expand"
         @click="handleExpand"
         size="28"
-        color="#2d8cf0"
+        color="#5384ff"
         type="ios-arrow-down"
         style="cursor:pointer;margin-right:10px;"
       />
@@ -156,7 +158,7 @@
         v-show="expand"
         @click="handleExpand"
         size="28"
-        color="#2d8cf0"
+        color="#5384ff"
         type="ios-arrow-up"
         style="cursor:pointer;margin-right:10px;"
       />
@@ -336,7 +338,7 @@ export default {
     // color: #000;
   }
   .ivu-radio-wrapper-checked.ivu-radio-border {
-    background-color: #2d8cf0;
+    background-color: #5384FF;
     color: #fff;
   }
   .ivu-select-multiple .ivu-tag {

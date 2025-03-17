@@ -109,8 +109,6 @@
                   v-model="i.dateType"
                   @on-change="handleDateTypeChange(i.key, i.dateType)"
                   type="button"
-                  size="small"
-                  style="margin-top:-2px;"
                   button-style="solid"
                 >
                   <Radio v-for="(j, idx) in dateTypeList" :label="j.value" :key="idx">{{ j.label }}</Radio>

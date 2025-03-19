@@ -330,8 +330,8 @@ export default {
     display: none;
   }
   .ivu-radio-wrapper {
-    height: 30px !important;
-    line-height: 30px !important;
+    height: 32px !important;
+    line-height: 32px !important;
     font-size: 12px !important;
     // color: #000;
   }

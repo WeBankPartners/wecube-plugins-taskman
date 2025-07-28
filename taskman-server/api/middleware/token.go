@@ -26,8 +26,9 @@ var (
 		models.UrlPrefix + "/api/v1/login/seed": {},
 		models.UrlPrefix + "/api/v1/login":      {},
 		//models.UrlPrefix + "/api/v2/auth/roles":          {},
-		models.UrlPrefix + "/api/v2/auth/roles/apply":    {},
-		models.UrlPrefix + "/api/v2/auth/users/register": {},
+		models.UrlPrefix + "/api/v2/auth/roles/apply":         {},
+		models.UrlPrefix + "/api/v2/auth/users/register":      {},
+		models.UrlPrefix + "/api/v2/platform/roles-and-menus": {},
 	}
 	whitePathMap = map[string]bool{
 		models.UrlPrefix + "/entities/${model}/query": true,

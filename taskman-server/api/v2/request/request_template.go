@@ -66,3 +66,12 @@ func QueryPlatformEntityData(c *gin.Context) {
 	}
 	c.Data(http.StatusOK, "application/json; charset=utf-8", newResponseBytes)
 }
+
+func QueryPlatformRoleMenus(c *gin.Context) {
+	responseBytes, err := rpc.HttpGet(fmt.Sprintf("%s/platform/v1/roles-and-menus", models.Config.Wecube.BaseUrl), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	c.Data(http.StatusOK, "application/json; charset=utf-8", responseBytes)
+}

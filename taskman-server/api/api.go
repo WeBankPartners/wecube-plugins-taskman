@@ -181,6 +181,7 @@ func init() {
 		// 转发platform接口
 		{Url: "/platform/models", Method: "GET", HandlerFunc: requestNew.GetPlatformAllModels, ApiCode: "platform-models"},
 		{Url: "/platform/:package/entities/:entity/query", Method: "POST", HandlerFunc: requestNew.QueryPlatformEntityData, ApiCode: "platform-entity-query"},
+		{Url: "/platform/roles-and-menus", Method: "GET", HandlerFunc: requestNew.QueryPlatformRoleMenus, ApiCode: "platform-roles-and-menus"},
 		// 转发auth接口
 		{Url: "/auth/roles", Method: "GET", HandlerFunc: requestNew.TransAuthGetApplyRoles, ApiCode: "auth-roles"},
 		{Url: "/auth/roles/apply", Method: "POST", HandlerFunc: requestNew.TransAuthStartApply, ApiCode: "auth-roles-apply"},
